@@ -1,0 +1,108 @@
+<?php
+
+namespace App\Providers;
+
+// リポジトリのインポート
+use App\Repositories\Profile\ProfileUserRepositoryInterface;
+use App\Repositories\Profile\ProfileUserEloquentRepository;
+use App\Repositories\Profile\GroupRepositoryInterface;
+use App\Repositories\Profile\GroupRepository;
+use App\Repositories\Profile\GroupUserRepositoryInterface;
+use App\Repositories\Profile\GroupUserRepository;
+use App\Repositories\Report\ReportRepositoryInterface;
+use App\Repositories\Report\ReportEloquentRepository;
+use App\Repositories\Tag\TagRepositoryInterface;
+use App\Repositories\Tag\EloquentTagRepository;
+use App\Repositories\Task\TaskEloquentRepository;
+use App\Repositories\Task\TaskProposalRepositoryInterface;
+use App\Repositories\Task\EloquentTaskProposalRepository;
+use App\Repositories\Task\TaskRepositoryInterface;
+// サービスのインポート
+use App\Services\Profile\ProfileManagementService;
+use App\Services\Profile\ProfileManagementServiceInterface;
+use App\Services\Profile\GroupServiceInterface;
+use App\Services\Profile\GroupService;
+use App\Services\Report\PerformanceServiceInterface;
+use App\Services\Report\PerformanceService;
+use App\Services\Tag\TagServiceInterface;
+use App\Services\Tag\TagService;
+use App\Services\Task\TaskApprovalServiceInterface;
+use App\Services\Task\TaskApprovalService;
+use App\Services\Task\TaskListService;
+use App\Services\Task\TaskListServiceInterface;
+use App\Services\Task\TaskManagementService;
+use App\Services\Task\TaskManagementServiceInterface;
+use App\Services\Task\TaskProposalServiceInterface;
+use App\Services\Task\TaskProposalService;
+use App\Services\Task\TaskSearchServiceInterface;
+use App\Services\Task\TaskSearchService;
+use App\Services\AI\OpenAIService;
+
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * アプリケーションのサービスを登録する。
+     */
+    public function register(): void
+    {
+        // ========================================
+        // 1. リポジトリのバインド
+        // ========================================
+
+        // --- Tag ---
+        $this->app->bind(TagRepositoryInterface::class, EloquentTagRepository::class);
+
+        // --- Task ---
+        $this->app->bind(TaskRepositoryInterface::class, TaskEloquentRepository::class);
+        $this->app->bind(TaskProposalRepositoryInterface::class, EloquentTaskProposalRepository::class);
+
+        // --- Profile ---
+        $this->app->bind(ProfileUserRepositoryInterface::class, ProfileUserEloquentRepository::class);
+
+        // --- Report ---
+        $this->app->bind(ReportRepositoryInterface::class, ReportEloquentRepository::class);
+
+        // ========================================
+        // 2. サービスのバインド
+        // ========================================
+
+        // --- Tag ---
+        $this->app->bind(TagServiceInterface::class, TagService::class);
+
+        // --- Task ---
+        $this->app->bind(TaskApprovalServiceInterface::class, TaskApprovalService::class);
+        $this->app->bind(TaskListServiceInterface::class, TaskListService::class);
+        $this->app->bind(TaskManagementServiceInterface::class, TaskManagementService::class);
+        $this->app->bind(TaskProposalServiceInterface::class, TaskProposalService::class);
+        $this->app->bind(TaskSearchServiceInterface::class, TaskSearchService::class);
+
+        // --- Profile ---
+        $this->app->bind(ProfileManagementServiceInterface::class, ProfileManagementService::class);
+        $this->app->bind(GroupServiceInterface::class, GroupService::class);
+        $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);
+        $this->app->bind(GroupUserRepositoryInterface::class, GroupUserRepository::class);
+
+        // --- Report ---
+        $this->app->bind(PerformanceServiceInterface::class, PerformanceService::class);
+
+        // ★ OpenAIService (外部API連携) のバインド
+        // 依存性がないため、直接インスタンス化可能
+        $this->app->singleton(OpenAIService::class, function ($app) {
+            $apiKey = (string) $app['config']->get('services.openai.api_key', env('OPENAI_API_KEY', ''));
+            if ($apiKey === '') {
+                Log::warning('OpenAI API key is not set. Set OPENAI_API_KEY in .env or services.openai.api_key in config/services.php');
+            }
+            return new OpenAIService($apiKey);
+        });
+    }
+
+    /**
+     * アプリケーションの起動後にサービスを登録する。
+     */
+    public function boot(): void
+    {
+        //
+    }
+}

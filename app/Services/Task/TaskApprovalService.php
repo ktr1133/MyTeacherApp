@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Services\Task;
+
+use App\Models\Task;
+use App\Models\User;
+use App\Models\TaskImage;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Repositories\Task\TaskRepositoryInterface;
+
+class TaskApprovalService implements TaskApprovalServiceInterface
+{
+    /**
+     * Constructor
+     */
+    public function __construct(
+        private TaskRepositoryInterface $taskRepository
+    ) {}
+
+    /**
+     * タスクの完了申請を行う。
+     * @param Task $task
+     * @param User $user
+     * @return Task
+     */
+    public function requestApproval(Task $task, User $user): Task
+    {
+        if (!$task->requires_approval) {
+            abort(400, 'このタスクは承認不要です。');
+        }
+
+        if ($task->user_id !== $user->id) {
+            abort(403, 'このタスクの完了申請権限がありません。');
+        }
+
+        if ($task->is_completed || $task->approved_at) {
+            abort(400, 'このタスクは既に申請中または承認済みです。');
+        }
+
+        if (!$task->canComplete()) {
+            abort(400, '画像の添付が必要です。');
+        }
+
+        return DB::transaction(function () use ($task, $user) {
+            // 申請したユーザの完了申請を記録
+            $task = $this->taskRepository->update($task, [
+                'is_completed' => true,
+                'completed_at' => now(),
+            ]);
+
+            // 同一グループタスクの他メンバー分を論理削除
+            $groupTaskId = $task->group_task_id;
+            if ($groupTaskId) {
+                $this->taskRepository->deleteByGroupTaskIdExcludingUser($groupTaskId, $user->id);                
+            }
+
+            return $task;
+        });
+    }
+
+    /**
+     * タスクを承認する。
+     * @param Task $task
+     * @param User $approver
+     * @return Task
+     */
+    public function approveTask(Task $task, User $approver): Task
+    {
+        if (!$task->requires_approval || !$task->is_completed || $task->approved_at) {
+            abort(400, 'このタスクは承認できません。');
+        }
+
+        // 承認権限チェック（割り当てた人 or グループマスター）
+        if ($task->assigned_by_user_id !== $approver->id && !$approver->canEditGroup()) {
+            abort(403, 'このタスクの承認権限がありません。');
+        }
+
+        return DB::transaction(function () use ($task, $approver) {
+            return $this->taskRepository->update($task, [
+                'approved_at' => now(),
+                'approved_by_user_id' => $approver->id,
+            ]);
+        });
+    }
+
+    /**
+     * タスクを却下する。
+     * @param Task $task
+     * @param User $approver
+     * @param string|null $reason
+     * @return Task
+     */
+    public function rejectTask(Task $task, User $approver, ?string $reason): Task
+    {
+        if (!$task->requires_approval || !$task->is_completed || $task->approved_at) {
+            abort(400, 'このタスクは却下できません。');
+        }
+
+        if ($task->assigned_by_user_id !== $approver->id && !$approver->canEditGroup()) {
+            abort(403, 'このタスクの却下権限がありません。');
+        }
+
+        return DB::transaction(function () use ($task, $approver) {
+            // 却下されたタスクを未完了に戻す
+            $task = $this->taskRepository->update($task, [
+                'is_completed' => false,
+                'completed_at' => null,
+            ]);
+
+            // 同一グループタスクの削除済みレコードを復元
+            if ($task->group_task_id) {
+                $this->taskRepository->restoreByGroupTaskId($task->group_task_id);
+            }
+
+            return $task;
+        });
+    }
+
+    /**
+     * 承認待ちタスクの一覧を取得する。
+     * @param User $user
+     * @return Collection
+     */
+    public function getPendingApprovals(User $user): Collection
+    {
+        if (!$user->canEditGroup()) {
+            return collect();
+        }
+
+        // グループメンバーの承認待ちタスクを取得
+        return Task::query()
+            ->where('requires_approval', true)
+            ->where('is_completed', true)
+            ->whereNull('approved_at')
+            ->whereHas('user', function ($q) use ($user) {
+                $q->where('group_id', $user->group_id);
+            })
+            ->with(['user', 'images', 'tags'])
+            ->orderBy('completed_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * タスクに画像をアップロードする。
+     * @param Task $task
+     * @param UploadedFile $file
+     * @return TaskImage
+     */
+    public function uploadImage(Task $task, UploadedFile $file): TaskImage
+    {
+        $path = $file->store('task-images', 'public');
+
+        return TaskImage::create([
+            'task_id' => $task->id,
+            'file_path' => $path,
+        ]);
+    }
+
+    /**
+     * タスク画像を削除する。
+     * @param TaskImage $image
+     * @return bool
+     */
+    public function deleteImage(TaskImage $image): bool
+    {
+        Storage::disk('public')->delete($image->file_path);
+        return $image->delete();
+    }
+}

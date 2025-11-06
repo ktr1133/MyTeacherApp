@@ -1,0 +1,58 @@
+/* レポートカード共通 */
+.report-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.report-card-title {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fafafa;
+    flex-shrink: 0;
+}
+
+.report-card-body {
+    flex: 1;
+    padding: 1rem;
+    min-height: 0;
+    position: relative;
+}
+
+.report-card-body canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+}
+
+/* グリッド行の高さを固定（スクロール不要にする） */
+.auto-rows-fr {
+    grid-auto-rows: minmax(20rem, 1fr);
+}
+
+/* タブレット以上: より高さを確保 */
+@media (min-width: 768px) {
+    .auto-rows-fr { grid-auto-rows: minmax(22rem, 1fr); }
+}
+
+/* デスクトップ: さらに高さを調整 */
+@media (min-width: 1280px) {
+    .auto-rows-fr { grid-auto-rows: minmax(24rem, 1fr); }
+}
+
+/* メンバー選択セレクトボックスのスタイル調整 */
+#user-select {
+    min-width: 160px;
+}
+
+@media (max-width: 640px) {
+    #user-select {
+        width: 100%;
+    }
+}

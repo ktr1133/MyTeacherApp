@@ -1,0 +1,182 @@
+/* グリッドレイアウトの高さ調整 */
+.grid.auto-rows-fr {
+    grid-auto-rows: 1fr;
+}
+
+/* グリッドアイテムの高さを揃える */
+.grid > div {
+    display: flex;
+    min-height: 0; /* Firefox対応 */
+}
+
+/* 非表示要素はグリッドから除外 */
+.grid > div[style*="display: none"] {
+    display: none !important;
+}
+
+.grid > div > * {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* タスクカードの高さを親要素に合わせる */
+.grid > div > * > div {
+    flex: 1;
+}
+
+/* 検索結果のスクロールバースタイル */
+#search-results {
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E0 transparent;
+}
+
+#search-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+#search-results::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#search-results::-webkit-scrollbar-thumb {
+    background-color: #CBD5E0;
+    border-radius: 3px;
+}
+
+#search-results::-webkit-scrollbar-thumb:hover {
+    background-color: #A0AEC0;
+}
+
+/* リセットボタンのアニメーション */
+#reset-filter-btn {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* タブのスムーズな切り替え */
+[x-cloak] {
+    display: none !important;
+}
+
+/* グリッドアイテムのトランジション */
+.grid > div {
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* カード間隔の統一調整 */
+.grid {
+    gap: 1rem;
+}
+
+/* モバイルでのカード間隔調整 */
+@media (max-width: 767px) {
+    .grid {
+        gap: 0.75rem;
+    }
+}
+
+/* タスクカードのホバーエフェクト */
+.grid > div > * {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.grid > div > *:hover {
+    transform: translateY(-2px);
+}
+
+/* 検索結果のハイライト */
+.search-result-item.bg-gray-100 {
+    background-color: #F7FAFC;
+    border-left: 3px solid #59B9C6;
+}
+
+/* スパンバッジの統一スタイル */
+.span-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+/* タグの統一スタイル */
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* メインコンテンツのパディング調整 */
+main {
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    main {
+        padding: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    main {
+        padding: 2rem;
+    }
+}
+
+/* 完了タスクのスタイル調整 */
+[data-task-completed="true"] {
+    opacity: 0.7;
+}
+
+[data-task-completed="true"]:hover {
+    opacity: 0.85;
+}
+
+/* グリッドアイテムのアニメーション */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.grid > div:not([style*="display: none"]) {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* スタガード（時間差）アニメーション */
+.grid > div:nth-child(1) { animation-delay: 0.05s; }
+.grid > div:nth-child(2) { animation-delay: 0.1s; }
+.grid > div:nth-child(3) { animation-delay: 0.15s; }
+.grid > div:nth-child(4) { animation-delay: 0.2s; }
+.grid > div:nth-child(5) { animation-delay: 0.25s; }
+.grid > div:nth-child(6) { animation-delay: 0.3s; }
+
+/* 空状態のスタイル */
+.empty-state {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
