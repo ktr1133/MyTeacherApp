@@ -41,7 +41,7 @@
                             </div>
                             <div>
                                 <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-                                    定期バッチ設定
+                                    タスク自動作成の設定
                                 </h1>
                                 <p class="text-xs text-gray-600 dark:text-gray-400">スケジュール管理</p>
                             </div>
