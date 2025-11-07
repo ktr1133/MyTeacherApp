@@ -123,4 +123,29 @@ interface TaskRepositoryInterface
      * @return int 復元したタスクの数
      */
     public function restoreByGroupTaskId(int $groupTaskId): int;
+
+    /**
+     * タスクにタグを紐付け（Batch用）
+     *
+     * @param int $taskId
+     * @param array $tagNames
+     * @return void
+     */
+    public function attachTagsForBatch(int $taskId, array $tagNames): void;
+
+    /**
+     * グループのメンバーIDを取得（Batch用）
+     *
+     * @param int $groupId
+     * @return array
+     */
+    public function getGroupMemberIds(int $groupId): array;
+
+    /**
+     * タスクを論理削除（Batch用）
+     *
+     * @param int $taskId
+     * @return bool
+     */
+    public function softDeleteById(int $taskId): bool;
 }

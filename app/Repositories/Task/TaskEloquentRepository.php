@@ -339,4 +339,53 @@ class TaskEloquentRepository implements TaskRepositoryInterface
             ->where('group_task_id', $groupTaskId)
             ->restore();
     }
+
+    /**
+     * タスクにタグを紐付け（Batch用）
+     */
+    public function attachTagsForBatch(int $taskId, array $tagNames): void
+    {
+        if (empty($tagNames)) {
+            return;
+        }
+
+        $now = now();
+        $insertData = [];
+
+        foreach ($tagNames as $tagName) {
+            $insertData[] = [
+                'task_id' => $taskId,
+                'tag_name' => $tagName,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        DB::table('task_tags')->insert($insertData);
+    }
+
+    /**
+     * グループのメンバーIDを取得（Batch用）
+     */
+    public function getGroupMemberIds(int $groupId): array
+    {
+        return DB::table('group_user')
+            ->where('group_id', $groupId)
+            ->pluck('user_id')
+            ->toArray();
+    }
+
+    /**
+     * タスクを論理削除（Batch用）
+     */
+    public function softDeleteById(int $taskId): bool
+    {
+        $task = Task::find($taskId);
+        
+        if (!$task || $task->trashed()) {
+            return false;
+        }
+
+        return $task->delete();
+    }
 }

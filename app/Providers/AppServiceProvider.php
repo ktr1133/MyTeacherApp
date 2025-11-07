@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 // リポジトリのインポート
+use App\Repositories\Batch\HolidayRepositoryInterface;
+use App\Repositories\Batch\HolidayRepository;
+use App\Repositories\Batch\ScheduledTaskRepositoryInterface;
+use App\Repositories\Batch\ScheduledTaskRepository;
 use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use App\Repositories\Profile\ProfileUserEloquentRepository;
 use App\Repositories\Profile\GroupRepositoryInterface;
@@ -18,6 +22,8 @@ use App\Repositories\Task\TaskProposalRepositoryInterface;
 use App\Repositories\Task\EloquentTaskProposalRepository;
 use App\Repositories\Task\TaskRepositoryInterface;
 // サービスのインポート
+use App\Services\Batch\ScheduledTaskServiceInterface;
+use App\Services\Batch\ScheduledTaskService;
 use App\Services\Profile\ProfileManagementService;
 use App\Services\Profile\ProfileManagementServiceInterface;
 use App\Services\Profile\GroupServiceInterface;
@@ -64,6 +70,10 @@ class AppServiceProvider extends ServiceProvider
         // --- Report ---
         $this->app->bind(ReportRepositoryInterface::class, ReportEloquentRepository::class);
 
+        // --- Batch ---
+        $this->app->bind(ScheduledTaskRepositoryInterface::class, ScheduledTaskRepository::class);
+        $this->app->bind(HolidayRepositoryInterface::class, HolidayRepository::class);
+
         // ========================================
         // 2. サービスのバインド
         // ========================================
@@ -87,6 +97,8 @@ class AppServiceProvider extends ServiceProvider
         // --- Report ---
         $this->app->bind(PerformanceServiceInterface::class, PerformanceService::class);
 
+        // --- Batch ---
+        $this->app->bind(ScheduledTaskServiceInterface::class, ScheduledTaskService::class);
         // ★ OpenAIService (外部API連携) のバインド
         // 依存性がないため、直接インスタンス化可能
         $this->app->singleton(OpenAIService::class, function ($app) {

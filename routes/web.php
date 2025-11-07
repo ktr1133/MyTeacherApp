@@ -1,5 +1,14 @@
 <?php
 
+use App\Http\Actions\Batch\IndexScheduledTaskAction;
+use App\Http\Actions\Batch\CreateScheduledTaskAction;
+use App\Http\Actions\Batch\StoreScheduledTaskAction;
+use App\Http\Actions\Batch\EditScheduledTaskAction;
+use App\Http\Actions\Batch\UpdateScheduledTaskAction;
+use App\Http\Actions\Batch\DeleteScheduledTaskAction;
+use App\Http\Actions\Batch\PauseScheduledTaskAction;
+use App\Http\Actions\Batch\ResumeScheduledTaskAction;
+use App\Http\Actions\Batch\ShowExecutionHistoryAction;
 use App\Http\Actions\Profile\EditProfileAction;
 use App\Http\Actions\Profile\UpdateProfileAction;
 use App\Http\Actions\Profile\DeleteProfileAction;
@@ -109,6 +118,30 @@ Route::middleware(['auth'])->group(function () {
     // --- その他のタスク操作 (更新、削除など) ---
     // 例: タスクの完了状態トグル
     Route::patch('/tasks/{task}/toggle', App\Http\Actions\Task\ToggleTaskCompletionAction::class)->name('tasks.toggle');
+
+    // ========================================
+    // スケジュールタスク管理（Batch）
+    // ========================================
+    Route::prefix('batch/scheduled-tasks')->name('batch.scheduled-tasks.')->group(function () {        
+        // 一覧
+        Route::get('/', IndexScheduledTaskAction::class)->name('index');
+        // 作成画面
+        Route::get('/create', CreateScheduledTaskAction::class)->name('create');
+        // 作成処理
+        Route::post('/', StoreScheduledTaskAction::class)->name('store');
+        // 編集画面
+        Route::get('/{id}/edit', EditScheduledTaskAction::class)->name('edit');
+        // 更新処理
+        Route::put('/{id}', UpdateScheduledTaskAction::class)->name('update');
+        // 削除処理
+        Route::delete('/{id}', DeleteScheduledTaskAction::class)->name('destroy');
+        // 一時停止
+        Route::post('/{id}/pause', PauseScheduledTaskAction::class)->name('pause');
+        // 再開
+        Route::post('/{id}/resume', ResumeScheduledTaskAction::class)->name('resume');
+        // 実行履歴
+        Route::get('/{id}/history', ShowExecutionHistoryAction::class)->name('history');
+    });
 });
 
 // =========================================================================
