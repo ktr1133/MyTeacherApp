@@ -662,3 +662,440 @@
         @apply hidden;
     }
 }
+
+/* 実績ページ用 */
+/* レポートカード共通 */
+.report-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.report-card-title {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fafafa;
+    flex-shrink: 0;
+}
+
+.report-card-body {
+    flex: 1;
+    padding: 1rem;
+    min-height: 0;
+    position: relative;
+}
+
+.report-card-body canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+}
+
+/* グリッド行の高さを固定（スクロール不要にする） */
+.auto-rows-fr {
+    grid-auto-rows: minmax(20rem, 1fr);
+}
+
+/* タブレット以上: より高さを確保 */
+@media (min-width: 768px) {
+    .auto-rows-fr { grid-auto-rows: minmax(22rem, 1fr); }
+}
+
+/* デスクトップ: さらに高さを調整 */
+@media (min-width: 1280px) {
+    .auto-rows-fr { grid-auto-rows: minmax(24rem, 1fr); }
+}
+
+/* メンバー選択セレクトボックスのスタイル調整 */
+#user-select {
+    min-width: 160px;
+}
+
+@media (max-width: 640px) {
+    #user-select {
+        width: 100%;
+    }
+}
+
+/* グラデーション背景 */
+.performance-gradient-bg {
+    background: linear-gradient(135deg, #F3F3F2 0%, #ffffff 50%, #e5e7eb 100%);
+}
+
+.dark .performance-gradient-bg {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #0f172a 100%);
+}
+
+/* フローティング背景装飾 */
+@keyframes float-slow {
+    0%, 100% { transform: translate(0, 0); }
+    33% { transform: translate(30px, -30px); }
+    66% { transform: translate(-20px, 20px); }
+}
+
+.performance-floating-decoration {
+    animation: float-slow 20s ease-in-out infinite;
+}
+
+/* ヘッダーのブラー効果 */
+.performance-header-blur {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* タブボタンのスタイル */
+.performance-tab {
+    position: relative;
+    overflow: hidden;
+}
+
+.performance-tab::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.performance-tab:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.performance-tab-inactive {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(209, 213, 219, 0.5);
+    color: #6b7280;
+}
+
+.dark .performance-tab-inactive {
+    background: rgba(31, 41, 55, 0.6);
+    border-color: rgba(75, 85, 99, 0.5);
+    color: #9ca3af;
+}
+
+.performance-tab-inactive:hover {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(209, 213, 219, 0.8);
+}
+
+.dark .performance-tab-inactive:hover {
+    background: rgba(31, 41, 55, 0.8);
+    border-color: rgba(75, 85, 99, 0.8);
+}
+
+/* 通常タスクタブ（アクティブ） */
+.performance-tab-normal.performance-tab-active {
+    background: linear-gradient(135deg, #59B9C6 0%, #3b82f6 100%);
+    color: white;
+    box-shadow: 0 10px 25px -5px rgba(89, 185, 198, 0.4);
+}
+
+/* グループタスクタブ（アクティブ） */
+.performance-tab-group.performance-tab-active {
+    background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+    color: white;
+    box-shadow: 0 10px 25px -5px rgba(147, 51, 234, 0.4);
+}
+
+/* レポートカード共通 */
+.performance-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dark .performance-card {
+    background: rgba(31, 41, 55, 0.9);
+}
+
+.performance-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* 通常タスクカードのホバー効果 */
+.performance-card-normal {
+    border: 1px solid rgba(89, 185, 198, 0.3);
+}
+
+.performance-card-normal:hover {
+    border-color: rgba(89, 185, 198, 0.5);
+    box-shadow: 0 20px 25px -5px rgba(89, 185, 198, 0.15),
+                0 10px 10px -5px rgba(89, 185, 198, 0.1);
+}
+
+/* グループタスクカードのホバー効果 */
+.performance-card-group {
+    border: 1px solid rgba(147, 51, 234, 0.3);
+}
+
+.performance-card-group:hover {
+    border-color: rgba(147, 51, 234, 0.5);
+    box-shadow: 0 20px 25px -5px rgba(147, 51, 234, 0.15),
+                0 10px 10px -5px rgba(147, 51, 234, 0.1);
+}
+
+/* カードヘッダー */
+.performance-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+    flex-shrink: 0;
+}
+
+.dark .performance-card-header {
+    border-bottom-color: rgba(75, 85, 99, 0.5);
+}
+
+.performance-card-normal .performance-card-header {
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.1), rgba(59, 130, 246, 0.05));
+}
+
+.performance-card-group .performance-card-header {
+    background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(236, 72, 153, 0.05));
+}
+
+.performance-card-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1f2937;
+}
+
+.dark .performance-card-title {
+    color: #f3f4f6;
+}
+
+/* カードボディ */
+.performance-card-body {
+    flex: 1;
+    padding: 1.25rem;
+    min-height: 0;
+    position: relative;
+}
+
+.performance-card-body canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+}
+
+/* グリッド行の高さを固定 */
+.grid {
+    grid-auto-rows: minmax(22rem, 1fr);
+}
+
+@media (min-width: 768px) {
+    .grid { grid-auto-rows: minmax(24rem, 1fr); }
+}
+
+@media (min-width: 1280px) {
+    .grid { grid-auto-rows: minmax(26rem, 1fr); }
+}
+
+/* メンバー選択セレクトボックス */
+#user-select {
+    min-width: 180px;
+}
+
+@media (max-width: 640px) {
+    #user-select {
+        width: 100%;
+    }
+    
+    .performance-card {
+        margin-bottom: 0;
+    }
+}
+
+/* スクロールバーのカスタマイズ */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #59B9C6 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #4AA0AB, #7c3aed);
+}
+
+/* アニメーション */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.performance-card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.performance-card:nth-child(1) { animation-delay: 0.1s; }
+.performance-card:nth-child(2) { animation-delay: 0.2s; }
+.performance-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* レスポンシブ: サイドバー閉じる対応 */
+@media (max-width: 1024px) and (orientation: landscape) {
+    /* 横向きスマホ・タブレット時の調整 */
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .performance-card,
+    .performance-floating-decoration {
+        animation: none;
+    }
+}
+
+/* ========================================
+   実績ページ専用スタイル
+   ======================================== */
+
+/* タブボタン */
+.tab-button {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold;
+    @apply bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300;
+    @apply border-2 border-gray-200 dark:border-gray-700;
+    @apply transition-all duration-200 shadow-sm hover:shadow-md;
+}
+
+.tab-button.active {
+    @apply bg-gradient-to-r from-purple-600 to-pink-600 text-white;
+    @apply border-transparent shadow-lg;
+}
+
+.tab-button:hover:not(.active) {
+    @apply border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-900/20;
+}
+
+/* 期間選択ボタンのスタイル */
+.period-button {
+    @apply px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 
+           bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 
+           border-2 border-gray-200 dark:border-gray-700
+           hover:border-[#59B9C6] dark:hover:border-[#59B9C6]
+           flex items-center gap-2 shadow-sm;
+}
+
+.period-button.active {
+    @apply bg-gradient-to-r from-[#59B9C6] to-blue-600 text-white 
+           border-transparent shadow-lg transform scale-105;
+}
+
+/* ナビゲーションボタンのスタイル */
+.nav-button {
+    @apply px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200
+           bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
+           border border-gray-300 dark:border-gray-600
+           hover:bg-[#59B9C6] hover:text-white hover:border-[#59B9C6]
+           flex items-center gap-2 shadow-sm;
+}
+
+.nav-button.disabled {
+    @apply opacity-50 cursor-not-allowed hover:bg-white dark:hover:bg-gray-800 
+           hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600;
+}
+
+/* 期間表示エリア */
+.period-display {
+    @apply flex items-center gap-3 px-6 py-2 bg-gradient-to-r from-[#59B9C6]/10 to-blue-50 
+           dark:from-[#59B9C6]/20 dark:to-blue-900/20 rounded-lg border border-[#59B9C6]/20;
+}
+
+/* グラフコンテナ(大きく表示) */
+.chart-container-large {
+    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 
+           dark:border-gray-700 overflow-hidden flex flex-col h-full;
+}
+
+.chart-container-large.chart-normal {
+    @apply border-[#59B9C6]/30;
+}
+
+.chart-container-large.chart-group {
+    @apply border-purple-600/30;
+}
+
+.chart-header {
+    @apply px-6 py-4 bg-gradient-to-r from-[#59B9C6]/10 to-blue-50 
+           dark:from-[#59B9C6]/20 dark:to-blue-900/20 border-b border-[#59B9C6]/20 
+           dark:border-[#59B9C6]/30 shrink-0;
+}
+
+.chart-title {
+    @apply text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2;
+}
+
+.chart-body {
+    @apply flex-1 p-6 relative min-h-0;
+}
+
+.chart-footer {
+    @apply px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 
+           dark:border-gray-700 shrink-0;
+}
+
+@media (max-width: 1024px) {
+    .chart-container-large {
+        min-height: 400px;
+        height: 500px;
+    }
+}
+
+@media (max-width: 640px) {
+    .chart-container-large {
+        min-height: 350px;
+        height: 450px;
+    }
+
+    .chart-header,
+    .chart-body,
+    .chart-footer {
+        @apply px-4 py-3;
+    }
+
+    .chart-title {
+        @apply text-base;
+    }
+}

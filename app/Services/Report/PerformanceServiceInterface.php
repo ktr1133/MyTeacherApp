@@ -14,6 +14,60 @@ use Illuminate\Database\Eloquent\Collection;
 interface PerformanceServiceInterface
 {
     /**
+     * 指定された週オフセットに基づいて、グループの週次パフォーマンスデータを取得します。
+     *
+     * @param Collection $users 対象ユーザーコレクション
+     * @param int $weekOffset 週オフセット(0が今週、-1が先週、1が来週)
+     * @return array グラフ表示用のデータ配列
+     */
+    public function weeklyForGroupWithOffset(Collection $users, int $weekOffset): array;
+
+    /**
+     * 指定された月オフセットに基づいて、グループの月次パフォーマンスデータを取得します。
+     *
+     * @param Collection $users 対象ユーザーコレクション
+     * @param int $monthOffset 月オフセット(0が今月、-1が先月、1が来月)
+     * @return array グラフ表示用のデータ配列
+     */
+    public function monthlyForGroupWithOffset(Collection $users, int $monthOffset): array;
+
+    /**
+     * 指定された年オフセットに基づいて、グループの年次パフォーマンスデータを取得します。
+     *
+     * @param Collection $users 対象ユーザーコレクション
+     * @param int $yearOffset 年オフセット(0が今年、-1が昨年、1が来年)
+     * @return array グラフ表示用のデータ配列
+     */
+    public function yearlyForGroupWithOffset(Collection $users, int $yearOffset): array;
+
+    /**
+     * 指定したオフセットの週間データを取得
+     *
+     * @param User $user
+     * @param int $weekOffset 0=今週、-1=先週、-2=2週間前
+     * @return array
+     */
+    public function weeklyWithOffset(User $user, int $weekOffset): array;
+
+    /**
+     * 指定したオフセットの月間データを取得
+     *
+     * @param User $user
+     * @param int $monthOffset 0=今月、-1=先月、-2=2ヶ月前
+     * @return array
+     */
+    public function monthlyWithOffset(User $user, int $monthOffset): array;
+
+    /**
+     * 指定したオフセットの年間データを取得
+     *
+     * @param User $user
+     * @param int $yearOffset 0=今年、-1=昨年、-2=一昨年
+     * @return array
+     */
+    public function yearlyWithOffset(User $user, int $yearOffset): array;
+
+    /**
      * 週間実績を取得する（月曜開始・日曜終了）
      * 
      * @param User $user 対象ユーザー

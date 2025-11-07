@@ -19,6 +19,176 @@ class PerformanceService implements PerformanceServiceInterface
         private ReportRepositoryInterface $reportRepository
     ) {}
 
+    // ========================================
+    // 通常タスク(オフセット対応)
+    // ========================================
+
+    /**
+     * 指定された週オフセットに基づいて、ユーザーの週次パフォーマンスデータを取得します。
+     *
+     * @param User $user 対象ユーザー
+     * @param int $weekOffset 週オフセット(0が今週、-1が先週、1が来週)
+     * @return array グラフ表示用のデータ配列
+     */
+    public function weeklyWithOffset(User $user, int $weekOffset): array
+    {
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY)->addWeeks($weekOffset);
+        $endOfWeek = $startOfWeek->copy()->endOfWeek(Carbon::SUNDAY);
+
+        // 既存のメソッドを使用してデータ取得
+        $data = $this->aggregateByDays($user, $startOfWeek, $endOfWeek);
+
+        // 期間情報を追加
+        $data['periodInfo'] = [
+            'start' => $startOfWeek->format('Y-m-d'),
+            'end' => $endOfWeek->format('Y-m-d'),
+            'displayText' => $this->getWeekDisplayText($startOfWeek),
+            'canGoPrevious' => $weekOffset > -52,
+            'canGoNext' => $weekOffset < 0,
+        ];
+
+        return $data;
+    }
+
+    /**
+     * 指定された月オフセットに基づいて、ユーザーの月次パフォーマンスデータを取得します。
+     *
+     * @param User $user 対象ユーザー
+     * @param int $monthOffset 月オフセット(0が今月、-1が先月、1が来月)
+     * @return array グラフ表示用のデータ配列
+     */
+    public function monthlyWithOffset(User $user, int $monthOffset): array
+    {
+        $startOfMonth = Carbon::now()->startOfMonth()->addMonths($monthOffset);
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        // 既存のメソッドを使用してデータ取得
+        $data = $this->aggregateByDays($user, $startOfMonth, $endOfMonth);
+
+        // 期間情報を追加
+        $data['periodInfo'] = [
+            'start' => $startOfMonth->format('Y-m-d'),
+            'end' => $endOfMonth->format('Y-m-d'),
+            'displayText' => $startOfMonth->format('Y年n月'),
+            'canGoPrevious' => $monthOffset > -12,
+            'canGoNext' => $monthOffset < 0,
+        ];
+
+        return $data;
+    }
+
+    /**
+     * 指定された年オフセットに基づいて、ユーザーの年次パフォーマンスデータを取得します。
+     *
+     * @param User $user 対象ユーザー
+     * @param int $yearOffset 年オフセット(0が今年、-1が昨年、1が来年)
+     * @return array グラフ表示用のデータ配列
+     */
+    public function yearlyWithOffset(User $user, int $yearOffset): array
+    {
+        $startOfYear = Carbon::now()->startOfYear()->addYears($yearOffset);
+        $endOfYear = $startOfYear->copy()->endOfYear();
+
+        // 既存のメソッドを使用してデータ取得
+        $data = $this->aggregateByWeeks($user, $startOfYear, $endOfYear);
+
+        // 期間情報を追加
+        $data['periodInfo'] = [
+            'start' => $startOfYear->format('Y-m-d'),
+            'end' => $endOfYear->format('Y-m-d'),
+            'displayText' => $startOfYear->format('Y年'),
+            'canGoPrevious' => $yearOffset > -5,
+            'canGoNext' => $yearOffset < 0,
+        ];
+
+        return $data;
+    }
+
+    // ========================================
+    // グループタスク(オフセット対応)
+    // ========================================
+
+    /**
+     * 指定された週オフセットに基づいて、グループの週次パフォーマンスデータを取得します。
+     *
+     * @param Collection $users 対象ユーザーコレクション
+     * @param int $weekOffset 週オフセット(0が今週、-1が先週、1が来週)
+     * @return array グラフ表示用のデータ配列
+     */
+    public function weeklyForGroupWithOffset(Collection $users, int $weekOffset): array
+    {
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY)->addWeeks($weekOffset);
+        $endOfWeek = $startOfWeek->copy()->endOfWeek(Carbon::SUNDAY);
+
+        // 既存のメソッドを使用してデータ取得
+        $data = $this->aggregateByDaysForGroup($users, $startOfWeek, $endOfWeek);
+
+        // 期間情報を追加
+        $data['periodInfo'] = [
+            'start' => $startOfWeek->format('Y-m-d'),
+            'end' => $endOfWeek->format('Y-m-d'),
+            'displayText' => $this->getWeekDisplayText($startOfWeek),
+            'canGoPrevious' => $weekOffset > -52,
+            'canGoNext' => $weekOffset < 0,
+        ];
+
+        return $data;
+    }
+
+    /**
+     * 指定された月オフセットに基づいて、グループの月次パフォーマンスデータを取得します。
+     *
+     * @param Collection $users 対象ユーザーコレクション
+     * @param int $monthOffset 月オフセット(0が今月、-1が先月、1が来月)
+     * @return array グラフ表示用のデータ配列
+     */
+    public function monthlyForGroupWithOffset(Collection $users, int $monthOffset): array
+    {
+        $startOfMonth = Carbon::now()->startOfMonth()->addMonths($monthOffset);
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        // 既存のメソッドを使用してデータ取得
+        $data = $this->aggregateByDaysForGroup($users, $startOfMonth, $endOfMonth);
+
+        // 期間情報を追加
+        $data['periodInfo'] = [
+            'start' => $startOfMonth->format('Y-m-d'),
+            'end' => $endOfMonth->format('Y-m-d'),
+            'displayText' => $startOfMonth->format('Y年n月'),
+            'canGoPrevious' => $monthOffset > -12,
+            'canGoNext' => $monthOffset < 0,
+        ];
+
+        return $data;
+    }
+
+    /**
+     * 指定された年オフセットに基づいて、グループの年次パフォーマンスデータを取得します。
+     *
+     * @param Collection $users 対象ユーザーコレクション
+     * @param int $yearOffset 年オフセット(0が今年、-1が昨年、1が来年)
+     * @return array グラフ表示用のデータ配列
+     */
+    public function yearlyForGroupWithOffset(Collection $users, int $yearOffset): array
+    {
+        $startOfYear = Carbon::now()->startOfYear()->addYears($yearOffset);
+        $endOfYear = $startOfYear->copy()->endOfYear();
+
+        // 既存のメソッドを使用してデータ取得
+        $data = $this->aggregateByWeeksForGroup($users, $startOfYear, $endOfYear);
+
+        // 期間情報を追加
+        $data['periodInfo'] = [
+            'start' => $startOfYear->format('Y-m-d'),
+            'end' => $endOfYear->format('Y-m-d'),
+            'displayText' => $startOfYear->format('Y年'),
+            'canGoPrevious' => $yearOffset > -5,
+            'canGoNext' => $yearOffset < 0,
+        ];
+
+        return $data;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -272,5 +442,15 @@ class PerformanceService implements PerformanceServiceInterface
             $map1[$key] = ($map1[$key] ?? 0) + $value;
         }
         return $map1;
+    }
+
+    // ========================================
+    // ヘルパーメソッド
+    // ========================================
+
+    private function getWeekDisplayText(Carbon $startOfWeek): string
+    {
+        $weekOfMonth = (int) ceil($startOfWeek->day / 7);
+        return $startOfWeek->format('Y年n月') . $weekOfMonth . '週目';
     }
 }
