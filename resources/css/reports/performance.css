@@ -321,3 +321,115 @@
         animation: none;
     }
 }
+
+/* ========================================
+   実績ページ専用スタイル
+   ======================================== */
+
+/* タブボタン */
+.tab-button {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold;
+    @apply bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300;
+    @apply border-2 border-gray-200 dark:border-gray-700;
+    @apply transition-all duration-200 shadow-sm hover:shadow-md;
+}
+
+.tab-button.active {
+    @apply bg-gradient-to-r from-purple-600 to-pink-600 text-white;
+    @apply border-transparent shadow-lg;
+}
+
+.tab-button:hover:not(.active) {
+    @apply border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-900/20;
+}
+
+/* 期間選択ボタンのスタイル */
+.period-button {
+    @apply px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 
+           bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 
+           border-2 border-gray-200 dark:border-gray-700
+           hover:border-[#59B9C6] dark:hover:border-[#59B9C6]
+           flex items-center gap-2 shadow-sm;
+}
+
+.period-button.active {
+    @apply bg-gradient-to-r from-[#59B9C6] to-blue-600 text-white 
+           border-transparent shadow-lg transform scale-105;
+}
+
+/* ナビゲーションボタンのスタイル */
+.nav-button {
+    @apply px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200
+           bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
+           border border-gray-300 dark:border-gray-600
+           hover:bg-[#59B9C6] hover:text-white hover:border-[#59B9C6]
+           flex items-center gap-2 shadow-sm;
+}
+
+.nav-button.disabled {
+    @apply opacity-50 cursor-not-allowed hover:bg-white dark:hover:bg-gray-800 
+           hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600;
+}
+
+/* 期間表示エリア */
+.period-display {
+    @apply flex items-center gap-3 px-6 py-2 bg-gradient-to-r from-[#59B9C6]/10 to-blue-50 
+           dark:from-[#59B9C6]/20 dark:to-blue-900/20 rounded-lg border border-[#59B9C6]/20;
+}
+
+/* グラフコンテナ(大きく表示) */
+.chart-container-large {
+    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 
+           dark:border-gray-700 overflow-hidden flex flex-col h-full;
+}
+
+.chart-container-large.chart-normal {
+    @apply border-[#59B9C6]/30;
+}
+
+.chart-container-large.chart-group {
+    @apply border-purple-600/30;
+}
+
+.chart-header {
+    @apply px-6 py-4 bg-gradient-to-r from-[#59B9C6]/10 to-blue-50 
+           dark:from-[#59B9C6]/20 dark:to-blue-900/20 border-b border-[#59B9C6]/20 
+           dark:border-[#59B9C6]/30 shrink-0;
+}
+
+.chart-title {
+    @apply text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2;
+}
+
+.chart-body {
+    @apply flex-1 p-6 relative min-h-0;
+}
+
+.chart-footer {
+    @apply px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 
+           dark:border-gray-700 shrink-0;
+}
+
+@media (max-width: 1024px) {
+    .chart-container-large {
+        min-height: 400px;
+        height: 500px;
+    }
+}
+
+@media (max-width: 640px) {
+    .chart-container-large {
+        min-height: 350px;
+        height: 450px;
+    }
+
+    .chart-header,
+    .chart-body,
+    .chart-footer {
+        @apply px-4 py-3;
+    }
+
+    .chart-title {
+        @apply text-base;
+    }
+}
