@@ -180,3 +180,234 @@ main {
     align-items: center;
     justify-content: center;
 }
+
+/* ========================================
+   タグカード編集フォーム
+   ======================================== */
+
+/* 編集フォームのアニメーション */
+[x-show] {
+    transition-property: opacity, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 編集フォームの背景 */
+.tag-edit-form-bg {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%);
+}
+
+.dark .tag-edit-form-bg {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+}
+
+/* 編集ボタンのホバーエフェクト */
+.tag-edit-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.tag-edit-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.tag-edit-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* ========================================
+   タグモーダル専用スタイル
+   ======================================== */
+
+/* タスクリストアイテムのレイアウト改善 */
+#linked-tasks li {
+    min-height: 3rem;
+}
+
+/* 解除ボタンの洗練されたデザイン */
+.tag-detach-btn {
+    cursor: pointer;
+}
+
+.tag-detach-btn:hover {
+    transform: scale(1.1);
+}
+
+.tag-detach-btn:active {
+    transform: scale(0.95);
+}
+
+/* 解除ボタンの背景グラデーション */
+.tag-detach-btn-bg {
+    background: linear-gradient(135deg, 
+        rgba(254, 202, 202, 0.3) 0%, 
+        rgba(252, 165, 165, 0.3) 50%, 
+        rgba(251, 113, 133, 0.3) 100%);
+}
+
+.dark .tag-detach-btn-bg {
+    background: linear-gradient(135deg, 
+        rgba(127, 29, 29, 0.3) 0%, 
+        rgba(153, 27, 27, 0.3) 50%, 
+        rgba(185, 28, 28, 0.3) 100%);
+}
+
+/* 解除ボタンのホバー時のシャドウ */
+.tag-detach-btn:hover {
+    filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.25));
+}
+
+.dark .tag-detach-btn:hover {
+    filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.4));
+}
+
+/* 解除ボタンのアイコン回転アニメーション */
+.tag-detach-btn-icon {
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+                color 0.2s ease;
+}
+
+/* 解除ボタンのボーダーパルスエフェクト */
+@keyframes detach-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
+    }
+}
+
+.tag-detach-btn:hover .tag-detach-btn-border {
+    animation: detach-pulse 1.5s infinite;
+}
+
+/* 解除ボタンのフォーカス状態 */
+.tag-detach-btn:focus-visible {
+    outline: 2px solid rgba(239, 68, 68, 0.5);
+    outline-offset: 2px;
+}
+
+/* 解除ボタンの無効化状態 */
+.tag-detach-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* SVGアイコンの中央配置 */
+#linked-tasks button[data-action="detach"] svg {
+    flex-shrink: 0;
+}
+
+/* タスクタイトルの折り返し */
+#linked-tasks .min-w-0 p {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* ホバー時の視覚的フィードバック */
+#linked-tasks li {
+    transition: background-color 0.2s ease;
+}
+
+#linked-tasks li:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.dark #linked-tasks li:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* タスクアイテムのエントランスアニメーション */
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+#linked-tasks li {
+    animation: fadeInSlide 0.3s ease-out;
+}
+
+/* スタガードアニメーション */
+#linked-tasks li:nth-child(1) { animation-delay: 0.05s; }
+#linked-tasks li:nth-child(2) { animation-delay: 0.1s; }
+#linked-tasks li:nth-child(3) { animation-delay: 0.15s; }
+#linked-tasks li:nth-child(4) { animation-delay: 0.2s; }
+#linked-tasks li:nth-child(5) { animation-delay: 0.25s; }
+#linked-tasks li:nth-child(6) { animation-delay: 0.3s; }
+#linked-tasks li:nth-child(7) { animation-delay: 0.35s; }
+#linked-tasks li:nth-child(8) { animation-delay: 0.4s; }
+#linked-tasks li:nth-child(9) { animation-delay: 0.45s; }
+#linked-tasks li:nth-child(10) { animation-delay: 0.5s; }
+
+/* レスポンシブ対応 */
+@media (max-width: 639px) {
+    .tag-detach-btn {
+        width: 2rem;
+        height: 2rem;
+    }
+    
+    .tag-detach-btn-icon {
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+/* ダークモードでの視認性向上 */
+.dark .tag-detach-btn-border {
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.dark .tag-detach-btn:hover .tag-detach-btn-border {
+    border-color: rgba(239, 68, 68, 0.7);
+}
+
+/* プリントメディア対応 */
+@media print {
+    .tag-detach-btn {
+        display: none;
+    }
+}
+
+/* アクセシビリティ: 高コントラストモード */
+@media (prefers-contrast: high) {
+    .tag-detach-btn-border {
+        border-width: 3px;
+    }
+    
+    .tag-detach-btn-icon {
+        stroke-width: 3;
+    }
+}
+
+/* アクセシビリティ: アニメーション削減 */
+@media (prefers-reduced-motion: reduce) {
+    .tag-detach-btn,
+    .tag-detach-btn-icon,
+    .tag-detach-btn-bg,
+    .tag-detach-btn-border,
+    #linked-tasks li {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    .tag-detach-btn-icon {
+        transform: none !important;
+    }
+}

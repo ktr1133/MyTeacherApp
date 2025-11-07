@@ -29,7 +29,7 @@
         x-show="showModal"
         x-transition.opacity
         @click="close()"
-        class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4"
         style="display: none;">
         
         {{-- モーダルコンテンツ --}}
@@ -42,14 +42,23 @@
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
-            class="modal-panel bg-white shadow-2xl w-full max-w-2xl">
+            class="modal-content modal-panel bg-white dark:bg-gray-900 w-full max-w-2xl shadow-2xl rounded-2xl">
             
             {{-- ヘッダー --}}
-            <div class="px-6 py-4 border-b bg-[#59B9C6]/10 flex items-center justify-between shrink-0">
-                <h3 class="text-xl font-semibold text-gray-800">タスク編集</h3>
+            <div class="px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 modal-header-gradient flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#59B9C6] to-purple-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold bg-gradient-to-r from-[#59B9C6] to-purple-600 bg-clip-text text-transparent">
+                        タスク編集
+                    </h3>
+                </div>
                 <button 
                     @click="close()"
-                    class="text-gray-500 hover:text-gray-700 transition p-1 rounded-full hover:bg-gray-200"
+                    class="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
                     aria-label="閉じる">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -58,14 +67,17 @@
             </div>
 
             {{-- スクロール可能なコンテンツエリア --}}
-            <div class="flex-1 overflow-y-auto px-6 py-4">
-                <form id="edit-task-form-{{ $task->id }}" method="POST" action="{{ route('tasks.update', $task->id) }}">
+            <div class="flex-1 overflow-y-auto px-6 py-6 modal-body custom-scrollbar">
+                <form id="edit-task-form-{{ $task->id }}" method="POST" action="{{ route('tasks.update', $task->id) }}" class="space-y-6">
                     @csrf
                     @method('PUT')
 
                     {{-- タイトル --}}
-                    <div class="mb-4">
-                        <label for="title-{{ $task->id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    <div>
+                        <label for="title-{{ $task->id }}" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                            </svg>
                             タスク名 <span class="text-red-500">*</span>
                         </label>
                         <input 
@@ -74,100 +86,116 @@
                             name="title"
                             x-model="title"
                             required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent">
+                            placeholder="タスク名を入力"
+                            class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm placeholder-gray-400">
                     </div>
 
                     {{-- 詳細説明 --}}
-                    <div class="mb-4">
-                        <label for="description-{{ $task->id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    <div>
+                        <label for="description-{{ $task->id }}" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                            </svg>
                             詳細説明
                         </label>
                         <textarea 
                             id="description-{{ $task->id }}"
                             name="description"
                             x-model="description"
-                            rows="6"
+                            rows="5"
                             placeholder="タスクの詳細な説明を入力してください"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent resize-none"></textarea>
+                            class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm placeholder-gray-400 resize-none custom-scrollbar"></textarea>
                     </div>
 
-                    {{-- スパン選択 --}}
-                    <div class="mb-4">
-                        <label for="span-{{ $task->id }}" class="block text-sm font-medium text-gray-700 mb-2">
-                            スパン <span class="text-red-500">*</span>
-                        </label>
-                        <select 
-                            id="span-{{ $task->id }}"
-                            name="span"
-                            x-model.number="span"
-                            required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent">
-                            <option value="{{ config('const.task_spans.short') }}">短期</option>
-                            <option value="{{ config('const.task_spans.mid') }}">中期</option>
-                            <option value="{{ config('const.task_spans.long') }}">長期</option>
-                        </select>
-                    </div>
-
-                    {{-- 期限 --}}
-                    <div class="mb-4">
-                        <label for="due_date-{{ $task->id }}" class="block text-sm font-medium text-gray-700 mb-2">
-                            期限
-                        </label>
-                        
-                        {{-- 短期: 日付入力 --}}
-                        <div x-show="span == {{ config('const.task_spans.short') }}">
-                            <input 
-                                type="date"
-                                name="due_date"
-                                x-model="due_date"
-                                :min="new Date().toISOString().split('T')[0]"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent">
-                        </div>
-
-                        {{-- 中期: 年選択 --}}
-                        <div x-show="span == {{ config('const.task_spans.mid') }}">
+                    {{-- スパンと期限のグリッド --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{-- スパン選択 --}}
+                        <div>
+                            <label for="span-{{ $task->id }}" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                </svg>
+                                スパン <span class="text-red-500">*</span>
+                            </label>
                             <select 
-                                name="due_date"
-                                x-model="due_date"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent">
-                                @php
-                                    $currentYear = date('Y');
-                                    $years = range($currentYear, $currentYear + 5);
-                                @endphp
-                                @foreach($years as $year)
-                                    <option value="{{ $year }}">{{ $year }}年</option>
-                                @endforeach
+                                id="span-{{ $task->id }}"
+                                name="span"
+                                x-model.number="span"
+                                required
+                                class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm">
+                                <option value="{{ config('const.task_spans.short') }}">短期</option>
+                                <option value="{{ config('const.task_spans.mid') }}">中期</option>
+                                <option value="{{ config('const.task_spans.long') }}">長期</option>
                             </select>
                         </div>
 
-                        {{-- 長期: テキスト入力 --}}
-                        <div x-show="span == {{ config('const.task_spans.long') }}">
-                            <input 
-                                type="text"
-                                name="due_date"
-                                x-model="due_date"
-                                placeholder="例：5年後"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent">
+                        {{-- 期限 --}}
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                                </svg>
+                                期限
+                            </label>
+                            
+                            {{-- 短期: 日付入力 --}}
+                            <div x-show="span == {{ config('const.task_spans.short') }}">
+                                <input 
+                                    type="date"
+                                    name="due_date"
+                                    x-model="due_date"
+                                    :min="new Date().toISOString().split('T')[0]"
+                                    class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm">
+                            </div>
+
+                            {{-- 中期: 年選択 --}}
+                            <div x-show="span == {{ config('const.task_spans.mid') }}">
+                                <select 
+                                    name="due_date"
+                                    x-model="due_date"
+                                    class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm">
+                                    @php
+                                        $currentYear = date('Y');
+                                        $years = range($currentYear, $currentYear + 5);
+                                    @endphp
+                                    @foreach($years as $year)
+                                        <option value="{{ $year }}">{{ $year }}年</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- 長期: テキスト入力 --}}
+                            <div x-show="span == {{ config('const.task_spans.long') }}">
+                                <input 
+                                    type="text"
+                                    name="due_date"
+                                    x-model="due_date"
+                                    placeholder="例：5年後"
+                                    class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm placeholder-gray-400">
+                            </div>
                         </div>
                     </div>
 
                     {{-- 画像アップロード（グループタスクのみ） --}}
                     @if($task->requires_approval)
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <div class="bento-card p-4 rounded-xl">
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                                </svg>
                                 画像 @if($task->requires_image)<span class="text-red-500">*必須</span>@endif
                             </label>
                             
                             {{-- 既存画像一覧 --}}
                             @if($task->images->count() > 0)
-                                <div class="grid grid-cols-2 gap-2 mb-3">
+                                <div class="grid grid-cols-2 gap-3 mb-4">
                                     @foreach($task->images as $image)
-                                        <div class="relative group">
+                                        <div class="image-preview-card relative group">
                                             <img src="{{ Storage::url($image->file_path) }}" 
-                                                 class="w-full h-32 object-cover rounded-lg border">
+                                                 class="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-700">
                                             <button type="button"
                                                     onclick="if(confirm('この画像を削除しますか？')) { document.getElementById('delete-image-form-{{ $image->id }}').submit(); }"
-                                                    class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition">
+                                                    class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition shadow-lg">
                                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
                                                 </svg>
@@ -193,9 +221,9 @@
                                   class="flex gap-2">
                                 @csrf
                                 <input type="file" name="image" accept="image/*" required
-                                       class="flex-1 text-sm border border-gray-300 rounded-lg p-2">
+                                       class="flex-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-[#59B9C6] file:to-purple-600 file:text-white hover:file:from-[#4AA0AB] hover:file:to-purple-700 transition">
                                 <button type="submit"
-                                        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm">
+                                        class="dashboard-btn-primary px-4 py-2 rounded-lg text-white text-sm font-semibold shadow-lg hover:shadow-xl transition">
                                     アップロード
                                 </button>
                             </form>
@@ -203,18 +231,23 @@
                     @endif
 
                     {{-- タグ選択 --}}
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">タグ</label>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                            </svg>
+                            タグ
+                        </label>
                         <div class="flex flex-wrap gap-2">
                             @foreach($tags ?? [] as $tag)
-                                <label class="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 cursor-pointer transition">
+                                <label class="tag-chip inline-flex items-center px-4 py-2 rounded-xl cursor-pointer transition">
                                     <input 
                                         type="checkbox" 
                                         name="tags[]" 
                                         value="{{ $tag->id }}"
                                         x-model="selectedTags"
-                                        class="form-checkbox h-4 w-4 text-[#59B9C6] focus:ring-[#59B9C6] rounded">
-                                    <span class="ml-2 text-sm text-gray-700">{{ $tag->name }}</span>
+                                        class="sr-only">
+                                    <span class="text-sm font-medium">{{ $tag->name }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -223,13 +256,13 @@
             </div>
 
             {{-- フッター --}}
-            <div class="px-6 py-4 border-t bg-gray-50 flex justify-between items-center shrink-0">
+            <div class="px-6 py-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center shrink-0 backdrop-blur-sm">
                 {{-- 削除ボタン（左側） --}}
                 <button 
                     type="button"
                     onclick="if(confirm('このタスクを削除しますか？')) { document.getElementById('delete-task-form-{{ $task->id }}').submit(); }"
-                    class="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition">
-                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="inline-flex items-center px-4 py-2 text-sm font-semibold text-red-600 hover:text-white hover:bg-red-600 rounded-lg border-2 border-red-600 transition">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>
                     削除
@@ -240,13 +273,16 @@
                     <button 
                         type="button"
                         @click="close()"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        class="inline-flex items-center px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition">
                         キャンセル
                     </button>
                     <button 
                         type="button"
                         @click="submit()"
-                        class="px-4 py-2 text-sm font-medium text-white bg-[#59B9C6] rounded-lg hover:bg-[#4AA0AB] transition">
+                        class="dashboard-btn-primary inline-flex items-center px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow-lg hover:shadow-xl transition">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
                         保存
                     </button>
                 </div>
