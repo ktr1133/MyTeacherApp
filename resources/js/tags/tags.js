@@ -23,6 +23,12 @@
     const attachBtn = document.getElementById('attach-task-btn');
     const badge = document.getElementById('current-tag-badge');
 
+    // DOM要素の存在確認
+    if (!modal) {
+        console.error('tag-task-modal element not found');
+        return;
+    }
+
     /**
      * URL 構築に使う基底情報を Blade から受け取る
      * 
@@ -79,10 +85,24 @@
      * 
      * hidden クラスを削除し、flex クラスを追加することで
      * モーダルを表示状態にする。
+     * トランジション用のクラスを適切に制御する。
      */
     function openModal() {
+        // モーダルを表示状態にする
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        modal.setAttribute('data-modal-state', 'open');
+        
+        // 次のフレームでトランジションクラスを適用
+        // これにより、CSSトランジションがスムーズに動作する
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0', 'translate-y-4', 'scale-95');
+                modal.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+            });
+        });
+        
+        console.log('Modal opened');
     }
 
     /**
@@ -95,13 +115,25 @@
      * - 追加ボタンを無効化
      */
     function closeModal() {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        currentTagId = null;
-        currentTagName = '';
-        linkedList.innerHTML = '';
-        availableSelect.innerHTML = '';
-        attachBtn.disabled = true;
+        // トランジションクラスを戻す
+        modal.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
+        modal.classList.add('opacity-0', 'translate-y-4', 'scale-95');
+        
+        // トランジションが完了してから非表示にする
+        setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            modal.setAttribute('data-modal-state', 'closed');
+            
+            // 状態をリセット
+            currentTagId = null;
+            currentTagName = '';
+            linkedList.innerHTML = '';
+            availableSelect.innerHTML = '';
+            attachBtn.disabled = true;
+        }, 300); // CSSのtransition-durationと合わせる
+        
+        console.log('Modal closed');
     }
 
     /**
@@ -144,25 +176,62 @@
     function renderLinkedTasks(tasks) {
         linkedList.innerHTML = '';
         if (!tasks || tasks.length === 0) {
-            linkedList.innerHTML = '<li class="p-3 text-sm text-gray-500">このタグに紐づくタスクはありません。</li>';
-            linkedCount.textContent = '0 件';
+            linkedList.innerHTML = `
+                <li class="p-8 text-center text-gray-400 dark:text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <p class="text-sm">このタグに紐づくタスクはありません</p>
+                </li>
+            `;
+            linkedCount.textContent = '0';
             return;
         }
-        linkedCount.textContent = `${tasks.length} 件`;
+        linkedCount.textContent = `${tasks.length}`;
         tasks.forEach(t => {
             const li = document.createElement('li');
-            li.className = 'p-3 flex items-center justify-between gap-3';
+            li.className = 'p-4 flex items-start sm:items-center gap-3 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition group';
             li.innerHTML = `
-                <div class="min-w-0">
-                    <p class="text-sm text-gray-800 truncate" title="${t.title}">${t.title}</p>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-gray-800 dark:text-white break-words" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</p>
                 </div>
-                <button class="inline-flex items-center px-2 py-1 rounded-md text-red-600 hover:bg-red-50 text-xs"
-                        data-action="detach" data-task-id="${t.id}">
-                    解除
+                <button class="tag-detach-btn shrink-0 relative inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 group/btn"
+                        data-action="detach" data-task-id="${t.id}"
+                        type="button"
+                        aria-label="タグから解除">
+                    <span class="tag-detach-btn-bg absolute inset-0 rounded-full bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/30 dark:to-pink-950/30 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200"></span>
+                    <span class="tag-detach-btn-border absolute inset-0 rounded-full border-2 border-red-200 dark:border-red-800 group-hover/btn:border-red-400 dark:group-hover/btn:border-red-600 transition-colors duration-200"></span>
+                    <svg class="tag-detach-btn-icon relative z-10 w-4 h-4 text-red-500 dark:text-red-400 group-hover/btn:text-red-600 dark:group-hover/btn:text-red-300 group-hover/btn:rotate-90 transition-all duration-200" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                 </button>
             `;
             linkedList.appendChild(li);
         });
+    }
+
+    /**
+     * HTMLエスケープ関数
+     * XSS対策のため、HTMLの特殊文字をエスケープする
+     * 
+     * @param {string} text - エスケープする文字列
+     * @returns {string} エスケープされた文字列
+     */
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
     }
 
     /**
@@ -183,23 +252,31 @@
      */
     function renderAvailableTasks(tasks) {
         availableSelect.innerHTML = '';
+        
+        // プレースホルダーオプション
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'タスクを選択してください';
+        availableSelect.appendChild(placeholder);
+        
         if (!tasks || tasks.length === 0) {
-            const opt = document.createElement('option');
-            opt.value = '';
-            opt.textContent = '追加可能なタスクがありません';
-            availableSelect.appendChild(opt);
             availableSelect.disabled = true;
             attachBtn.disabled = true;
             return;
         }
+        
         tasks.forEach(t => {
             const opt = document.createElement('option');
             opt.value = String(t.id);
             opt.textContent = t.title;
             availableSelect.appendChild(opt);
         });
+        
         availableSelect.disabled = false;
-        attachBtn.disabled = false;
+        // セレクトボックスで値が選択されたら追加ボタンを有効化
+        availableSelect.addEventListener('change', function() {
+            attachBtn.disabled = !this.value;
+        });
     }
 
     /**
@@ -249,7 +326,7 @@
     async function detachTask(tagId, taskId) {
         const url = buildUrl(tagId, 'detach');
         const res = await fetch(url, {
-            method: 'POST', // DELETE を使うならここを 'DELETE' にし、サーバールートも合わせる
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrf(),
@@ -271,20 +348,30 @@
      */
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('[data-action="open-tag-modal"]');
-        console.log('タグクリック', btn);
+        console.log('Click detected:', e.target);
+        console.log('Button found:', btn);
+        
         if (!btn) return;
 
+        e.preventDefault();
+        e.stopPropagation();
+        
         currentTagId = btn.getAttribute('data-tag-id');
         currentTagName = btn.getAttribute('data-tag-name') || '';
+        
+        console.log('Tag ID:', currentTagId);
+        console.log('Tag Name:', currentTagName);
+        
         badge.textContent = currentTagName;
 
         try {
             const data = await fetchTagTasks(currentTagId);
+            console.log('Fetched tasks:', data);
             renderLinkedTasks(data.linked || []);
             renderAvailableTasks(data.available || []);
             openModal();
         } catch (err) {
-            console.error(err);
+            console.error('Failed to fetch tasks:', err);
             alert('タスクの取得に失敗しました。');
         }
     });
@@ -300,6 +387,10 @@
     linkedList.addEventListener('click', async (e) => {
         const btn = e.target.closest('[data-action="detach"]');
         if (!btn) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
         const taskId = btn.getAttribute('data-task-id');
         try {
             await detachTask(currentTagId, taskId);
@@ -342,7 +433,7 @@
      * 
      * @listens closeBtns#click
      */
-    closeBtns.forEach(b => b.addEventListener('click', closeModal));
+    closeBtns.forEach(b => b?.addEventListener('click', closeModal));
 
     /**
      * イベントハンドラー: モーダル背景クリック
@@ -364,6 +455,8 @@
      * @listens document#keydown
      */
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
     });
 })();

@@ -6,10 +6,9 @@
 /* グリッドアイテムの高さを揃える */
 .grid > div {
     display: flex;
-    min-height: 0; /* Firefox対応 */
+    min-height: 0;
 }
 
-/* 非表示要素はグリッドから除外 */
 .grid > div[style*="display: none"] {
     display: none !important;
 }
@@ -20,140 +19,713 @@
     flex-direction: column;
 }
 
-/* タスクカードの高さを親要素に合わせる */
 .grid > div > * > div {
     flex: 1;
 }
 
-/* 検索結果のスクロールバースタイル */
-#search-results {
+/* グラデーション背景 */
+.dashboard-gradient-bg {
+    background: linear-gradient(135deg, #F3F3F2 0%, #ffffff 50%, #e5e7eb 100%);
+}
+
+.dark .dashboard-gradient-bg {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #0f172a 100%);
+}
+
+/* フローティング背景装飾 */
+@keyframes float-slow {
+    0%, 100% {
+        transform: translate(0, 0);
+    }
+    33% {
+        transform: translate(30px, -30px);
+    }
+    66% {
+        transform: translate(-20px, 20px);
+    }
+}
+
+.dashboard-floating-decoration {
+    animation: float-slow 20s ease-in-out infinite;
+}
+
+/* ヘッダーのブラー効果 */
+.dashboard-header-blur {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.dark .dashboard-header-blur {
+    background: rgba(31, 41, 55, 0.85);
+}
+
+/* タブナビゲーション */
+.dashboard-tab {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.dashboard-tab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #59B9C6, #8b5cf6);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.dashboard-tab.active::after {
+    transform: scaleX(1);
+}
+
+/* 弁当箱カードのグラスモーフィズム */
+.bento-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.dark .bento-card {
+    background: rgba(31, 41, 55, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* カードホバーエフェクト */
+.bento-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(89, 185, 198, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.bento-card:hover::before {
+    left: 100%;
+}
+
+.bento-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(89, 185, 198, 0.15),
+                0 10px 10px -5px rgba(89, 185, 198, 0.1);
+}
+
+/* グラデーションボーダー */
+.bento-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.bento-card:hover::after {
+    opacity: 0.5;
+}
+
+/* タスクカードアニメーション */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.task-card-enter {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* スタガードアニメーション */
+.grid > div:nth-child(1) { animation-delay: 0.05s; }
+.grid > div:nth-child(2) { animation-delay: 0.1s; }
+.grid > div:nth-child(3) { animation-delay: 0.15s; }
+.grid > div:nth-child(4) { animation-delay: 0.2s; }
+.grid > div:nth-child(5) { animation-delay: 0.25s; }
+.grid > div:nth-child(6) { animation-delay: 0.3s; }
+
+/* 検索バーのグロー効果 */
+.search-input-glow:focus {
+    box-shadow: 0 0 0 3px rgba(89, 185, 198, 0.1),
+                0 0 20px rgba(89, 185, 198, 0.2);
+    border-color: #59B9C6;
+}
+
+/* スクロールバーのカスタマイズ */
+.custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: #CBD5E0 transparent;
+    scrollbar-color: #59B9C6 transparent;
 }
 
-#search-results::-webkit-scrollbar {
-    width: 6px;
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
 }
 
-#search-results::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
 }
 
-#search-results::-webkit-scrollbar-thumb {
-    background-color: #CBD5E0;
-    border-radius: 3px;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    border-radius: 4px;
 }
 
-#search-results::-webkit-scrollbar-thumb:hover {
-    background-color: #A0AEC0;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #4AA0AB, #7c3aed);
 }
 
-/* リセットボタンのアニメーション */
-#reset-filter-btn {
-    animation: slideInUp 0.3s ease-out;
+/* 空状態のスタイル */
+.empty-state {
+    animation: fadeInUp 0.6s ease-out;
 }
 
-@keyframes slideInUp {
-    from {
-        transform: translateY(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
+/* タグバッジのグラデーション */
+.tag-badge-gradient {
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    color: white;
+}
+
+/* スパンバッジ */
+.span-badge-short {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+
+.span-badge-mid {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+}
+
+.span-badge-long {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+/* モーダルのグラスモーフィズム */
+.modal-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.dark .modal-glass {
+    background: rgba(31, 41, 55, 0.95);
+}
+
+/* セクション区切り線 */
+.section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #59B9C6, transparent);
+}
+
+/* ローディングアニメーション */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* プルスアニメーション */
+@keyframes pulse {
+    0%, 100% {
         opacity: 1;
     }
+    50% {
+        opacity: 0.5;
+    }
 }
 
-/* タブのスムーズな切り替え */
+.pulse-animation {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* タブトランジション */
 [x-cloak] {
     display: none !important;
 }
 
-/* タブコンテンツのフェードイン */
 [x-show] {
     transition: opacity 0.3s ease-in-out;
 }
 
-/* グリッドアイテムのトランジション */
-.grid > div {
-    transition: opacity 0.2s ease-in-out;
-}
-
-/* カード間隔の統一調整 */
-.grid {
-    gap: 1rem;
-}
-
-/* モバイルでのカード間隔調整 */
-@media (max-width: 767px) {
-    .grid {
-        gap: 0.75rem;
-    }
-}
-
-/* タスクカードのホバーエフェクト */
-.grid > div > * {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.grid > div > *:hover {
-    transform: translateY(-2px);
-}
-
-/* 検索結果のハイライト */
-.search-result-item.bg-gray-100 {
-    background-color: #F7FAFC;
-    border-left: 3px solid #59B9C6;
-}
-
-/* スパンバッジの統一スタイル */
-.span-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    line-height: 1;
-}
-
-/* タグの統一スタイル */
-.tag-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.125rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-/* メインコンテンツのパディング調整 */
-main {
-    padding: 1rem;
+/* 弁当箱レイアウト */
+.bento-auto-rows {
+    grid-auto-rows: 140px;
 }
 
 @media (min-width: 768px) {
-    main {
-        padding: 1.5rem;
+    .bento-auto-rows {
+        grid-auto-rows: 160px;
     }
 }
 
-@media (min-width: 1024px) {
-    main {
-        padding: 2rem;
+@media (min-width: 1280px) {
+    .bento-auto-rows {
+        grid-auto-rows: 180px;
     }
 }
 
-/* 完了タスクのスタイル調整 */
-[data-task-completed="true"] {
-    opacity: 0.7;
+/* モーダルパネル */
+.modal-panel {
+    width: min(100vw - 0.5rem, 44rem);
+    height: calc(100svh - 1rem);
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    min-height: 0;
 }
 
-[data-task-completed="true"]:hover {
-    opacity: 0.85;
+@supports not (height: 100svh) {
+    .modal-panel {
+        max-height: calc(100vh - 1rem);
+    }
 }
 
-/* グリッドアイテムのアニメーション */
+@media (min-width: 640px) {
+    .modal-panel {
+        width: min(100vw - 1rem, 48rem);
+    }
+}
+
+.modal-panel-lg {
+    width: min(100vw - 0.5rem, 80rem);
+    height: calc(100svh - 1rem);
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    min-height: 0;
+}
+
+@supports (height: 100dvh) {
+    .modal-panel-lg {
+        height: calc(100dvh - 1rem);
+    }
+}
+
+@supports not (height: 100svh) {
+    .modal-panel-lg {
+        height: calc(100vh - 1rem);
+    }
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.modal-overlay {
+    overscroll-behavior: contain;
+}
+
+.p-safe {
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 640px) {
+    .bento-card {
+        padding: 1rem;
+    }
+}
+
+/* モーダルオーバーレイのアニメーション */
+.modal-overlay {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* モーダルパネルのグラスモーフィズム */
+.modal-content {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.dark .modal-content {
+    background: rgba(31, 41, 55, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* モーダルヘッダー */
+.modal-header-gradient {
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.1), rgba(139, 92, 246, 0.05));
+}
+
+/* タスクカードのホバーエフェクト */
+.task-item-card {
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.dark .task-item-card {
+    background: rgba(55, 65, 81, 0.8);
+}
+
+.task-item-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(89, 185, 198, 0.15);
+}
+
+/* チェックボックスのカスタムスタイル */
+.custom-checkbox {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+}
+
+.custom-checkbox:checked {
+    background: linear-gradient(135deg, #59B9C6, #4AA0AB);
+    border-color: #59B9C6;
+}
+
+.custom-checkbox:focus {
+    box-shadow: 0 0 0 3px rgba(89, 185, 198, 0.2);
+}
+
+/* 提案タスクカウントバッジ */
+.proposal-badge {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* サイドバーナビゲーション */
+.sidebar-nav-link {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.sidebar-nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.sidebar-nav-link.active::before {
+    transform: scaleY(1);
+}
+
+.sidebar-nav-link:hover {
+    background: linear-gradient(90deg, rgba(89, 185, 198, 0.1), transparent);
+}
+
+/* サイドバーオーバーレイのイベント制御 */
+.sidebar-overlay-active {
+    pointer-events: auto !important;
+    touch-action: none;
+}
+
+/* サイドバー表示時、背景コンテンツのクリックを無効化 */
+body:has(.sidebar-overlay-active) {
+    overflow: hidden;
+}
+
+/* バッジのグラデーション */
+.badge-gradient {
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+
+/* 検索バーのグロー効果強化 */
+.search-bar {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.search-bar input:focus {
+    box-shadow: 0 0 0 3px rgba(89, 185, 198, 0.1),
+                0 0 20px rgba(89, 185, 198, 0.2);
+    border-color: #59B9C6;
+}
+
+.search-bar::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    filter: blur(8px);
+}
+
+.search-bar:focus-within::before {
+    opacity: 0.3;
+}
+
+/* タグチップのスタイル */
+.tag-chip {
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.1), rgba(139, 92, 246, 0.1));
+    border: 1px solid rgba(89, 185, 198, 0.3);
+    transition: all 0.2s ease;
+}
+
+.tag-chip:hover {
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.2), rgba(139, 92, 246, 0.2));
+    transform: scale(1.05);
+}
+
+.tag-chip input:checked ~ span {
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    color: white;
+}
+
+/* ファイルアップロードエリア */
+.file-upload-area {
+    border: 2px dashed #d1d5db;
+    transition: all 0.3s ease;
+}
+
+.file-upload-area:hover {
+    border-color: #59B9C6;
+    background: rgba(89, 185, 198, 0.05);
+}
+
+/* 画像プレビューカード */
+.image-preview-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.image-preview-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.3), rgba(139, 92, 246, 0.3));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.image-preview-card:hover::before {
+    opacity: 1;
+}
+
+/* モバイルメニューアニメーション */
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.mobile-menu-enter {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+/* スクロールスナップ */
+.scroll-snap-x {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.scroll-snap-item {
+    scroll-snap-align: start;
+}
+
+/* ツールチップスタイル */
+.tooltip {
+    position: relative;
+}
+
+.tooltip::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem 0.75rem;
+    background: rgba(31, 41, 55, 0.95);
+    color: white;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.tooltip:hover::before {
+    opacity: 1;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 640px) {
+    .modal-content {
+        border-radius: 1rem 1rem 0 0;
+    }
+    
+    .task-item-card {
+        padding: 0.75rem;
+    }
+}
+
+/* ========== グループタスクモーダル専用スタイル ========== */
+
+/* タスク作成方法の選択チップ */
+.group-task-chip {
+    background: white;
+    border-color: #e9d5ff;
+    color: #6b7280;
+}
+
+.dark .group-task-chip {
+    background: #1f2937;
+    border-color: #6b21a8;
+}
+
+.group-task-chip:has(input:checked) {
+    background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+    border-color: #9333ea;
+    color: white;
+}
+
+.group-task-chip:hover {
+    border-color: #9333ea;
+    background: #faf5ff;
+}
+
+.dark .group-task-chip:hover {
+    background: #581c87;
+}
+
+/* グループタスクのタグチップ */
+.group-tag-chip {
+    background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(236, 72, 153, 0.1));
+    border: 1px solid rgba(147, 51, 234, 0.3);
+    transition: all 0.2s ease;
+}
+
+.dark .group-tag-chip {
+    background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2));
+    border-color: rgba(147, 51, 234, 0.4);
+}
+
+.group-tag-chip:hover {
+    background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2));
+    transform: scale(1.05);
+}
+
+.group-tag-chip:has(input:checked) {
+    background: linear-gradient(135deg, #9333ea, #ec4899);
+    border-color: #9333ea;
+    color: white;
+}
+
+/* グループモーダルのアニメーション */
+#group-task-modal-wrapper.modal-open #group-task-modal-content {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 640px) {
+    #group-task-modal-content {
+        max-h: 95vh;
+        max-w: calc(100vw - 1rem);
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    #group-task-modal-content {
+        max-w: 90vw;
+    }
+}
+
+/* タスクモーダルのタグチップ */
+.task-tag-chip {
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.1), rgba(59, 130, 246, 0.1));
+    border: 1px solid rgba(89, 185, 198, 0.3);
+    transition: all 0.2s ease;
+}
+
+.dark .task-tag-chip {
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.2), rgba(59, 130, 246, 0.2));
+    border-color: rgba(89, 185, 198, 0.4);
+}
+
+.task-tag-chip:hover {
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.2), rgba(59, 130, 246, 0.2));
+    transform: scale(1.05);
+}
+
+.task-tag-chip:has(input:checked) {
+    background: linear-gradient(135deg, #59B9C6, #3b82f6);
+    border-color: #59B9C6;
+    color: white;
+}
+
+/* タスクモーダルのアニメーション */
+#task-modal-wrapper.modal-open #task-modal-content {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+/* モーダル状態切替時のフェードアニメーション */
+#modal-state-1,
+#modal-state-2,
+#modal-state-3 {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -165,92 +737,43 @@ main {
     }
 }
 
-.grid > div:not([style*="display: none"]) {
-    animation: fadeIn 0.3s ease-out;
+/* ボタングループの切り替えアニメーション */
+#state-1-buttons,
+#state-2-buttons,
+#state-3-buttons {
+    transition: all 0.3s ease;
 }
 
-/* スタガード（時間差）アニメーション */
-.grid > div:nth-child(1) { animation-delay: 0.05s; }
-.grid > div:nth-child(2) { animation-delay: 0.1s; }
-.grid > div:nth-child(3) { animation-delay: 0.15s; }
-.grid > div:nth-child(4) { animation-delay: 0.2s; }
-.grid > div:nth-child(5) { animation-delay: 0.25s; }
-.grid > div:nth-child(6) { animation-delay: 0.3s; }
-
-/* 空状態のスタイル */
-.empty-state {
-    min-height: 300px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+/* 提案タスクリストのアイテム */
+#tasks-list > div {
+    animation: slideInRight 0.3s ease-out;
 }
 
-/* 弁当箱レイアウト: 行高を安定させる */
-.bento-auto-rows {
-    grid-auto-rows: 140px;
-}
-@media (min-width: 768px) {
-    .bento-auto-rows { grid-auto-rows: 160px; }
-}
-@media (min-width: 1280px) {
-    .bento-auto-rows { grid-auto-rows: 180px; }
-}
-
-/* モーダル: 画面高にフィット（本文のみスクロール） */
-.modal-panel {
-  width: min(100vw - 0.5rem, 44rem);
-  height: calc(100svh - 1rem);   /* 重要: 固定高さにしてフッターを常時表示 */
-  max-height: none;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 0.75rem;
-  min-height: 0;                 /* 子要素の収縮許可（オーバーフロー防止） */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-/* svh未対応ブラウザのフォールバック */
-@supports not (height: 100svh) {
-  .modal-panel { max-height: calc(100vh - 1rem); }
+/* レスポンシブ調整 */
+@media (max-width: 640px) {
+    #task-modal-content {
+        max-h: 95vh;
+        max-w: calc(100vw - 1rem);
+    }
+    
+    #modal-state-2 #proposed-tasks-container {
+        max-height: 40vh;
+    }
 }
 
-@media (min-width: 640px) {
-  .modal-panel { width: min(100vw - 1rem, 48rem); }
+@media (min-width: 641px) and (max-width: 1024px) {
+    #task-modal-content {
+        max-w: 90vw;
+    }
 }
-
-/* 大型モーダルも同様に固定高さ */
-.modal-panel-lg {
-  width: min(100vw - 0.5rem, 80rem);
-  height: calc(100svh - 1rem);
-  max-height: none;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 0.75rem;
-  min-height: 0;
-}
-@supports (height: 100dvh) {
-  .modal-panel-lg { height: calc(100dvh - 1rem); }
-}
-@supports not (height: 100svh) {
-  .modal-panel-lg { height: calc(100vh - 1rem); }
-}
-
-/* 本文専用: 必ず縦スクロール可にする */
-.modal-body { flex: 1; overflow-y: auto; min-height: 0; }
-
-/* オーバーレイ */
-.modal-overlay { overscroll-behavior: contain; }
-
-/* 安全域パディング（ノッチ） */
-.p-safe {
-  padding-left: max(0.5rem, env(safe-area-inset-left));
-  padding-right: max(0.5rem, env(safe-area-inset-right));
-  padding-top: max(0.5rem, env(safe-area-inset-top));
-  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-}
-
-/* 弁当箱レイアウト: 行高を安定させる（既存） */
-.bento-auto-rows { grid-auto-rows: 140px; }
-@media (min-width: 768px) { .bento-auto-rows { grid-auto-rows: 160px; } }
-@media (min-width: 1280px) { .bento-auto-rows { grid-auto-rows: 180px; } }

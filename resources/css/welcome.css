@@ -1,0 +1,317 @@
+/* ヒーローセクションのアニメーション */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.hero-title {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-subtitle {
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.hero-cta {
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.hero-image {
+    animation: fadeIn 1s ease-out 0.6s both;
+}
+
+/* フローティングアイコン */
+.floating-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+.floating-icon:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.floating-icon:nth-child(3) {
+    animation-delay: 1s;
+}
+
+/* グラデーションテキスト */
+.gradient-text {
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* グラスモーフィズム効果 */
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-card {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 機能カードのホバーエフェクト */
+.feature-card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.feature-card:hover::before {
+    left: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ステップカードのアニメーション */
+.step-card {
+    transition: all 0.3s ease;
+}
+
+.step-card:hover {
+    transform: scale(1.05);
+}
+
+.step-number {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.step-number::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.step-card:hover .step-number::after {
+    opacity: 0.2;
+}
+
+/* CTAセクションのグラデーション */
+.cta-gradient {
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 50%, #ec4899 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* ボタンのホバーエフェクト */
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary:active {
+    transform: scale(0.95);
+}
+
+/* スクリーンショットエリアのグロー効果 */
+.screenshot-glow {
+    position: relative;
+}
+
+.screenshot-glow::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    border-radius: 1.5rem;
+    opacity: 0.15;
+    filter: blur(40px);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+/* パララックス効果用 */
+.parallax-bg {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+/* スクロールインジケーター */
+.scroll-indicator {
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* ヘッダーのブラー効果強化 */
+.header-blur {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* セクション間の区切り線 */
+.section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #59B9C6, transparent);
+    margin: 0 auto;
+    max-width: 200px;
+}
+
+/* ローディングアニメーション */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* スムーズスクロール */
+html {
+    scroll-behavior: smooth;
+}
+
+/* リンクのアンダーラインアニメーション */
+.link-underline {
+    position: relative;
+}
+
+.link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #59B9C6;
+    transition: width 0.3s ease;
+}
+
+.link-underline:hover::after {
+    width: 100%;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 640px) {
+    .hero-title {
+        font-size: 2rem;
+        line-height: 1.2;
+    }
+    
+    .feature-card {
+        padding: 1rem;
+    }
+}
+
+/* ダークモードの微調整 */
+.dark .feature-card {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .step-card {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* アクセシビリティ：reduced motionの対応 */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
