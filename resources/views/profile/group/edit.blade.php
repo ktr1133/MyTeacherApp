@@ -169,7 +169,7 @@
                             </div>
                         </div>
 
-                        {{-- 定期バッチ設定（新規追加） --}}
+                        {{-- タスク自動作成の設定（新規追加） --}}
                         <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.3s;">
                             <div class="px-6 py-4 border-b border-indigo-500/20 dark:border-indigo-500/30 bg-gradient-to-r from-indigo-500/5 to-blue-50/50 dark:from-indigo-500/10 dark:to-blue-900/10">
                                 <div class="flex items-center justify-between">
@@ -181,10 +181,10 @@
                                         </div>
                                         <div>
                                             <h2 class="text-sm font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-                                                定期バッチ設定
+                                                タスク自動作成の設定
                                             </h2>
                                             <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                定期的に自動実行するタスクを設定できます
+                                                定期的に作成されるタスクを設定できます
                                             </p>
                                         </div>
                                     </div>

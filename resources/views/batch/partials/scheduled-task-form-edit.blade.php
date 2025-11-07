@@ -1,3 +1,5 @@
+@props (['scheduledTask', 'groupMembers'])
+
 {{-- 基本情報 --}}
 <div class="bento-card rounded-xl p-6 space-y-6">
     <div class="flex items-center gap-3 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -120,7 +122,7 @@
                 <option value="">未設定（担当者なし）</option>
                 @foreach ($groupMembers as $member)
                     <option value="{{ $member->id }}" {{ old('assigned_user_id') == $member->id ? 'selected' : '' }}>
-                        {{ $member->name }}
+                        {{ $member->username }}
                     </option>
                 @endforeach
             </select>
