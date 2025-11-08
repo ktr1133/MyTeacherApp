@@ -1,3 +1,53 @@
+/* ========================================
+   実績ページヘッダー専用スタイル
+   ======================================== */
+
+/* 実績ヘッダーのアイコン背景 */
+.performance-header-icon {
+    background: linear-gradient(135deg, #59B9C6 0%, #3b82f6 100%);
+}
+
+/* 実績ヘッダーのタイトルグラデーション */
+.performance-header-title {
+    background: linear-gradient(135deg, #59B9C6 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ヘッダーのブラー効果 */
+.performance-header-blur {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.dark .performance-header-blur {
+    background: rgba(31, 41, 55, 0.85);
+}
+
+/* タブナビゲーション */
+.performance-tab {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.performance-tab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #59B9C6, #8b5cf6);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.performance-tab.active::after {
+    transform: scaleX(1);
+}
+
 /* レポートカード共通 */
 .report-card {
     background: #fff;

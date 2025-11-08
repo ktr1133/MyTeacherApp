@@ -7,10 +7,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Laravel\Cashier\Billable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, Billable;
 
     /**
      * The attributes that are mass assignable.
@@ -101,5 +103,103 @@ class User extends Authenticatable
     public function canEditGroup(): bool
     {
         return $this->group_edit_flg || $this->isGroupMaster();
+    }
+
+    /**
+     * トークン残高とのリレーション
+     */
+    public function tokenBalance(): MorphOne
+    {
+        return $this->morphOne(TokenBalance::class, 'tokenable');
+    }
+
+    /**
+     * 通知とのリレーション
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * トークン残高を取得（存在しない場合は作成）
+     */
+    public function getOrCreateTokenBalance(): TokenBalance
+    {
+        // グループモードの場合はグループの残高を返す
+        if ($this->token_mode === 'group' && $this->group_id) {
+            return $this->group->getOrCreateTokenBalance();
+        }
+
+        // 個人モードの場合
+        return $this->tokenBalance()->firstOrCreate(
+            [
+                'tokenable_type' => self::class,
+                'tokenable_id' => $this->id
+            ],
+            [
+                'balance' => config('const.token.free_monthly', 1000000),
+                'free_balance' => config('const.token.free_monthly', 1000000),
+                'paid_balance' => 0,
+                'free_balance_reset_at' => now()->addMonth(),
+                'monthly_consumed_reset_at' => now()->addMonth(),
+            ]
+        );
+    }
+
+    /**
+     * トークンを消費できるか判定
+     *
+     * @param int $amount 必要量
+     * @return bool
+     */
+    public function canConsumeTokens(int $amount): bool
+    {
+        $balance = $this->getOrCreateTokenBalance();
+        return $balance->balance >= $amount;
+    }
+
+    /**
+     * トークンを消費する
+     *
+     * @param int $amount 消費量
+     * @param string $reason 理由
+     * @param Model|null $related 関連モデル
+     * @return bool 成功の可否
+     */
+    public function consumeTokens(int $amount, string $reason, $related = null): bool
+    {
+        $balance = $this->getOrCreateTokenBalance();
+        return $balance->consume($amount, $reason, $related, $this->id);
+    }
+
+    /**
+     * 通知を作成
+     */
+    public function notify(
+        string $type,
+        string $title,
+        string $message,
+        ?array $data = null,
+        ?string $actionUrl = null,
+        ?string $actionText = null
+    ): void {
+        Notification::create([
+            'user_id' => $this->id,
+            'type' => $type,
+            'title' => $title,
+            'message' => $message,
+            'data' => $data,
+            'action_url' => $actionUrl,
+            'action_text' => $actionText,
+        ]);
+    }
+
+    /**
+     * 未読通知数を取得
+     */
+    public function getUnreadNotificationCountAttribute(): int
+    {
+        return $this->notifications()->unread()->count();
     }
 }

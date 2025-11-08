@@ -1,17 +1,38 @@
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
-// Alpine.jsコンポーネント
+// Alpine.jsが読み込まれる前に関数を定義
 window.performanceReport = function(initialTab, initialPeriod, initialOffset) {
     return {
         showSidebar: false,
         activeTab: initialTab,
         activePeriod: initialPeriod,
         offset: initialOffset,
+        
+        /**
+         * サイドバーを閉じる
+         */
+        closeSidebar() {
+            this.showSidebar = false;
+        },
+        
+        /**
+         * サイドバーを開く
+         */
+        openSidebar() {
+            this.showSidebar = true;
+        },
+        
+        /**
+         * サイドバーをトグル
+         */
+        toggleSidebar() {
+            this.showSidebar = !this.showSidebar;
+        }
     };
 };
 
-// グラフ初期化
+// グラフ初期化（DOMContentLoadedで実行）
 document.addEventListener('DOMContentLoaded', () => {
     initializePerformanceChart();
 });
@@ -23,7 +44,12 @@ function initializePerformanceChart() {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const { tab, currentData } = window.performanceData;
+    const { tab, currentData } = window.performanceData || {};
+    
+    if (!currentData) {
+        console.error('Performance data not found');
+        return;
+    }
     
     // 既存のチャートインスタンスがあれば破棄
     if (chartInstance) {

@@ -21,9 +21,15 @@ use App\Repositories\Task\TaskEloquentRepository;
 use App\Repositories\Task\TaskProposalRepositoryInterface;
 use App\Repositories\Task\EloquentTaskProposalRepository;
 use App\Repositories\Task\TaskRepositoryInterface;
+use App\Repositories\Token\TokenRepositoryInterface;
+use App\Repositories\Token\TokenEloquentRepository;
 // サービスのインポート
 use App\Services\Batch\ScheduledTaskServiceInterface;
 use App\Services\Batch\ScheduledTaskService;
+use App\Services\Payment\PaymentServiceInterface;
+use App\Services\Payment\PaymentService;
+use App\Services\Notification\NotificationServiceInterface;
+use App\Services\Notification\NotificationService;
 use App\Services\Profile\ProfileManagementService;
 use App\Services\Profile\ProfileManagementServiceInterface;
 use App\Services\Profile\GroupServiceInterface;
@@ -42,6 +48,9 @@ use App\Services\Task\TaskProposalServiceInterface;
 use App\Services\Task\TaskProposalService;
 use App\Services\Task\TaskSearchServiceInterface;
 use App\Services\Task\TaskSearchService;
+use App\Services\Token\TokenServiceInterface;
+use App\Services\Token\TokenService;
+// 外部APIサービスのインポート
 use App\Services\AI\OpenAIService;
 
 use Illuminate\Support\ServiceProvider;
@@ -74,6 +83,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ScheduledTaskRepositoryInterface::class, ScheduledTaskRepository::class);
         $this->app->bind(HolidayRepositoryInterface::class, HolidayRepository::class);
 
+        // --- Token ---
+        $this->app->bind(TokenRepositoryInterface::class, TokenEloquentRepository::class);
+
         // ========================================
         // 2. サービスのバインド
         // ========================================
@@ -99,6 +111,16 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Batch ---
         $this->app->bind(ScheduledTaskServiceInterface::class, ScheduledTaskService::class);
+
+        // --- Payment ---
+        $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
+
+        // --- Notification ---
+        $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
+
+        // --- Token ---
+        $this->app->bind(TokenServiceInterface::class, TokenService::class);
+
         // ★ OpenAIService (外部API連携) のバインド
         // 依存性がないため、直接インスタンス化可能
         $this->app->singleton(OpenAIService::class, function ($app) {
