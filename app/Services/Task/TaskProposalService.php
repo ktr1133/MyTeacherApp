@@ -6,13 +6,15 @@ use App\Models\User;
 use App\Models\TaskProposal;
 use App\Repositories\Task\TaskProposalRepositoryInterface;
 use App\Services\AI\OpenAIService;
+use App\Services\Token\TokenServiceInterface;
 use Illuminate\Support\Facades\Log;
 
 class TaskProposalService implements TaskProposalServiceInterface
 {
     public function __construct(
         private TaskProposalRepositoryInterface $repo,
-        private OpenAIService $openAI
+        private OpenAIService $openAI,
+        private TokenServiceInterface $tokenService
     ) {}
 
     /**
@@ -25,39 +27,85 @@ class TaskProposalService implements TaskProposalServiceInterface
         ?string $context,
         bool $isRefinement
     ): TaskProposal {
+        // 推定トークン数をチェック（安全マージンを考慮して1000トークンと仮定）
+        $estimatedTokens = 1000;
+        
+        if (!$this->tokenService->checkBalance($user, $estimatedTokens)) {
+            throw new \RuntimeException('トークン残高が不足しています。トークンを購入してください。');
+        }
+
         // AI へ分解依頼（必要なら isRefinement も渡す）
-        $aiRaw = $this->openAI->requestDecomposition(
+        // OpenAIService は ['response' => string, 'usage' => array, 'model' => string] を返す
+        $aiResult = $this->openAI->requestDecomposition(
             $originalText,
             "期間: {$span}" . ($context ? ", {$context}" : ''),
             $isRefinement
         );
 
+        // 実際に使用したトークン数を取得
+        $usage = $aiResult['usage'] ?? [
+            'prompt_tokens' => 0,
+            'completion_tokens' => 0,
+            'total_tokens' => 0,
+        ];
+        $actualTokens = $usage['total_tokens'];
+
+        // トークンを消費
+        $consumed = $this->tokenService->consumeTokens(
+            $user,
+            $actualTokens,
+            "タスク提案生成: {$originalText}"
+        );
+
+        if (!$consumed) {
+            Log::warning('Failed to consume tokens after AI request', [
+                'user_id' => $user->id,
+                'tokens' => $actualTokens,
+                'original_text' => $originalText,
+            ]);
+            // トークン消費に失敗してもAI結果は保存する（整合性のため）
+        }
+
         // パース処理を確実に実行
         $proposed = [];
         
-        // 1. tasks キーが配列なら使用
-        if (isset($aiRaw['tasks']) && is_array($aiRaw['tasks'])) {
-            $proposed = $aiRaw['tasks'];
-        } 
-        // 2. text キーがあればパース
-        elseif (isset($aiRaw['text']) && is_string($aiRaw['text'])) {
-            $proposed = $this->parseAIResponse($aiRaw['text']);
-        } 
-        // 3. response キーがあればパース（ログの形式に対応）
-        elseif (isset($aiRaw['response']) && is_string($aiRaw['response'])) {
-            $proposed = $this->parseAIResponse($aiRaw['response']);
+        // 1. response キーが文字列ならパース（OpenAIServiceの新仕様）
+        if (isset($aiResult['response']) && is_string($aiResult['response'])) {
+            $proposed = $this->parseAIResponse($aiResult['response']);
         }
-        // 4. 配列全体が文字列ならパース
-        elseif (is_string($aiRaw)) {
-            $proposed = $this->parseAIResponse($aiRaw);
+        // 2. tasks キーが配列なら使用（後方互換性）
+        elseif (isset($aiResult['tasks']) && is_array($aiResult['tasks'])) {
+            $proposed = $aiResult['tasks'];
+        } 
+        // 3. text キーがあればパース（後方互換性）
+        elseif (isset($aiResult['text']) && is_string($aiResult['text'])) {
+            $proposed = $this->parseAIResponse($aiResult['text']);
+        }
+        // 4. 配列全体が文字列ならパース（フォールバック）
+        elseif (is_string($aiResult)) {
+            $proposed = $this->parseAIResponse($aiResult);
         }
 
+        // タスク提案が空の場合はエラー
+        if (empty($proposed)) {
+            Log::error('AI returned empty task list', [
+                'user_id' => $user->id,
+                'original_text' => $originalText,
+                'ai_result' => $aiResult,
+            ]);
+            throw new \RuntimeException('AIからタスク提案を取得できませんでした。');
+        }
+
+        // 提案をDBに保存
         return $this->repo->create([
             'user_id' => $user->id,
             'original_task_text' => $originalText,
             'proposal_context' => (string)($context ?? ''),
             'proposed_tasks_json' => $proposed,
-            'model_used' => (string)($aiRaw['model'] ?? 'unknown'),
+            'model_used' => $aiResult['model'] ?? 'unknown',
+            'prompt_tokens' => $usage['prompt_tokens'],
+            'completion_tokens' => $usage['completion_tokens'],
+            'total_tokens' => $usage['total_tokens'],
             'was_adopted' => false,
         ]);
     }
@@ -96,6 +144,7 @@ class TaskProposalService implements TaskProposalServiceInterface
                     $tasks[] = ['title' => $title];
                 }
             } elseif ($line !== '') {
+                // 箇条書き記号がない場合もタスクとして認識
                 $tasks[] = ['title' => $line];
             }
         }

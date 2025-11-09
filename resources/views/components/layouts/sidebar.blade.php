@@ -10,6 +10,10 @@
             ->where('assigned_by_user_id', $u->id)
             ->count();
     }
+    
+    // トークン残高を取得
+    $tokenBalance = $u->getOrCreateTokenBalance();
+    $isLowBalance = $tokenBalance->balance <= config('const.token.low_threshold', 200000);
 @endphp
 
 {{-- デスクトップ: 左固定サイドバー --}}
@@ -24,6 +28,7 @@
 
         {{-- ナビゲーションリンク --}}
         <div class="flex flex-col space-y-2 px-3 mt-6">
+            {{-- タスクリスト --}}
             <x-nav-link 
                 :href="route('dashboard')" 
                 :active="request()->routeIs('dashboard')" 
@@ -38,6 +43,7 @@
                 </span>
             </x-nav-link>
 
+            {{-- 承認待ち --}}
             @if(Auth::user()->canEditGroup())
                 <x-nav-link 
                     :href="route('tasks.pending-approvals')" 
@@ -56,6 +62,7 @@
                 </x-nav-link>
             @endif
 
+            {{-- タグ管理 --}}
             <x-nav-link 
                 :href="route('tags.list')" 
                 :active="request()->routeIs('tags.list')" 
@@ -67,6 +74,7 @@
                 <span class="text-sm font-medium">タグ管理</span>
             </x-nav-link>
 
+            {{-- 実績 --}}
             <x-nav-link 
                 :href="route('reports.performance')"
                 :active="request()->routeIs('reports.performance')"
@@ -78,6 +86,22 @@
                 <span class="text-sm font-medium">実績</span>
             </x-nav-link>
 
+            {{-- トークン購入リンク --}}
+            <x-nav-link 
+                :href="route('tokens.purchase')" 
+                :active="request()->routeIs('tokens.purchase', 'tokens.history')"
+                class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-amber-500/10 hover:to-yellow-500/5 transition-all duration-200 group {{ request()->routeIs('tokens.purchase', 'tokens.history') ? 'active bg-gradient-to-r from-amber-500/10 to-yellow-500/5 text-amber-600' : '' }}"
+            >
+                <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-sm font-medium flex-1">トークン</span>
+                @if($isLowBalance)
+                    <span class="inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                @endif
+            </x-nav-link>
+
+            {{-- 設定(アカウント管理) --}}
             <x-nav-link 
                 :href="route('profile.edit')" 
                 :active="request()->routeIs('profile.edit')"
@@ -89,6 +113,35 @@
                 </svg>
                 <span class="text-sm font-medium">設定</span>
             </x-nav-link>
+        </div>
+
+        {{-- トークン残高表示 --}}
+        <div class="mt-auto px-3 pb-6">
+            <div class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-700/30">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-amber-700 dark:text-amber-300">トークン残高</span>
+                </div>
+                <div class="text-2xl font-bold text-amber-900 dark:text-amber-100 mb-1">
+                    {{ number_format($tokenBalance->balance) }}
+                </div>
+                <div class="text-xs text-amber-600 dark:text-amber-400">
+                    無料: {{ number_format($tokenBalance->free_balance) }} / 有料: {{ number_format($tokenBalance->paid_balance) }}
+                </div>
+                @if($isLowBalance)
+                    <div class="mt-3 pt-3 border-t border-amber-200 dark:border-amber-700/30">
+                        <a href="{{ route('tokens.purchase') }}" class="text-xs text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 font-medium flex items-center gap-1 group">
+                            <svg class="w-3 h-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            トークン購入
+                        </a>
+                    </div>
+                @endif
+            </div>
         </div>
     </nav>
 </aside>
@@ -127,6 +180,7 @@
         </div>
 
         <nav class="flex flex-col space-y-2 px-3 mt-6 pb-6">
+            {{-- タスクリスト --}}
             <x-nav-link 
                 :href="route('dashboard')" 
                 :active="request()->routeIs('dashboard')" 
@@ -142,6 +196,7 @@
                 </span>
             </x-nav-link>
 
+            {{-- 承認待ち --}}
             @if(Auth::user()->canEditGroup())
                 <x-nav-link 
                     :href="route('tasks.pending-approvals')" 
@@ -161,6 +216,7 @@
                 </x-nav-link>
             @endif
 
+            {{-- タグ管理 --}}
             <x-nav-link 
                 :href="route('tags.list')" 
                 :active="request()->routeIs('tags.list')" 
@@ -173,6 +229,7 @@
                 <span class="text-sm font-medium">タグ管理</span>
             </x-nav-link>
 
+            {{-- 実績 --}}
             <x-nav-link 
                 :href="route('reports.performance')"
                 :active="request()->routeIs('reports.performance')"
@@ -185,6 +242,23 @@
                 <span class="text-sm font-medium">実績</span>
             </x-nav-link>
 
+            {{-- トークン購入リンク（モバイル） --}}
+            <x-nav-link 
+                :href="route('tokens.purchase')" 
+                :active="request()->routeIs('tokens.purchase', 'tokens.history')"
+                @click="showSidebar = false"
+                class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-amber-500/10 hover:to-yellow-500/5 transition-all duration-200 {{ request()->routeIs('tokens.purchase', 'tokens.history') ? 'active bg-gradient-to-r from-amber-500/10 to-yellow-500/5 text-amber-600' : '' }}"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-sm font-medium flex-1">トークン</span>
+                @if($isLowBalance)
+                    <span class="inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                @endif
+            </x-nav-link>
+
+            {{-- 設定(アカウント管理) --}}
             <x-nav-link 
                 :href="route('profile.edit')" 
                 :active="request()->routeIs('profile.edit')"
@@ -198,5 +272,34 @@
                 <span class="text-sm font-medium">設定</span>
             </x-nav-link>
         </nav>
+
+        {{-- トークン残高表示（モバイル） --}}
+        <div class="px-3 pb-6">
+            <div class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-700/30">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-amber-700 dark:text-amber-300">トークン残高</span>
+                </div>
+                <div class="text-2xl font-bold text-amber-900 dark:text-amber-100 mb-1">
+                    {{ number_format($tokenBalance->balance) }}
+                </div>
+                <div class="text-xs text-amber-600 dark:text-amber-400">
+                    無料: {{ number_format($tokenBalance->free_balance) }} / 有料: {{ number_format($tokenBalance->paid_balance) }}
+                </div>
+                @if($isLowBalance)
+                    <div class="mt-3 pt-3 border-t border-amber-200 dark:border-amber-700/30">
+                        <a href="{{ route('tokens.purchase') }}" @click="showSidebar = false" class="text-xs text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 font-medium flex items-center gap-1 group">
+                            <svg class="w-3 h-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            トークン購入
+                        </a>
+                    </div>
+                @endif
+            </div>
+        </div>
     </aside>
 </div>

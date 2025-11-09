@@ -142,7 +142,61 @@ Route::middleware(['auth'])->group(function () {
         // 実行履歴
         Route::get('/{id}/history', ShowExecutionHistoryAction::class)->name('history');
     });
+
+    // ========================================
+    // トークン関連ルート
+    // ========================================
+    // トークン購入
+    Route::get('/tokens/purchase', \App\Http\Actions\Token\IndexTokenPurchaseAction::class)
+        ->name('tokens.purchase');
+    
+    Route::post('/tokens/purchase', \App\Http\Actions\Token\ProcessTokenPurchaseAction::class)
+        ->name('tokens.purchase.process');
+    
+    // トークン履歴
+    Route::get('/tokens/history', \App\Http\Actions\Token\IndexTokenHistoryAction::class)
+        ->name('tokens.history');
+    
+    // 通知
+    Route::get('/notifications', \App\Http\Actions\Notification\IndexNotificationAction::class)
+        ->name('notifications.index');
+    
+    Route::post('/notifications/{notification}/read', \App\Http\Actions\Notification\MarkNotificationAsReadAction::class)
+        ->name('notifications.read');
+    
+    Route::post('/notifications/read-all', \App\Http\Actions\Notification\MarkAllNotificationsAsReadAction::class)
+        ->name('notifications.read-all');
 });
+
+
+// ========================================
+// 管理者専用ルート
+// ========================================
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // トークン統計
+    Route::get('/tokens/stats', \App\Http\Actions\Admin\Token\IndexTokenStatsAction::class)
+        ->name('tokens.stats');
+    
+    // ユーザーのトークン管理
+    Route::get('/tokens/users', \App\Http\Actions\Admin\Token\IndexTokenUsersAction::class)
+        ->name('tokens.users');
+    
+    Route::post('/tokens/adjust', \App\Http\Actions\Admin\Token\AdjustUserTokenAction::class)
+        ->name('tokens.adjust');
+    
+    // 課金履歴
+    Route::get('/payments', \App\Http\Actions\Admin\Payment\IndexPaymentHistoryAction::class)
+        ->name('payments.index');
+});
+
+// ========================================
+// Stripe Webhook
+// ========================================
+Route::post(
+    '/stripe/webhook',
+    \App\Http\Actions\Token\HandleStripeWebhookAction::class
+)->name('stripe.webhook');
 
 // =========================================================================
 // 認証関連ルート (Breeze)
