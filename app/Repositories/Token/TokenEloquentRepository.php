@@ -126,4 +126,55 @@ class TokenEloquentRepository implements TokenRepositoryInterface
         
         return $balance ? $balance->monthly_consumed : 0;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateTokenBalance(TokenBalance $balance, array $data): bool
+    {
+        return $balance->update($data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createTransaction(array $data): TokenTransaction
+    {
+        return TokenTransaction::create($data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function firstOrCreateTokenBalance(string $tokenableType, int $tokenableId, array $defaults = []): TokenBalance
+    {
+        return TokenBalance::firstOrCreate(
+            [
+                'tokenable_type' => $tokenableType,
+                'tokenable_id' => $tokenableId,
+            ],
+            $defaults
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createNotification(array $data)
+    {
+        // 通知システムが実装されている場合はここで作成
+        // 現時点では実装なし
+        \Log::info('Token notification', $data);
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasRecentNotification(int $userId, string $type, \Carbon\Carbon $since): bool
+    {
+        // 通知システムが実装されている場合はここでチェック
+        // 現時点では常にfalse
+        return false;
+    }
 }

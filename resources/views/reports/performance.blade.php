@@ -21,7 +21,7 @@
 
     <div x-data="performanceReport(@js($tab), @js($period), @js($offset))" 
          x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
-         class="flex min-h-[100dvh] performance-gradient-bg relative overflow-hidden">
+         class="flex min-h-screen max-h-screen performance-gradient-bg relative overflow-hidden">
         
         {{-- 背景装飾 --}}
         <div class="absolute inset-0 pointer-events-none z-0">
@@ -33,10 +33,10 @@
         <x-layouts.sidebar />
 
         {{-- メインコンテンツ --}}
-        <main class="flex-1 overflow-hidden relative z-10">
+        <div class="flex-1 flex flex-col overflow-hidden relative z-10">
             
             {{-- ヘッダー --}}
-            <header class="sticky top-0 z-20 border-b border-gray-200/50 dark:border-gray-700/50 performance-header-blur shadow-sm">
+            <header class="shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 performance-header-blur shadow-sm">
                 <div class="px-4 lg:px-6 h-14 lg:h-16 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <button
@@ -56,10 +56,10 @@
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="performance-header-title text-lg font-bold">
+                                <h1 class="performance-header-title text-base lg:text-lg font-bold">
                                     実績ダッシュボード
                                 </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">タスクの進捗状況を可視化</p>
+                                <p class="hidden sm:block text-xs text-gray-600 dark:text-gray-400">タスクの進捗状況を可視化</p>
                             </div>
                         </div>
                     </div>
@@ -69,7 +69,7 @@
                 <div class="flex gap-2 border-t border-gray-200 dark:border-gray-700 px-4 lg:px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
                     <a href="?tab=normal&period={{ $period }}&offset={{ $offset }}"
                        :class="'{{ $tab }}' === 'normal' ? 'border-[#59B9C6] text-[#59B9C6] performance-tab active' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 performance-tab'"
-                       class="px-4 py-3 border-b-2 font-semibold text-sm transition inline-flex items-center gap-2">
+                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition inline-flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
@@ -77,7 +77,7 @@
                     </a>
                     <a href="?tab=group&period={{ $period }}&offset={{ $offset }}"
                        :class="'{{ $tab }}' === 'group' ? 'border-purple-600 text-purple-600 performance-tab active' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 performance-tab'"
-                       class="px-4 py-3 border-b-2 font-semibold text-sm transition inline-flex items-center gap-2">
+                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition inline-flex items-center gap-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
                         </svg>
@@ -86,43 +86,12 @@
                 </div>
             </header>
 
-            <div class="h-full flex flex-col px-4 lg:px-6 py-4 lg:py-6">
+            {{-- メインコンテンツエリア --}}
+            <main class="flex-1 flex flex-col overflow-hidden px-3 lg:px-6 py-3 lg:py-4 gap-3">
                 
-                {{-- デスクトップヘッダー --}}
-                <div class="performance-header-blur border-b border-gray-200/50 dark:border-gray-700/50 pb-4 mb-6 shrink-0 hidden lg:block">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <h1 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#59B9C6] to-purple-600 bg-clip-text text-transparent mb-1">
-                                実績ダッシュボード
-                            </h1>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">タスクの進捗状況を可視化</p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- タブナビゲーション（通常タスク/グループタスク） --}}
-                <div class="flex gap-3 mb-6 shrink-0">
-                    <a href="?tab=normal&period={{ $period }}&offset={{ $offset }}"
-                       class="performance-tab {{ $tab === 'normal' ? 'performance-tab-active performance-tab-normal' : 'performance-tab-inactive' }} px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all shadow-md flex-1 sm:flex-none">
-                        <svg class="w-4 h-4 inline-block mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
-                        <span class="hidden sm:inline">通常タスク</span>
-                        <span class="sm:hidden">通常</span>
-                    </a>
-                    <a href="?tab=group&period={{ $period }}&offset={{ $offset }}"
-                       class="performance-tab {{ $tab === 'group' ? 'performance-tab-active performance-tab-group' : 'performance-tab-inactive' }} px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all shadow-md flex-1 sm:flex-none">
-                        <svg class="w-4 h-4 inline-block mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
-                        </svg>
-                        <span class="hidden sm:inline">グループタスク</span>
-                        <span class="sm:hidden">グループ</span>
-                    </a>
-                </div>
-
                 {{-- グループタスクのメンバー選択 --}}
                 @if ($tab === 'group' && $members->isNotEmpty())
-                    <div class="mb-6 shrink-0">
+                    <div class="shrink-0">
                         <label for="user-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             <svg class="w-4 h-4 inline-block mr-1 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
@@ -144,7 +113,7 @@
                 @endif
 
                 {{-- 期間区分選択（週間/月間/年間） --}}
-                <div class="flex gap-3 mb-6 shrink-0">
+                <div class="flex gap-2 shrink-0 flex-wrap">
                     <a href="?tab={{ $tab }}&period=week&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
                        class="period-button {{ $period === 'week' ? 'active' : '' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,7 +142,7 @@
                 @endphp
 
                 {{-- 期間ナビゲーション --}}
-                <div class="flex items-center justify-between mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 shrink-0">
+                <div class="flex items-center justify-between bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-200 dark:border-gray-700 shrink-0">
                     <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset - 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
                        class="nav-button {{ !$periodInfo['canGoPrevious'] ? 'disabled' : '' }}"
                        @if(!$periodInfo['canGoPrevious']) onclick="event.preventDefault(); return false;" @endif>
@@ -184,10 +153,10 @@
                     </a>
 
                     <div class="period-display">
-                        <svg class="w-5 h-5 {{ $tab === 'normal' ? 'text-[#59B9C6]' : 'text-purple-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 {{ $tab === 'normal' ? 'text-[#59B9C6]' : 'text-purple-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
-                        <span class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">{{ $periodInfo['displayText'] }}</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">{{ $periodInfo['displayText'] }}</span>
                     </div>
 
                     <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset + 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
@@ -200,18 +169,18 @@
                     </a>
                 </div>
 
-                {{-- グラフ表示エリア（大きく1つ表示） --}}
-                <div class="flex-1 min-h-0 overflow-auto custom-scrollbar">
+                {{-- グラフ表示エリア（画面内に収まるように調整） --}}
+                <div class="flex-1 min-h-0">
                     <div class="chart-container-large {{ $tab === 'normal' ? 'chart-normal' : 'chart-group' }}">
                         <div class="chart-header">
                             <h3 class="chart-title">
                                 @if($tab === 'normal')
-                                    <svg class="w-5 h-5 text-[#59B9C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-[#59B9C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                     </svg>
                                     通常タスク -
                                 @else
-                                    <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
                                     </svg>
                                     グループタスク -
@@ -227,7 +196,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 </x-app-layout>

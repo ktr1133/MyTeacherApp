@@ -88,4 +88,49 @@ interface TokenRepositoryInterface
      * @return int
      */
     public function getMonthlyUsage(string $tokenableType, int $tokenableId): int;
+
+    /**
+     * トークン残高を更新
+     *
+     * @param TokenBalance $balance
+     * @param array $data
+     * @return bool
+     */
+    public function updateTokenBalance(TokenBalance $balance, array $data): bool;
+
+    /**
+     * トークン取引を作成
+     *
+     * @param array $data
+     * @return TokenTransaction
+     */
+    public function createTransaction(array $data): TokenTransaction;
+
+    /**
+     * トークン残高を取得または作成
+     *
+     * @param string $tokenableType
+     * @param int $tokenableId
+     * @param array $defaults
+     * @return TokenBalance
+     */
+    public function firstOrCreateTokenBalance(string $tokenableType, int $tokenableId, array $defaults = []): TokenBalance;
+
+    /**
+     * 通知を作成
+     *
+     * @param array $data
+     * @return mixed
+     */
+    public function createNotification(array $data);
+
+    /**
+     * 最近の通知があるかチェック
+     *
+     * @param int $userId
+     * @param string $type
+     * @param \Carbon\Carbon $since
+     * @return bool
+     */
+    public function hasRecentNotification(int $userId, string $type, \Carbon\Carbon $since): bool;
 }

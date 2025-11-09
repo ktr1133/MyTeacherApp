@@ -122,6 +122,11 @@ class ModalController {
             decomposition: document.getElementById('modal-state-2'),
             refine: document.getElementById('modal-state-3')
         };
+        this.buttons = {
+            state1: document.getElementById('state-1-buttons'),
+            state2: document.getElementById('state-2-buttons'),
+            state3: document.getElementById('state-3-buttons')
+        };
     }
 
     /**
@@ -231,6 +236,20 @@ class ModalController {
                 } else {
                     element.style.display = 'none';
                 }
+            }
+        });
+        // ボタンの切り替え
+        Object.entries(this.buttons).forEach(([stateName, buttonGroup]) => {
+            if (!buttonGroup) return;
+            
+            if (
+                (viewName === 'input' && stateName === 'state1') ||
+                (viewName === 'decomposition' && stateName === 'state2') ||
+                (viewName === 'refine' && stateName === 'state3')
+            ) {
+                buttonGroup.style.display = 'flex';
+            } else {
+                buttonGroup.style.display = 'none';
             }
         });
     }
