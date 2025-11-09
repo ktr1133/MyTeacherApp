@@ -133,4 +133,12 @@ interface TokenRepositoryInterface
      * @return bool
      */
     public function hasRecentNotification(int $userId, string $type, \Carbon\Carbon $since): bool;
+
+    /**
+     * 課金履歴一覧（管理者用）
+     *
+     * @param int $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getPaymentHistories(int $perPage = 20): LengthAwarePaginator;
 }

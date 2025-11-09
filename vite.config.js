@@ -6,6 +6,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+                'resources/css/admin/common.css',
                 'resources/css/auth.css',
                 'resources/css/batch.css',
                 'resources/css/dashboard.css',
@@ -15,6 +16,7 @@ export default defineConfig({
                 'resources/css/tokens/purchase.css',
                 'resources/css/welcome.css',
                 'resources/js/app.js',
+                'resources/js/admin/common.js',
                 'resources/js/dashboard/dashboard.js',
                 'resources/js/dashboard/task-search.js',
                 'resources/js/dashboard/group-task.js',

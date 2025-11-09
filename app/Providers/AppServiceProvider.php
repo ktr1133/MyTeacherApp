@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 // リポジトリのインポート
+use App\Repositories\Admin\UserRepositoryInterface;
+use App\Repositories\Admin\UserRepository;
 use App\Repositories\Batch\HolidayRepositoryInterface;
 use App\Repositories\Batch\HolidayRepository;
 use App\Repositories\Batch\ScheduledTaskRepositoryInterface;
@@ -23,7 +25,11 @@ use App\Repositories\Task\EloquentTaskProposalRepository;
 use App\Repositories\Task\TaskRepositoryInterface;
 use App\Repositories\Token\TokenRepositoryInterface;
 use App\Repositories\Token\TokenEloquentRepository;
+use App\Repositories\Token\TokenPackageRepositoryInterface;
+use App\Repositories\Token\TokenPackageEloquentRepository;
 // サービスのインポート
+use App\Services\Admin\UserServiceInterface;
+use App\Services\Admin\UserService;
 use App\Services\Batch\ScheduledTaskServiceInterface;
 use App\Services\Batch\ScheduledTaskService;
 use App\Services\Payment\PaymentServiceInterface;
@@ -50,6 +56,9 @@ use App\Services\Task\TaskSearchServiceInterface;
 use App\Services\Task\TaskSearchService;
 use App\Services\Token\TokenServiceInterface;
 use App\Services\Token\TokenService;
+use App\Services\Token\TokenPackageServiceInterface;
+use App\Services\Token\TokenPackageService;
+
 // 外部APIサービスのインポート
 use App\Services\AI\OpenAIService;
 
@@ -65,6 +74,9 @@ class AppServiceProvider extends ServiceProvider
         // ========================================
         // 1. リポジトリのバインド
         // ========================================
+
+        // --- Admin ---
+        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
 
         // --- Tag ---
         $this->app->bind(TagRepositoryInterface::class, EloquentTagRepository::class);
@@ -85,10 +97,14 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Token ---
         $this->app->bind(TokenRepositoryInterface::class, TokenEloquentRepository::class);
+        $this->app->bind(TokenPackageRepositoryInterface::class, TokenPackageEloquentRepository::class);
 
         // ========================================
         // 2. サービスのバインド
         // ========================================
+
+        // --- Admin ---
+        $this->app->bind(UserServiceInterface::class, UserService::class);
 
         // --- Tag ---
         $this->app->bind(TagServiceInterface::class, TagService::class);
@@ -120,6 +136,7 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Token ---
         $this->app->bind(TokenServiceInterface::class, TokenService::class);
+        $this->app->bind(TokenPackageServiceInterface::class, TokenPackageService::class);
 
         // ★ OpenAIService (外部API連携) のバインド
         // 依存性がないため、直接インスタンス化可能
