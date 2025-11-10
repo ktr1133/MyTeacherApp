@@ -4,11 +4,14 @@ namespace App\Services\Profile;
 
 use App\Models\User;
 use App\Models\Group;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Hash;
+use App\Models\FreeTokenSetting;
 use App\Services\Profile\GroupServiceInterface;
+use App\Services\Token\TokenServiceInterface;
 use App\Repositories\Profile\GroupRepositoryInterface;
 use App\Repositories\Profile\GroupUserRepositoryInterface;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class GroupService implements GroupServiceInterface
 {
@@ -17,10 +20,12 @@ class GroupService implements GroupServiceInterface
      *
      * @param GroupRepositoryInterface $groups
      * @param GroupUserRepositoryInterface $groupUsers
+     * @param 
      */
     public function __construct(
         private GroupRepositoryInterface $groups,
-        private GroupUserRepositoryInterface $groupUsers
+        private GroupUserRepositoryInterface $groupUsers,
+        private TokenServiceInterface $tokenService,
     ) {}
 
     /**
@@ -87,12 +92,19 @@ class GroupService implements GroupServiceInterface
             abort(403, 'グループメンバーを追加する権限がありません。');
         }
 
-        return $this->groupUsers->create([
-            'username' => $username,
-            'password' => Hash::make($password),
-            'group_id' => $group->id,
-            'group_edit_flg' => $canEdit,
-        ]);
+        return DB::transaction(function () use ($username, $password, $group, $canEdit, &$user): User {
+            if (User::where('username', $username)->exists()) {
+                abort(422, '指定されたユーザー名は既に存在します。');
+            }
+
+            // ユーザー作成＆グループ作成
+            return $this->groupUsers->create([
+                'username' => $username,
+                'password' => Hash::make($password),
+                'group_id' => $group->id,
+                'group_edit_flg' => $canEdit,
+            ]);
+        });
     }
 
     /**

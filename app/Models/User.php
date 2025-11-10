@@ -3,6 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\TokenBalance;
+use App\Models\Task;
+use App\Models\TaskProposal;
+use App\Models\Group;
+use App\Models\FreeTokenSetting;
+use App\Models\Notification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -166,8 +172,8 @@ class User extends Authenticatable
                 'tokenable_id' => $this->id
             ],
             [
-                'balance' => config('const.token.free_monthly', 1000000),
-                'free_balance' => config('const.token.free_monthly', 1000000),
+                'balance' => FreeTokenSetting::first()->amount ?? 0,
+                'free_balance' => FreeTokenSetting::first()->amount ?? 0,
                 'paid_balance' => 0,
                 'free_balance_reset_at' => now()->addMonth(),
                 'monthly_consumed_reset_at' => now()->addMonth(),

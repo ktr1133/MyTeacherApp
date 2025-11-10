@@ -10,7 +10,7 @@ class CreateFreeTokenSettingsTable extends Migration
     {
         Schema::create('free_token_settings', function (Blueprint $table) {
             $table->id();
-            $table->integer('amount')->default(10000);
+            $table->integer('amount')->default(10000)->comment('無料トークン数');
             $table->timestamps();
         });
 

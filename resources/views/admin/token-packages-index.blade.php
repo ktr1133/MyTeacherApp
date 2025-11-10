@@ -1,6 +1,6 @@
 <x-app-layout>
     @push('styles')
-        @vite(['resources/css/tokens/purchase.css'])
+        @vite(['resources/css/tokens/purchase.css', 'resources/css/admin/common.css'])
     @endpush
     @push('scripts')
         @vite(['resources/js/admin/common.js'])
