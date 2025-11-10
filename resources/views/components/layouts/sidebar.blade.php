@@ -27,7 +27,7 @@
         </div>
 
         {{-- ナビゲーションリンク --}}
-        <div class="flex flex-col space-y-2 px-3 mt-6">
+        <div class="flex flex-col space-y-2 px-3 mt-6 flex-1 overflow-y-auto">
             {{-- タスクリスト --}}
             <x-nav-link 
                 :href="route('dashboard')" 
@@ -44,7 +44,7 @@
             </x-nav-link>
 
             {{-- 承認待ち --}}
-            @if(Auth::user()->canEditGroup())
+            @if($u->canEditGroup())
                 <x-nav-link 
                     :href="route('tasks.pending-approvals')" 
                     :active="request()->routeIs('tasks.pending-approvals')" 
@@ -101,7 +101,70 @@
                 @endif
             </x-nav-link>
 
+
+            {{-- 管理者メニュー --}}
+            @if($u->isAdmin())
+                <div class="pt-4 pb-2 px-4">
+                    <div class="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                        </svg>
+                        管理者メニュー
+                    </div>
+                </div>
+
+                {{-- ユーザー管理 --}}
+                <x-nav-link 
+                    :href="route('admin.users.index')" 
+                    :active="request()->routeIs('admin.users.*')"
+                    class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-indigo-500/10 hover:to-purple-500/5 transition-all duration-200 group {{ request()->routeIs('admin.users.*') ? 'active bg-gradient-to-r from-indigo-500/10 to-purple-500/5 text-indigo-600' : '' }}"
+                >
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                    </svg>
+                    <span class="text-sm font-medium">ユーザー管理</span>
+                </x-nav-link>
+
+                {{-- トークンパッケージ --}}
+                <x-nav-link 
+                    :href="route('admin.token-packages')" 
+                    :active="request()->routeIs('admin.token-packages*')"
+                    class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-amber-500/10 hover:to-yellow-500/5 transition-all duration-200 group {{ request()->routeIs('admin.token-packages*') ? 'active bg-gradient-to-r from-amber-500/10 to-yellow-500/5 text-amber-600' : '' }}"
+                >
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-sm font-medium">パッケージ設定</span>
+                </x-nav-link>
+
+                {{-- トークン統計 --}}
+                <x-nav-link 
+                    :href="route('admin.token-stats')" 
+                    :active="request()->routeIs('admin.token-stats')"
+                    class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-pink-500/5 transition-all duration-200 group {{ request()->routeIs('admin.token-stats') ? 'active bg-gradient-to-r from-purple-500/10 to-pink-500/5 text-purple-600' : '' }}"
+                >
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span class="text-sm font-medium">トークン統計</span>
+                </x-nav-link>
+
+                {{-- 課金履歴 --}}
+                <x-nav-link 
+                    :href="route('admin.payment-history')" 
+                    :active="request()->routeIs('admin.payment-history')"
+                    class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-teal-500/10 hover:to-cyan-500/5 transition-all duration-200 group {{ request()->routeIs('admin.payment-history') ? 'active bg-gradient-to-r from-teal-500/10 to-cyan-500/5 text-teal-600' : '' }}"
+                >
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                    <span class="text-sm font-medium">課金履歴</span>
+                </x-nav-link>
+            @endif
+
             {{-- 設定(アカウント管理) --}}
+            <div class="pt-4"></div>
             <x-nav-link 
                 :href="route('profile.edit')" 
                 :active="request()->routeIs('profile.edit')"
@@ -116,7 +179,7 @@
         </div>
 
         {{-- トークン残高表示 --}}
-        <div class="mt-auto px-3 pb-6">
+        <div class="px-3 pb-6 shrink-0">
             <div class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-700/30">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
@@ -257,6 +320,68 @@
                     <span class="inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 @endif
             </x-nav-link>
+
+            {{-- 管理者メニュー --}}
+            @if($u->isAdmin())
+                <div class="pt-4 pb-2 px-4">
+                    <div class="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                        </svg>
+                        管理者メニュー
+                    </div>
+                </div>
+
+                {{-- ユーザー管理 --}}
+                <x-nav-link 
+                    :href="route('admin.users.index')" 
+                    :active="request()->routeIs('admin.users.*')"
+                    class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-indigo-500/10 hover:to-purple-500/5 transition-all duration-200 group {{ request()->routeIs('admin.users.*') ? 'active bg-gradient-to-r from-indigo-500/10 to-purple-500/5 text-indigo-600' : '' }}"
+                >
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                    </svg>
+                    <span class="text-sm font-medium">ユーザー管理</span>
+                </x-nav-link>
+
+
+                {{-- トークンパッケージ --}}
+                <x-nav-link 
+                    :href="route('admin.token-packages')" 
+                    :active="request()->routeIs('admin.token-packages', 'admin.token-packages-create', 'admin.token-packages-edit', 'admin.token-packages-delete')"
+                    class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-amber-500/10 hover:to-yellow-500/5 transition-all duration-200 group {{ request()->routeIs('admin.token-packages') ? 'active bg-gradient-to-r from-amber-500/10 to-yellow-500/5 text-amber-600' : '' }}"
+                >
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-sm font-medium">パッケージ設定</span>
+                </x-nav-link>
+
+                {{-- トークン統計 --}}
+                <x-nav-link 
+                    :href="route('admin.token-stats')" 
+                    :active="request()->routeIs('admin.token-stats')"
+                    class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-pink-500/5 transition-all duration-200 group {{ request()->routeIs('admin.token-stats') ? 'active bg-gradient-to-r from-purple-500/10 to-pink-500/5 text-purple-600' : '' }}"
+                >
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span class="text-sm font-medium">トークン統計</span>
+                </x-nav-link>
+
+                {{-- 課金履歴 --}}
+                <x-nav-link 
+                    :href="route('admin.payment-history')" 
+                    :active="request()->routeIs('admin.payment-history')"
+                    class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-teal-500/10 hover:to-cyan-500/5 transition-all duration-200 group {{ request()->routeIs('admin.payment-history') ? 'active bg-gradient-to-r from-teal-500/10 to-cyan-500/5 text-teal-600' : '' }}"
+                >
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                    <span class="text-sm font-medium">課金履歴</span>
+                </x-nav-link>
+            @endif
 
             {{-- 設定(アカウント管理) --}}
             <x-nav-link 

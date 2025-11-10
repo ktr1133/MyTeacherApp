@@ -177,4 +177,14 @@ class TokenEloquentRepository implements TokenRepositoryInterface
         // 現時点では常にfalse
         return false;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPaymentHistories(int $perPage = 20): LengthAwarePaginator
+    {
+        return PaymentHistory::with(['user'])
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+    }
 }

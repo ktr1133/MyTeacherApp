@@ -19,8 +19,8 @@ return new class extends Migration
             $table->morphs('tokenable');
             
             // トークン残高
-            $table->bigInteger('balance')->default(1000000)->comment('総残高');
-            $table->bigInteger('free_balance')->default(1000000)->comment('無料枠残高');
+            $table->bigInteger('balance')->default(0)->comment('総残高');
+            $table->bigInteger('free_balance')->default(0)->comment('無料枠残高');
             $table->bigInteger('paid_balance')->default(0)->comment('有料購入分残高');
             
             // 無料枠リセット日（月次）

@@ -2,10 +2,18 @@
 
 namespace App\Models;
 
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\TokenBalance;
+use App\Models\Task;
+use App\Models\TaskProposal;
+use App\Models\Group;
+use App\Models\FreeTokenSetting;
+use App\Models\Notification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Laravel\Cashier\Billable;
@@ -24,6 +32,7 @@ class User extends Authenticatable
         'password',
         'group_id',
         'group_edit_flg',
+        'is_admin',
     ];
     
     /**
@@ -86,8 +95,41 @@ class User extends Authenticatable
         return $this->hasMany(Task::class, 'approved_by_user_id');
     }
 
+
     /**
-     * このユーザーがグループマスターかどうかを確認する。
+     * 管理者かどうかを判定
+     *
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
+    }
+
+    /**
+     * マスターとして管理しているグループ
+     *
+     * @return HasOne
+     */
+    public function masterGroup(): HasOne
+    {
+        return $this->hasOne(Group::class, 'master_user_id');
+    }
+
+    /**
+     * グループ編集権限があるかどうか
+     *
+     * @return bool
+     */
+    public function canEditGroup(): bool
+    {
+        return $this->group_edit_flg === true;
+    }
+
+    /**
+     * グループマスターかどうか
+     *
+     * @return bool
      */
     public function isGroupMaster(): bool
     {
@@ -95,14 +137,6 @@ class User extends Authenticatable
             return false;
         }
         return $this->group->master_user_id === $this->id;
-    }
-
-    /**
-     * このユーザーがグループ編集権限を持つかどうかを確認する。
-     */
-    public function canEditGroup(): bool
-    {
-        return $this->group_edit_flg || $this->isGroupMaster();
     }
 
     /**
@@ -138,8 +172,8 @@ class User extends Authenticatable
                 'tokenable_id' => $this->id
             ],
             [
-                'balance' => config('const.token.free_monthly', 1000000),
-                'free_balance' => config('const.token.free_monthly', 1000000),
+                'balance' => FreeTokenSetting::first()->amount ?? 0,
+                'free_balance' => FreeTokenSetting::first()->amount ?? 0,
                 'paid_balance' => 0,
                 'free_balance_reset_at' => now()->addMonth(),
                 'monthly_consumed_reset_at' => now()->addMonth(),

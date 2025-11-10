@@ -17,6 +17,6 @@ class TokenStatsResponder
      */
     public function response(array $data): View
     {
-        return view('admin.tokens.stats', $data);
+        return view('admin.token-stats', $data);
     }
 }

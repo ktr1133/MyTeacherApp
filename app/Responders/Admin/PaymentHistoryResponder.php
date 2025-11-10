@@ -17,6 +17,6 @@ class PaymentHistoryResponder
      */
     public function response(array $data): View
     {
-        return view('admin.payments.index', $data);
+        return view('admin.payment-history', $data);
     }
 }

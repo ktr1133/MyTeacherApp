@@ -168,26 +168,33 @@ Route::middleware(['auth'])->group(function () {
         ->name('notifications.read-all');
 });
 
-
 // ========================================
 // 管理者専用ルート
 // ========================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // ユーザー管理
+    Route::get('/users', \App\Http\Actions\Admin\IndexUserAction::class)->name('users.index');
+    Route::get('/users/{user}/edit', \App\Http\Actions\Admin\EditUserAction::class)->name('users.edit');
+    Route::put('/users/{user}', \App\Http\Actions\Admin\UpdateUserAction::class)->name('users.update');
+    Route::delete('/users/{user}', \App\Http\Actions\Admin\DeleteUserAction::class)->name('users.destroy');
     
     // トークン統計
-    Route::get('/tokens/stats', \App\Http\Actions\Admin\Token\IndexTokenStatsAction::class)
-        ->name('tokens.stats');
+    Route::get('/token-stats', \App\Http\Actions\Admin\Token\IndexTokenStatsAction::class)->name('token-stats');
     
-    // ユーザーのトークン管理
-    Route::get('/tokens/users', \App\Http\Actions\Admin\Token\IndexTokenUsersAction::class)
-        ->name('tokens.users');
-    
-    Route::post('/tokens/adjust', \App\Http\Actions\Admin\Token\AdjustUserTokenAction::class)
-        ->name('tokens.adjust');
+    // ユーザー別トークン
+    Route::get('/token-users', \App\Http\Actions\Admin\Token\IndexTokenUsersAction::class)->name('token-users');
     
     // 課金履歴
-    Route::get('/payments', \App\Http\Actions\Admin\Payment\IndexPaymentHistoryAction::class)
-        ->name('payments.index');
+    Route::get('/payments', \App\Http\Actions\Admin\Payment\IndexPaymentHistoryAction::class)->name('payment-history');
+
+    // トークンパッケージ設定
+    Route::get('/token-packages', \App\Http\Actions\Admin\Token\IndexTokenPackageAction::class)->name('token-packages');
+    Route::get('/token-packages/create', \App\Http\Actions\Admin\Token\CreateTokenPackageAction::class)->name('token-packages-create');
+    Route::post('/token-packages', \App\Http\Actions\Admin\Token\StoreTokenPackageAction::class)->name('token-packages-store');
+    Route::get('/token-packages/{package}/edit', \App\Http\Actions\Admin\Token\EditTokenPackageAction::class)->name('token-packages-edit');
+    Route::put('/token-packages/{package}', \App\Http\Actions\Admin\Token\UpdateTokenPackageAction::class)->name('token-packages-update');
+    Route::delete('/token-packages/{package}', \App\Http\Actions\Admin\Token\DeleteTokenPackageAction::class)->name('token-packages-delete');
+    Route::post('/token-packages/free-token-update', \App\Http\Actions\Admin\Token\UpdateFreeTokenAmountAction::class)->name('token-packages.free-token-update');
 });
 
 // ========================================
