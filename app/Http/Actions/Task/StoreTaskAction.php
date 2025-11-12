@@ -14,15 +14,15 @@ use Illuminate\Support\Str;
  */
 class StoreTaskAction
 {
-    protected TaskManagementServiceInterface $service;
+    protected TaskManagementServiceInterface $taskManagementService;
 
     /**
      * コンストラクタ。タスク管理サービスインターフェースを注入。
      */
     public function __construct(
-        TaskManagementServiceInterface $service
+        TaskManagementServiceInterface $taskManagementService
     ) {
-        $this->task_management_service = $service;
+        $this->taskManagementService = $taskManagementService;
     }
 
     /**
@@ -49,7 +49,13 @@ class StoreTaskAction
             $rules['reward'] = ['required', 'integer', 'min:0'];
             $rules['requires_approval'] = ['required', 'boolean'];
         }
-
+        logger()->info('[StoreTaskAction] START', [
+            'request_id' => uniqid('task_', true),
+            'is_group_task' => $request->is_group_task,
+            'title' => $request->title,
+            'user_id' => auth()->id(),
+            'all_request_data' => $request->all(),
+        ]);
         $data = $request->validate($rules);
 
         // グループタスクの場合、追加フィールドを設定
@@ -65,20 +71,25 @@ class StoreTaskAction
 
             // 共通識別子を生成
             $data['group_task_id'] = (string) Str::uuid();
-            logger()->info('Generated group_task_id: ' . $data['group_task_id']);
+
             // タスクの所有者は担当者
             $userId = $data['assigned_user_id'];
             // 担当者が未設定の場合は、グループの編集権限のないメンバー全員宛にタスクを作成する
             $groupFlg = is_null($userId) ? true : false;
-            unset($data['assigned_user_id']);
         }
 
-        $user = isset($userId) && !is_null($userId) ? $this->task_management_service->getUserById($userId) : Auth::user();
+        $user = isset($userId) && !is_null($userId) ? $this->taskManagementService->getUserById($userId) : Auth::user();
 
-        // 2. Serviceに処理を委譲
-        $this->task_management_service->createTask($user, $data, $groupFlg);
+        $this->taskManagementService->createTask($user, $data, $groupFlg);
 
-        // 3. 成功メッセージと共にリダイレクト
-        return redirect()->route('dashboard')->with('success', 'タスクが登録されました。');
+        $msg = $groupFlg ? 'グループタスクが登録されました。' : 'タスクが登録されました。';
+
+        $avatar_event = $groupFlg ? config('const.avatar_events.group_task_created') : config('const.avatar_events.task_created');
+
+        // アバターイベント発火用のセッションをセットしてリダイレクト
+        return redirect()
+            ->route('dashboard')
+            ->with('success', $msg)
+            ->with('avatar_event', $avatar_event);
     }
 }

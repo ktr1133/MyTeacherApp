@@ -21,9 +21,13 @@ class AdminUserSeeder extends Seeder
             'group_edit_flg' => false,
             'is_admin' => true,
         ]);
-
-        $this->command->info('Admin user created successfully!');
-        $this->command->info('Username: admin');
-        $this->command->info('Password: password (please change this in production!)');
+        // テストユーザーを作成
+        User::create([
+            'username' => 'testuser',
+            'password' => Hash::make('password'), // 本番環境では強力なパスワードに変更
+            'group_id' => null,
+            'group_edit_flg' => false,
+            'is_admin' => false,
+        ]);
     }
 }

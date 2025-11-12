@@ -15,8 +15,8 @@ return new class extends Migration
                 ->onDelete('cascade');
             
             $table->timestamp('executed_at');
-            $table->enum('status', ['success', 'failed', 'skipped'])->default('success');
-            
+            $table->enum('status', array_keys(config('const.schedule_task_execution_statuses')))->default('success')->comment('実行ステータス');
+
             // 作成されたタスク情報
             $table->foreignId('task_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('assigned_user_id')->nullable()->constrained('users')->onDelete('set null');

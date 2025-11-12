@@ -30,8 +30,6 @@ return new class extends Migration
             $table->bigInteger('total_consumed')->default(0)->comment('累計消費量');
             $table->bigInteger('monthly_consumed')->default(0)->comment('月次消費量');
             $table->timestamp('monthly_consumed_reset_at')->nullable()->comment('月次消費量リセット日時');
-
-            $table->timestamp('deleted_at')->nullable(); // 削除予定日時
             
             $table->timestamps();
             $table->softDeletes();

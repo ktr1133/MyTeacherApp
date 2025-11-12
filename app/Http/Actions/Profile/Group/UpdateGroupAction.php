@@ -20,8 +20,11 @@ class UpdateGroupAction
             'group_name' => ['required', 'string', 'max:255'],
         ]);
 
-        $this->service->createOrUpdateGroup(Auth::user(), $data['group_name']);
+        $avatarEvent = $this->service->createOrUpdateGroup(Auth::user(), $data['group_name']);
 
-        return $this->responder->redirectToEditWithStatus('group-updated');
+        return $this->responder->redirectToEditWithStatus([
+            'status' => 'group-updated',
+            'avatar_event' => $avatarEvent,
+        ]);
     }
 }

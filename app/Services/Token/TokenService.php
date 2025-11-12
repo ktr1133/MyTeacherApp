@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 class TokenService implements TokenServiceInterface
 {
     public function __construct(
-        private TokenRepositoryInterface $tokenRepository
+        private TokenRepositoryInterface $tokenRepository,
     ) {}
 
     /**
@@ -26,17 +26,36 @@ class TokenService implements TokenServiceInterface
     {
         try {
             $balance = $this->getBalanceForUser($user);
-
+            logger()->info('処理前の残高', [$balance]);
             // 残高チェック
             if ($balance->balance < $amount) {
+                Log::warning('Insufficient token balance', [
+                    'user_id' => $user->id,
+                    'required' => $amount,
+                    'balance' => $balance->balance,
+                ]);
                 return false;
             }
 
             // トークン消費の計算
             $consumptionData = $this->calculateConsumption($balance, $amount);
+            logger()->info('トークン消費結果', [
+                'user_id' => $user->id,
+                'consumptionData' => $consumptionData,
+            ]);
 
             // 残高更新
             $this->tokenRepository->updateTokenBalance($balance, $consumptionData['balanceUpdate']);
+
+            // related が文字列の場合は null に変換（防御的処理）
+            if (is_string($related)) {
+                Log::warning('Invalid related parameter (string given)', [
+                    'user_id' => $user->id,
+                    'reason' => $reason,
+                    'related' => $related,
+                ]);
+                $related = null;
+            }
 
             // トランザクション記録
             $this->tokenRepository->createTransaction([
@@ -47,14 +66,8 @@ class TokenService implements TokenServiceInterface
                 'amount' => -$amount,
                 'balance_after' => $consumptionData['balanceUpdate']['balance'],
                 'reason' => $reason,
-                'related_type' => $related ? get_class($related) : null,
-                'related_id' => $related?->id,
-            ]);
-
-            Log::info('Token consumed', [
-                'user_id' => $user->id,
-                'amount' => $amount,
-                'reason' => $reason,
+                'related_type' => ($related && is_object($related)) ? get_class($related) : null,
+                'related_id' => ($related && is_object($related)) ? $related->id : null,
             ]);
 
             // 残高チェックして通知
@@ -67,6 +80,7 @@ class TokenService implements TokenServiceInterface
                 'user_id' => $user->id,
                 'amount' => $amount,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
             return false;
         }
@@ -90,8 +104,8 @@ class TokenService implements TokenServiceInterface
             $tokenableType,
             $tokenableId,
             [
-                'balance' => config('const.token.free_monthly', 1000000),
-                'free_balance' => config('const.token.free_monthly', 1000000),
+                'balance' => $this->tokenRepository->getFreeTokenSettings()->amount,
+                'free_balance' => $this->tokenRepository->getFreeTokenSettings()->amount,
                 'paid_balance' => 0,
                 'free_balance_reset_at' => now()->addMonth(),
                 'monthly_consumed_reset_at' => now()->addMonth(),
@@ -209,7 +223,10 @@ class TokenService implements TokenServiceInterface
     {
         $freeBalance = $balance->free_balance;
         $paidBalance = $balance->paid_balance;
-
+        logger()->info('計算前の無料と有料', [
+            'freeBalance' => $freeBalance,
+            'paidBalance' => $paidBalance,
+        ]);
         // 無料枠から優先的に消費
         if ($freeBalance >= $amount) {
             $freeBalance -= $amount;
@@ -219,12 +236,20 @@ class TokenService implements TokenServiceInterface
             $paidBalance -= $remaining;
         }
 
+        logger()->info('計算後の無料と有料', [
+            'balance' => $freeBalance + $paidBalance,
+            'freeBalance' => $freeBalance,
+            'paidBalance' => $paidBalance,
+            'totalConsumed' => $balance->total_consumed + $amount,
+            'monthlyConsumed' => $balance->monthly_consumed + $amount,
+        ]);
+
         return [
             'balanceUpdate' => [
-                'balance' => $freeBalance + $paidBalance,
-                'free_balance' => $freeBalance,
-                'paid_balance' => $paidBalance,
-                'total_consumed' => $balance->total_consumed + $amount,
+                'balance'          => $freeBalance + $paidBalance,
+                'free_balance'     => $freeBalance,
+                'paid_balance'     => $paidBalance,
+                'total_consumed'   => $balance->total_consumed + $amount,
                 'monthly_consumed' => $balance->monthly_consumed + $amount,
             ],
         ];
@@ -289,4 +314,163 @@ class TokenService implements TokenServiceInterface
         }
     }
 
+    /**
+     * AI使用コストを記録（トークン消費なし、ログのみ）
+     *
+     * @param User $user
+     * @param int $amount
+     * @param string $reason
+     * @param mixed $related
+     * @param array $aiUsageDetails
+     * @return void
+     */
+    public function recordAICost(User $user, int $amount, string $reason, $related = null, array $aiUsageDetails = []): void
+    {
+        $balance = $this->getBalanceForUser($user);
+
+        // related が文字列の場合は null に変換
+        if (is_string($related)) {
+            Log::warning('Invalid related parameter (string given)', [
+                'user_id' => $user->id,
+                'reason' => $reason,
+                'related' => $related,
+            ]);
+            $related = null;
+        }
+
+        // トランザクション記録（AI使用料として記録）
+        $this->tokenRepository->createTransaction([
+            'tokenable_type' => $balance->tokenable_type,
+            'tokenable_id' => $balance->tokenable_id,
+            'user_id' => $user->id,
+            'type' => 'ai_usage',
+            'amount' => -$amount,
+            'balance_after' => $balance->balance, // 残高は変更なし（既に事前消費済み）
+            'reason' => $reason,
+            'related_type' => ($related && is_object($related)) ? get_class($related) : null,
+            'related_id' => ($related && is_object($related)) ? $related->id : null,
+            'metadata' => !empty($aiUsageDetails) ? json_encode($aiUsageDetails) : null,
+        ]);
+
+        Log::info('AI usage cost recorded', [
+            'user_id' => $user->id,
+            'amount' => $amount,
+            'reason' => $reason,
+            'details' => $aiUsageDetails,
+        ]);
+    }
+
+    /**
+     * 事前消費したトークンを精算（差額を返金 or 追加請求）
+     *
+     * @param User $user
+     * @param int $estimatedAmount 事前見積もり額
+     * @param int $actualAmount 実際の使用額
+     * @param string $reason
+     * @param mixed $related
+     * @return void
+     */
+    public function settleTokenConsumption(
+        User $user,
+        int $estimatedAmount,
+        int $actualAmount,
+        string $reason,
+        $related = null
+    ): void {
+        logger()->info('トークン消費の精算開始', [
+            'user_id' => $user->id,
+            'estimatedAmount' => $estimatedAmount,
+            'actualAmount' => $actualAmount,
+        ]);
+        $difference = $estimatedAmount - $actualAmount;
+
+        if ($difference == 0) {
+            Log::info('No settlement needed (exact match)', [
+                'user_id' => $user->id,
+                'estimated' => $estimatedAmount,
+                'actual' => $actualAmount,
+            ]);
+            return;
+        }
+
+        $balance = $this->getBalanceForUser($user);
+
+        if ($difference > 0) {
+            // 返金
+            $this->refundTokens($user, $difference, $reason . '（差額返金）', $related);
+        } else {
+            // 追加請求
+            $additionalAmount = abs($difference);
+            
+            if ($balance->balance < $additionalAmount) {
+                Log::error('Insufficient balance for additional charge', [
+                    'user_id' => $user->id,
+                    'required' => $additionalAmount,
+                    'balance' => $balance->balance,
+                ]);
+                throw new \RuntimeException('トークン残高が不足しています。');
+            }
+
+            $this->consumeTokens($user, $additionalAmount, $reason . '（追加消費）', $related);
+        }
+    }
+
+    /**
+     * トークンを返金
+     *
+     * @param User $user
+     * @param int $amount
+     * @param string $reason
+     * @param mixed $related
+     * @return bool
+     */
+    private function refundTokens(User $user, int $amount, string $reason, $related = null): bool
+    {
+        try {
+            $balance = $this->getBalanceForUser($user);
+
+            // 有料残高に返金
+            $newBalance = $balance->balance + $amount;
+            $newPaidBalance = $balance->paid_balance + $amount;
+
+            $this->tokenRepository->updateTokenBalance($balance, [
+                'balance' => $newBalance,
+                'paid_balance' => $newPaidBalance,
+            ]);
+
+            // related が文字列の場合は null に変換
+            if (is_string($related)) {
+                $related = null;
+            }
+
+            // トランザクション記録
+            $this->tokenRepository->createTransaction([
+                'tokenable_type' => $balance->tokenable_type,
+                'tokenable_id' => $balance->tokenable_id,
+                'user_id' => $user->id,
+                'type' => 'refund',
+                'amount' => $amount,
+                'balance_after' => $newBalance,
+                'reason' => $reason,
+                'related_type' => ($related && is_object($related)) ? get_class($related) : null,
+                'related_id' => ($related && is_object($related)) ? $related->id : null,
+            ]);
+
+            Log::info('Token refunded', [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'reason' => $reason,
+            ]);
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error('Token refund failed', [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
 }

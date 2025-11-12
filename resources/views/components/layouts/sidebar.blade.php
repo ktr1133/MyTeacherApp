@@ -74,6 +74,18 @@
                 <span class="text-sm font-medium">タグ管理</span>
             </x-nav-link>
 
+            {{-- 教師アバター設定 --}}
+            <x-nav-link 
+                :href="route('avatars.edit')" 
+                :active="request()->routeIs('avatars.*')"
+                class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-pink-500/10 hover:to-rose-500/5 transition-all duration-200 group {{ request()->routeIs('avatars.*') ? 'active bg-gradient-to-r from-pink-500/10 to-rose-500/5 text-pink-600' : '' }}"
+            >
+                <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm font-medium">教師アバター</span>
+            </x-nav-link>
+
             {{-- 実績 --}}
             <x-nav-link 
                 :href="route('reports.performance')"
@@ -290,6 +302,18 @@
                     <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                 </svg>
                 <span class="text-sm font-medium">タグ管理</span>
+            </x-nav-link>
+
+            {{-- 教師アバター設定 --}}
+            <x-nav-link 
+                :href="route('avatars.edit')" 
+                :active="request()->routeIs('avatars.*')"
+                class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-pink-500/10 hover:to-rose-500/5 transition-all duration-200 group {{ request()->routeIs('avatars.*') ? 'active bg-gradient-to-r from-pink-500/10 to-rose-500/5 text-pink-600' : '' }}"
+            >
+                <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm font-medium">教師アバター</span>
             </x-nav-link>
 
             {{-- 実績 --}}

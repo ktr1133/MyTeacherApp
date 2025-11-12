@@ -855,24 +855,330 @@ class DashboardController {
             }));
 
             const proposal = store?.decompositionProposal ?? this.state.decompositionProposal;
-            await TaskAPI.adopt(proposal.proposal_id ?? proposal.id, tasksToAdopt);
+            const response = await TaskAPI.adopt(proposal.proposal_id ?? proposal.id, tasksToAdopt);
 
-            this.updateState({
-                showDecompositionModal: false,
-                decompositionProposal: null,
-                proposedTasks: [],
-                selectedTaskSpans: {},
-                selectedTaskDueDates: [],
-                generatedTag: '',
-                isProposing: false
-            });
+            console.log('[confirmProposal] Response received', response);
 
-            // ページをリロードしてタスクリストを更新
-            window.location.reload();
+            if (response.success) {
+                // トースト通知を表示
+                this.showToast(response.message, 'success');
+
+                // アバターコメントを表示
+                if (response.avatar_comment && typeof window.showAvatarComment === 'function') {
+                    console.log('[confirmProposal] Showing avatar comment:', response.avatar_comment);
+                    window.showAvatarComment(response.avatar_comment);
+                }
+
+                // 状態をリセット
+                this.updateState({
+                    showDecompositionModal: false,
+                    decompositionProposal: null,
+                    proposedTasks: [],
+                    selectedTaskSpans: {},
+                    selectedTaskDueDates: [],
+                    generatedTag: '',
+                    isProposing: false
+                });
+
+                // モーダルを閉じる
+                this.modal.close();
+                this.modal.hideLoading();
+
+                // タスクリストを部分更新
+                this.updateTaskList(response.tasks, store.generatedTag);
+            } else {
+                throw new Error(response.message || 'タスクの作成に失敗しました。');
+            }
         } catch (error) {
+            this.modal.hideLoading();
             this.updateState({ isProposing: false });
-            this.updateState({ showDecompositionModal: true });
+            
+            // エラートースト表示
+            this.showToast(
+                error.message || 'タスクの作成中にエラーが発生しました',
+                'error'
+            );
+            
+            console.error('[confirmProposal] Error:', error);
         }
+    }
+
+    /**
+     * トースト通知を表示（flash-messageと同じ構造のDOMを動的生成）
+     * @param {string} message - 表示メッセージ
+     * @param {string} type - 'success' | 'error' | 'warning' | 'info'
+     */
+    showToast(message, type = 'success') {
+        console.log('[showToast]', { message, type });
+
+        // 既存のトーストを削除
+        const existingToast = document.getElementById('dynamic-toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+
+        // トーストコンテナを作成
+        const toastContainer = document.createElement('div');
+        toastContainer.id = 'dynamic-toast';
+        toastContainer.className = 'fixed top-4 right-4 z-50 max-w-sm w-full';
+        toastContainer.setAttribute('role', 'alert');
+        toastContainer.setAttribute('aria-live', 'assertive');
+        toastContainer.setAttribute('aria-atomic', 'true');
+
+        // 色設定
+        const colorMap = {
+            success: {
+                bg: 'bg-green-50',
+                border: 'border-green-500',
+                text: 'text-green-800',
+                icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+            },
+            error: {
+                bg: 'bg-red-50',
+                border: 'border-red-500',
+                text: 'text-red-800',
+                icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'
+            },
+            warning: {
+                bg: 'bg-yellow-50',
+                border: 'border-yellow-500',
+                text: 'text-yellow-800',
+                icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+            },
+            info: {
+                bg: 'bg-blue-50',
+                border: 'border-blue-500',
+                text: 'text-blue-800',
+                icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+            }
+        };
+
+        const colors = colorMap[type] || colorMap.success;
+
+        // トーストHTML
+        toastContainer.innerHTML = `
+            <div class="flex items-start p-4 rounded-lg shadow-lg border-l-4 ${colors.bg} ${colors.border} ${colors.text}">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${colors.icon}" />
+                    </svg>
+                </div>
+                <div class="ml-3 flex-1">
+                    <p class="text-sm font-medium">${this.escapeHtml(message)}</p>
+                </div>
+                <div class="ml-4 flex-shrink-0 flex">
+                    <button class="toast-close inline-flex rounded-md hover:opacity-75">
+                        <span class="sr-only">閉じる</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(toastContainer);
+
+        // アニメーション（フェードイン）
+        requestAnimationFrame(() => {
+            toastContainer.style.opacity = '0';
+            toastContainer.style.transform = 'translateY(8px)';
+            toastContainer.style.transition = 'opacity 300ms ease-out, transform 300ms ease-out';
+
+            requestAnimationFrame(() => {
+                toastContainer.style.opacity = '1';
+                toastContainer.style.transform = 'translateY(0)';
+            });
+        });
+
+        // 閉じるボタンのイベント
+        const closeBtn = toastContainer.querySelector('.toast-close');
+        const closeToast = () => {
+            toastContainer.style.opacity = '0';
+            toastContainer.style.transform = 'translateY(8px)';
+            setTimeout(() => toastContainer.remove(), 200);
+        };
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeToast);
+        }
+
+        // 5秒後に自動的に閉じる
+        setTimeout(closeToast, 5000);
+    }
+
+    /**
+     * HTML エスケープ
+     * @param {string} text - エスケープする文字列
+     * @returns {string} エスケープされた文字列
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * タスクリストを部分更新（新規タスクを追加）
+     * @param {Array} tasks - 作成されたタスクの配列
+     * @param {string} tagName - タグ名
+     */
+    updateTaskList(tasks, tagName) {
+        console.log('[updateTaskList]', { tasks, tagName });
+
+        if (!tasks || tasks.length === 0) {
+            return;
+        }
+
+        // 現在アクティブなタブを取得
+        const store = Alpine.store?.('dashboard');
+        const activeTab = store?.activeTab || 'todo';
+
+        if (activeTab !== 'todo') {
+            console.log('[updateTaskList] Not on todo tab, skipping update');
+            return;
+        }
+
+        // タグバケツを探す
+        let bucketContainer = null;
+        const allBuckets = document.querySelectorAll('[data-bucket-name]');
+        
+        for (const bucket of allBuckets) {
+            if (bucket.getAttribute('data-bucket-name') === tagName) {
+                bucketContainer = bucket;
+                break;
+            }
+        }
+
+        // タグバケツが存在しない場合は新規作成
+        if (!bucketContainer) {
+            console.log('[updateTaskList] Creating new bucket for tag:', tagName);
+            this.createNewBucket(tagName, tasks);
+            return;
+        }
+
+        // 既存バケツにタスクを追加
+        const taskListContainer = bucketContainer.querySelector('.task-list-container');
+        if (!taskListContainer) {
+            console.warn('[updateTaskList] Task list container not found');
+            return;
+        }
+
+        // 空状態メッセージを削除
+        const emptyState = taskListContainer.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        // タスクカードを生成して追加
+        tasks.forEach(task => {
+            const taskCard = this.createTaskCard(task);
+            taskListContainer.insertAdjacentHTML('beforeend', taskCard);
+        });
+
+        console.log('[updateTaskList] Tasks added to existing bucket');
+    }
+
+    /**
+     * 新しいタグバケツを作成
+     * @param {string} tagName - タグ名
+     * @param {Array} tasks - タスクの配列
+     */
+    createNewBucket(tagName, tasks) {
+        // タスクカードのHTMLを生成
+        const taskCardsHTML = tasks.map(task => this.createTaskCard(task)).join('');
+
+        const bucketHTML = `
+            <div class="bento-card task-card-enter p-6 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50" data-bucket-name="${this.escapeHtml(tagName)}">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#59B9C6] to-[#3b82f6] flex items-center justify-center shadow-lg">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-900 dark:text-white">${this.escapeHtml(tagName)}</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">${tasks.length}件のタスク</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="task-list-container space-y-3">
+                    ${taskCardsHTML}
+                </div>
+            </div>
+        `;
+
+        // 未完了タブのコンテナを取得
+        const todoTabContainer = document.querySelector('[x-show="activeTab === \'todo\'"]');
+        if (!todoTabContainer) {
+            console.warn('[createNewBucket] Todo tab container not found');
+            return;
+        }
+
+        // 空状態を削除
+        const emptyState = todoTabContainer.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        // グリッドコンテナがない場合は作成
+        let gridContainer = todoTabContainer.querySelector('.bento-grid');
+        if (!gridContainer) {
+            gridContainer = document.createElement('div');
+            gridContainer.className = 'bento-grid grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6';
+            todoTabContainer.appendChild(gridContainer);
+        }
+
+        // 新しいバケツを先頭に追加
+        gridContainer.insertAdjacentHTML('afterbegin', bucketHTML);
+
+        console.log('[createNewBucket] New bucket created');
+    }
+
+    /**
+     * タスクカードのHTMLを生成
+     * @param {Object} task - タスクオブジェクト
+     * @returns {string} タスクカードのHTML
+     */
+    createTaskCard(task) {
+        const spanLabels = { 1: '短期', 2: '中期', 3: '長期' };
+        const spanColors = {
+            1: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+            2: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+            3: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300'
+        };
+
+        const spanLabel = spanLabels[task.span] || '中期';
+        const spanColor = spanColors[task.span] || spanColors[2];
+        const dueDate = task.due_date ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">期限: ${this.escapeHtml(task.due_date)}</p>` : '';
+
+        return `
+            <div class="task-card group bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2 break-words">${this.escapeHtml(task.title)}</h4>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${spanColor}">
+                                ${spanLabel}
+                            </span>
+                        </div>
+                        ${dueDate}
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <form method="POST" action="/tasks/${task.id}/toggle" class="inline">
+                            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.content}">
+                            <input type="hidden" name="_method" value="PATCH">
+                            <button type="submit" class="task-toggle-btn p-2 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition" title="完了にする">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     /**
@@ -1035,16 +1341,32 @@ class DashboardEventHandler {
             const simpleRegisterHandler = (ev) => {
                 const form = document.getElementById('task-form');
                 if (form) {
-                    // フォームが有効か確認
                     if (!form.checkValidity()) {
                         form.reportValidity();
                         ev.preventDefault();
                         return;
                     }
+                    // ← ここで何もしない（フォームが送信される）
                 }
             };
             simpleRegisterBtn.addEventListener('click', simpleRegisterHandler, { once: false });
-            this.boundHandlers.set('simple-register-btn', simpleRegisterHandler);
+        }
+
+        // グループタスク登録ボタン - 上記と同じ処理
+        const groupTaskRegisterBtn = document.getElementById('register-group-task-btn');
+        if (groupTaskRegisterBtn) {
+            const groupTaskRegisterHandler = (ev) => {
+                const form = document.getElementById('group-task-form');
+                if (form) {
+                    if (!form.checkValidity()) {
+                        form.reportValidity();
+                        ev.preventDefault();
+                        return;
+                    }
+                    // ← タスク登録と同じ処理
+                }
+            };
+            groupTaskRegisterBtn.addEventListener('click', groupTaskRegisterHandler, { once: false });
         }
     }
 
@@ -1134,7 +1456,7 @@ document.addEventListener('alpine:init', () => {
     window.dashboard = dashboard;
     window.decomposeTask = (...args) => dashboard.decomposeTask(...args);
     window.acceptProposal = () => dashboard.confirmProposal();
-    
+
     // DOM準備完了後に初期化
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
@@ -1143,4 +1465,36 @@ document.addEventListener('alpine:init', () => {
     } else {
         handler.init();
     }
+
+    // トースト通知ストア
+    Alpine.store('toast', {
+        visible: false,
+        message: '',
+        type: 'success',
+        timer: null,
+
+        show(message, type = 'success') {
+            this.message = message;
+            this.type = type;
+            this.visible = true;
+
+            // 既存のタイマーをクリア
+            if (this.timer) {
+                clearTimeout(this.timer);
+            }
+
+            // 5秒後に自動的に閉じる
+            this.timer = setTimeout(() => {
+                this.hide();
+            }, 5000);
+        },
+
+        hide() {
+            this.visible = false;
+            if (this.timer) {
+                clearTimeout(this.timer);
+                this.timer = null;
+            }
+        }
+    });
 });

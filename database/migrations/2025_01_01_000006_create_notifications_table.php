@@ -18,14 +18,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             
             // 通知種別
-            $table->enum('type', [
-                'token_low',           // トークン残高低下
-                'token_depleted',      // トークン残高ゼロ
-                'payment_success',     // 課金成功
-                'payment_failed',      // 課金失敗
-                'group_task_created',  // グループタスク作成（将来）
-                'group_task_assigned', // グループタスク割当（将来）
-            ]);
+            $table->enum('type', array_keys(config('const.notification_types')))->comment('通知種別');
             
             // 通知内容
             $table->string('title');

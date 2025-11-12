@@ -20,6 +20,10 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/css/auth.css'])
+
+        <!-- Page Styles -->
+        @stack('styles')
+        @stack('scripts')
     </head>
     <body class="font-sans antialiased">
         {{ $slot }}

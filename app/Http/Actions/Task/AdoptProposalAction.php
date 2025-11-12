@@ -3,6 +3,7 @@
 namespace App\Http\Actions\Task;
 
 use App\Services\Task\TaskManagementServiceInterface;
+use App\Services\Avatar\TeacherAvatarServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -11,6 +12,7 @@ final class AdoptProposalAction
 {
     public function __construct(
         private TaskManagementServiceInterface $taskService,
+        private readonly TeacherAvatarServiceInterface $avatarService,
     ) {}
 
     /**
@@ -38,15 +40,13 @@ final class AdoptProposalAction
         }
 
         $validated = $validator->validated();
-        logger()->info('AdoptProposalAction input', $validated);
-        logger()->info('adoptProposalAction input before validate', $request->all());   
-        // 型を整える（安全側）
         $proposalId = (int) $validated['proposal_id'];
         $tasks = array_map(function ($t) {
             return [
                 'title' => (string) $t['title'],
                 'span' => $t['span'],
                 'priority' => isset($t['priority']) ? (int) $t['priority'] : null,
+                'due_date' => $t['due_date'] ?? null,
                 'tags' => array_values(
                     array_filter(
                         array_map('strval', $t['tags'] ?? []),
@@ -57,16 +57,31 @@ final class AdoptProposalAction
         }, $validated['tasks']);
 
         try {
+            // タスクを一括作成
             $created = $this->taskService->adoptProposal(
                 $request->user(),
                 $proposalId,
                 $tasks
             );
 
+            // アバターコメントを取得
+            $avatarEventType = config('const.avatar_events.task_breakdown');
+            $avatarComment = $this->avatarService->getCommentForEvent(
+                $request->user(),
+                $avatarEventType
+            );
+
+            logger()->info('[AdoptProposalAction] Avatar comment fetched', [
+                'event_type' => $avatarEventType,
+                'has_comment' => !is_null($avatarComment),
+                'comment_data' => $avatarComment,
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => count($created) . '件のタスクを作成しました',
                 'tasks' => $created,
+                'avatar_comment' => $avatarComment,
             ]);
         } catch (\Throwable $e) {
             return response()->json([

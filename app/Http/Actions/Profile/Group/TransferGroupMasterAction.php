@@ -18,6 +18,9 @@ class TransferGroupMasterAction
     {
         $this->service->transferMaster(Auth::user(), $newMaster);
 
-        return $this->responder->redirectToEditWithStatus('master-transferred');
+        return $this->responder->redirectToEditWithStatus([
+            'status' => 'master-transferred',
+            'avatar_event' => config('const.avatar_events.group_edited'),
+        ]);
     }
 }

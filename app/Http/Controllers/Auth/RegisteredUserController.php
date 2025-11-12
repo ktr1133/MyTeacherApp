@@ -43,6 +43,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // アバター作成画面にリダイレクト
+        return redirect()->route('avatars.create');
     }
 }

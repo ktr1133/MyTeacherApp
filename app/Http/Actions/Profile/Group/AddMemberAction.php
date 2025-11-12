@@ -25,6 +25,9 @@ class AddMemberAction
 
         $this->service->addMember(Auth::user(), $data['username'], $data['password'], (bool)($data['group_edit_flg'] ?? false));
 
-        return $this->responder->redirectToEditWithStatus('member-added');
+        return $this->responder->redirectToEditWithStatus([
+            'status' => 'member-added',
+            'avatar_event' => config('const.avatar_events.group_edited'),
+        ]);
     }
 }

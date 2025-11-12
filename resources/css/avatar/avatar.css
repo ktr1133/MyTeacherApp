@@ -1,0 +1,517 @@
+/* ========================================
+   アバター作成画面
+   ======================================== */
+
+.hero-fade-in {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-fade-in-delay {
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.avatar-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .avatar-card {
+    background: rgba(31, 41, 55, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.avatar-form-group {
+    margin-bottom: 1rem;
+}
+
+.avatar-form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.dark .avatar-form-label {
+    color: #d1d5db;
+}
+
+.avatar-form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.dark .avatar-form-input {
+    background: #1f2937;
+    border-color: #374151;
+    color: white;
+}
+
+.avatar-form-input:focus {
+    outline: none;
+    border-color: #59B9C6;
+    box-shadow: 0 0 0 3px rgba(89, 185, 198, 0.1);
+}
+
+.avatar-btn-primary {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 100%);
+    color: white;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 15px -3px rgba(89, 185, 198, 0.3);
+}
+
+.avatar-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.avatar-btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.avatar-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 25px -5px rgba(89, 185, 198, 0.4);
+}
+
+.avatar-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: #6b7280;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.dark .avatar-btn-secondary {
+    color: #9ca3af;
+    border-color: #374151;
+}
+
+.avatar-btn-secondary:hover {
+    border-color: #59B9C6;
+    color: #59B9C6;
+    background: rgba(89, 185, 198, 0.05);
+}
+
+/* ========================================
+   アバターウィジェット
+   ======================================== */
+
+.avatar-widget {
+    position: fixed;
+    z-index: 9999;
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.avatar-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatar-image {
+    width: 250px;
+    height: 300px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 640px) {
+    .avatar-image {
+        width: 180px;
+        height: 220px;
+    }
+}
+
+.avatar-bubble {
+    position: relative;
+    max-width: 300px;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dark .avatar-bubble {
+    background: #1f2937;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.avatar-bubble-arrow {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid white;
+}
+
+.dark .avatar-bubble-arrow {
+    border-top-color: #1f2937;
+}
+
+.avatar-close-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 32px;
+    height: 32px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.avatar-close-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* ========================================
+   アニメーション
+   ======================================== */
+
+.avatar-idle {
+    animation: avatar-idle 3s ease-in-out infinite;
+}
+
+.avatar-joy {
+    animation: avatar-joy 1s ease-out;
+}
+
+.avatar-worry {
+    animation: avatar-worry 0.5s ease-in-out 3;
+}
+
+.avatar-cheer {
+    animation: avatar-cheer 0.8s ease-out 2;
+}
+
+.avatar-question {
+    animation: avatar-question 1s ease-in-out 2;
+}
+
+.avatar-secretary {
+    animation: avatar-secretary 1s ease-in-out;
+}
+
+.avatar-wave {
+    animation: avatar-wave 1s ease-in-out 2;
+}
+
+.avatar-goodbye {
+    animation: avatar-goodbye 1.5s ease-in-out;
+}
+
+.avatar-thanks {
+    animation: avatar-thanks 1s ease-in-out 2;
+}
+
+.avatar-applause {
+    animation: avatar-applause 1s ease-in-out 3;
+}
+
+.avatar-nod {
+    animation: avatar-nod 0.8s ease-in-out 2;
+}
+
+.avatar-shake {
+    animation: avatar-shake 0.5s ease-in-out 3;
+}
+
+.avatar-bless {
+    animation: avatar-bless 1.2s ease-out;
+}
+
+.avatar-confirm {
+    animation: avatar-confirm 1.5s ease-in-out 2;
+}
+
+@keyframes avatar-idle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes avatar-joy {
+    0% { transform: translateY(0) rotate(0deg) scale(1); }
+    25% { transform: translateY(-20px) rotate(5deg) scale(1.1); }
+    50% { transform: translateY(-30px) rotate(-5deg) scale(1.1); }
+    75% { transform: translateY(-20px) rotate(5deg) scale(1.1); }
+    100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+@keyframes avatar-worry {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-3px) rotate(-2deg); }
+    50% { transform: translateX(3px) rotate(2deg); }
+    75% { transform: translateX(-3px) rotate(-2deg); }
+}
+
+@keyframes avatar-cheer {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-15px) scale(1.05); }
+}
+
+@keyframes avatar-question {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(10deg); }
+}
+
+@keyframes avatar-secretary {
+    0%, 100% { transform: rotateX(0deg); }
+    50% { transform: rotateX(15deg); }
+}
+
+@keyframes avatar-wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+}
+
+@keyframes avatar-goodbye {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(10deg) scale(1.05); }
+}
+
+@keyframes avatar-thanks {
+    0%, 100% { transform: rotateX(0deg) scale(1); }
+    50% { transform: rotateX(20deg) scale(1.1); }
+}
+
+@keyframes avatar-applause {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(5deg); }
+    50% { transform: scale(1) rotate(-5deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
+}
+
+@keyframes avatar-nod {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+}
+
+@keyframes avatar-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+}
+
+@keyframes avatar-bless {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+}
+
+@keyframes avatar-confirm {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    .avatar-image,
+    .avatar-bubble {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* 基本（アイドル状態）: ゆっくり上下 */
+@keyframes avatar-idle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* 喜び（タスク完了）: ジャンプ + 回転 */
+@keyframes avatar-joy {
+    0% { transform: translateY(0) rotate(0deg) scale(1); }
+    25% { transform: translateY(-20px) rotate(5deg) scale(1.1); }
+    50% { transform: translateY(-30px) rotate(-5deg) scale(1.1); }
+    75% { transform: translateY(-20px) rotate(5deg) scale(1.1); }
+    100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+/* 心配（ログイン空白）: 左右に小刻み揺れ */
+@keyframes avatar-worry {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-3px) rotate(-2deg); }
+    50% { transform: translateX(3px) rotate(2deg); }
+    75% { transform: translateX(-3px) rotate(-2deg); }
+}
+
+/* 応援（タスク作成）: 上下に弾む */
+@keyframes avatar-cheer {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-15px) scale(1.05); }
+}
+
+/* 質問（タスク分解再実行）: 首を傾げる */
+@keyframes avatar-question {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(10deg); }
+}
+
+/* 秘書（グループタスク・タスク分解・グループ編集）: 軽くお辞儀 */
+@keyframes avatar-secretary {
+    0%, 100% { transform: rotateX(0deg); }
+    50% { transform: rotateX(15deg); }
+}
+
+/* 挨拶（ログイン）: 手を振る */
+@keyframes avatar-wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+}
+
+/* 見送り（ログアウト）: ゆっくり手を振る */
+@keyframes avatar-goodbye {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(10deg) scale(1.05); }
+}
+
+/* 感謝（トークン購入）: お辞儀 + 拡大 */
+@keyframes avatar-thanks {
+    0%, 100% { transform: rotateX(0deg) scale(1); }
+    50% { transform: rotateX(20deg) scale(1.1); }
+}
+
+/* 称賛（実績表示）: 拍手 */
+@keyframes avatar-applause {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(5deg); }
+    50% { transform: scale(1) rotate(-5deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
+}
+
+/* 承認（タグ作成）: 頷く */
+@keyframes avatar-nod {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+}
+
+/* 注意（タグ削除）: 左右に振る */
+@keyframes avatar-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+}
+
+/* 祝福（グループ作成）: 拡大 + 回転 */
+@keyframes avatar-bless {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+}
+
+/* 確認（グループ削除）: ゆっくり点滅 */
+@keyframes avatar-confirm {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+
+/* ========================================
+   背景装飾アニメーション
+   ======================================== */
+.avatar-floating-decoration {
+    animation: avatarFloat 20s ease-in-out infinite;
+}
+
+@keyframes avatarFloat {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(30px, -30px) scale(1.1);
+    }
+    50% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+    75% {
+        transform: translate(20px, 30px) scale(1.05);
+    }
+}
+
+/* ========================================
+   レスポンシブ対応強化
+   ======================================== */
+@media (max-width: 1024px) {
+    .avatar-card {
+        padding: 1rem;
+    }
+
+    .avatar-form-group {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .avatar-btn-primary,
+    .avatar-btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -8,9 +8,15 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Carbon\Carbon;
 
 class AuthenticatedSessionController extends Controller
 {
+    /**
+     * ログイン後のリダイレクト先
+     */
+    public const HOME = '/dashboard';
+
     /**
      * Display the login view.
      */
@@ -28,7 +34,21 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = Auth::user();
+        
+        // ログイン空白期間チェック
+        $lastLoginAt = $user->last_login_at;
+        $eventType = config('const.avatar_events.login');
+        
+        if ($lastLoginAt && Carbon::parse($lastLoginAt)->diffInDays(now()) >= 3) {
+            $eventType = config('const.avatar_events.login_gap');
+        }
+        
+        // 最終ログイン日時更新
+        $user->update(['last_login_at' => now()]);
+
+        return redirect()->intended(self::HOME)
+            ->with('avatar_event', $eventType);
     }
 
     /**

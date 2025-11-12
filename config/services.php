@@ -49,4 +49,15 @@ return [
             'tolerance' => env('STRIPE_WEBHOOK_TOLERANCE', 300),
         ],
     ],
+
+    'replicate' => [
+        'api_token' => env('REPLICATE_API_TOKEN'),
+        // 描画モデル (anything-v4.0)
+        'draw_model_version' => env('REPLICATE_MODEL_VERSION'),
+        // 背景除去モデル (rembg)
+        'transparent_model_version' => env('REPLICATE_TRANSPARENT_MODEL_VERSION'),
+        // ポーリング設定
+        'max_polling_attempts' => env('REPLICATE_MAX_POLLING_ATTEMPTS', 60),
+        'polling_interval' => env('REPLICATE_POLLING_INTERVAL', 2),
+    ],
 ];

@@ -18,13 +18,10 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'username' => 'testuser',
-            'password' => Hash::make('password'),
-        ]);
-
         $this->call([
+            AdminUserSeeder::class,
             TokenPackageSeeder::class,
+            AICostRateSeeder::class,
         ]);
     }
 }

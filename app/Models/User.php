@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Models\TokenBalance;
 use App\Models\Task;
 use App\Models\TaskProposal;
+use App\Models\TeacherAvatar;
 use App\Models\Group;
 use App\Models\FreeTokenSetting;
 use App\Models\Notification;
@@ -33,6 +34,7 @@ class User extends Authenticatable
         'group_id',
         'group_edit_flg',
         'is_admin',
+        'last_login_at',
     ];
     
     /**
@@ -53,6 +55,7 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
         'group_edit_flg' => 'boolean',
+        'last_login_at' => 'datetime',
     ];
 
     /**
@@ -172,8 +175,8 @@ class User extends Authenticatable
                 'tokenable_id' => $this->id
             ],
             [
-                'balance' => FreeTokenSetting::first()->amount ?? 0,
-                'free_balance' => FreeTokenSetting::first()->amount ?? 0,
+                'balance' => FreeTokenSetting::getAmount() ?? 10000,
+                'free_balance' => FreeTokenSetting::getAmount() ?? 10000,
                 'paid_balance' => 0,
                 'free_balance_reset_at' => now()->addMonth(),
                 'monthly_consumed_reset_at' => now()->addMonth(),
@@ -235,5 +238,13 @@ class User extends Authenticatable
     public function getUnreadNotificationCountAttribute(): int
     {
         return $this->notifications()->unread()->count();
+    }
+
+    /**
+     * 教師アバターとのリレーション
+     */
+    public function teacherAvatar()
+    {
+        return $this->hasOne(TeacherAvatar::class);
     }
 }
