@@ -5,6 +5,12 @@ namespace App\Providers;
 // リポジトリのインポート
 use App\Repositories\Admin\UserRepositoryInterface;
 use App\Repositories\Admin\UserRepository;
+use App\Repositories\AI\AICostRateRepositoryInterface;
+use App\Repositories\AI\AICostRateRepository;
+use App\Repositories\AI\AIUsageLogRepositoryInterface;
+use App\Repositories\AI\AIUsageLogRepository;
+use App\Repositories\Avatar\TeacherAvatarRepositoryInterface;
+use App\Repositories\Avatar\TeacherAvatarRepository;
 use App\Repositories\Batch\HolidayRepositoryInterface;
 use App\Repositories\Batch\HolidayRepository;
 use App\Repositories\Batch\ScheduledTaskRepositoryInterface;
@@ -30,6 +36,14 @@ use App\Repositories\Token\TokenPackageEloquentRepository;
 // サービスのインポート
 use App\Services\Admin\UserServiceInterface;
 use App\Services\Admin\UserService;
+use App\Services\AI\AICostServiceInterface;
+use App\Services\AI\AICostService;
+use App\Services\AI\StableDiffusionServiceInterface;
+use App\Services\AI\StableDiffusionService;
+use App\Services\Auth\ValidationServiceInterface;
+use App\Services\Auth\ValidationService;
+use App\Services\Avatar\TeacherAvatarServiceInterface;
+use App\Services\Avatar\TeacherAvatarService;
 use App\Services\Batch\ScheduledTaskServiceInterface;
 use App\Services\Batch\ScheduledTaskService;
 use App\Services\Payment\PaymentServiceInterface;
@@ -78,6 +92,13 @@ class AppServiceProvider extends ServiceProvider
         // --- Admin ---
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
 
+        // --- AI Cost ---
+        $this->app->bind(AICostRateRepositoryInterface::class, AICostRateRepository::class);
+        $this->app->bind(AIUsageLogRepositoryInterface::class, AIUsageLogRepository::class);
+
+        // --- Avatar ---
+        $this->app->bind(TeacherAvatarRepositoryInterface::class, TeacherAvatarRepository::class);
+
         // --- Tag ---
         $this->app->bind(TagRepositoryInterface::class, EloquentTagRepository::class);
 
@@ -105,6 +126,15 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Admin ---
         $this->app->bind(UserServiceInterface::class, UserService::class);
+
+        // --- AI Cost ---
+        $this->app->bind(AICostServiceInterface::class, AICostService::class);
+
+        // --- Auth ---
+        $this->app->bind(ValidationServiceInterface::class, ValidationService::class);
+
+        // --- Avatar ---
+        $this->app->bind(TeacherAvatarServiceInterface::class, TeacherAvatarService::class);
 
         // --- Tag ---
         $this->app->bind(TagServiceInterface::class, TagService::class);
@@ -137,6 +167,9 @@ class AppServiceProvider extends ServiceProvider
         // --- Token ---
         $this->app->bind(TokenServiceInterface::class, TokenService::class);
         $this->app->bind(TokenPackageServiceInterface::class, TokenPackageService::class);
+
+        // --- AI ---
+        $this->app->bind(StableDiffusionServiceInterface::class, StableDiffusionService::class);
 
         // ★ OpenAIService (外部API連携) のバインド
         // 依存性がないため、直接インスタンス化可能

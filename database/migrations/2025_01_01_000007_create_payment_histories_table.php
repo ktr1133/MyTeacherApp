@@ -28,12 +28,7 @@ return new class extends Migration
             $table->bigInteger('token_amount')->comment('購入トークン数');
             
             // ステータス
-            $table->enum('status', [
-                'pending',    // 処理中
-                'succeeded',  // 成功
-                'failed',     // 失敗
-                'refunded',   // 返金済み
-            ])->default('pending');
+            $table->enum('status', array_keys(config('const.payment_history_statuses')))->default('pending')->comment('課金ステータス');
             
             // 支払い方法
             $table->string('payment_method_type')->nullable();

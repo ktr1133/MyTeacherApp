@@ -20,11 +20,11 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-
         <!-- Page Styles -->
         @stack('styles')
+
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -42,9 +42,25 @@
                 {{ $slot }}
             </main>
         </div>
+
         {{-- フラッシュメッセージコンポーネントを追加 --}}
         <x-flash-message />
-        <!-- Additional Scripts -->
+
+        {{-- アバターウィジェット（全ページ共通） --}}
+        @auth
+            @php
+                $avatar = auth()->user()->teacherAvatar;
+            @endphp
+            @include('avatars.components.avatar-widget', ['avatar' => $avatar])
+        @endauth
+        
+        <!-- アバターコントローラー -->
+        @vite(['resources/js/avatar/avatar-controller.js'])
+
+        <!-- Page Scripts -->
         @stack('scripts')
+
+        <!-- Alpine.js（最初に読み込む） -->
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </body>
 </html>

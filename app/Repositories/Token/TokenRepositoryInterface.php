@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Token;
 
+use App\Models\FreeTokenSetting;
 use App\Models\TokenBalance;
 use App\Models\TokenTransaction;
 use App\Models\TokenPackage;
@@ -141,4 +142,11 @@ interface TokenRepositoryInterface
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function getPaymentHistories(int $perPage = 20): LengthAwarePaginator;
+
+    /**
+     * 無料トークン設定を取得
+     *
+     * @return FreeTokenSetting
+     */
+    public function getFreeTokenSettings(): FreeTokenSetting;
 }

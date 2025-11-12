@@ -21,8 +21,11 @@ class GroupResponder
     /**
      * ステータス付きで編集画面へリダイレクト
      */
-    public function redirectToEditWithStatus(string $status): RedirectResponse
+    public function redirectToEditWithStatus(array $data): RedirectResponse
     {
-        return redirect()->route('group.edit')->with('status', $status);
+        return redirect()
+            ->route('group.edit')
+            ->with('status', $data['status'])
+            ->with('avatar_event', $data['avatar_event'] ?? null);
     }
 }

@@ -1,5 +1,14 @@
 <?php
 
+use App\Http\Actions\Auth\ValidateUsernameAction;
+use App\Http\Actions\Auth\ValidatePasswordAction;
+use App\Http\Actions\Avatar\CreateTeacherAvatarAction;
+use App\Http\Actions\Avatar\EditTeacherAvatarAction;
+use App\Http\Actions\Avatar\RegenerateAvatarImageAction;
+use App\Http\Actions\Avatar\StoreTeacherAvatarAction;
+use App\Http\Actions\Avatar\UpdateTeacherAvatarAction;
+use App\Http\Actions\Avatar\GetAvatarCommentAction;
+use App\Http\Actions\Avatar\ToggleAvatarVisibilityAction;
 use App\Http\Actions\Batch\IndexScheduledTaskAction;
 use App\Http\Actions\Batch\CreateScheduledTaskAction;
 use App\Http\Actions\Batch\StoreScheduledTaskAction;
@@ -9,6 +18,9 @@ use App\Http\Actions\Batch\DeleteScheduledTaskAction;
 use App\Http\Actions\Batch\PauseScheduledTaskAction;
 use App\Http\Actions\Batch\ResumeScheduledTaskAction;
 use App\Http\Actions\Batch\ShowExecutionHistoryAction;
+use App\Http\Actions\Notification\IndexNotificationAction;
+use App\Http\Actions\Notification\MarkNotificationAsReadAction;
+use App\Http\Actions\Notification\MarkAllNotificationsAsReadAction;
 use App\Http\Actions\Profile\EditProfileAction;
 use App\Http\Actions\Profile\UpdateProfileAction;
 use App\Http\Actions\Profile\DeleteProfileAction;
@@ -41,6 +53,10 @@ use App\Http\Actions\Task\RequestApprovalAction;
 use App\Http\Actions\Task\ListPendingApprovalsAction;
 use App\Http\Actions\Task\UploadTaskImageAction;
 use App\Http\Actions\Task\DeleteTaskImageAction;
+use App\Http\Actions\Token\HandleStripeWebhookAction;
+use App\Http\Actions\Token\IndexTokenPurchaseAction;
+use App\Http\Actions\Token\ProcessTokenPurchaseAction;
+use App\Http\Actions\Token\IndexTokenHistoryAction;
 
 use Illuminate\Support\Facades\Route;
 
@@ -58,9 +74,20 @@ Route::get('/', function () {
 });
 
 // =========================================================================
-// 認証済みユーザー向けルート
+// ゲストユーザー向けルート（認証前）
 // =========================================================================
 
+Route::middleware(['guest'])->group(function () {
+    // ユーザー名の非同期バリデーション
+    Route::post('/validate/username', ValidateUsernameAction::class)->name('validate.username');
+    
+    // パスワードの非同期バリデーション
+    Route::post('/validate/password', ValidatePasswordAction::class)->name('validate.password');
+});
+
+// =========================================================================
+// 認証済みユーザー向けルート
+// =========================================================================
 Route::middleware(['auth'])->group(function () {
 
     // --- メインメニュー画面 (タスク一覧) ---
@@ -144,28 +171,33 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ========================================
-    // トークン関連ルート
+    // トークン関連
     // ========================================
     // トークン購入
-    Route::get('/tokens/purchase', \App\Http\Actions\Token\IndexTokenPurchaseAction::class)
-        ->name('tokens.purchase');
-    
-    Route::post('/tokens/purchase', \App\Http\Actions\Token\ProcessTokenPurchaseAction::class)
-        ->name('tokens.purchase.process');
-    
+    Route::get('/tokens/purchase', IndexTokenPurchaseAction::class)->name('tokens.purchase');
+    Route::post('/tokens/purchase', ProcessTokenPurchaseAction::class)->name('tokens.purchase.process');
     // トークン履歴
-    Route::get('/tokens/history', \App\Http\Actions\Token\IndexTokenHistoryAction::class)
-        ->name('tokens.history');
-    
+    Route::get('/tokens/history', IndexTokenHistoryAction::class)->name('tokens.history');    
     // 通知
-    Route::get('/notifications', \App\Http\Actions\Notification\IndexNotificationAction::class)
-        ->name('notifications.index');
-    
-    Route::post('/notifications/{notification}/read', \App\Http\Actions\Notification\MarkNotificationAsReadAction::class)
-        ->name('notifications.read');
-    
-    Route::post('/notifications/read-all', \App\Http\Actions\Notification\MarkAllNotificationsAsReadAction::class)
-        ->name('notifications.read-all');
+    Route::get('/notifications', IndexNotificationAction::class)->name('notifications.index');
+    Route::post('/notifications/{notification}/read', MarkNotificationAsReadAction::class)->name('notifications.read');
+    Route::post('/notifications/read-all', MarkAllNotificationsAsReadAction::class)->name('notifications.read-all');
+
+    // ========================================
+    // アバター作成
+    // ========================================
+    // アバター作成（初回のみ）
+    Route::get('/avatars/create', CreateTeacherAvatarAction::class)->name('avatars.create');
+    Route::post('/avatars', StoreTeacherAvatarAction::class)->name('avatars.store');
+    // アバター編集
+    Route::get('/avatars/edit', EditTeacherAvatarAction::class)->name('avatars.edit');
+    Route::put('/avatars/update', UpdateTeacherAvatarAction::class)->name('avatars.update');
+    // 画像再生成
+    Route::post('/avatars/regenerate', RegenerateAvatarImageAction::class)->name('avatars.regenerate');
+    // コメント取得API
+    Route::get('/avatars/comment/{eventType}', GetAvatarCommentAction::class)->name('avatars.comment');
+    // 表示/非表示切替
+    Route::post('/avatars/toggle-visibility', ToggleAvatarVisibilityAction::class)->name('avatars.toggle-visibility');
 });
 
 // ========================================

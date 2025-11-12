@@ -22,13 +22,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             
             // トランザクション種別
-            $table->enum('type', [
-                'consume',          // 消費
-                'purchase',         // 購入
-                'admin_adjust',     // 管理者調整
-                'free_reset',       // 無料枠リセット
-                'refund',           // 返金
-            ]);
+            $table->enum('type', array_keys(config('const.token_transaction_types')))->comment('トランザクション種別');
             
             // トークン量（消費はマイナス、購入はプラス）
             $table->bigInteger('amount');

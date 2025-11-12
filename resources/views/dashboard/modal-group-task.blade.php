@@ -224,7 +224,7 @@
                     class="inline-flex justify-center items-center px-5 py-2 border-2 border-purple-300 dark:border-purple-600 text-sm font-semibold rounded-lg text-purple-700 dark:text-purple-300 bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition">
                 キャンセル
             </button>
-            <button type="submit" form="group-task-form"
+            <button type="submit" form="group-task-form" id="register-group-task-btn"
                     class="inline-flex justify-center items-center px-5 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

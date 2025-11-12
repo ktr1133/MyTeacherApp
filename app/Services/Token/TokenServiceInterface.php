@@ -69,4 +69,34 @@ interface TokenServiceInterface
      * @return array
      */
     public function getHistoryStats(string $tokenableType, int $tokenableId): array;
+
+    /**
+     * AI使用コストを記録（トークン消費なし、ログのみ）
+     *
+     * @param User $user
+     * @param int $amount
+     * @param string $reason
+     * @param mixed $related
+     * @param array $aiUsageDetails
+     * @return void
+     */
+    public function recordAICost(User $user, int $amount, string $reason, $related = null, array $aiUsageDetails = []): void;
+
+    /**
+     * 事前消費したトークンを精算（差額を返金 or 追加請求）
+     *
+     * @param User $user
+     * @param int $estimatedAmount 事前見積もり額
+     * @param int $actualAmount 実際の使用額
+     * @param string $reason
+     * @param mixed $related
+     * @return void
+     */
+    public function settleTokenConsumption(
+        User $user,
+        int $estimatedAmount,
+        int $actualAmount,
+        string $reason,
+        $related = null
+    ): void;
 }

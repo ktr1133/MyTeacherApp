@@ -50,16 +50,18 @@ class GroupService implements GroupServiceInterface
      *
      * @param User $actor
      * @param string $groupName
-     * @return Group
+     * @return string
      */
-    public function createOrUpdateGroup(User $actor, string $groupName): Group
+    public function createOrUpdateGroup(User $actor, string $groupName): string
     {
         $group = $actor->group;
         if ($group) {
             if (!$this->canEditGroup($actor)) {
                 abort(403, 'グループを編集する権限がありません。');
             }
-            return $this->groups->rename($group, $groupName);
+            $this->groups->rename($group, $groupName);
+
+            return config('const.avatar_events.group_edited');
         }
 
         $group = $this->groups->create([
@@ -73,7 +75,7 @@ class GroupService implements GroupServiceInterface
             'group_edit_flg' => true,
         ]);
 
-        return $group;
+        return config('const.avatar_events.group_created');
     }
 
     /**

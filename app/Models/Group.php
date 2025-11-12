@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\FreeTokenSetting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -66,8 +67,8 @@ class Group extends Model
                 'tokenable_id' => $this->id
             ],
             [
-                'balance' => config('const.token.free_monthly', 1000000),
-                'free_balance' => config('const.token.free_monthly', 1000000),
+                'balance' => FreeTokenSetting::getAmount(),
+                'free_balance' => FreeTokenSetting::getAmount(),
                 'paid_balance' => 0,
                 'free_balance_reset_at' => now()->addMonth(),
                 'monthly_consumed_reset_at' => now()->addMonth(),

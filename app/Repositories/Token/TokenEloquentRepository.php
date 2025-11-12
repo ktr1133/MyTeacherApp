@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Token;
 
+use App\Models\FreeTokenSetting;
 use App\Models\TokenBalance;
 use App\Models\TokenTransaction;
 use App\Models\TokenPackage;
@@ -186,5 +187,13 @@ class TokenEloquentRepository implements TokenRepositoryInterface
         return PaymentHistory::with(['user'])
             ->orderByDesc('created_at')
             ->paginate($perPage);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFreeTokenSettings(): FreeTokenSetting
+    {
+        return FreeTokenSetting::first();
     }
 }

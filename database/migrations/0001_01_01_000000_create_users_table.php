@@ -43,7 +43,15 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // 1. まず groups テーブルの外部キー制約を削除
+        Schema::table('groups', function (Blueprint $table) {
+            $table->dropForeign(['master_user_id']);
+        });
+
+        // 2. 次に users テーブルを削除（group_id の外部キー制約も一緒に削除される）
         Schema::dropIfExists('users');
+
+        // 3. 最後に groups テーブルを削除
         Schema::dropIfExists('groups');
     }
 };

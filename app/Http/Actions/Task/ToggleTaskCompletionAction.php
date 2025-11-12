@@ -15,6 +15,11 @@ use Illuminate\Http\JsonResponse;
 class ToggleTaskCompletionAction
 {
     /**
+     * リダイレクト先
+     */
+    public const HOME = '/dashboard';
+
+    /**
      * @param Task $task ルートモデルバインディングで注入される Task
      * @param Request $request
      * @return RedirectResponse|JsonResponse
@@ -42,7 +47,13 @@ class ToggleTaskCompletionAction
         }
 
         // 通常リクエストは前のページへリダイレクトしてメッセージを添える
-        $message = $task->is_completed ? 'タスクを完了にしました。' : 'タスクを未完了に戻しました。';
+        if ($task->is_completed) {
+            $message = 'タスクを完了にしました。';
+            session()->flash('avatar_event', config('const.avatar_events.task_completed'));
+        } else {
+            $message = 'タスクを未完了に戻しました。';
+        }
+
         return redirect()->back()->with('success', $message);
     }
 }

@@ -20,22 +20,18 @@ return new class extends Migration
             $table->jsonb('proposed_tasks_json'); // AIが提案した全分割タスクのJSON配列
 
             $table->string('model_used');        // 使用したAIモデル名
-            $table->jsonb('adopted_proposed_tasks_json')->default(false); // ユーザが採用したタスク群のJSON配列
+            $table->jsonb('adopted_proposed_tasks_json')->nullable(); // ユーザが採用したタスク群のJSON配列
             $table->boolean('was_adopted')->default(false); // ユーザー
 
             $table->timestamps();
         });        
     }
 
-    /**
+    /**t
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            // 外部キーを削除してからテーブルを削除
-            $table->dropForeign(['source_proposal_id']);
-        });
         Schema::dropIfExists('task_proposals');
     }
 };

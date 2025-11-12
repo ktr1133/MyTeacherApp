@@ -6,7 +6,7 @@ use App\Services\Batch\ScheduledTaskServiceInterface;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
-class CreateScheduledGroupTasks extends Command
+class CreateScheduleGroupTask extends Command
 {
     /**
      * コマンドのシグネチャ

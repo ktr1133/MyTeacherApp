@@ -18,6 +18,9 @@ class RemoveMemberAction
     {
         $this->service->removeMember(Auth::user(), $member);
 
-        return $this->responder->redirectToEditWithStatus('member-removed');
+        return $this->responder->redirectToEditWithStatus([
+            'status' => 'member-removed',
+            'avatar_event' => config('const.avatar_events.group_edited'),
+        ]);
     }
 }

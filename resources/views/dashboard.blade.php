@@ -1,6 +1,72 @@
 <x-app-layout>
     @push('styles')
-        @vite(['resources/css/dashboard.css'])
+        @vite(['resources/css/dashboard.css', 'resources/css/avatar/avatar.css'])
+    @endpush
+    @php
+        $avatarEvent = session('avatar_event');
+        $timestamp = microtime(true);
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+        
+        logger('[Dashboard Blade] Rendering', [
+            'avatar_event' => $avatarEvent,
+            'timestamp' => $timestamp,
+            'session_id' => session()->getId(),
+            'request_method' => request()->method(),
+            'request_url' => request()->fullUrl(),
+            'request_path' => request()->path(),
+            'referer' => request()->header('referer'),
+            'user_agent' => request()->header('user-agent'),
+            'all_session' => session()->all(), // セッション全体を確認
+            'backtrace' => array_map(fn($t) => [
+                'file' => $t['file'] ?? 'unknown',
+                'line' => $t['line'] ?? '?',
+                'function' => $t['function'] ?? 'unknown',
+            ], $backtrace),
+        ]);
+    @endphp
+    @push('scripts')        
+        {{-- スクリプト読み込み --}}
+        @vite(['resources/js/dashboard/dashboard.js'])
+        @if(Auth::user()->canEditGroup())
+            @vite(['resources/js/dashboard/group-task.js'])
+        @endif
+        
+        {{-- ログインイベント発火 --}}
+        <script>
+            let avatarEventFired = false;
+            let dispatchAttempts = 0;
+            
+            // DOMContentLoadedを直接使用
+            document.addEventListener('DOMContentLoaded', function() {
+                @if(session('avatar_event'))
+                    if (avatarEventFired) {
+                        console.warn('[Dashboard] Avatar event already fired, skipping');
+                        return;
+                    }
+                    
+                    const waitForAlpineAvatar = setInterval(() => {
+                        dispatchAttempts++;
+                        
+                        if (window.Alpine && typeof window.dispatchAvatarEvent === 'function') {
+                            clearInterval(waitForAlpineAvatar);
+                            avatarEventFired = true;
+
+                            setTimeout(() => {
+                                window.dispatchAvatarEvent('{{ session('avatar_event') }}');
+                            }, 500);
+                        }
+                        
+                        // 5秒（100回）でタイムアウト
+                        if (dispatchAttempts > 100) {
+                            clearInterval(waitForAlpineAvatar);
+                            console.error('[Dashboard] Alpine initialization timeout', {
+                                attempts: dispatchAttempts,
+                            });
+                        }
+                    }, 50);
+                @endif
+            });
+        </script>
     @endpush
 
     <div x-data="{ 
@@ -224,12 +290,4 @@
             @include('dashboard.modal-group-task')
         @endif
     </div>
-    
-    @push('scripts')
-        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        @vite(['resources/js/dashboard/dashboard.js'])
-        @if(Auth::user()->canEditGroup())
-            @vite(['resources/js/dashboard/group-task.js'])
-        @endif
-    @endpush
 </x-app-layout>

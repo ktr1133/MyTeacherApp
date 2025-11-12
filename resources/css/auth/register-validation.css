@@ -1,0 +1,128 @@
+/* ========================================
+   バリデーションメッセージスタイル
+   ======================================== */
+
+.validation-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.validation-message.hidden {
+    display: none;
+}
+
+.validation-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #dc2626;
+}
+
+.dark .validation-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.08) 100%);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+}
+
+.validation-success {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #16a34a;
+}
+
+.dark .validation-success {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.08) 100%);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #86efac;
+}
+
+/* アニメーション */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.validation-error-slide-in,
+.validation-success-slide-in {
+    animation: slideInDown 0.3s ease-out;
+}
+
+.validation-fade-out {
+    animation: fadeOut 0.2s ease-out;
+}
+
+/* スピナー */
+.validation-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(89, 185, 198, 0.3);
+    border-top-color: #59B9C6;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* インプットフィールドのフォーカス状態 */
+.input-validation-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.input-validation-success {
+    border-color: #22c55e !important;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1) !important;
+}
+
+.dark .input-validation-error {
+    border-color: #f87171 !important;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15) !important;
+}
+
+.dark .input-validation-success {
+    border-color: #4ade80 !important;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15) !important;
+}
+
+/* アイコン */
+.validation-icon {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* レスポンシブ */
+@media (max-width: 640px) {
+    .validation-message {
+        font-size: 0.8125rem;
+        padding: 0.625rem 0.875rem;
+    }
+}
