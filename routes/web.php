@@ -57,6 +57,7 @@ use App\Http\Actions\Token\HandleStripeWebhookAction;
 use App\Http\Actions\Token\IndexTokenPurchaseAction;
 use App\Http\Actions\Token\ProcessTokenPurchaseAction;
 use App\Http\Actions\Token\IndexTokenHistoryAction;
+use App\Http\Actions\Validation\ValidateGroupNameAction;
 
 use Illuminate\Support\Facades\Route;
 
@@ -89,6 +90,12 @@ Route::middleware(['guest'])->group(function () {
 // 認証済みユーザー向けルート
 // =========================================================================
 Route::middleware(['auth'])->group(function () {
+    // グループ名非同期バリデーション
+    Route::post('/validate/group-name', ValidateGroupNameAction::class)->name('validate.group-name');
+    
+    // メンバー追加時非同期のバリデーション
+    Route::post('/validate/member-username', ValidateUsernameAction::class)->name('validate.member.username');
+    Route::post('/validate/member-password', ValidatePasswordAction::class)->name('validate.member.password');
 
     // --- メインメニュー画面 (タスク一覧) ---
     Route::get('/dashboard', IndexTaskAction::class)->middleware(['verified'])->name('dashboard');
@@ -135,7 +142,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/delete', DeleteProfileAction::class)->name('profile.destroy');
         // --- グループ管理 ---
         Route::get('/group', EditGroupAction::class)->name('group.edit');
-        Route::post('/group', UpdateGroupAction::class)->name('group.update');
+        Route::patch('/group', UpdateGroupAction::class)->name('group.update');
         Route::post('/group/member', AddMemberAction::class)->name('group.member.add');
         Route::patch('/group/member/{member}', UpdateMemberPermissionAction::class)->name('group.member.permission');
         Route::post('/group/transfer/{newMaster}', TransferGroupMasterAction::class)->name('group.master.transfer');

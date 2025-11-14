@@ -1352,22 +1352,22 @@ class DashboardEventHandler {
             simpleRegisterBtn.addEventListener('click', simpleRegisterHandler, { once: false });
         }
 
-        // グループタスク登録ボタン - 上記と同じ処理
-        const groupTaskRegisterBtn = document.getElementById('register-group-task-btn');
-        if (groupTaskRegisterBtn) {
-            const groupTaskRegisterHandler = (ev) => {
-                const form = document.getElementById('group-task-form');
-                if (form) {
-                    if (!form.checkValidity()) {
-                        form.reportValidity();
-                        ev.preventDefault();
-                        return;
-                    }
-                    // ← タスク登録と同じ処理
-                }
-            };
-            groupTaskRegisterBtn.addEventListener('click', groupTaskRegisterHandler, { once: false });
-        }
+        // // グループタスク登録ボタン - 上記と同じ処理
+        // const groupTaskRegisterBtn = document.getElementById('register-group-task-btn');
+        // if (groupTaskRegisterBtn) {
+        //     const groupTaskRegisterHandler = (ev) => {
+        //         const form = document.getElementById('group-task-form');
+        //         if (form) {
+        //             if (!form.checkValidity()) {
+        //                 form.reportValidity();
+        //                 ev.preventDefault();
+        //                 return;
+        //             }
+        //             // ← タスク登録と同じ処理
+        //         }
+        //     };
+        //     groupTaskRegisterBtn.addEventListener('click', groupTaskRegisterHandler, { once: false });
+        // }
     }
 
     /**

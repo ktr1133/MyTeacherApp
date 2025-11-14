@@ -117,12 +117,6 @@ window.avatarWidget = avatarWidget;
  */
 window.dispatchAvatarEvent = function(eventType, additionalData = {}) {
     const startTime = performance.now();
-    console.log('[dispatchAvatarEvent] START', {
-        eventType,
-        additionalData,
-        timestamp: new Date().toISOString(),
-        url: `/avatars/comment/${eventType}`,
-    });
     
     fetch(`/avatars/comment/${eventType}`)
         .then(response => {
@@ -155,12 +149,6 @@ window.dispatchAvatarEvent = function(eventType, additionalData = {}) {
         })
         .then(data => {
             const totalTime = performance.now() - startTime;
-            console.log('[dispatchAvatarEvent] Data received', {
-                eventType,
-                data,
-                totalTime: `${totalTime.toFixed(2)}ms`,
-                timestamp: new Date().toISOString(),
-            });
             
             if (data.comment) {
                 window.dispatchEvent(new CustomEvent('avatar-event', {
@@ -171,11 +159,6 @@ window.dispatchAvatarEvent = function(eventType, additionalData = {}) {
                         ...additionalData
                     }
                 }));
-                
-                console.log('[dispatchAvatarEvent] CustomEvent dispatched', {
-                    eventType,
-                    timestamp: new Date().toISOString(),
-                });
             } else {
                 console.warn('[dispatchAvatarEvent] No comment in response', {
                     eventType,
@@ -221,7 +204,6 @@ window.showAvatarComment = function(commentData) {
 
     // showDirect() メソッドを使用
     if (typeof store.showDirect === 'function') {
-        console.log('[showAvatarComment] Calling store.showDirect()');
         store.showDirect(commentData);
     } else {
         // フォールバック: 直接プロパティを更新
@@ -239,16 +221,8 @@ window.showAvatarComment = function(commentData) {
     }
 };
 
-console.log('[avatar-controller.js] Loaded', {
-    timestamp: new Date().toISOString(),
-});
-
 // Alpine.js グローバルストア
 document.addEventListener('alpine:init', () => {
-    console.log('[avatar-controller.js] alpine:init event fired', {
-        timestamp: new Date().toISOString(),
-    });
-    
     Alpine.store('avatar', {
         // アバターの表示状態
         isVisible: false,
@@ -274,11 +248,6 @@ document.addEventListener('alpine:init', () => {
          * @param {Object} commentData - { comment, imageUrl, animation }
          */
         showDirect(commentData) {
-            console.log('[Alpine Store] showDirect() called', {
-                commentData,
-                timestamp: new Date().toISOString(),
-            });
-
             if (!commentData || !commentData.comment) {
                 console.warn('[Alpine Store] No comment data provided');
                 return;

@@ -185,7 +185,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
                         $this->handleNSFWError($avatar, $poseType, $expressionType);
                         continue;
                     }
-                    
+
                     Log::info('[GenerateAvatarImages] Image generated successfully', [
                         'pose_type' => $poseType,
                         'expression_type' => $expressionType,
@@ -194,13 +194,6 @@ class GenerateAvatarImagesJob implements ShouldQueue
                     
                     // コスト計算（AICostService を使用）
                     $generationCost = $aiCostService->calculateReplicateCost('anything-v4.0', '512x512', 1);
-                    
-                    // 背景除去
-                    Log::info('[GenerateAvatarImages] Removing background', [
-                        'pose_type' => $poseType,
-                        'expression_type' => $expressionType,
-                        'original_url' => $generatedData['url'],
-                    ]);
                     
                     $transparentData = $sdService->removeBackground($generatedData['url']);
                     
@@ -211,12 +204,6 @@ class GenerateAvatarImagesJob implements ShouldQueue
                         ]);
                         continue;
                     }
-                    
-                    Log::info('[GenerateAvatarImages] Background removed', [
-                        'pose_type' => $poseType,
-                        'expression_type' => $expressionType,
-                        'transparent_url' => $transparentData['url'],
-                    ]);
                     
                     // コスト計算（背景除去）
                     $removalCost = $aiCostService->calculateReplicateCost('rembg', null, 1);
@@ -378,7 +365,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
     }
 
     /**
-     * ★ 画像生成（リトライ対応版）
+     * 画像生成（リトライ対応版）
      * 
      * NSFW検出時に自動的にプロンプトを調整して再試行
      */
@@ -457,7 +444,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
     }
 
     /**
-     * ★ マイルドなプロンプトを生成（NSFW回避用）
+     * マイルドなプロンプトを生成（NSFW回避用）
      * 
      * リトライ回数に応じて段階的にマイルドにする
      */
@@ -743,12 +730,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
         AICostServiceInterface $aiCostService,
         TeacherAvatar $avatar
     ): int {
-        $eventTypes = [
-            'login', 'logout', 'login_gap', 'task_created', 'task_completed',
-            'task_breakdown', 'token_purchased', 'performance_viewed',
-            'tag_created', 'tag_deleted', 'group_created', 'group_deleted',
-            'group_task_created', 'group_edited', 'task_breakdown_refine',
-        ];
+        $eventTypes = array_keys(config('const.avatar_events'));
 
         $totalTokenCost = 0;
 
@@ -817,23 +799,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
     {
         $personalityDesc = $this->getPersonalityDescription($avatar);
 
-        $eventDescriptions = [
-            'login' => 'ユーザーがログインしたとき',
-            'logout' => 'ユーザーがログアウトするとき',
-            'login_gap' => 'ユーザーが3日ぶりにログインしたとき',
-            'task_created' => 'ユーザーが新しいタスクを作成したとき',
-            'task_completed' => 'ユーザーがタスクを完了したとき',
-            'task_breakdown' => 'ユーザーがタスクをAIで分解したとき',
-            'task_breakdown_refine' => 'ユーザーがタスク分解を再実行するとき',
-            'token_purchased' => 'ユーザーがトークンを購入したとき',
-            'performance_viewed' => 'ユーザーが実績画面を表示したとき',
-            'tag_created' => 'ユーザーが新しいタグを作成したとき',
-            'tag_deleted' => 'ユーザーがタグを削除するとき',
-            'group_created' => 'ユーザーがグループを作成したとき',
-            'group_edited' => 'ユーザーがグループを編集したとき',
-            'group_deleted' => 'ユーザーがグループを削除するとき',
-            'group_task_created' => 'ユーザーがグループタスクを作成したとき',
-        ];
+        $eventDescriptions = config('const.avatar_event_scene');
 
         $eventDesc = $eventDescriptions[$eventType] ?? 'ユーザーが何かアクションを起こしたとき';
 
@@ -842,6 +808,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
             - 口調: {$personalityDesc['tone']}
             - 熱意: {$personalityDesc['enthusiasm']}
             - 丁寧さ: {$personalityDesc['formality']}
+            - ユーモア: {$personalityDesc['humor']}
 
             シチュエーション: {$eventDesc}
 
@@ -893,21 +860,25 @@ class GenerateAvatarImagesJob implements ShouldQueue
     private function createDefaultComment(TeacherAvatar $avatar, string $eventType): void
     {
         $defaults = [
-            'task_created' => '新しいタスクですね。一緒に頑張りましょう！',
-            'task_completed' => 'よく頑張りましたね。素晴らしいです！',
-            'task_breakdown' => 'タスクを分解して、少しずつ進めていきましょう。',
-            'task_breakdown_refine' => 'もう一度見直しましょうか。どうしますか？',
-            'group_task_created' => 'グループタスクですね。協力して進めましょう。',
-            'login' => 'おかえりなさい！今日も頑張りましょう。',
-            'logout' => 'お疲れ様でした。また明日お会いしましょう。',
-            'login_gap' => 'お久しぶりですね。無理せず進めていきましょう。',
-            'token_purchased' => 'ありがとうございます。引き続きサポートします！',
-            'performance_viewed' => '素晴らしい実績ですね。努力が実っていますよ。',
-            'tag_created' => '新しいタグを作成しましたね。整理が大切です。',
-            'tag_deleted' => 'タグを削除しましたね。すっきりしましたか？',
-            'group_created' => '新しいグループですね。おめでとうございます！',
-            'group_edited' => 'グループを編集しましたね。より良くなりますよ。',
-            'group_deleted' => 'グループを削除しますね。よろしいですか？',
+            'task_created'                => '新しいタスクですね。一緒に頑張りましょう！',
+            'task_updated'                => 'タスクが更新されましたね。引き続き頑張りましょう！',
+            'task_completed'              => 'よく頑張りましたね。素晴らしいです！',
+            'task_breakdown'              => 'タスクを分解して、少しずつ進めていきましょう。',
+            'task_breakdown_refine'       => 'もう一度見直しましょうか。どうしますか？',
+            'group_task_created'          => 'グループタスクですね。協力して進めましょう。',
+            'group_task_updated'          => 'グループタスクが更新されました。確認しましょう。',
+            'login'                       => 'おかえりなさい！今日も頑張りましょう。',
+            'logout'                      => 'お疲れ様でした。また明日お会いしましょう。',
+            'login_gap'                   => 'お久しぶりですね。無理せず進めていきましょう。',
+            'token_purchased'             => 'ありがとうございます。引き続きサポートします！',
+            'performance_personal_viewed' => '素晴らしい実績ですね。努力が実っていますよ。',
+            'performance_group_viewed'    => 'グループメンバーの頑張りが見えますね。',
+            'tag_created'                 => '新しいタグを作成しましたね。整理が大切です。',
+            'tag_updated'                 => 'タグを更新しましたね。',
+            'tag_deleted'                 => 'タグを削除しましたね。すっきりしましたか？',
+            'group_created'               => '新しいグループですね。おめでとうございます！',
+            'group_edited'                => 'グループを編集しましたね。より良くなりますよ。',
+            'group_deleted'               => 'グループを削除しましたね。お疲れ様でした。',
         ];
 
         $commentText = $defaults[$eventType] ?? '頑張りましょう！';

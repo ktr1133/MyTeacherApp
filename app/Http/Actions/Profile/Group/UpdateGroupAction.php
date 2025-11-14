@@ -17,10 +17,10 @@ class UpdateGroupAction
     public function __invoke(Request $request)
     {
         $data = $request->validate([
-            'group_name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
         ]);
 
-        $avatarEvent = $this->service->createOrUpdateGroup(Auth::user(), $data['group_name']);
+        $avatarEvent = $this->service->createOrUpdateGroup(Auth::user(), $data['name']);
 
         return $this->responder->redirectToEditWithStatus([
             'status' => 'group-updated',

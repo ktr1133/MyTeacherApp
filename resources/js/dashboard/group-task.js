@@ -115,7 +115,12 @@ if (groupTaskForm) {
             if (response.ok) {
                 closeModal(groupModal, groupModalContent);
                 resetForm();
-                window.location.reload();
+                const data = await response.json();
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.href = '/dashboard'; // フォールバック
+                }
             } else {
                 const errorData = await response.json();
                 alert('タスクの作成に失敗しました: ' + (errorData.message || '不明なエラー'));

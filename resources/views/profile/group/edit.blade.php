@@ -1,6 +1,7 @@
 <x-app-layout>
     @push('styles')
         @vite(['resources/css/dashboard.css'])
+        @vite(['resources/css/auth/register-validation.css'])
     @endpush
     @php
         $avatarEvent = session('avatar_event');
@@ -25,6 +26,7 @@
         ]);
     @endphp
     @push('scripts')
+        @vite(['resources/js/profile/profile-validation.js'])
         {{-- ログインイベント発火 --}}
         <script>
             let avatarEventFired = false;
@@ -263,8 +265,4 @@
             </main>
         </div>
     </div>
-
-    @push('scripts')
-        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    @endpush
 </x-app-layout>
