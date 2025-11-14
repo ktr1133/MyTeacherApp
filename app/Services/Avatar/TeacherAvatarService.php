@@ -135,7 +135,6 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         $imageType = $this->determineImageType($eventType);
         $expressionType = $this->determineExpressionType($eventType);
         $animation = $this->determineAnimation($eventType);
-
         // 該当する画像を取得
         $image = $avatar->images()
             ->where('image_type', $imageType)
@@ -154,10 +153,11 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
      */
     private function determineImageType(string $eventType): string
     {
-        // タスク完了のみ全身、それ以外はバストアップ
-        return $eventType === config('const.avatar_events.login') 
-            ? 'full_body' 
-            : 'bust';
+        // 実績閲覧のみ全身、それ以外はバストアップ
+        return in_array($eventType, [
+            config('const.avatar_events.performance_personal_viewed'),
+            config('const.avatar_events.performance_group_viewed')
+        ]) ? 'full_body' : 'bust';
     }
 
     /**
@@ -165,17 +165,9 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
      */
     private function determineExpressionType(string $eventType): string
     {
-        return match($eventType) {
-            config('const.avatar_events.task_completed') => 'happy', // 全身は通常のみ
-            config('const.avatar_events.task_created') => 'normal',
-            config('const.avatar_events.login') => 'normal',
-            config('const.avatar_events.token_purchased') => 'happy',
-            config('const.avatar_events.performance_viewed') => 'happy',
-            config('const.avatar_events.login_gap') => 'sad',
-            config('const.avatar_events.task_breakdown_refine') => 'surprised',
-            config('const.avatar_events.group_deleted') => 'sad',
-            default => 'normal',
-        };
+        $avatarEventsExpressionMap = config('const.avatar_event_expression_types');
+
+        return $avatarEventsExpressionMap[$eventType] ?? 'normal';
     }
 
     /**
@@ -185,6 +177,7 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
     {
         return match($eventType) {
             config('const.avatar_events.task_completed') => 'avatar-joy',
+            config('const.avatar_events.task_updated') => 'avatar-cheer',
             config('const.avatar_events.task_created') => 'avatar-cheer',
             config('const.avatar_events.task_breakdown'), 
             config('const.avatar_events.group_task_created'), 

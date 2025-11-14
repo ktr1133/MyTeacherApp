@@ -5,6 +5,7 @@ namespace App\Http\Actions\Task;
 use App\Services\Task\TaskManagementServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -29,9 +30,9 @@ class StoreTaskAction
      * タスクをDBに保存し、リダイレクトする。
      *
      * @param Request $request POSTリクエスト
-     * @return RedirectResponse メインメニューへのリダイレクト
+     * @return RedirectResponse|JsonResponse
      */
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(Request $request): RedirectResponse|JsonResponse
     {
         $rules = [
             'title' => ['required', 'string', 'max:255'],
@@ -86,10 +87,20 @@ class StoreTaskAction
 
         $avatar_event = $groupFlg ? config('const.avatar_events.group_task_created') : config('const.avatar_events.task_created');
 
+        if ($groupFlg) {
+            session()->flash('avatar_event', $avatar_event);
+        }
+
         // アバターイベント発火用のセッションをセットしてリダイレクト
-        return redirect()
-            ->route('dashboard')
-            ->with('success', $msg)
-            ->with('avatar_event', $avatar_event);
+        $route = !$groupFlg
+            ? redirect()->route('dashboard')
+                ->with('success', $msg)
+                ->with('avatar_event', $avatar_event)
+            : response()->json([
+                'message' => $msg,
+                'avatar_event' => $avatar_event,
+            ]);
+
+        return $route;
     }
 }

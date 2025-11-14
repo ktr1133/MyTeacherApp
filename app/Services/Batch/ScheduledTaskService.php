@@ -200,7 +200,6 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
         foreach ($schedules as $schedule) {
             // 時刻が一致しない場合はスキップ
-            logger()->info('スケジュールチェック', ['schedule' => $schedule, 'current_time' => $currentTime]);
             if (isset($schedule['time']) && $schedule['time'] !== $currentTime) {
                 continue;
             }

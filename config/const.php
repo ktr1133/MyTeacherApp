@@ -116,23 +116,78 @@ return [
     // アバターイベント
     // ========================================
     'avatar_events' => [
-        'task_created'          => 'task_created',
-        'task_updated'          => 'task_updated',
-        'task_deleted'          => 'task_deleted',
-        'task_completed'        => 'task_completed',
-        'task_breakdown'        => 'task_breakdown',
-        'task_breakdown_refine' => 'task_breakdown_refine',
-        'group_task_created'    => 'group_task_created',
-        'group_edited'          => 'group_edited',
-        'login'                 => 'login',
-        'logout'                => 'logout',
-        'login_gap'             => 'login_gap',
-        'token_purchased'       => 'token_purchased',
-        'performance_viewed'    => 'performance_viewed',
-        'tag_created'           => 'tag_created',
-        'tag_deleted'           => 'tag_deleted',
-        'group_created'         => 'group_created',
-        'group_deleted'         => 'group_deleted',
+        'task_created'                => 'task_created',
+        'task_updated'                => 'task_updated',
+        'task_deleted'                => 'task_deleted',
+        'task_completed'              => 'task_completed',
+        'task_breakdown'              => 'task_breakdown',
+        'task_breakdown_refine'       => 'task_breakdown_refine',
+        'group_task_created'          => 'group_task_created',
+        'group_task_updated'          => 'group_task_updated',
+        'group_edited'                => 'group_edited',
+        'login'                       => 'login',
+        'logout'                      => 'logout',
+        'login_gap'                   => 'login_gap',
+        'token_purchased'             => 'token_purchased',
+        'performance_personal_viewed' => 'performance_personal_viewed',
+        'performance_group_viewed'    => 'performance_group_viewed',
+        'tag_created'                 => 'tag_created',
+        'tag_updated'                 => 'tag_updated',
+        'tag_deleted'                 => 'tag_deleted',
+        'group_created'               => 'group_created',
+        'group_deleted'               => 'group_deleted',
+    ],
+
+    // ========================================
+    // アバターイベント×シーン
+    // ========================================
+    'avatar_event_scene' => [
+        'task_created'                => 'ユーザーが新しいタスクを作成したとき',
+        'task_updated'                => 'ユーザーがタスクを更新したとき',
+        'task_deleted'                => 'ユーザーがタスクを削除したとき',
+        'task_completed'              => 'ユーザーがタスクを完了したとき',
+        'task_breakdown'              => 'ユーザーがタスクを分解したとき',
+        'task_breakdown_refine'       => 'ユーザーがタスク分解を改善したとき',
+        'group_task_created'          => 'ユーザーがグループタスクを作成したとき',
+        'group_task_updated'          => 'ユーザーがグループタスクを更新したとき',
+        'group_edited'                => 'ユーザーがグループ情報を編集したとき',
+        'login'                       => 'ユーザーがログインしたとき',
+        'logout'                      => 'ユーザーがログアウトするとき',
+        'login_gap'                   => 'ユーザーが3日ぶりにログインしたとき',
+        'token_purchased'             => 'ユーザーがトークンを購入したとき',
+        'performance_personal_viewed' => 'ユーザーが個人の実績を閲覧したとき',
+        'performance_group_viewed'    => 'ユーザーがグループの実績を閲覧したとき',
+        'tag_created'                 => 'ユーザーがタグを作成したとき',
+        'tag_updated'                 => 'ユーザーがタグを更新したとき',
+        'tag_deleted'                 => 'ユーザーがタグを削除したとき',
+        'group_created'               => 'ユーザーがグループを作成したとき',
+        'group_deleted'               => 'ユーザーがグループを削除したとき',
+    ],
+
+    // ========================================
+    // アバターイベント×表情タイプ
+    // ========================================
+    'avatar_event_expression_types' => [
+        'task_created'                => 'normal',       // タスク作成 - バストアップ - 通常
+        'task_updated'                => 'normal',       // タスク更新 - バストアップ - 通常
+        'task_deleted'                => 'sad',         // タスク削除 - バストアップ - 悲しみ
+        'task_completed'              => 'happy',       // タスク完了 - バストアップ - 喜び
+        'task_breakdown'              => 'normal',       // タスク分解 - バストアップ - 通常
+        'task_breakdown_refine'       => 'surprise',    // タスク分解改善 - バストアップ - 驚き
+        'group_task_created'          => 'happy',       // グループタスク作成 - バストアップ - 喜び
+        'group_task_updated'          => 'normal',       // グループタスク更新 - バストアップ - 通常
+        'group_edited'                => 'normal',       // グループ編集 - バストアップ - 通常
+        'login'                       => 'happy',       // ログイン - バストアップ - 喜び
+        'logout'                      => 'sad',         // ログアウト - バストアップ - 悲しみ
+        'login_gap'                   => 'surprise',    // 3日ぶりログイン - バストアップ - 驚き
+        'token_purchased'             => 'happy',       // トークン購入 - バストアップ - 喜び
+        'performance_personal_viewed' => 'normal',       // 個人実績閲覧 - 全身 - 通常
+        'performance_group_viewed'    => 'normal',       // グループ実績閲覧 - 全身 - 通常
+        'tag_created'                 => 'happy',       // タグ作成 - バストアップ - 喜び
+        'tag_updated'                 => 'normal',       // タグ更新 - バストアップ - 通常
+        'tag_deleted'                 => 'sad',         // タグ削除 - バストアップ - 悲しみ
+        'group_created'               => 'happy',       // グループ作成 - バストアップ - 喜び
+        'group_deleted'               => 'sad',         // グループ削除 - バストアップ - 悲しみ
     ],
 
     // ========================================

@@ -22,7 +22,8 @@
         }
     }"
     @open-task-modal-{{ $task->id }}.window="open()"
-    @keydown.escape.window="showModal && close()">
+    @keydown.escape.window="showModal && close()"
+>
     
     {{-- モーダルオーバーレイ --}}
     <div 

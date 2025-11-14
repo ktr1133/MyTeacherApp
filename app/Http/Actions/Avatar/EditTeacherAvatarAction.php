@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\Avatar\TeacherAvatarServiceInterface;
 use App\Responders\Avatar\TeacherAvatarResponder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -23,11 +24,11 @@ class EditTeacherAvatarAction
      */
     public function __invoke(Request $request): View
     {
-        $user = $request->user();
+        $user = Auth::user();
         $avatar = $user->teacherAvatar;
 
         if (!$avatar) {
-            abort(404, 'アバターが見つかりません');
+            return $this->responder->create();
         }
 
         // 表情画像の取得

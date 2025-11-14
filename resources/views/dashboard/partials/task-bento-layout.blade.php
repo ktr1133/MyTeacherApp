@@ -6,10 +6,13 @@
             $count = $bucket['tasks']->count();
             if ($count >= 9) {
                 $sizeClass = 'xl:col-span-2 xl:row-span-2 lg:col-span-2 lg:row-span-2';
+                $preview = $bucket['tasks']->take(6);
             } elseif ($count >= 4) {
                 $sizeClass = 'xl:col-span-2 xl:row-span-1 lg:col-span-2 lg:row-span-1';
+                $preview = $bucket['tasks']->take(3);
             } else {
                 $sizeClass = 'col-span-1 row-span-1';
+                $preview = $bucket['tasks'];
             }
         @endphp
 
@@ -29,10 +32,6 @@
                     {{ $count }}
                 </span>
             </div>
-
-            @php
-                $preview = $bucket['tasks']->take(3);
-            @endphp
             @if($preview->isNotEmpty())
                 <div class="flex flex-wrap gap-2">
                     @foreach($preview as $t)
