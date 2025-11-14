@@ -112,7 +112,7 @@ class TaskApprovalService implements TaskApprovalServiceInterface
 
             // 同一グループタスクの削除済みレコードを復元
             if ($task->group_task_id) {
-                $this->taskRepository->restoreByGroupTaskId($task->group_task_id);
+                $this->taskRepository->restoreByGroupTaskId((string) $task->group_task_id);
             }
 
             return $task;

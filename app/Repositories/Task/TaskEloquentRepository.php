@@ -333,7 +333,7 @@ class TaskEloquentRepository implements TaskRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function restoreByGroupTaskId(int $groupTaskId): int
+    public function restoreByGroupTaskId(string $groupTaskId): int
     {
         return Task::withTrashed()
             ->where('group_task_id', $groupTaskId)

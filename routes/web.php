@@ -40,19 +40,20 @@ use App\Http\Actions\Tags\GetTagTasksAction;
 use App\Http\Actions\Tags\AttachTaskToTagAction;
 use App\Http\Actions\Tags\DetachTaskFromTagAction;
 use App\Http\Actions\Task\AdoptProposalAction;
+use App\Http\Actions\Task\ApproveTaskAction;
 use App\Http\Actions\Task\CreateTaskAction;
+use App\Http\Actions\Task\DeleteTaskImageAction;
 use App\Http\Actions\Task\DestroyTaskAction;
 use App\Http\Actions\Task\IndexTaskAction;
+use App\Http\Actions\Task\ListPendingApprovalsAction;
 use App\Http\Actions\Task\ProposeTaskAction;
+use App\Http\Actions\Task\RejectTaskAction;
+use App\Http\Actions\Task\RequestApprovalAction;
 use App\Http\Actions\Task\SearchTasksAction;
 use App\Http\Actions\Task\StoreTaskAction;
 use App\Http\Actions\Task\UpdateTaskAction;
-use App\Http\Actions\Task\ApproveTaskAction;
-use App\Http\Actions\Task\RejectTaskAction;
-use App\Http\Actions\Task\RequestApprovalAction;
-use App\Http\Actions\Task\ListPendingApprovalsAction;
+use App\Http\Actions\Task\UpdateTaskDescriptionAction;
 use App\Http\Actions\Task\UploadTaskImageAction;
-use App\Http\Actions\Task\DeleteTaskImageAction;
 use App\Http\Actions\Token\HandleStripeWebhookAction;
 use App\Http\Actions\Token\IndexTokenPurchaseAction;
 use App\Http\Actions\Token\ProcessTokenPurchaseAction;
@@ -114,6 +115,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tasks/{task}/approve', ApproveTaskAction::class)->name('tasks.approve');
     Route::post('/tasks/{task}/reject', RejectTaskAction::class)->name('tasks.reject');
     Route::get('/tasks/pending-approvals', ListPendingApprovalsAction::class)->name('tasks.pending-approvals');
+    Route::patch('/tasks/{task}/update-description', UpdateTaskDescriptionAction::class)->name('tasks.update-description');
 
     // 画像アップロード
     Route::post('/tasks/{task}/upload-image', UploadTaskImageAction::class)->name('tasks.upload-image');

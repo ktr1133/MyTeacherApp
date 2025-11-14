@@ -1,0 +1,281 @@
+/* ========================================
+   承認待ちタスク画面専用スタイル
+   ======================================== */
+
+/* ========== ヘッダー ========== */
+
+/* 承認待ちヘッダーのアイコン背景（イエロー×オレンジ） */
+.approval-header-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+}
+
+/* 承認待ちヘッダーのタイトルグラデーション */
+.approval-header-title {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ========== ボタン ========== */
+
+/* 戻るボタン（イエロー×オレンジ） */
+.approval-btn-back {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%) !important;
+    transition: all 0.3s ease;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+}
+
+.approval-btn-back::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.approval-btn-back:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.approval-btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -5px rgba(245, 158, 11, 0.5),
+                0 10px 15px -6px rgba(249, 115, 22, 0.4);
+    background: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
+}
+
+.approval-btn-back:active {
+    transform: translateY(-1px);
+}
+
+/* 承認ボタン（グリーン×エメラルド） */
+.approval-btn-approve {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    transition: all 0.3s ease;
+}
+
+.approval-btn-approve::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.approval-btn-approve:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.approval-btn-approve:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+/* 却下ボタン（レッド×ローズ） */
+.approval-btn-reject {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    transition: all 0.3s ease;
+}
+
+.approval-btn-reject::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.approval-btn-reject:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.approval-btn-reject:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+/* ========== フォーカス状態 ========== */
+
+.approval-btn-back:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3),
+                0 12px 28px -5px rgba(245, 158, 11, 0.5);
+}
+
+.approval-btn-approve:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+}
+
+.approval-btn-reject:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+}
+
+/* ========== ダークモード ========== */
+
+.dark .approval-btn-back {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+}
+
+.dark .approval-btn-back:hover {
+    background: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%);
+    box-shadow: 0 12px 28px -5px rgba(251, 191, 36, 0.6),
+                0 10px 15px -6px rgba(251, 146, 60, 0.5);
+}
+
+.dark .approval-btn-approve {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.dark .approval-btn-approve:hover {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+.dark .approval-btn-reject {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.dark .approval-btn-reject:hover {
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+/* ========== アニメーション削減モード ========== */
+
+@media (prefers-reduced-motion: reduce) {
+    .approval-btn-back,
+    .approval-btn-approve,
+    .approval-btn-reject {
+        transition: box-shadow 0.2s ease;
+    }
+    
+    .approval-btn-back::before,
+    .approval-btn-approve::before,
+    .approval-btn-reject::before {
+        display: none;
+    }
+    
+    .approval-btn-back:hover,
+    .approval-btn-approve:hover,
+    .approval-btn-reject:hover {
+        transform: none;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* ========== レスポンシブ調整 ========== */
+
+@media (max-width: 640px) {
+    .approval-btn-back,
+    .approval-btn-approve,
+    .approval-btn-reject {
+        font-size: 0.875rem;
+        padding: 0.625rem 1rem;
+    }
+}
+
+/* ========== モーダル専用スタイル ========== */
+
+/* モーダルヘッダー */
+.approval-modal-header {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.05));
+}
+
+/* 保存ボタン（イエロー×オレンジ） */
+.approval-btn-save {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%) !important;
+    transition: all 0.3s ease;
+}
+
+.approval-btn-save::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.approval-btn-save:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.approval-btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -5px rgba(245, 158, 11, 0.5),
+                0 10px 15px -6px rgba(249, 115, 22, 0.4);
+    background: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
+}
+
+.approval-btn-save:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3),
+                0 12px 28px -5px rgba(245, 158, 11, 0.5);
+}
+
+/* ダークモード */
+.dark .approval-btn-save {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+}
+
+.dark .approval-btn-save:hover {
+    background: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%);
+    box-shadow: 0 12px 28px -5px rgba(251, 191, 36, 0.6),
+                0 10px 15px -6px rgba(251, 146, 60, 0.5);
+}
+
+/* テキストエリアのフォーカス */
+textarea:focus {
+    outline: none;
+}
+
+/* 説明文の行クランプ（カードビュー） */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 640px) {
+    .approval-btn-save {
+        font-size: 0.875rem;
+        padding: 0.625rem 1rem;
+    }
+}

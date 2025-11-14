@@ -84,4 +84,15 @@ interface TaskManagementServiceInterface
      * @return User ユーザーモデル
      */
     public function getUserById(int $userId): User;
+
+    /**
+     * タスクの説明文を更新する（承認者・作成者用）
+     *
+     * @param Task $task 更新対象のタスク
+     * @param string|null $description 新しい説明文
+     * @param int $userId 更新を行うユーザーID
+     * @return Task 更新されたタスク
+     * @throws \Exception 権限がない場合
+     */
+    public function updateTaskDescription(Task $task, ?string $description, int $userId): Task;
 }

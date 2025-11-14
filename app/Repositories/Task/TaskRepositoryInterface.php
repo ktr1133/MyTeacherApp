@@ -119,10 +119,10 @@ interface TaskRepositoryInterface
     /**
      * 指定されたグループタスクIDに紐づくタスクを復元する
      *
-     * @param int $groupTaskId
+     * @param string $groupTaskId
      * @return int 復元したタスクの数
      */
-    public function restoreByGroupTaskId(int $groupTaskId): int;
+    public function restoreByGroupTaskId(string $groupTaskId): int;
 
     /**
      * タスクにタグを紐付け（Batch用）

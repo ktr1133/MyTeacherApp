@@ -634,6 +634,11 @@
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+
+/* ========================================
+   サイドバー関連スタイル
+   ======================================== */
+
 /* サイドバーナビゲーション */
 .sidebar-nav-link {
     position: relative;
@@ -669,6 +674,18 @@
 /* サイドバー表示時、背景コンテンツのクリックを無効化 */
 body:has(.sidebar-overlay-active) {
     overflow: hidden;
+}
+
+/* サイドバー最小化機能 */
+/* アニメーション削減モード対応 */
+@media (prefers-reduced-motion: reduce) {
+    aside {
+        transition-duration: 0.01ms !important;
+    }
+    
+    aside * {
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* バッジのグラデーション */

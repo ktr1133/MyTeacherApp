@@ -234,4 +234,28 @@ class TaskManagementService implements TaskManagementServiceInterface
     {
         return $this->profileUserRepository->findById($userId);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function updateTaskDescription(Task $task, ?string $description, int $userId): Task
+    {
+        // 権限チェック：承認者またはタスク作成者のみ更新可能
+        $isApprover = $task->approver_user_id === $userId;
+        $isCreator = $task->assigned_by_user_id === $userId;
+
+        if (!$isApprover && !$isCreator) {
+            throw new \Exception('このタスクを編集する権限がありません');
+        }
+
+        return DB::transaction(function () use ($task, $description) {
+            $task->update([
+                'description' => $description,
+                'updated_by' => Auth::id(),
+                'updated_at' => now(),
+            ]);
+
+            return $task->fresh();
+        });
+    }
 }
