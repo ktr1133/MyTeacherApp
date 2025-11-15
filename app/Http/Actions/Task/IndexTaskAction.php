@@ -58,7 +58,6 @@ class IndexTaskAction
         // タスクデータを取得
         $tasks = $this->taskListService->getTasksForUser($userId, $filters);
         $tags = $this->tagService->getByUserId($userId);
-
         // Responderでビューを構築し、返却
         return $this->responder->respond([
             'tasks'                 => $tasks,

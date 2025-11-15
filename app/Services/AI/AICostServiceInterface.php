@@ -9,15 +9,17 @@ use App\Models\User;
  */
 interface AICostServiceInterface
 {
+
     /**
      * 画像生成コストをトークンに換算
      *
      * @param string $size サイズ (例: '1024x1024')
      * @param string $quality 品質 (例: 'standard', 'hd')
+     * @param string $model モデル名 (例: 'dalle3')
      * @param int $count 枚数
      * @return int トークンコスト
      */
-    public function calculateImageCost(string $size, string $quality, int $count = 1): int;
+    public function calculateImageCost(string $size, string $quality, string $model = 'dalle3', int $count = 1): int;
 
     /**
      * Chat APIコストをトークンに換算

@@ -23,13 +23,14 @@ class AICostService implements AICostServiceInterface
      *
      * @param string $size サイズ (例: '1024x1024')
      * @param string $quality 品質 (例: 'standard', 'hd')
+     * @param string $model モデル名 (例: 'dalle3')
      * @param int $count 枚数
      * @return int トークンコスト
      */
-    public function calculateImageCost(string $size, string $quality, int $count = 1): int
+    public function calculateImageCost(string $size, string $quality, string $model = 'dalle3', int $count = 1): int
     {
         $detail = "{$size}_{$quality}";
-        $rate = $this->costRateRepository->getActiveRate('dalle3', $detail);
+        $rate = $this->costRateRepository->getActiveRate($model, $detail);
 
         if (!$rate) {
             Log::warning("No cost rate found for DALL-E 3: {$detail}");

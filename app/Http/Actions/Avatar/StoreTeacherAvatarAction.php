@@ -2,9 +2,10 @@
 
 namespace App\Http\Actions\Avatar;
 
+use App\Http\Requests\Avatar\StoreTeacherAvatarRequest as Request;
 use App\Services\Avatar\TeacherAvatarServiceInterface;
 use App\Responders\Avatar\TeacherAvatarResponder;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 /**
  * 教師アバター保存アクション
@@ -12,27 +13,17 @@ use Illuminate\Http\Request;
 class StoreTeacherAvatarAction
 {
     public function __construct(
-        private TeacherAvatarServiceInterface $service,
+        private TeacherAvatarServiceInterface $teacherAvatarService,
         private TeacherAvatarResponder $responder
     ) {}
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'sex' => 'required|in:male,female,other',
-            'hair_color' => 'required|in:black,brown,blonde,silver,red',
-            'eye_color' => 'required|in:brown,blue,green,gray,purple',
-            'clothing' => 'required|in:suit,casual,kimono,robe,dress',
-            'accessory' => 'nullable|in:glasses,hat,tie',
-            'body_type' => 'required|in:average,slim,sturdy',
-            'tone' => 'required|in:gentle,strict,friendly,intellectual',
-            'enthusiasm' => 'required|in:high,normal,modest',
-            'formality' => 'required|in:polite,casual,formal',
-            'humor' => 'required|in:high,normal,low',
-        ]);
+        // バリデーション済みデータを取得
+        $validated = $request->validated();
 
         try {
-            $this->service->createAvatar($request->user(), $validated);
+            $this->teacherAvatarService->createAvatar($request->user(), $validated);
 
             return redirect()
                 ->route('dashboard')
@@ -48,6 +39,7 @@ class StoreTeacherAvatarAction
             \Log::error('Avatar creation failed', [
                 'user_id' => $request->user()->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
             
             return redirect()

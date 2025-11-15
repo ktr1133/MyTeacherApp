@@ -9,9 +9,11 @@ use App\Repositories\Task\TaskRepositoryInterface;
 use App\Services\AI\OpenAIService;
 use App\Services\Tag\TagServiceInterface;
 use App\Services\Task\TaskProposalServiceInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 
 
 /**
@@ -56,14 +58,9 @@ class TaskManagementService implements TaskManagementServiceInterface
     public function createTask(User $user, array $data, bool $groupFlg): Task
     {
         // タスク登録用データの作成
-        $taskData = [
-            'title' => $data['title'],
-            'description' => $data['description'] ?? null,
-            'span' => $data['span'],
-            'due_date' => $data['due_date'] ?? null,
-            'priority' => $data['priority'] ?? 3,
-            'is_completed' => false,
-        ];
+        $taskData = $this->makeTaskBaseData($data);
+        $taskData['priority'] = $data['priority'] ?? 3;
+        $taskData['is_completed'] = false;
 
         DB::transaction(function () use ($user, $data, $taskData, $groupFlg, &$task) {
             // グループタスクの場合
@@ -98,7 +95,6 @@ class TaskManagementService implements TaskManagementServiceInterface
             // 通常タスク登録の場合
             } else {
                 $task = $this->taskRepository->createTask($user->id, $taskData);
-                
                 // タグを関連付け（タグ名の配列）
                 if (isset($data['tags']) && is_array($data['tags'])) {
                     $this->taskRepository->syncTagsByName($task, $data['tags']);
@@ -110,18 +106,35 @@ class TaskManagementService implements TaskManagementServiceInterface
     }
 
     /**
+     * タスク登録用の基本データを作成するヘルパーメソッド
+     *
+     * @param array $data 入力データ
+     * @return array タスク登録用データ
+     */
+    public function makeTaskBaseData(array $data): array
+    {
+        if ($data['span'] == config('const.task_spans.mid')) {
+            // 中期の場合、due_dataは年末に設定
+            $tmp_due_data = $data['due_date'];
+            $data['due_date'] = Carbon::createFromFormat('Y', $tmp_due_data)->endOfYear()->format('Y-m-d');
+        }
+
+        return [
+            'title'        => $data['title'],
+            'description'  => $data['description'] ?? null,
+            'span'         => $data['span'],
+            'due_date'     => $data['due_date'] ?? null,
+        ];
+    } 
+
+    /**
      * @inheritDoc
      */
     public function updateTask(Task $task, array $data): Task
     {
         return DB::transaction(function () use ($task, $data) {
             // 基本情報を更新
-            $updateData = [
-                'title' => $data['title'] ?? $task->title,
-                'description' => $data['description'] ?? $task->description,
-                'span' => $data['span'] ?? $task->span,
-                'due_date' => $data['due_date'] ?? $task->due_date,
-            ];
+            $updateData = $this->makeTaskBaseData($data);
 
             $task->update($updateData);
 
@@ -196,20 +209,18 @@ class TaskManagementService implements TaskManagementServiceInterface
         return DB::transaction(function () use ($user, $proposalId, $tasks) {
             $createdTasks = [];
 
-            foreach ($tasks as $taskData) {
+            foreach ($tasks as $data) {
+                $taskData = $this->makeTaskBaseData($data);
+                $taskData['priority'] = $data['priority'] ?? 3;
+                $taskData['user_id'] = $user->id;
+                $taskData['is_completed'] = false;
+                $taskData['source_proposal_id'] = $proposalId;
                 // タスクを作成
-                $task = $this->taskRepository->create([
-                    'user_id' => $user->id,
-                    'title' => $taskData['title'],
-                    'span' => (int)$taskData['span'],
-                    'priority' => $taskData['priority'] ?? 3,
-                    'source_proposal_id' => $proposalId,
-                    'is_completed' => false,
-                ]);
+                $task = $this->taskRepository->create($taskData);
 
                 // タグの処理（タグ名の配列）
-                if (!empty($taskData['tags']) && is_array($taskData['tags'])) {
-                    $this->taskRepository->syncTagsByName($task, $taskData['tags']);
+                if (!empty($data['tags']) && is_array($data['tags'])) {
+                    $this->taskRepository->syncTagsByName($task, $data['tags']);
                 }
 
                 // タスクをリロードしてリレーションを含める
@@ -257,5 +268,20 @@ class TaskManagementService implements TaskManagementServiceInterface
 
             return $task->fresh();
         });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function searchTasks(User $user, string $searchType, array $searchTerms, string $operator): Collection
+    {
+        // リポジトリ層で検索を実行
+        if ($searchType === 'tag') {
+            $tasks = $this->taskRepository->searchByTags($user->id, $searchTerms, $operator);
+        } else {
+            $tasks = $this->taskRepository->searchByTitle($user->id, $searchTerms, $operator);
+        }
+
+        return $tasks;
     }
 }

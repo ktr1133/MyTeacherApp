@@ -6,8 +6,9 @@ use App\Models\Task;
 use App\Models\Tag;
 use App\Models\TaskProposal; // task_proposalsテーブル用
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * TaskRepositoryInterface および TaskManagementService で使用されるデータアクセス操作を
@@ -75,10 +76,14 @@ class TaskEloquentRepository implements TaskRepositoryInterface
      */
     public function getAllTags(): Collection
     {
-        /**
-         * データベースに登録されている全てのタグを取得する。
-         */
-        return Tag::all();
+        $user = Auth::user();
+        if (!$user) {
+            abort(404, 'ユーザーが認証されていません。');
+        }
+
+        return Tag::where('user_id', $user->id)
+            ->orderBy('name', 'asc')
+            ->get();
     }
 
     /**
@@ -86,19 +91,18 @@ class TaskEloquentRepository implements TaskRepositoryInterface
      */
     public function createTask(int $userId, array $data): Task
     {
-        return Task::create([
-            'user_id'              => $userId,
-            'title'                => $data['title'],
-            'description'          => $data['description'] ?? null,
-            'span'                 => (int) $data['span'] ?? null,
-            'due_date'             => $data['due_date'] ?? null,
-            'priority'             => $data['priority'] ?? 3,
-            'reward'               => $data['reward'] ?? null,
-            'group_task_id'        => $data['group_task_id'] ?? null,
-            'source_proposal_id'   => $data['source_proposal_id'] ?? null,
-            'requires_approval'    => $data['requires_approval'] ?? false,
-            'assigned_by_user_id'  => $data['assigned_by_user_id'] ?? null,
-        ]);
+        // Taskモデルのfillableを取得
+        $fillable = (new Task())->getFillable();
+
+        // fillableに含まれるカラムのみを抽出
+        $attributes = array_intersect_key($data, array_flip($fillable));
+
+        // 必須項目設定
+        $attributes['user_id'] = $userId;
+        $attributes['priority'] = $data['priority'] ?? 3;
+        $attributes['requires_approval'] = $data['requires_approval'] ?? false;
+
+        return Task::create($attributes);
     }
 
     /**
@@ -195,9 +199,9 @@ class TaskEloquentRepository implements TaskRepositoryInterface
      * @param int $userId
      * @param array $terms
      * @param string $operator 'and' or 'or'
-     * @return array
+     * @return Collection
      */
-    public function searchByTitle(int $userId, array $terms, string $operator): array
+    public function searchByTitle(int $userId, array $terms, string $operator): Collection
     {
         $query = Task::where('user_id', $userId);
 
@@ -216,17 +220,7 @@ class TaskEloquentRepository implements TaskRepositoryInterface
         return $query->with('tags')
             ->orderBy('due_date', 'asc')
             ->limit(50)
-            ->get()
-            ->map(function ($task) {
-                return [
-                    'id' => $task->id,
-                    'title' => $task->title,
-                    'span' => $task->span,
-                    'due_date' => $task->due_date,
-                    'tags' => $task->tags->pluck('name')->toArray(),
-                ];
-            })
-            ->toArray();
+            ->get();
     }
 
     /**
@@ -235,9 +229,9 @@ class TaskEloquentRepository implements TaskRepositoryInterface
      * @param int $userId
      * @param array $terms
      * @param string $operator 'and' or 'or'
-     * @return array
+     * @return Collection
      */
-    public function searchByTags(int $userId, array $terms, string $operator): array
+    public function searchByTags(int $userId, array $terms, string $operator): Collection
     {
         $query = Task::where('user_id', $userId);
 
@@ -258,17 +252,7 @@ class TaskEloquentRepository implements TaskRepositoryInterface
         return $query->with('tags')
             ->orderBy('due_date', 'asc')
             ->limit(50)
-            ->get()
-            ->map(function ($task) {
-                return [
-                    'id' => $task->id,
-                    'title' => $task->title,
-                    'span' => $task->span,
-                    'due_date' => $task->due_date,
-                    'tags' => $task->tags->pluck('name')->toArray(),
-                ];
-            })
-            ->toArray();
+            ->get();
     }
 
     /**

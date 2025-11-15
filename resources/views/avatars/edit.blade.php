@@ -208,7 +208,7 @@
                             </div>
                         </div>
 
-                        {{-- 設定フォーム（変更なし） --}}
+                        {{-- 設定フォーム --}}
                         <div class="lg:col-span-2">
                             <div class="avatar-card rounded-2xl p-4 lg:p-8 hero-fade-in-delay">
                                 <form 
@@ -234,61 +234,54 @@
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">性別</label>
                                                 <select name="sex" class="avatar-form-input" required>
-                                                    <option value="male" {{ $avatar->sex === 'male' ? 'selected' : '' }}>男性</option>
-                                                    <option value="female" {{ $avatar->sex === 'female' ? 'selected' : '' }}>女性</option>
-                                                    <option value="other" {{ $avatar->sex === 'other' ? 'selected' : '' }}>その他</option>
+                                                    @foreach (config('services.sex') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->sex === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">髪の色</label>
                                                 <select name="hair_color" class="avatar-form-input" required>
-                                                    <option value="black" {{ $avatar->hair_color === 'black' ? 'selected' : '' }}>黒</option>
-                                                    <option value="brown" {{ $avatar->hair_color === 'brown' ? 'selected' : '' }}>茶</option>
-                                                    <option value="blonde" {{ $avatar->hair_color === 'blonde' ? 'selected' : '' }}>金</option>
-                                                    <option value="silver" {{ $avatar->hair_color === 'silver' ? 'selected' : '' }}>銀</option>
-                                                    <option value="red" {{ $avatar->hair_color === 'red' ? 'selected' : '' }}>赤</option>
+                                                    @foreach (config('services.hair_color') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->hair_color === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">目の色</label>
                                                 <select name="eye_color" class="avatar-form-input" required>
-                                                    <option value="brown" {{ $avatar->eye_color === 'brown' ? 'selected' : '' }}>茶</option>
-                                                    <option value="blue" {{ $avatar->eye_color === 'blue' ? 'selected' : '' }}>青</option>
-                                                    <option value="green" {{ $avatar->eye_color === 'green' ? 'selected' : '' }}>緑</option>
-                                                    <option value="gray" {{ $avatar->eye_color === 'gray' ? 'selected' : '' }}>灰</option>
-                                                    <option value="purple" {{ $avatar->eye_color === 'purple' ? 'selected' : '' }}>紫</option>
+                                                    @foreach (config('services.eye_color') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->eye_color === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">服装</label>
                                                 <select name="clothing" class="avatar-form-input" required>
-                                                    <option value="suit" {{ $avatar->clothing === 'suit' ? 'selected' : '' }}>スーツ</option>
-                                                    <option value="casual" {{ $avatar->clothing === 'casual' ? 'selected' : '' }}>カジュアル</option>
-                                                    <option value="kimono" {{ $avatar->clothing === 'kimono' ? 'selected' : '' }}>和服</option>
-                                                    <option value="robe" {{ $avatar->clothing === 'robe' ? 'selected' : '' }}>ローブ</option>
-                                                    <option value="dress" {{ $avatar->clothing === 'dress' ? 'selected' : '' }}>ドレス</option>
+                                                    @foreach (config('services.clothing') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->clothing === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">アクセサリー</label>
                                                 <select name="accessory" class="avatar-form-input">
-                                                    <option value="" {{ !$avatar->accessory ? 'selected' : '' }}>なし</option>
-                                                    <option value="glasses" {{ $avatar->accessory === 'glasses' ? 'selected' : '' }}>眼鏡</option>
-                                                    <option value="hat" {{ $avatar->accessory === 'hat' ? 'selected' : '' }}>帽子</option>
-                                                    <option value="tie" {{ $avatar->accessory === 'tie' ? 'selected' : '' }}>ネクタイ</option>
+                                                    @foreach (config('services.accessory') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->accessory === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">体型</label>
                                                 <select name="body_type" class="avatar-form-input" required>
-                                                    <option value="average" {{ $avatar->body_type === 'average' ? 'selected' : '' }}>標準</option>
-                                                    <option value="slim" {{ $avatar->body_type === 'slim' ? 'selected' : '' }}>細身</option>
-                                                    <option value="sturdy" {{ $avatar->body_type === 'sturdy' ? 'selected' : '' }}>がっしり</option>
+                                                    @foreach (config('services.body_type') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->body_type === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
                                         </div>
@@ -303,42 +296,104 @@
                                             性格の設定
                                         </h2>
                                         
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">口調</label>
                                                 <select name="tone" class="avatar-form-input" required>
-                                                    <option value="gentle" {{ $avatar->tone === 'gentle' ? 'selected' : '' }}>優しい</option>
-                                                    <option value="strict" {{ $avatar->tone === 'strict' ? 'selected' : '' }}>厳しい</option>
-                                                    <option value="friendly" {{ $avatar->tone === 'friendly' ? 'selected' : '' }}>フレンドリー</option>
-                                                    <option value="intellectual" {{ $avatar->tone === 'intellectual' ? 'selected' : '' }}>知的</option>
+                                                    @foreach (config('services.tone') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->tone === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">熱意</label>
                                                 <select name="enthusiasm" class="avatar-form-input" required>
-                                                    <option value="high" {{ $avatar->enthusiasm === 'high' ? 'selected' : '' }}>高い</option>
-                                                    <option value="normal" {{ $avatar->enthusiasm === 'normal' ? 'selected' : '' }}>普通</option>
-                                                    <option value="modest" {{ $avatar->enthusiasm === 'modest' ? 'selected' : '' }}>控えめ</option>
+                                                    @foreach (config('services.enthusiasm') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->enthusiasm === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">丁寧さ</label>
                                                 <select name="formality" class="avatar-form-input" required>
-                                                    <option value="polite" {{ $avatar->formality === 'polite' ? 'selected' : '' }}>丁寧</option>
-                                                    <option value="casual" {{ $avatar->formality === 'casual' ? 'selected' : '' }}>カジュアル</option>
-                                                    <option value="formal" {{ $avatar->formality === 'formal' ? 'selected' : '' }}>フォーマル</option>
+                                                    @foreach (config('services.formality') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->formality === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">ユーモア</label>
                                                 <select name="humor" class="avatar-form-input" required>
-                                                    <option value="high" {{ $avatar->humor === 'high' ? 'selected' : '' }}>高い</option>
-                                                    <option value="normal" {{ $avatar->humor === 'normal' ? 'selected' : '' }}>普通</option>
-                                                    <option value="low" {{ $avatar->humor === 'low' ? 'selected' : '' }}>控えめ</option>
+                                                    @foreach (config('services.humor') as $key => $label)
+                                                        <option value="{{ $key }}" {{ $avatar->humor === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                    @endforeach
                                                 </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- 描画モデル --}}
+                                    <div class="mb-8">
+                                        <h2 class="text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <div class="model-icon-gradient w-5 h-5 lg:w-6 lg:h-6 rounded-lg flex items-center justify-center">
+                                                <svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                            </div>
+                                            描画モデルの選択
+                                        </h2>
+                                        
+                                        <div class="avatar-form-group">
+                                            <label class="avatar-form-label flex items-center gap-2">
+                                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                                                </svg>
+                                                イラストスタイル
+                                            </label>
+                                            <select name="draw_model_version" class="avatar-form-input model-select" required>
+                                                @foreach (config('services.draw_model_versions') as $key => $value)
+                                                    <option value="{{ $key }}" {{ $avatar->draw_model_version === $key ? 'selected' : '' }}>
+                                                        {{ $key }} - 
+                                                        @if($key === 'anything-v4.0')
+                                                            線の細いタッチで描画
+                                                        @elseif($key === 'animagine-xl-3.1')
+                                                            豊かな色彩のイラスト
+                                                        @elseif($key === 'stable-diffusion-3.5-medium')
+                                                            25億のパラメータで高品質描画
+                                                        @endif
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        {{-- 背景透過フラグ --}}
+                                        <div class="mb-8">
+                                            <label class="avatar-form-label flex items-center gap-2">
+                                                <input type="checkbox" name="is_transparent" class="avatar-form-checkbox" {{ $avatar->is_transparent ? 'checked' : '' }}>
+                                                背景を透過する
+                                            </label>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                アバター画像の背景を透明にします。モデルによっては動作が安定しない恐れがあります。
+                                            </p>
+                                        </div>
+                                        {{-- モデル情報ヒント --}}
+                                        <div class="mt-4 p-4 model-info-card rounded-lg">
+                                            <div class="flex items-start gap-3">
+                                                <div class="model-info-icon w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-semibold text-gray-900 dark:text-white mb-1">描画モデルについて</p>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                        描画モデルによって、アバターのイラストタッチが変わります。<br>
+                                                        お好みのスタイルをお選びください。今後、新しいモデルが追加される予定です。
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -358,7 +413,7 @@
 
                                 {{-- 画像再生成 --}}
                                 <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                    <form method="POST" action="{{ route('avatars.regenerate') }}" onsubmit="return confirm('画像を再生成しますか？トークンが消費されます。')">
+                                    <form method="POST" action="{{ route('avatars.regenerate') }}" onsubmit="return confirm('画像を再生成しますか?トークンが消費されます。')">
                                         @csrf
                                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                             <div class="flex-1">

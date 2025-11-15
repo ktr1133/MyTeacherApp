@@ -4,6 +4,7 @@ namespace App\Services\Task;
 
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * タスクの作成、更新、AI連携、論理削除などのCRUD操作とビジネスロジックの契約を定義するインターフェース。
@@ -27,6 +28,14 @@ interface TaskManagementServiceInterface
      * @return Task 保存されたタスクモデル
      */
     public function createTask(User $user, array $data, bool $groupFlg): Task;
+
+    /**
+     * タスク登録用の基本データを作成するヘルパーメソッド
+     *
+     * @param array $data 入力データ
+     * @return array タスク登録用データ
+     */
+    public function makeTaskBaseData(array $data): array;
 
     /**
      * タスクを更新する
@@ -95,4 +104,15 @@ interface TaskManagementServiceInterface
      * @throws \Exception 権限がない場合
      */
     public function updateTaskDescription(Task $task, ?string $description, int $userId): Task;
+
+    /**
+     * タスクを検索する
+     *
+     * @param User $user 検索を行うユーザー
+     * @param string $searchType 検索タイプ ('title' or 'tag')
+     * @param array $searchTerms 検索語句の配列
+     * @param string $operator 検索演算子 ('and' or 'or')
+     * @return Collection タスクのコレクション
+     */
+    public function searchTasks(User $user, string $searchType, array $searchTerms, string $operator): Collection;
 }

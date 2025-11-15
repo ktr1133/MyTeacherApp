@@ -26,6 +26,8 @@ class TeacherAvatar extends Model
         'enthusiasm',
         'formality',
         'humor',
+        'draw_model_version',
+        'is_transparent',
         'generation_status',
         'last_generated_at',
         'is_visible',

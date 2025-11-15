@@ -28,6 +28,10 @@ return new class extends Migration
             $table->string('formality', 50)->comment('フォーマルさ');
             $table->string('humor', 50)->comment('ユーモア');
 
+            // 描画モデル
+            $table->string('draw_model_version', 100)->nullable()->comment('描画モデルバージョン');
+            $table->boolean('is_transparent')->default(true)->comment('背景透過');
+
             // 生成ステータス
             $table->enum('generation_status', array_keys(config('const.avatar_generation_statuses')))->default('pending');
             $table->timestamp('last_generated_at')->nullable();

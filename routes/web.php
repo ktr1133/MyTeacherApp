@@ -51,6 +51,7 @@ use App\Http\Actions\Task\RejectTaskAction;
 use App\Http\Actions\Task\RequestApprovalAction;
 use App\Http\Actions\Task\SearchTasksAction;
 use App\Http\Actions\Task\StoreTaskAction;
+use App\Http\Actions\Task\TaskSearchResultsAction;
 use App\Http\Actions\Task\UpdateTaskAction;
 use App\Http\Actions\Task\UpdateTaskDescriptionAction;
 use App\Http\Actions\Task\UploadTaskImageAction;
@@ -109,6 +110,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/tasks/{task}', UpdateTaskAction::class)->name('tasks.update');
     Route::delete('/tasks/destroy', DestroyTaskAction::class)->name('tasks.destroy');
     Route::get('/tasks/search', SearchTasksAction::class)->name('tasks.search');
+    Route::get('/tasks/search/results', TaskSearchResultsAction::class)->name('tasks.search.results');
 
     // タスク承認関連
     Route::post('/tasks/{task}/request-approval', RequestApprovalAction::class)->name('tasks.request-approval');

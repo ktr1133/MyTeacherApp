@@ -302,7 +302,15 @@ class ModalController {
         const store = Alpine.store('dashboard');
         const tasksHTML = tasks.map((task, index) => {
             const selectedSpan = store?.selectedTaskSpans?.[index] || 2;
-            const selectedDueDate = store?.selectedTaskDueDates?.[index] || '';
+            let selectedDueDate = store?.selectedTaskDueDates?.[index] || '';
+            // 短期の場合
+            if (selectedSpan == 1) {
+                // 今日の日付をセット
+                selectedDueDate = selectedDueDate || new Date().toISOString().split('T')[0];
+            } else if (selectedSpan == 2) {
+                // 中期の場合、今年の年をセット
+                selectedDueDate = selectedDueDate || new Date().getFullYear().toString();
+            }
             
             return `
                 <div class="task-list flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition bg-white">
@@ -734,6 +742,7 @@ class DashboardController {
             this.modal.showLoading();
             this.updateState({ isProposing: true });
 
+            // タスク分解APIを呼び出す
             const response = await TaskAPI.propose(title, span, context, isRefinement);
 
             let proposedTasksArray = response.proposed_tasks || [];
@@ -1024,8 +1033,6 @@ class DashboardController {
      * @param {string} tagName - タグ名
      */
     updateTaskList(tasks, tagName) {
-        console.log('[updateTaskList]', { tasks, tagName });
-
         if (!tasks || tasks.length === 0) {
             return;
         }
@@ -1052,7 +1059,6 @@ class DashboardController {
 
         // タグバケツが存在しない場合は新規作成
         if (!bucketContainer) {
-            console.log('[updateTaskList] Creating new bucket for tag:', tagName);
             this.createNewBucket(tagName, tasks);
             return;
         }
@@ -1075,8 +1081,6 @@ class DashboardController {
             const taskCard = this.createTaskCard(task);
             taskListContainer.insertAdjacentHTML('beforeend', taskCard);
         });
-
-        console.log('[updateTaskList] Tasks added to existing bucket');
     }
 
     /**
@@ -1089,7 +1093,7 @@ class DashboardController {
         const taskCardsHTML = tasks.map(task => this.createTaskCard(task)).join('');
 
         const bucketHTML = `
-            <div class="bento-card task-card-enter p-6 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50" data-bucket-name="${this.escapeHtml(tagName)}">
+            <div class="bento-card group relative rounded-2xl shadow-lg hover:shadow-2xl p-6 cursor-pointer" data-bucket-name="${this.escapeHtml(tagName)}">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#59B9C6] to-[#3b82f6] flex items-center justify-center shadow-lg">
@@ -1132,8 +1136,6 @@ class DashboardController {
 
         // 新しいバケツを先頭に追加
         gridContainer.insertAdjacentHTML('afterbegin', bucketHTML);
-
-        console.log('[createNewBucket] New bucket created');
     }
 
     /**
@@ -1351,23 +1353,6 @@ class DashboardEventHandler {
             };
             simpleRegisterBtn.addEventListener('click', simpleRegisterHandler, { once: false });
         }
-
-        // // グループタスク登録ボタン - 上記と同じ処理
-        // const groupTaskRegisterBtn = document.getElementById('register-group-task-btn');
-        // if (groupTaskRegisterBtn) {
-        //     const groupTaskRegisterHandler = (ev) => {
-        //         const form = document.getElementById('group-task-form');
-        //         if (form) {
-        //             if (!form.checkValidity()) {
-        //                 form.reportValidity();
-        //                 ev.preventDefault();
-        //                 return;
-        //             }
-        //             // ← タスク登録と同じ処理
-        //         }
-        //     };
-        //     groupTaskRegisterBtn.addEventListener('click', groupTaskRegisterHandler, { once: false });
-        // }
     }
 
     /**

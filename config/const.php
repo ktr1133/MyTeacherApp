@@ -211,4 +211,13 @@ return [
 
     // 事前見積トークン数
     'estimate_token' => 2000,
+
+    // OpenAIの入力プロンプトと出力プロンプトの比率
+    'openai_prompt_completion_ratio' => 4,
+
+    // 画像サイズ
+    'image_size' => [
+        'width' => '512',
+        'height' => '512',
+    ],
 ];

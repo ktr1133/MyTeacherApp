@@ -71,12 +71,6 @@ final class AdoptProposalAction
                 $avatarEventType
             );
 
-            logger()->info('[AdoptProposalAction] Avatar comment fetched', [
-                'event_type' => $avatarEventType,
-                'has_comment' => !is_null($avatarComment),
-                'comment_data' => $avatarComment,
-            ]);
-
             return response()->json([
                 'success' => true,
                 'message' => count($created) . '件のタスクを作成しました',

@@ -65,12 +65,6 @@ class ProposeTaskAction
                 (bool)($validated['is_refinement'] ?? false)
             );
 
-            Log::info('Task proposal created', [
-                'user_id' => $user->id,
-                'proposal_id' => $proposal->id,
-                'tokens_used' => $proposal->total_tokens,
-            ]);
-
             return response()->json([
                 'success' => true,
                 'proposal_id' => $proposal->id,

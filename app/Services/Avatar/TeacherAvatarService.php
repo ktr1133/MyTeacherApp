@@ -34,6 +34,7 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
     {
         // シード値を生成してデータに追加
         $data['seed'] = random_int(1, 2147483647);
+        $data['is_transparent'] = isset($data['is_transparent']) ? true : false;
         
         // アバター作成
         $avatar = $this->repository->create($user, $data);
@@ -66,6 +67,8 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
      */
     public function updateAvatar(TeacherAvatar $avatar, array $data): bool
     {
+        $data['is_transparent'] = isset($data['is_transparent']) ? true : false;
+
         return $this->repository->update($avatar, $data);
     }
 
