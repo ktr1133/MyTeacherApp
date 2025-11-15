@@ -1,6 +1,8 @@
 @php
     $u = Auth::user();
-    $sidebarTaskTotal = \App\Models\Task::where('user_id', $u->id)->count();
+    $sidebarTaskTotal = \App\Models\Task::where('user_id', $u->id)
+        ->where('is_completed', false)
+        ->count();
     $sidebarPendingTotal = 0;
     if ($u->canEditGroup()) {
         $sidebarPendingTotal = \App\Models\Task::query()

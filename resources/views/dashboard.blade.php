@@ -104,9 +104,10 @@
 
         {{-- メインコンテンツ --}}
         <div class="flex-1 flex flex-col overflow-y-auto">
-            
             {{-- ヘッダー --}}
-            <header class="sticky top-0 z-20 border-b border-gray-200/50 dark:border-gray-700/50 dashboard-header-blur shadow-sm">
+            <header class="sticky top-0 z-20 border-b border-gray-200/50 dark:border-gray-700/50 dashboard-header-blur shadow-sm"
+                    x-data="{ searchFocused: false, notificationCount: 5 }"
+                    @search-focused.window="searchFocused = $event.detail.focused">
                 <div class="px-4 lg:px-6 h-14 lg:h-16 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <button
@@ -119,7 +120,15 @@
                             </svg>
                         </button>
 
-                        <div class="flex items-center gap-3">
+                        {{-- ヘッダーアイコンとタイトル（検索フォーカス時に非表示） --}}
+                        <div class="hidden lg:flex items-center gap-3"
+                            x-show="!searchFocused"
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 -translate-x-4"
+                            x-transition:enter-end="opacity-100 translate-x-0"
+                            x-transition:leave="transition ease-in duration-200"
+                            x-transition:leave-start="opacity-100 translate-x-0"
+                            x-transition:leave-end="opacity-0 -translate-x-4">
                             <div class="dashboard-header-icon w-10 h-10 rounded-xl flex items-center justify-center shadow-lg">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -133,13 +142,24 @@
                             </div>
                         </div>
                         
-                        <div class="hidden lg:flex flex-1 min-w-0">
+                        {{-- 検索欄（lg以上で表示、フォーカス時に幅拡大） --}}
+                        <div class="hidden lg:flex flex-1 min-w-0"
+                            :class="searchFocused ? '' : 'max-w-md'">
                             <x-task-filter />
                         </div>
                     </div>
 
-                    {{-- ボタン群 --}}
-                    <div class="flex items-center gap-2">
+                    {{-- ボタン群（検索フォーカス時に非表示） --}}
+                    <div class="flex items-center gap-2"
+                        x-show="!searchFocused"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 scale-95 translate-x-4"
+                        x-transition:enter-end="opacity-100 scale-100 translate-x-0"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 scale-100 translate-x-0"
+                        x-transition:leave-end="opacity-0 scale-95 translate-x-4">
+
+                        {{-- タスク登録ボタン --}}
                         <button 
                             id="open-task-modal-btn"
                             class="dashboard-btn-primary inline-flex items-center justify-center shrink-0 rounded-full text-white shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#59B9C6] transition h-10 w-10 sm:h-10 sm:w-auto sm:rounded-xl sm:px-4 sm:py-2.5 lg:px-5">
@@ -149,6 +169,7 @@
                             <span class="hidden sm:inline-block text-sm font-semibold whitespace-nowrap">タスク登録</span>
                         </button>
 
+                        {{-- グループタスク登録ボタン --}}
                         @if(Auth::user()->canEditGroup())
                             <button 
                                 id="open-group-task-modal-btn"
@@ -159,9 +180,36 @@
                                 <span class="hidden sm:inline-block text-sm font-semibold whitespace-nowrap">グループタスク</span>
                             </button>
                         @endif
+
+                        {{-- お知らせ通知ボタン --}}
+                        <a href="#"
+                        class="notification-btn relative p-2.5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 hover:from-amber-100 hover:to-orange-100 dark:hover:from-gray-700 dark:hover:to-gray-600 border border-amber-200 dark:border-gray-600 hover:border-amber-300 dark:hover:border-gray-500 transition-all duration-300 hover:shadow-lg group"
+                        aria-label="お知らせ通知">
+                            <svg class="w-6 h-6 text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            
+                            {{-- 未読バッジ --}}
+                            <span x-show="notificationCount > 0"
+                                x-transition
+                                class="notification-badge absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg ring-2 ring-white dark:ring-gray-900"
+                                x-text="notificationCount > 99 ? '99+' : notificationCount">
+                            </span>
+                        </a>
                     </div>
 
-                    <div class="hidden sm:flex sm:items-center sm:ms-6">
+                    {{-- ユーザードロップダウン（検索フォーカス時に非表示） --}}
+                    <div class="hidden sm:flex sm:items-center sm:ms-6"
+                        x-show="!searchFocused"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-x-4"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 translate-x-0"
+                        x-transition:leave-end="opacity-0 translate-x-4">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
                                 <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80 focus:outline-none transition backdrop-blur-sm">
@@ -190,12 +238,12 @@
                     </div>
                 </div>
 
-                {{-- モバイルフィルタ --}}
+                {{-- モバイルフィルタ（変更なし） --}}
                 <div class="lg:hidden px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
                     <x-task-filter />
                 </div>
 
-                {{-- タブナビゲーション --}}
+                {{-- タブナビゲーション（変更なし） --}}
                 <div class="flex gap-2 border-t border-gray-200 dark:border-gray-700 px-4 lg:px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
                     <button 
                         @click="activeTab = 'todo'"

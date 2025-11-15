@@ -1057,34 +1057,128 @@ body:has(.sidebar-overlay-active) {
     background: linear-gradient(135deg, #f59e0b, #f97316);
 }
 
-/* 検索バーのグロー効果強化 */
-.search-bar {
+
+/* ========================================
+   お知らせ通知ボタン
+   ======================================== */
+
+.notification-btn {
     position: relative;
     transition: all 0.3s ease;
 }
 
+.notification-btn:hover {
+    transform: translateY(-2px);
+}
+
+.notification-btn:active {
+    transform: translateY(0);
+}
+
+/* 未読バッジのアニメーション */
+.notification-badge {
+    animation: pulse-badge 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* ベルアイコンのシェイクアニメーション（ホバー時） */
+.notification-btn:hover svg {
+    animation: ring-bell 0.5s ease-in-out;
+}
+
+@keyframes ring-bell {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: rotate(-10deg);
+    }
+    20%, 40%, 60%, 80% {
+        transform: rotate(10deg);
+    }
+}
+
+/* ダークモード対応 */
+.dark .notification-btn {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .notification-btn:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* モバイル時の調整 */
+@media (max-width: 640px) {
+    .notification-btn {
+        padding: 0.625rem;
+    }
+    
+    .notification-badge {
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+        padding: 0 0.25rem;
+    }
+}
+
+/* アクセシビリティ - アニメーション削減モード */
+@media (prefers-reduced-motion: reduce) {
+    .notification-badge {
+        animation: none !important;
+    }
+    
+    .notification-btn:hover svg {
+        animation: none !important;
+    }
+    
+    .notification-btn {
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   検索フォーカス時のスムーズなトランジション
+   ======================================== */
+
+/* 検索欄の幅拡大 */
+.search-bar input {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .search-bar input:focus {
     box-shadow: 0 0 0 3px rgba(89, 185, 198, 0.1),
-                0 0 20px rgba(89, 185, 198, 0.2);
+                0 0 20px rgba(89, 185, 198, 0.2),
+                0 4px 12px rgba(89, 185, 198, 0.15);
     border-color: #59B9C6;
+    transform: scale(1.01);
 }
 
-.search-bar::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-    filter: blur(8px);
+/* ヘッダー要素のフェードトランジション */
+header [x-show] {
+    transition-property: opacity, transform;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.search-bar:focus-within::before {
-    opacity: 0.3;
+/* 検索フォーカス時の検索欄コンテナ */
+.search-bar {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* フォーカス時のグロー効果強化 */
+.search-bar:focus-within {
+    box-shadow: 0 0 0 3px rgba(89, 185, 198, 0.1),
+                0 0 20px rgba(89, 185, 198, 0.2);
+}
 /* タグチップのスタイル */
 .tag-chip {
     background: linear-gradient(135deg, rgba(89, 185, 198, 0.1), rgba(139, 92, 246, 0.1));
