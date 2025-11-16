@@ -50,13 +50,7 @@ class StoreTaskAction
             $rules['reward'] = ['required', 'integer', 'min:0'];
             $rules['requires_approval'] = ['required', 'boolean'];
         }
-        logger()->info('[StoreTaskAction] START', [
-            'request_id' => uniqid('task_', true),
-            'is_group_task' => $request->is_group_task,
-            'title' => $request->title,
-            'user_id' => auth()->id(),
-            'all_request_data' => $request->all(),
-        ]);
+
         $data = $request->validate($rules);
 
         // グループタスクの場合、追加フィールドを設定

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use App\Repositories\Task\TaskRepositoryInterface;
 use App\Services\AI\OpenAIService;
+use App\Services\Notification\NotificationServiceInterface;
 use App\Services\Tag\TagServiceInterface;
 use App\Services\Task\TaskProposalServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -26,6 +27,7 @@ class TaskManagementService implements TaskManagementServiceInterface
     protected OpenAIService $openAIService;
     protected TagServiceInterface $tagService;
     protected TaskProposalServiceInterface $proposalService;
+    protected NotificationServiceInterface $notificationService;
 
     /**
      * コンストラクタ。リポジトリとAIサービスの依存性を注入。
@@ -35,13 +37,15 @@ class TaskManagementService implements TaskManagementServiceInterface
         ProfileUserRepositoryInterface $profileUserRepository,
         OpenAIService $openAIService,
         TagServiceInterface $tagService,
-        TaskProposalServiceInterface $proposalService
+        TaskProposalServiceInterface $proposalService,
+        NotificationServiceInterface $notificationService
     ){
         $this->taskRepository = $taskRepository;
         $this->profileUserRepository = $profileUserRepository;
         $this->openAIService = $openAIService;
         $this->tagService = $tagService;
         $this->proposalService = $proposalService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -81,16 +85,32 @@ class TaskManagementService implements TaskManagementServiceInterface
                         // タグを関連付け（タグ名の配列）
                         if (isset($data['tags']) && is_array($data['tags'])) {
                             $this->taskRepository->syncTagsByName($task, $data['tags']);
-                        }            
+                        }
                     }
+                    // 通知を送信
+                    $this->notificationService->sendNotificationForGroup(
+                        config('const.notification_types.group_task_created'),
+                        '新しいグループタスクが作成されました。',
+                        '新しいグループタスク: ' . $data['title'] . 'が作成されました。タスクリストを確認してください。',
+                        'important'
+                    );
                 // 担当者が設定されている場合は担当者分のみタスクを作成
                 } else {
-                    $taskData['user_id'] = $data['assigned_by_user_id'];
+                    $taskData['user_id'] = $data['assigned_user_id'];
                     $task = $this->taskRepository->createTask($user->id, $taskData);
                     // タグを関連付け（タグ名の配列）
                     if (isset($data['tags']) && is_array($data['tags'])) {
                         $this->taskRepository->syncTagsByName($task, $data['tags']);
-                    }            
+                    }
+                    // 担当者に通知を送信
+                    $this->notificationService->sendNotification(
+                        Auth::user()->id,
+                        $data['assigned_user_id'],
+                        config('const.notification_types.group_task_created'),
+                        '新しいグループタスクが作成されました。',
+                        '新しいグループタスク: ' . $data['title'] . 'が作成されました。タスクリストを確認してください。',
+                        'important'
+                    );       
                 }
             // 通常タスク登録の場合
             } else {

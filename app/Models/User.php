@@ -150,14 +150,6 @@ class User extends Authenticatable
     }
 
     /**
-     * 通知とのリレーション
-     */
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class);
-    }
-
-    /**
      * トークン残高を取得（存在しない場合は作成）
      */
     public function getOrCreateTokenBalance(): TokenBalance

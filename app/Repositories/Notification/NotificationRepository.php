@@ -151,7 +151,9 @@ class NotificationRepository implements NotificationRepositoryInterface
      */
     public function distributeNotification(NotificationTemplate $template): int
     {
-        $userIds = $this->getTargetUserIds($template);
+        $jsonUserIds = $this->getTargetUserIds($template);
+        $userIds = json_decode(json_encode($jsonUserIds), true);
+        logger()->info('userIds', ['userIds' => $userIds, 'jsonUserIds' => $jsonUserIds, 'template' => $template->toArray()]);
 
         if (empty($userIds)) {
             return 0;
@@ -182,10 +184,12 @@ class NotificationRepository implements NotificationRepositoryInterface
      */
     private function getTargetUserIds(NotificationTemplate $template): array
     {
+        $groupUserIds = json_decode($template->target_ids ?? '[]', true) ?: [];
+
         return match($template->target_type) {
             'all' => User::pluck('id')->toArray(),
             'users' => json_decode($template->target_ids) ?? [],
-            'groups' => $this->getUserIdsFromGroups($template->target_ids ?? []),
+            'groups' => $this->getUserIdsFromGroups($groupUserIds),
             default => [],
         };
     }
@@ -195,14 +199,14 @@ class NotificationRepository implements NotificationRepositoryInterface
      * 
      * group_user 中間テーブルから該当グループのユーザーを取得。
      *
-     * @param array $groupIds グループIDの配列
+     * @param array $groupUserIds グループIDの配列
      * @return array ユーザーIDの配列
      */
-    private function getUserIdsFromGroups(array $groupIds): array
+    private function getUserIdsFromGroups(array $groupUserIds): array
     {
-        return DB::table('group_user')
-            ->whereIn('group_id', $groupIds)
-            ->pluck('user_id')
+        return DB::table('users')
+            ->whereIn('id', $groupUserIds)
+            ->pluck('id')
             ->unique()
             ->toArray();
     }

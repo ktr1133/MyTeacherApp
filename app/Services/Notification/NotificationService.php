@@ -4,8 +4,10 @@ namespace App\Services\Notification;
 
 use App\Models\NotificationTemplate;
 use App\Repositories\Notification\NotificationRepositoryInterface;
+use App\Repositories\Profile\GroupRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 /**
@@ -21,9 +23,11 @@ class NotificationService implements NotificationServiceInterface
      * コンストラクタ
      *
      * @param NotificationRepositoryInterface $repository 通知リポジトリ
+     * @param GroupRepositoryInterface $groupRepository グループリポジトリ
      */
     public function __construct(
-        private NotificationRepositoryInterface $repository
+        private NotificationRepositoryInterface $repository,
+        private GroupRepositoryInterface $groupRepository
     ) {}
 
     /**
@@ -152,6 +156,43 @@ class NotificationService implements NotificationServiceInterface
             'publish_at'  => now(),
             'expire_at'   => Carbon::parse(now())->addDays(30),
             'updated_by'  => $senderId,
+        ];
+        
+        DB::transaction(function () use ($data) {
+            // 通知テンプレートを作成
+            $template = $this->repository->createTemplate($data);
+            // ユーザに通知を送信
+            $this->repository->distributeNotification($template);
+        });
+    }
+
+    /**
+     * 対象グループに通知を配信
+     *
+     * @param string $notificationType 通知タイプ
+     * @param string $title 通知タイトル
+     * @param string $message 通知メッセージ
+     * @param string $priority 通知の優先度（info, normal, important）
+     * @return void
+     */
+    public function sendNotificationForGroup(string $notificationType, string $title, string $message, string $priority = 'normal'): void
+    {
+        $user = Auth::user();
+        $group = $user->group;
+        $targetIds = $this->groupRepository->members($group)->pluck('id')->toArray();
+
+        $data = [
+            'sender_id'   => $user->id,
+            'source'      => 'system',
+            'type'        => $notificationType,
+            'title'       => $title,
+            'target_type' => 'groups',
+            'target_ids'  => json_encode($targetIds),
+            'message'     => $message,
+            'priority'    => $priority,
+            'publish_at'  => now(),
+            'expire_at'   => Carbon::parse(now())->addDays(30),
+            'updated_by'  => $user->id,
         ];
         
         DB::transaction(function () use ($data) {

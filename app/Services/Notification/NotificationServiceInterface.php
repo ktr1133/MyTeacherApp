@@ -103,6 +103,17 @@ interface NotificationServiceInterface
     public function sendNotification(int $senderId, int $recipientId, string $notificationType, string $title, string $message, string $priority = 'normal'): void;
 
     /**
+     * 対象グループに通知を配信
+     *
+     * @param string $notificationType 通知タイプ
+     * @param string $title 通知タイトル
+     * @param string $message 通知メッセージ
+     * @param string $priority 通知の優先度（info, normal, important）
+     * @return void
+     */
+    public function sendNotificationForGroup(string $notificationType, string $title, string $message, string $priority = 'normal'): void;
+
+    /**
      * 未読件数と新規通知を取得（API用）
      *
      * @param int $userId ユーザーID
