@@ -2,6 +2,7 @@
     @push('styles')
         @vite(['resources/css/dashboard.css', 'resources/css/avatar/avatar.css'])
     @endpush
+
     @php
         $avatarEvent = session('avatar_event');
         $timestamp = microtime(true);
@@ -27,6 +28,8 @@
     @push('scripts')        
         {{-- スクリプト読み込み --}}
         @vite(['resources/js/dashboard/dashboard.js'])
+        @vite(['resources/js/common/notification-polling.js'])
+
         @if(Auth::user()->canEditGroup())
             @vite(['resources/js/dashboard/group-task.js'])
         @endif

@@ -25,10 +25,6 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/sidebar/sidebar-store.js'])
-        {{-- 認証済みユーザーのみ通知ポーリング読み込み --}}
-        @auth
-            @vite(['resources/js/common/notification-polling.js'])
-        @endauth
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
