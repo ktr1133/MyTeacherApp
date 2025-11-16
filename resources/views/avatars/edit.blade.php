@@ -1,6 +1,6 @@
 <x-app-layout>
     @push('styles')
-        @vite(['resources/css/avatar/avatar.css'])
+        @vite(['resources/css/avatar/avatar.css', 'resources/css/dashboard.css'])
     @endpush
 
     @push('scripts')

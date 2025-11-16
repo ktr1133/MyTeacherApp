@@ -1,6 +1,6 @@
 <x-app-layout>
     @push('styles')
-        @vite(['resources/css/tags.css'])
+        @vite(['resources/css/tags.css', 'resources/css/dashboard.css'])
     @endpush
 
     <div
@@ -259,7 +259,6 @@
     </div>
 
     @push('scripts')
-        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         @vite(['resources/js/tags/tags.js'])
     @endpush
 </x-app-layout>

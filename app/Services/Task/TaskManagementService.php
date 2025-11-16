@@ -114,9 +114,14 @@ class TaskManagementService implements TaskManagementServiceInterface
     public function makeTaskBaseData(array $data): array
     {
         if ($data['span'] == config('const.task_spans.mid')) {
-            // 中期の場合、due_dataは年末に設定
-            $tmp_due_data = $data['due_date'];
-            $data['due_date'] = Carbon::createFromFormat('Y', $tmp_due_data)->endOfYear()->format('Y-m-d');
+            try {
+                // 更新の場合は既存のdue_dateをパース
+                $tmp_due_data = Carbon::parse($data['due_date'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // 新規の場合はdue_dataは年末に設定
+                $tmp_due_data = $data['due_date'];
+                $data['due_date'] = Carbon::createFromFormat('Y', $tmp_due_data)->endOfYear()->format('Y-m-d');
+            }
         }
 
         return [

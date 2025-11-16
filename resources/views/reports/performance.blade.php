@@ -1,6 +1,6 @@
 <x-app-layout>
     @push('styles')
-        @vite(['resources/css/reports/performance.css'])
+        @vite(['resources/css/reports/performance.css', 'resources/css/dashboard.css'])
     @endpush
 
     @php
