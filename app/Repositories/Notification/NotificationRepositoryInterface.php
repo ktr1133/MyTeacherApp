@@ -1,21 +1,26 @@
 <?php
 
-namespace App\Services\Notification;
+namespace App\Repositories\Notification;
 
 use App\Models\NotificationTemplate;
+use App\Models\UserNotification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
- * 通知サービスのインターフェース
+ * 通知リポジトリのインターフェース
  * 
- * 通知に関するビジネスロジックを担当。
+ * 通知データの永続化・取得を担当。
  * 
- * @package App\Services
+ * @package App\Repositories
  */
-interface NotificationServiceInterface
+interface NotificationRepositoryInterface
 {
     /**
      * ユーザーの通知一覧を取得
+     * 
+     * ページネーション付きでユーザーの通知を取得。
+     * 通知テンプレートとのリレーションを eager loading する。
      *
      * @param int $userId ユーザーID
      * @param int $perPage 1ページあたりの件数（デフォルト: 20）
@@ -24,7 +29,7 @@ interface NotificationServiceInterface
     public function getUserNotifications(int $userId, int $perPage = 20): LengthAwarePaginator;
 
     /**
-     * 未読通知件数を取得
+     * ユーザーの未読通知件数を取得
      *
      * @param int $userId ユーザーID
      * @return int 未読通知件数
@@ -42,6 +47,8 @@ interface NotificationServiceInterface
 
     /**
      * 全通知を既読にする
+     * 
+     * 指定ユーザーの未読通知をすべて既読に更新。
      *
      * @param int $userId ユーザーID
      * @return void
@@ -49,19 +56,17 @@ interface NotificationServiceInterface
     public function markAllAsRead(int $userId): void;
 
     /**
-     * 管理者通知を作成・配信
-     * 
-     * トランザクション内で通知テンプレートを作成し、
-     * 対象ユーザーに配信する。
+     * 通知テンプレートを作成
      *
      * @param array $data 通知データ
-     * @param int $senderId 送信者（管理者）のユーザーID
      * @return NotificationTemplate 作成された通知テンプレート
      */
-    public function createAndDistributeNotification(array $data, int $senderId): NotificationTemplate;
+    public function createTemplate(array $data): NotificationTemplate;
 
     /**
-     * 管理者通知を更新
+     * 通知テンプレートを更新
+     * 
+     * 編集履歴として updated_by を記録。
      *
      * @param int $templateId 通知テンプレートID
      * @param array $data 更新データ
@@ -69,45 +74,44 @@ interface NotificationServiceInterface
      * @return NotificationTemplate 更新後の通知テンプレート
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function updateNotification(int $templateId, array $data, int $updatedBy): NotificationTemplate;
+    public function updateTemplate(int $templateId, array $data, int $updatedBy): NotificationTemplate;
 
     /**
-     * 管理者通知を削除
+     * 通知テンプレートを削除（ソフトデリート）
      *
      * @param int $templateId 通知テンプレートID
      * @return void
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function deleteNotification(int $templateId): void;
+    public function deleteTemplate(int $templateId): void;
 
     /**
-     * 期限切れ通知を削除
+     * 期限切れ通知を物理削除
      * 
-     * 定期バッチから呼び出される。
+     * expire_at から 30 日経過した通知を完全削除。
      *
      * @return int 削除された件数
      */
-    public function cleanupExpiredNotifications(): int;
+    public function deleteExpiredNotifications(): int;
 
     /**
      * 対象ユーザーに通知を配信
+     * 
+     * target_type に基づいてユーザーを抽出し、
+     * user_notifications テーブルにレコードを一括挿入。
      *
-     * @param int $senderId 送信者ユーザーID
-     * @param int $recipientId 受信者ユーザーID
-     * @param string $notificationType 通知タイプ
-     * @param string $title 通知タイトル
-     * @param string $message 通知メッセージ
-     * @param string $priority 通知の優先度（info, normal, important）
-     * @return void
+     * @param NotificationTemplate $template 通知テンプレート
+     * @return int 配信された通知件数
      */
-    public function sendNotification(int $senderId, int $recipientId, string $notificationType, string $title, string $message, string $priority = 'normal'): void;
+    public function distributeNotification(NotificationTemplate $template): int;
 
     /**
-     * 未読件数と新規通知を取得（API用）
+     * 指定日時以降の新規通知を取得
      *
      * @param int $userId ユーザーID
-     * @param string|null $lastCheckedAt 最後のチェック日時（ISO8601形式）
-     * @return array ['unread_count' => int, 'new_notifications' => array, 'timestamp' => string]
+     * @param string|null $since 取得開始日時（ISO8601形式）
+     * @param int $limit 取得件数
+     * @return Collection
      */
-    public function getUnreadCountWithNew(int $userId, ?string $lastCheckedAt = null): array;
+    public function getNewNotificationsSince(int $userId, ?string $since = null, int $limit = 5): Collection;
 }

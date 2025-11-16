@@ -182,7 +182,9 @@
                                 背景を透過する
                             </label>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                アバター画像の背景を透明にします。モデルによっては動作が安定しない恐れがあります。
+                                アバター画像の背景を透明にします。<br>
+                                一部のモデルでは背景透過がサポートされていない場合があります。<br>
+                                背景透過にはトークンが使用されます。
                             </p>
                         </div>
 
@@ -198,6 +200,7 @@
                                     <p class="text-sm font-semibold text-gray-900 dark:text-white mb-1">描画モデルについて</p>
                                     <p class="text-sm text-gray-600 dark:text-gray-400">
                                         描画モデルによって、アバターのイラストタッチが変わります。<br>
+                                        モデルによって消費するトークンは異なります。<br>
                                         お好みのスタイルをお選びください。今後、新しいモデルが追加される予定です。
                                     </p>
                                 </div>
@@ -213,7 +216,7 @@
                             </svg>
                             <div>
                                 <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-300">トークン消費について</p>
-                                <p class="text-sm text-yellow-700 dark:text-yellow-400 mt-1">アバター作成には <strong>{{ number_format(config('const.estimate_token')) }}トークン</strong> が必要です。</p>
+                                <p class="text-sm text-yellow-700 dark:text-yellow-400 mt-1">アバター作成には <strong id="token-amount"></strong><strong>トークン</strong> が必要です。</p>
                             </div>
                         </div>
                     </div>

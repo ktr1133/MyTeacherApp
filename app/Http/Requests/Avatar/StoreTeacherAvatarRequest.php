@@ -81,7 +81,7 @@ class StoreTeacherAvatarRequest extends FormRequest
             ],
             'is_transparent' => [
                 'sometimes',
-                'boolean',
+                'string',
             ],
         ];
     }
@@ -121,6 +121,7 @@ class StoreTeacherAvatarRequest extends FormRequest
             'draw_model_version.required' => '描画モデルを選択してください。',
             'draw_model_version.string' => '描画モデルの形式が無効です。',
             'draw_model_version.in' => '選択された描画モデルは無効です。',
+            'is_transparent.string' => '透過設定の形式が無効です。',
         ];
     }
 
@@ -143,6 +144,7 @@ class StoreTeacherAvatarRequest extends FormRequest
             'formality' => '丁寧さ',
             'humor' => 'ユーモア',
             'draw_model_version' => '描画モデル',
+            'is_transparent' => '透過設定',
         ];
     }
 

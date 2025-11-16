@@ -106,7 +106,7 @@
         <div class="flex-1 flex flex-col overflow-y-auto">
             {{-- ヘッダー --}}
             <header class="sticky top-0 z-20 border-b border-gray-200/50 dark:border-gray-700/50 dashboard-header-blur shadow-sm"
-                    x-data="{ searchFocused: false, notificationCount: 5 }"
+                    x-data="{ searchFocused: false, notificationCount: {{ $notificationCount ?? 0 }} }"
                     @search-focused.window="searchFocused = $event.detail.focused">
                 <div class="px-4 lg:px-6 h-14 lg:h-16 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
@@ -182,7 +182,7 @@
                         @endif
 
                         {{-- お知らせ通知ボタン --}}
-                        <a href="#"
+                        <a href="{{ route('notification.index') }}"
                         class="notification-btn relative p-2.5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 hover:from-amber-100 hover:to-orange-100 dark:hover:from-gray-700 dark:hover:to-gray-600 border border-amber-200 dark:border-gray-600 hover:border-amber-300 dark:hover:border-gray-500 transition-all duration-300 hover:shadow-lg group"
                         aria-label="お知らせ通知">
                             <svg class="w-6 h-6 text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors" 
@@ -192,7 +192,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                             </svg>
                             
-                            {{-- 未読バッジ --}}
+                            {{-- 未読バッジ（0件なら非表示） --}}
                             <span x-show="notificationCount > 0"
                                 x-transition
                                 class="notification-badge absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg ring-2 ring-white dark:ring-gray-900"

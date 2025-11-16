@@ -15,6 +15,8 @@ use App\Repositories\Batch\HolidayRepositoryInterface;
 use App\Repositories\Batch\HolidayRepository;
 use App\Repositories\Batch\ScheduledTaskRepositoryInterface;
 use App\Repositories\Batch\ScheduledTaskRepository;
+use App\Repositories\Notification\NotificationRepositoryInterface;
+use App\Repositories\Notification\NotificationRepository;
 use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use App\Repositories\Profile\ProfileUserEloquentRepository;
 use App\Repositories\Profile\GroupRepositoryInterface;
@@ -105,6 +107,9 @@ class AppServiceProvider extends ServiceProvider
         // --- Task ---
         $this->app->bind(TaskRepositoryInterface::class, TaskEloquentRepository::class);
         $this->app->bind(TaskProposalRepositoryInterface::class, EloquentTaskProposalRepository::class);
+
+        // --- Notification ---
+        $this->app->bind(NotificationRepositoryInterface::class, NotificationRepository::class);
 
         // --- Profile ---
         $this->app->bind(ProfileUserRepositoryInterface::class, ProfileUserEloquentRepository::class);

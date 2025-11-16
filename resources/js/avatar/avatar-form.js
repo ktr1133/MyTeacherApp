@@ -52,3 +52,33 @@ window.avatarForm = function() {
     };
 };
 
+// モデルの種類によってトークン消費量を更新
+document.addEventListener('DOMContentLoaded', function() {
+    const modelSelect = document.getElementById('draw_model_version');
+    const tokenAmountDisplay = document.getElementById('token-amount');
+
+    if (modelSelect && tokenAmountDisplay) {
+        modelSelect.addEventListener('change', function() {
+            const selectedModel = modelSelect.value;
+            let tokenCost = 2000; // デフォルトのトークン消費量
+
+            // モデルごとのトークン消費量を設定
+            switch (selectedModel) {
+                case 'model_a':
+                    tokenCost = 1200;
+                    break;
+                case 'model_b':
+                    tokenCost = 1500;
+                    break;
+                case 'model_c':
+                    tokenCost = 2000;
+                    break;
+                default:
+                    tokenCost = 2000;
+            }
+
+            tokenAmountDisplay.textContent = `${tokenCost.toLocaleString()}トークン`;
+        });
+    }
+});
+

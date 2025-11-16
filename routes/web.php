@@ -1,5 +1,27 @@
 <?php
 
+// 管理者用
+use App\Http\Actions\Admin\Notification\IndexAdminNotificationAction;
+use App\Http\Actions\Admin\Notification\CreateAdminNotificationAction;
+use App\Http\Actions\Admin\Notification\StoreAdminNotificationAction;
+use App\Http\Actions\Admin\Notification\EditAdminNotificationAction;
+use App\Http\Actions\Admin\Notification\UpdateAdminNotificationAction;
+use App\Http\Actions\Admin\Notification\DeleteAdminNotificationAction;
+use App\Http\Actions\Admin\IndexUserAction;
+use App\Http\Actions\Admin\EditUserAction;
+use App\Http\Actions\Admin\UpdateUserAction;
+use App\Http\Actions\Admin\DeleteUserAction;
+use App\Http\Actions\Admin\Payment\IndexPaymentHistoryAction;
+use App\Http\Actions\Admin\Token\IndexTokenStatsAction;
+use App\Http\Actions\Admin\Token\IndexTokenUsersAction;
+use App\Http\Actions\Admin\Token\IndexTokenPackageAction;
+use App\Http\Actions\Admin\Token\CreateTokenPackageAction;
+use App\Http\Actions\Admin\Token\StoreTokenPackageAction;
+use App\Http\Actions\Admin\Token\EditTokenPackageAction;
+use App\Http\Actions\Admin\Token\UpdateTokenPackageAction;
+use App\Http\Actions\Admin\Token\DeleteTokenPackageAction;
+use App\Http\Actions\Admin\Token\UpdateFreeTokenAmountAction;
+// 認証用
 use App\Http\Actions\Auth\ValidateUsernameAction;
 use App\Http\Actions\Auth\ValidatePasswordAction;
 use App\Http\Actions\Avatar\CreateTeacherAvatarAction;
@@ -18,9 +40,11 @@ use App\Http\Actions\Batch\DeleteScheduledTaskAction;
 use App\Http\Actions\Batch\PauseScheduledTaskAction;
 use App\Http\Actions\Batch\ResumeScheduledTaskAction;
 use App\Http\Actions\Batch\ShowExecutionHistoryAction;
+use App\Http\Actions\Notification\GetUnreadCountAction;
 use App\Http\Actions\Notification\IndexNotificationAction;
 use App\Http\Actions\Notification\MarkNotificationAsReadAction;
 use App\Http\Actions\Notification\MarkAllNotificationsAsReadAction;
+use App\Http\Actions\Notification\ShowNotificationAction;
 use App\Http\Actions\Profile\EditProfileAction;
 use App\Http\Actions\Profile\UpdateProfileAction;
 use App\Http\Actions\Profile\DeleteProfileAction;
@@ -79,7 +103,6 @@ Route::get('/', function () {
 // =========================================================================
 // ゲストユーザー向けルート（認証前）
 // =========================================================================
-
 Route::middleware(['guest'])->group(function () {
     // ユーザー名の非同期バリデーション
     Route::post('/validate/username', ValidateUsernameAction::class)->name('validate.username');
@@ -209,6 +232,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/avatars/comment/{eventType}', GetAvatarCommentAction::class)->name('avatars.comment');
     // 表示/非表示切替
     Route::post('/avatars/toggle-visibility', ToggleAvatarVisibilityAction::class)->name('avatars.toggle-visibility');
+
+    // ========================================
+    // お知らせ管理
+    // ========================================
+    Route::prefix('notification')->name('notification.')->group(function () {
+        Route::get('/', IndexNotificationAction::class)->name('index');
+        Route::get('/{notification}', ShowNotificationAction::class)->name('show');
+        Route::post('/{notification}/read', MarkNotificationAsReadAction::class)->name('read');
+        Route::post('/read-all', MarkAllNotificationsAsReadAction::class)->name('read-all');
+    });
+
+    // ========================================
+    // 通知 API（非同期）
+    // ========================================
+    Route::get('/api/notifications/unread-count', GetUnreadCountAction::class)->name('api.notifications.unread-count');
 });
 
 // ========================================
@@ -216,28 +254,38 @@ Route::middleware(['auth'])->group(function () {
 // ========================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // ユーザー管理
-    Route::get('/users', \App\Http\Actions\Admin\IndexUserAction::class)->name('users.index');
-    Route::get('/users/{user}/edit', \App\Http\Actions\Admin\EditUserAction::class)->name('users.edit');
-    Route::put('/users/{user}', \App\Http\Actions\Admin\UpdateUserAction::class)->name('users.update');
-    Route::delete('/users/{user}', \App\Http\Actions\Admin\DeleteUserAction::class)->name('users.destroy');
+    Route::get('/users', IndexUserAction::class)->name('users.index');
+    Route::get('/users/{user}/edit', EditUserAction::class)->name('users.edit');
+    Route::put('/users/{user}', UpdateUserAction::class)->name('users.update');
+    Route::delete('/users/{user}', DeleteUserAction::class)->name('users.destroy');
     
     // トークン統計
-    Route::get('/token-stats', \App\Http\Actions\Admin\Token\IndexTokenStatsAction::class)->name('token-stats');
+    Route::get('/token-stats', IndexTokenStatsAction::class)->name('token-stats');
     
     // ユーザー別トークン
-    Route::get('/token-users', \App\Http\Actions\Admin\Token\IndexTokenUsersAction::class)->name('token-users');
+    Route::get('/token-users', IndexTokenUsersAction::class)->name('token-users');
     
     // 課金履歴
-    Route::get('/payments', \App\Http\Actions\Admin\Payment\IndexPaymentHistoryAction::class)->name('payment-history');
+    Route::get('/payments', IndexPaymentHistoryAction::class)->name('payment-history');
 
     // トークンパッケージ設定
-    Route::get('/token-packages', \App\Http\Actions\Admin\Token\IndexTokenPackageAction::class)->name('token-packages');
-    Route::get('/token-packages/create', \App\Http\Actions\Admin\Token\CreateTokenPackageAction::class)->name('token-packages-create');
-    Route::post('/token-packages', \App\Http\Actions\Admin\Token\StoreTokenPackageAction::class)->name('token-packages-store');
-    Route::get('/token-packages/{package}/edit', \App\Http\Actions\Admin\Token\EditTokenPackageAction::class)->name('token-packages-edit');
-    Route::put('/token-packages/{package}', \App\Http\Actions\Admin\Token\UpdateTokenPackageAction::class)->name('token-packages-update');
-    Route::delete('/token-packages/{package}', \App\Http\Actions\Admin\Token\DeleteTokenPackageAction::class)->name('token-packages-delete');
-    Route::post('/token-packages/free-token-update', \App\Http\Actions\Admin\Token\UpdateFreeTokenAmountAction::class)->name('token-packages.free-token-update');
+    Route::get('/token-packages', IndexTokenPackageAction::class)->name('token-packages');
+    Route::get('/token-packages/create', CreateTokenPackageAction::class)->name('token-packages-create');
+    Route::post('/token-packages', StoreTokenPackageAction::class)->name('token-packages-store');
+    Route::get('/token-packages/{package}/edit', EditTokenPackageAction::class)->name('token-packages-edit');
+    Route::put('/token-packages/{package}', UpdateTokenPackageAction::class)->name('token-packages-update');
+    Route::delete('/token-packages/{package}', DeleteTokenPackageAction::class)->name('token-packages-delete');
+    Route::post('/token-packages/free-token-update', UpdateFreeTokenAmountAction::class)->name('token-packages.free-token-update');
+
+    // 管理者通知管理
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', IndexAdminNotificationAction::class)->name('index');
+        Route::get('/create', CreateAdminNotificationAction::class)->name('create');
+        Route::post('/', StoreAdminNotificationAction::class)->name('store');
+        Route::get('/{notification}/edit', EditAdminNotificationAction::class)->name('edit');
+        Route::put('/{notification}', UpdateAdminNotificationAction::class)->name('update');
+        Route::delete('/{notification}', DeleteAdminNotificationAction::class)->name('destroy');
+    });
 });
 
 // ========================================

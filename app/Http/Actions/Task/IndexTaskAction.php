@@ -4,6 +4,7 @@ namespace App\Http\Actions\Task;
 
 use App\Services\Task\TaskListServiceInterface;
 use App\Services\Task\TaskApprovalServiceInterface;
+use App\Services\Notification\NotificationServiceInterface;
 use Illuminate\Support\Facades\Auth;
 use App\Services\Tag\TagServiceInterface;
 use App\Responders\Task\TaskListResponder;
@@ -21,6 +22,7 @@ class IndexTaskAction
     protected TaskListServiceInterface $taskListService;
     protected TagServiceInterface $tagService;
     protected TaskApprovalServiceInterface $taskApprovalService;
+    protected NotificationServiceInterface $notificationService;
     protected TaskListResponder $responder;
 
     /**
@@ -34,12 +36,14 @@ class IndexTaskAction
         TaskListServiceInterface $taskListService,
         TagServiceInterface $tagService,
         TaskApprovalServiceInterface $taskApprovalService,
+        NotificationServiceInterface $notificationService,
         TaskListResponder $responder
     )
     {
         $this->taskListService = $taskListService;
         $this->tagService = $tagService;
         $this->taskApprovalService = $taskApprovalService;
+        $this->notificationService = $notificationService;
         $this->responder = $responder;
     }
 
@@ -58,10 +62,15 @@ class IndexTaskAction
         // タスクデータを取得
         $tasks = $this->taskListService->getTasksForUser($userId, $filters);
         $tags = $this->tagService->getByUserId($userId);
+
+        // 未読通知件数を取得
+        $notificationData = $this->notificationService->getUnreadCountWithNew($userId);
+
         // Responderでビューを構築し、返却
         return $this->responder->respond([
             'tasks'                 => $tasks,
             'tags'                  => $tags,
+            'notificationCount'     => $notificationData['unread_count'] ?? 0,
         ]);
     }
 }

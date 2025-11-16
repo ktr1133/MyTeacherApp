@@ -51,6 +51,14 @@
                             </div>
                         </div>
                     </div>
+
+                    <a href="{{ route('dashboard') }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 transition backdrop-blur-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="hidden sm:inline">タスクリストへ戻る</span>
+                    </a>
                 </div>
             </header>
 
@@ -59,13 +67,13 @@
                 <div class="max-w-6xl mx-auto">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                         
-                        {{-- ★ 現在のアバター表示（スライダー版） --}}
+                        {{-- 現在のアバター表示（スライダー版） --}}
                         <div class="lg:col-span-1">
                             <div class="avatar-card rounded-2xl p-4 lg:p-6 hero-fade-in sticky top-0">
                                 <h2 class="text-base lg:text-lg font-bold text-gray-900 dark:text-white mb-4">現在のアバター</h2>
                                 
                                 @if($avatar->generation_status === 'completed')
-                                    {{-- ★ 表情スライダー --}}
+                                    {{-- 表情スライダー --}}
                                     <div 
                                         x-data="expressionSlider({{ json_encode($expressionImages) }})"
                                         class="space-y-4"
@@ -376,7 +384,9 @@
                                                 背景を透過する
                                             </label>
                                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                アバター画像の背景を透明にします。モデルによっては動作が安定しない恐れがあります。
+                                                アバター画像の背景を透明にします。<br>
+                                                一部のモデルでは背景透過がサポートされていない場合があります。<br>
+                                                背景透過にはトークンが使用されます。
                                             </p>
                                         </div>
                                         {{-- モデル情報ヒント --}}
@@ -391,8 +401,9 @@
                                                     <p class="text-sm font-semibold text-gray-900 dark:text-white mb-1">描画モデルについて</p>
                                                     <p class="text-sm text-gray-600 dark:text-gray-400">
                                                         描画モデルによって、アバターのイラストタッチが変わります。<br>
+                                                        モデルによって消費するトークンは異なります。<br>
                                                         お好みのスタイルをお選びください。今後、新しいモデルが追加される予定です。
-                                                    </p>
+                                                     </p>
                                                 </div>
                                             </div>
                                         </div>

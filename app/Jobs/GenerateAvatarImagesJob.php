@@ -6,6 +6,7 @@ use App\Models\TeacherAvatar;
 use App\Services\AI\OpenAIService;
 use App\Services\AI\StableDiffusionServiceInterface;
 use App\Services\AI\AICostServiceInterface;
+use App\Services\Notification\NotificationServiceInterface;
 use App\Services\Token\TokenServiceInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -104,7 +105,8 @@ class GenerateAvatarImagesJob implements ShouldQueue
         StableDiffusionServiceInterface $sdService,
         OpenAIService $openAIService,
         AICostServiceInterface $aiCostService,
-        TokenServiceInterface $tokenService
+        TokenServiceInterface $tokenService,
+        NotificationServiceInterface $notificationService
     ): void {
         $avatar = TeacherAvatar::find($this->avatarId);
 
@@ -336,7 +338,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
             $tokenService->recordAICost(
                 $avatar->user,
                 $totalTokenCost,
-                'アバター生成（anything-v4.0 + rembg + GPT-4）',
+                'アバター生成コスト',
                 $avatar,
                 $aiUsageDetails
             );
@@ -351,22 +353,13 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 $avatar
             );
 
+            // ステータス更新
             $avatar->update([
                 'generation_status' => 'completed',
                 'last_generated_at' => now(),
             ]);
-
-            Log::info('[GenerateAvatarImages] Completed with NSFW protection', [
-                'avatar_id' => $avatar->id,
-                'seed' => $seed,
-                'total_token_cost' => $totalTokenCost,
-                'total_images' => count($aiUsageDetails) - 1,
-                'breakdown' => [
-                    'images' => $totalTokenCost - $commentTokenCost,
-                    'comments' => $commentTokenCost,
-                ],
-            ]);
-
+            // 生成結果
+            $result = true;
         } catch (\Exception $e) {
             Log::error('[GenerateAvatarImages] Error', [
                 'avatar_id' => $avatar->id,
@@ -374,8 +367,21 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 'trace' => $e->getTraceAsString(),
             ]);
 
+            // ステータスを失敗に更新
             $avatar->update(['generation_status' => 'failed']);
+            // 生成結果
+            $result = false;
         }
+
+        $tile = $result ? 'アバター画像の生成が完了しました' : 'アバター画像の生成に失敗しました。';
+        $msg = $this->buildNotificationMessage($avatar, $totalTokenCost, $result);
+        $notificationService->sendNotification(
+            $avatar->user->id,
+            $avatar->user->id,
+            config('const.notification_types.avatar_generated'),
+            $tile,
+            $msg
+        );
     }
 
     /**
@@ -917,5 +923,32 @@ class GenerateAvatarImagesJob implements ShouldQueue
             'comment_id' => $comment->id,
             'was_recently_created' => $comment->wasRecentlyCreated,
         ]);
+    }
+
+    /**
+     * 通知メッセージ生成
+     *
+     * @param TeacherAvatar $avatar
+     * @param int $totalTokenCost
+     * @param bool $result
+     */
+    private function buildNotificationMessage(TeacherAvatar $avatar, int $totalTokenCost, bool $result): string
+    {
+        // 使用したモデルを取得
+        $model_name = $avatar->draw_model_version ?? 'default model';
+
+        if ($result) {
+            return sprintf(
+                "アバター画像の生成が完了しました！\n使用モデル: %s\n合計トークンコスト: %dトークン\n教師アバターページで新しいアバターを確認してください。",
+                $model_name,
+                $totalTokenCost
+            );
+        } else {
+            return sprintf(
+                "アバター画像の生成に失敗しました。\n使用モデル: %s\n合計トークンコスト: %dトークン\n再度お試しください。",
+                $model_name,
+                $totalTokenCost
+            );
+        }
     }
 }

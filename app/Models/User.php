@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\TokenBalance;
 use App\Models\Task;
 use App\Models\TaskProposal;
@@ -211,33 +210,36 @@ class User extends Authenticatable
     }
 
     /**
-     * 通知を作成
+     * ユーザー通知とのリレーション
+     *
+     * @return HasMany
      */
-    public function notify(
-        string $type,
-        string $title,
-        string $message,
-        ?array $data = null,
-        ?string $actionUrl = null,
-        ?string $actionText = null
-    ): void {
-        Notification::create([
-            'user_id' => $this->id,
-            'type' => $type,
-            'title' => $title,
-            'message' => $message,
-            'data' => $data,
-            'action_url' => $actionUrl,
-            'action_text' => $actionText,
-        ]);
+    public function userNotifications(): HasMany
+    {
+        return $this->hasMany(UserNotification::class);
     }
 
     /**
-     * 未読通知数を取得
+     * 未読通知件数を取得
+     *
+     * @return int
      */
     public function getUnreadNotificationCountAttribute(): int
     {
-        return $this->notifications()->unread()->count();
+        return $this->userNotifications()->unread()->count();
+    }
+
+    /**
+     * 未読通知を取得
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function unreadNotifications()
+    {
+        return $this->userNotifications()
+            ->with('template')
+            ->unread()
+            ->latest();
     }
 
     /**
