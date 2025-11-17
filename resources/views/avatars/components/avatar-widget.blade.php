@@ -1,8 +1,7 @@
 @if($avatar && $avatar->is_visible)
-    {{-- Alpine.js ストアを使用したアバターウィジェット --}}
     <div 
         x-data="avatarWidget()" 
-        x-show="$store.avatar.isVisible || visible"
+        x-show="($store.avatar.isVisible || visible) && !isForcedHidden"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 translate-y-4"
         x-transition:enter-end="opacity-100 translate-y-0"
@@ -38,7 +37,20 @@
 
             {{-- 閉じるボタン --}}
             <button 
-                @click.stop="close()" 
+                @click.stop="
+                    console.log('[Avatar Widget] Close button clicked');
+                    console.log('[Avatar Widget] Before close:', { 
+                        visible: visible, 
+                        storeVisible: $store.avatar.isVisible,
+                        isForcedHidden: isForcedHidden
+                    });
+                    closeAvatar();
+                    console.log('[Avatar Widget] After close:', { 
+                        visible: visible, 
+                        storeVisible: $store.avatar.isVisible,
+                        isForcedHidden: isForcedHidden
+                    });
+                " 
                 class="avatar-close-btn"
                 type="button"
                 title="閉じる"
@@ -56,6 +68,14 @@
         position: fixed;
         z-index: 9999;
         cursor: move;
+    }
+
+    /* ★ 強制非表示クラス（!important で確実に非表示） */
+    .avatar-force-hidden {
+        display: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
     }
 
     .avatar-container {
@@ -103,10 +123,11 @@
         padding: 0.5rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         transition: background-color 0.2s;
+        color: white;
     }
 
     .avatar-close-btn:hover {
-        background: #f3f4f6;
+        background: rgb(220, 38, 38);
     }
 
     /* アニメーション */

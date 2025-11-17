@@ -104,3 +104,12 @@
         transform: translateY(-4px);
     }
 }
+
+/* バッジのグラデーション */
+.badge-gradient {
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+}

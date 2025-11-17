@@ -1,6 +1,6 @@
 <x-app-layout>
     @push('styles')
-        @vite(['resources/css/tokens/purchase.css', 'resources/css/dashboard.css'])
+        @vite(['resources/css/tokens/purchase.css'])
     @endpush
 
     @push('scripts')
@@ -193,7 +193,6 @@
                                 <h3 class="text-lg font-bold text-blue-900 dark:text-blue-100 mb-2">ご購入前にご確認ください</h3>
                                 <ul class="space-y-1 text-sm text-blue-800 dark:text-blue-200">
                                     <li>• 購入したトークンに有効期限はありません</li>
-                                    <li>• 月次無料枠（{{ number_format(config('const.token.free_monthly', 1000000)) }} トークン）は毎月1日に自動リセットされます</li>
                                     <li>• トークンは無料枠から優先的に消費されます</li>
                                     <li>• 決済はStripeを利用した安全な決済システムです</li>
                                 </ul>

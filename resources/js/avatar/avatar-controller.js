@@ -4,6 +4,7 @@
 function avatarWidget() {
     return {
         visible: false,
+        isForcedHidden: false,
         comment: '',
         currentImage: '',
         animationClass: 'avatar-idle',
@@ -16,16 +17,28 @@ function avatarWidget() {
         dragOffset: { x: 0, y: 0 },
 
         init() {
-            console.log('Avatar widget initialized');
             this.updatePosition();
             
+            let resizeTimeout;
             window.addEventListener('resize', () => {
-                this.updatePosition();
+                // デバウンス処理（連続発火を防ぐ）
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    this.updatePosition();
+                    
+                    // 強制非表示状態を維持
+                    if (this.isForcedHidden) {
+                        this.applyForceHidden();
+                    }
+                }, 100);
             });
         },
 
         handleEvent(eventData) {
             if (!eventData) return;
+            // 強制非表示フラグをクリア（新しいイベントで再表示を許可）
+            this.isForcedHidden = false;
+            this.removeForceHidden();
 
             this.comment = eventData.comment;
             this.currentImage = eventData.imageUrl;
@@ -36,7 +49,7 @@ function avatarWidget() {
 
             clearTimeout(this.displayTimer);
             this.displayTimer = setTimeout(() => {
-                this.close();
+                this.closeAvatar();
             }, duration);
         },
 
@@ -52,6 +65,30 @@ function avatarWidget() {
             
             // ローカル state もクリア
             this.close();
+
+            // 強制非表示フラグをセット
+            this.isForcedHidden = true;
+
+            // 直接 DOM にクラスを追加
+            this.applyForceHidden();
+        },
+
+        /**
+         * 強制非表示クラスを適用
+         */
+        applyForceHidden() {
+            if (this.$el && !this.$el.classList.contains('avatar-force-hidden')) {
+                this.$el.classList.add('avatar-force-hidden');
+            }
+        },
+
+        /**
+         * 強制非表示クラスを削除
+         */
+        removeForceHidden() {
+            if (this.$el && this.$el.classList.contains('avatar-force-hidden')) {
+                this.$el.classList.remove('avatar-force-hidden');
+            }
         },
 
         close() {
@@ -121,15 +158,6 @@ window.dispatchAvatarEvent = function(eventType, additionalData = {}) {
     fetch(`/avatars/comment/${eventType}`)
         .then(response => {
             const fetchTime = performance.now() - startTime;
-            console.log('[dispatchAvatarEvent] Response received', {
-                eventType,
-                status: response.status,
-                statusText: response.statusText,
-                contentType: response.headers.get('content-type'),
-                ok: response.ok,
-                fetchTime: `${fetchTime.toFixed(2)}ms`,
-                timestamp: new Date().toISOString(),
-            });
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -183,8 +211,6 @@ window.dispatchAvatarEvent = function(eventType, additionalData = {}) {
  * @param {Object} commentData - { comment, imageUrl, animation }
  */
 window.showAvatarComment = function(commentData) {
-    console.log('[showAvatarComment] Called with data:', commentData);
-    
     if (!commentData || !commentData.comment) {
         console.warn('[showAvatarComment] No comment data provided');
         return;
@@ -213,40 +239,22 @@ window.showAvatarComment = function(commentData) {
         store.currentImageUrl = commentData.imageUrl || '';
         store.currentAnimation = commentData.animation || 'avatar-idle';
         store.isVisible = true;
-
-        console.log('[showAvatarComment] Avatar displayed (fallback)', {
-            comment: commentData.comment,
-            animation: commentData.animation,
-        });
     }
 };
 
 // Alpine.js グローバルストア
 document.addEventListener('alpine:init', () => {
     Alpine.store('avatar', {
-        // アバターの表示状態
         isVisible: false,
         currentComment: '',
         currentImageUrl: '',
         currentAnimation: 'avatar-idle',
         displayTimer: null,
 
-        /**
-         * アバターを表示（イベントタイプから取得）
-         * @param {string} eventType - イベントタイプ
-         */
         show(eventType) {
-            console.log('[Alpine Store] show() called', {
-                eventType,
-                timestamp: new Date().toISOString(),
-            });
             window.dispatchAvatarEvent(eventType);
         },
 
-        /**
-         * アバターを直接表示（コメントデータから）
-         * @param {Object} commentData - { comment, imageUrl, animation }
-         */
         showDirect(commentData) {
             if (!commentData || !commentData.comment) {
                 console.warn('[Alpine Store] No comment data provided');
@@ -258,30 +266,16 @@ document.addEventListener('alpine:init', () => {
             this.currentAnimation = commentData.animation || 'avatar-idle';
             this.isVisible = true;
 
-            // 既存のタイマーをクリア
             if (this.displayTimer) {
                 clearTimeout(this.displayTimer);
             }
 
-            // 20秒後に自動的に閉じる
             this.displayTimer = setTimeout(() => {
                 this.hide();
             }, 20000);
-
-            console.log('[Alpine Store] Avatar displayed', {
-                comment: this.currentComment,
-                animation: this.currentAnimation,
-            });
         },
 
-        /**
-         * アバターを非表示
-         */
         hide() {
-            console.log('[Alpine Store] hide() called', {
-                timestamp: new Date().toISOString(),
-            });
-
             this.isVisible = false;
             this.currentAnimation = 'avatar-idle';
 
