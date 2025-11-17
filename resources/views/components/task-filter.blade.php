@@ -8,8 +8,10 @@
         <input 
             type="search" 
             placeholder="タスクを検索... (#でタグ検索、空白でOR検索、&でAND検索)" 
-            class="search-input-glow w-full pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent focus:outline-none transition text-sm placeholder-gray-400 dark:placeholder-gray-500 dark:text-white"
-            autocomplete="off">
+            class="search-input-glow w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent focus:outline-none transition-all duration-300 text-sm placeholder-gray-400 dark:placeholder-gray-500 dark:text-white"
+            autocomplete="off"
+            @focus="$dispatch('search-focused', { focused: true })"
+            @blur="$dispatch('search-focused', { focused: false })">
     </div>
 </div>
 

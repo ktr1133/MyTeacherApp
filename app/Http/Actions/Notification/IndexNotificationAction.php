@@ -2,17 +2,28 @@
 
 namespace App\Http\Actions\Notification;
 
-use App\Repositories\Token\TokenRepositoryInterface;
-use App\Responders\Notification\NotificationResponder;
+use App\Http\Responders\Notification\NotificationResponder;
+use App\Services\Notification\NotificationServiceInterface;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * 通知一覧表示アクション
+ * 
+ * ユーザーの通知一覧を表示。
+ * 
+ * @package App\Http\Actions\Notification
  */
 class IndexNotificationAction
 {
+    /**
+     * コンストラクタ
+     *
+     * @param NotificationServiceInterface $service 通知サービス
+     * @param NotificationResponder $responder レスポンダ
+     */
     public function __construct(
-        private TokenRepositoryInterface $tokenRepository,
+        private NotificationServiceInterface $service,
         private NotificationResponder $responder
     ) {}
 
@@ -20,17 +31,15 @@ class IndexNotificationAction
      * 通知一覧を表示
      *
      * @param Request $request
-     * @return \Illuminate\Http\Response
+     * @return View
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): View
     {
-        $user = $request->user();
-        $notifications = $this->tokenRepository->getUserNotifications($user->id, 20);
-        $unreadCount = $this->tokenRepository->getUnreadNotificationCount($user->id);
+        $userId = $request->user()->id;
+        
+        $notifications = $this->service->getUserNotifications($userId, 15);
+        $unreadCount = $this->service->getUnreadCount($userId);
 
-        return $this->responder->response([
-            'notifications' => $notifications,
-            'unreadCount' => $unreadCount,
-        ]);
+        return $this->responder->index($notifications, $unreadCount);
     }
 }

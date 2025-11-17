@@ -2,8 +2,9 @@
 
 namespace App\Http\Actions\Avatar;
 
+use App\Http\Requests\Avatar\StoreTeacherAvatarRequest as Request;
 use App\Services\Avatar\TeacherAvatarServiceInterface;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 /**
  * 教師アバター更新アクション
@@ -11,31 +12,20 @@ use Illuminate\Http\Request;
 class UpdateTeacherAvatarAction
 {
     public function __construct(
-        private TeacherAvatarServiceInterface $service
+        private TeacherAvatarServiceInterface $teacherAvatarService
     ) {}
 
     public function __invoke(Request $request)
     {
-        $avatar = $this->service->getUserAvatar($request->user());
+        $avatar = $this->teacherAvatarService->getUserAvatar($request->user());
         
         if (!$avatar) {
             return redirect()->route('avatars.create');
         }
 
-        $validated = $request->validate([
-            'sex' => 'required|in:male,female,other',
-            'hair_color' => 'required|in:black,brown,blonde,silver,red',
-            'eye_color' => 'required|in:brown,blue,green,gray,purple',
-            'clothing' => 'required|in:suit,casual,kimono,robe,dress',
-            'accessory' => 'nullable|in:glasses,hat,tie',
-            'body_type' => 'required|in:average,slim,sturdy',
-            'tone' => 'required|in:gentle,strict,friendly,intellectual',
-            'enthusiasm' => 'required|in:high,normal,modest',
-            'formality' => 'required|in:polite,casual,formal',
-            'humor' => 'required|in:high,normal,low',
-        ]);
+        $validated = $request->validated();
 
-        $this->service->updateAvatar($avatar, $validated);
+        $this->teacherAvatarService->updateAvatar($avatar, $validated);
 
         return redirect()
             ->route('avatars.edit')

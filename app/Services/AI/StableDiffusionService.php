@@ -36,7 +36,7 @@ class StableDiffusionService implements StableDiffusionServiceInterface
     }
 
     /**
-     * 画像を生成（anything-v4.0使用）
+     * 画像を生成
      * 
      * @param string $prompt プロンプト
      * @param int $seed シード値（同じ値で同一キャラクター生成）
@@ -46,10 +46,17 @@ class StableDiffusionService implements StableDiffusionServiceInterface
     public function generateImage(string $prompt, int $seed, array $options = []): ?array
     {
         try {
+            $drawModelVersionConst = config('services.draw_model_versions');
+            $drawModelVersion = $drawModelVersionConst[$options['draw_model_version']] ?? $this->drawModelVersion;
+
             Log::info('[StableDiffusion] Generating image', [
-                'prompt' => $prompt,
+                'const' => $drawModelVersionConst,
+                'model_version' => $options['draw_model_version'] ?? 'default',
+                'model_id' => $drawModelVersion,
                 'seed' => $seed,
+                'prompt' => $prompt,
             ]);
+
 
             // リクエスト送信
             $response = Http::timeout(30)
@@ -58,7 +65,7 @@ class StableDiffusionService implements StableDiffusionServiceInterface
                     'Content-Type' => 'application/json',
                 ])
                 ->post('https://api.replicate.com/v1/predictions', [
-                    'version' => $this->drawModelVersion,
+                    'version' => $drawModelVersion,
                     'input' => array_merge([
                         'prompt' => $prompt,
                         'seed' => $seed,

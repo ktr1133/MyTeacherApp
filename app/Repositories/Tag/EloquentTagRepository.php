@@ -12,6 +12,14 @@ class EloquentTagRepository implements TagRepositoryInterface
     /**
      * @inheritDoc
      */
+    public function findById(int $id): ?Tag
+    {
+        return Tag::find($id);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getIdsForNames(array $names): array
     {
         $ids = [];

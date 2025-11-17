@@ -27,7 +27,7 @@ final class AdoptProposalAction
             'tasks.*.span' => 'required|integer|in:1,2,3',
             'tasks.*.priority' => 'nullable|integer|min:1|max:3',
             'tasks.*.tags'  => 'nullable|array',
-            'tasks.*.due_to'  => 'nullable|string',
+            'tasks.*.due_date'  => 'nullable|string',
             'tasks.*.tags.*' => 'string|max:255',
         ]);
 
@@ -55,7 +55,7 @@ final class AdoptProposalAction
                 ),
             ];
         }, $validated['tasks']);
-
+        logger()->info('AdoptProposalAction', ['tasks' => $tasks, 'validated' => $validated, 'request' => $request->all()]);
         try {
             // タスクを一括作成
             $created = $this->taskService->adoptProposal(
@@ -70,12 +70,6 @@ final class AdoptProposalAction
                 $request->user(),
                 $avatarEventType
             );
-
-            logger()->info('[AdoptProposalAction] Avatar comment fetched', [
-                'event_type' => $avatarEventType,
-                'has_comment' => !is_null($avatarComment),
-                'comment_data' => $avatarComment,
-            ]);
 
             return response()->json([
                 'success' => true,

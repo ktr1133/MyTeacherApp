@@ -1,5 +1,4 @@
 <?php
-// filepath: /home/ktr/mtdev/laravel/database/migrations/2025_10_27_135127_tasks.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -24,7 +23,7 @@ return new class extends Migration
             // タスク基本情報
             $table->string('title');
             $table->text('description')->nullable();
-            $table->date('due_date')->nullable();
+            $table->string('due_date')->nullable();
             $table->integer('span')->nullable();
             $table->smallInteger('priority')->default(3);
 

@@ -7,11 +7,14 @@ use App\Models\User;
 use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use App\Repositories\Task\TaskRepositoryInterface;
 use App\Services\AI\OpenAIService;
+use App\Services\Notification\NotificationServiceInterface;
 use App\Services\Tag\TagServiceInterface;
 use App\Services\Task\TaskProposalServiceInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 
 
 /**
@@ -24,6 +27,7 @@ class TaskManagementService implements TaskManagementServiceInterface
     protected OpenAIService $openAIService;
     protected TagServiceInterface $tagService;
     protected TaskProposalServiceInterface $proposalService;
+    protected NotificationServiceInterface $notificationService;
 
     /**
      * コンストラクタ。リポジトリとAIサービスの依存性を注入。
@@ -33,13 +37,15 @@ class TaskManagementService implements TaskManagementServiceInterface
         ProfileUserRepositoryInterface $profileUserRepository,
         OpenAIService $openAIService,
         TagServiceInterface $tagService,
-        TaskProposalServiceInterface $proposalService
+        TaskProposalServiceInterface $proposalService,
+        NotificationServiceInterface $notificationService
     ){
         $this->taskRepository = $taskRepository;
         $this->profileUserRepository = $profileUserRepository;
         $this->openAIService = $openAIService;
         $this->tagService = $tagService;
         $this->proposalService = $proposalService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -56,14 +62,9 @@ class TaskManagementService implements TaskManagementServiceInterface
     public function createTask(User $user, array $data, bool $groupFlg): Task
     {
         // タスク登録用データの作成
-        $taskData = [
-            'title' => $data['title'],
-            'description' => $data['description'] ?? null,
-            'span' => $data['span'],
-            'due_date' => $data['due_date'] ?? null,
-            'priority' => $data['priority'] ?? 3,
-            'is_completed' => false,
-        ];
+        $taskData = $this->makeTaskBaseData($data);
+        $taskData['priority'] = $data['priority'] ?? 3;
+        $taskData['is_completed'] = false;
 
         DB::transaction(function () use ($user, $data, $taskData, $groupFlg, &$task) {
             // グループタスクの場合
@@ -84,21 +85,36 @@ class TaskManagementService implements TaskManagementServiceInterface
                         // タグを関連付け（タグ名の配列）
                         if (isset($data['tags']) && is_array($data['tags'])) {
                             $this->taskRepository->syncTagsByName($task, $data['tags']);
-                        }            
+                        }
                     }
+                    // 通知を送信
+                    $this->notificationService->sendNotificationForGroup(
+                        config('const.notification_types.group_task_created'),
+                        '新しいグループタスクが作成されました。',
+                        '新しいグループタスク: ' . $data['title'] . 'が作成されました。タスクリストを確認してください。',
+                        'important'
+                    );
                 // 担当者が設定されている場合は担当者分のみタスクを作成
                 } else {
-                    $taskData['user_id'] = $data['assigned_by_user_id'];
+                    $taskData['user_id'] = $data['assigned_user_id'];
                     $task = $this->taskRepository->createTask($user->id, $taskData);
                     // タグを関連付け（タグ名の配列）
                     if (isset($data['tags']) && is_array($data['tags'])) {
                         $this->taskRepository->syncTagsByName($task, $data['tags']);
-                    }            
+                    }
+                    // 担当者に通知を送信
+                    $this->notificationService->sendNotification(
+                        Auth::user()->id,
+                        $data['assigned_user_id'],
+                        config('const.notification_types.group_task_created'),
+                        '新しいグループタスクが作成されました。',
+                        '新しいグループタスク: ' . $data['title'] . 'が作成されました。タスクリストを確認してください。',
+                        'important'
+                    );       
                 }
             // 通常タスク登録の場合
             } else {
                 $task = $this->taskRepository->createTask($user->id, $taskData);
-                
                 // タグを関連付け（タグ名の配列）
                 if (isset($data['tags']) && is_array($data['tags'])) {
                     $this->taskRepository->syncTagsByName($task, $data['tags']);
@@ -110,18 +126,40 @@ class TaskManagementService implements TaskManagementServiceInterface
     }
 
     /**
+     * タスク登録用の基本データを作成するヘルパーメソッド
+     *
+     * @param array $data 入力データ
+     * @return array タスク登録用データ
+     */
+    public function makeTaskBaseData(array $data): array
+    {
+        if ($data['span'] == config('const.task_spans.mid')) {
+            try {
+                // 更新の場合は既存のdue_dateをパース
+                $data['due_date'] = Carbon::parse($data['due_date'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                // 新規の場合はdue_dataは年末に設定
+                $tmp_due_data = $data['due_date'];
+                $data['due_date'] = Carbon::createFromFormat('Y', $tmp_due_data)->endOfYear()->format('Y-m-d');
+            }
+        }
+
+        return [
+            'title'        => $data['title'],
+            'description'  => $data['description'] ?? null,
+            'span'         => $data['span'],
+            'due_date'     => $data['due_date'] ?? null,
+        ];
+    } 
+
+    /**
      * @inheritDoc
      */
     public function updateTask(Task $task, array $data): Task
     {
         return DB::transaction(function () use ($task, $data) {
             // 基本情報を更新
-            $updateData = [
-                'title' => $data['title'] ?? $task->title,
-                'description' => $data['description'] ?? $task->description,
-                'span' => $data['span'] ?? $task->span,
-                'due_date' => $data['due_date'] ?? $task->due_date,
-            ];
+            $updateData = $this->makeTaskBaseData($data);
 
             $task->update($updateData);
 
@@ -196,20 +234,19 @@ class TaskManagementService implements TaskManagementServiceInterface
         return DB::transaction(function () use ($user, $proposalId, $tasks) {
             $createdTasks = [];
 
-            foreach ($tasks as $taskData) {
+            foreach ($tasks as $data) {
+                $taskData = $this->makeTaskBaseData($data);
+                $taskData['priority'] = $data['priority'] ?? 3;
+                $taskData['user_id'] = $user->id;
+                $taskData['is_completed'] = false;
+                $taskData['source_proposal_id'] = $proposalId;
                 // タスクを作成
-                $task = $this->taskRepository->create([
-                    'user_id' => $user->id,
-                    'title' => $taskData['title'],
-                    'span' => (int)$taskData['span'],
-                    'priority' => $taskData['priority'] ?? 3,
-                    'source_proposal_id' => $proposalId,
-                    'is_completed' => false,
-                ]);
+                logger()->info('タスク受け入れサービス', ['taskData' => $taskData, 'tasks' => $tasks]);
+                $task = $this->taskRepository->create($taskData);
 
                 // タグの処理（タグ名の配列）
-                if (!empty($taskData['tags']) && is_array($taskData['tags'])) {
-                    $this->taskRepository->syncTagsByName($task, $taskData['tags']);
+                if (!empty($data['tags']) && is_array($data['tags'])) {
+                    $this->taskRepository->syncTagsByName($task, $data['tags']);
                 }
 
                 // タスクをリロードしてリレーションを含める
@@ -233,5 +270,44 @@ class TaskManagementService implements TaskManagementServiceInterface
     public function getUserById(int $userId): User
     {
         return $this->profileUserRepository->findById($userId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function updateTaskDescription(Task $task, ?string $description, int $userId): Task
+    {
+        // 権限チェック：承認者またはタスク作成者のみ更新可能
+        $isApprover = $task->approver_user_id === $userId;
+        $isCreator = $task->assigned_by_user_id === $userId;
+
+        if (!$isApprover && !$isCreator) {
+            throw new \Exception('このタスクを編集する権限がありません');
+        }
+
+        return DB::transaction(function () use ($task, $description) {
+            $task->update([
+                'description' => $description,
+                'updated_by' => Auth::id(),
+                'updated_at' => now(),
+            ]);
+
+            return $task->fresh();
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function searchTasks(User $user, string $searchType, array $searchTerms, string $operator): Collection
+    {
+        // リポジトリ層で検索を実行
+        if ($searchType === 'tag') {
+            $tasks = $this->taskRepository->searchByTags($user->id, $searchTerms, $operator);
+        } else {
+            $tasks = $this->taskRepository->searchByTitle($user->id, $searchTerms, $operator);
+        }
+
+        return $tasks;
     }
 }

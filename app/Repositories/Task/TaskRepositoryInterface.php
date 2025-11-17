@@ -3,7 +3,7 @@
 namespace App\Repositories\Task;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection; // 追加
+use Illuminate\Database\Eloquent\Collection;
 use App\Models\Task;
 
 /**
@@ -53,9 +53,9 @@ interface TaskRepositoryInterface
      * @param int $userId
      * @param array $terms
      * @param string $operator 'and' or 'or'
-     * @return array
+     * @return Collection
      */
-    public function searchByTitle(int $userId, array $terms, string $operator): array;
+    public function searchByTitle(int $userId, array $terms, string $operator): Collection;
 
     /**
      * タグでタスクを検索
@@ -63,9 +63,9 @@ interface TaskRepositoryInterface
      * @param int $userId
      * @param array $terms
      * @param string $operator 'and' or 'or'
-     * @return array
+     * @return Collection
      */
-    public function searchByTags(int $userId, array $terms, string $operator): array;
+    public function searchByTags(int $userId, array $terms, string $operator): Collection;
 
     /**
      * タスクを完全に削除する
@@ -119,10 +119,10 @@ interface TaskRepositoryInterface
     /**
      * 指定されたグループタスクIDに紐づくタスクを復元する
      *
-     * @param int $groupTaskId
+     * @param string $groupTaskId
      * @return int 復元したタスクの数
      */
-    public function restoreByGroupTaskId(int $groupTaskId): int;
+    public function restoreByGroupTaskId(string $groupTaskId): int;
 
     /**
      * タスクにタグを紐付け（Batch用）

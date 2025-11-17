@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Repositories\Task\TaskRepositoryInterface;
+use App\Services\Notification\NotificationServiceInterface;
 
 class TaskApprovalService implements TaskApprovalServiceInterface
 {
@@ -17,7 +18,8 @@ class TaskApprovalService implements TaskApprovalServiceInterface
      * Constructor
      */
     public function __construct(
-        private TaskRepositoryInterface $taskRepository
+        private TaskRepositoryInterface $taskRepository,
+        private NotificationServiceInterface $notificationService,
     ) {}
 
     /**
@@ -57,6 +59,12 @@ class TaskApprovalService implements TaskApprovalServiceInterface
                 $this->taskRepository->deleteByGroupTaskIdExcludingUser($groupTaskId, $user->id);                
             }
 
+            // 承認者に申請完了を通知
+            $title = '完了申請';
+            $userName = $user->username;
+            $message = $userName . 'からタスク: ' . $task->title . ' の完了申請がありました。';
+            $this->notificationService->sendNotification($task->user_id, $task->assigned_by_user_id, config('const.notification_types.approval_required'), $title, $message);
+
             return $task;
         });
     }
@@ -79,10 +87,19 @@ class TaskApprovalService implements TaskApprovalServiceInterface
         }
 
         return DB::transaction(function () use ($task, $approver) {
-            return $this->taskRepository->update($task, [
+            // タスクを承認済みに更新
+            $task = $this->taskRepository->update($task, [
                 'approved_at' => now(),
                 'approved_by_user_id' => $approver->id,
             ]);
+
+            // 申請者に承認完了を通知
+            $title = '承認完了';
+            $approverName = $approver->username;
+            $message = $approverName . 'があなたのタスク: ' . $task->title . ' を承認しました。';
+            $this->notificationService->sendNotification($task->approved_by_user_id, $task->user_id, config('const.notification_types.task_approved'), $title, $message);
+
+            return $task;
         });
     }
 
@@ -112,8 +129,14 @@ class TaskApprovalService implements TaskApprovalServiceInterface
 
             // 同一グループタスクの削除済みレコードを復元
             if ($task->group_task_id) {
-                $this->taskRepository->restoreByGroupTaskId($task->group_task_id);
+                $this->taskRepository->restoreByGroupTaskId((string) $task->group_task_id);
             }
+
+            // 申請者に承認却下を通知
+            $title = '承認却下';
+            $approverName = $approver->username;
+            $message = $approverName . 'があなたのタスク: ' . $task->title . ' を却下しました。';
+            $this->notificationService->sendNotification($approver->id, $task->user_id, config('const.notification_types.task_rejected'), $title, $message);
 
             return $task;
         });

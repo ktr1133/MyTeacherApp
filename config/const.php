@@ -56,15 +56,55 @@ return [
     ],
 
     // ========================================
-    // 通知種別
+    // 通知関連
     // ========================================
+    /**
+     * システム通知の種別定義
+     */
     'notification_types' => [
-        'token_low'           => 'token_low',           // トークン残高低下
-        'token_depleted'      => 'token_depleted',      // トークン残高ゼロ
-        'payment_success'     => 'payment_success',     // 課金成功
-        'payment_failed'      => 'payment_failed',      // 課金失敗
+        // システム通知
+        'token_low'           => 'token_low',           // トークン残量低下
+        'token_depleted'      => 'token_depleted',      // トークン枯渇
+        'payment_success'     => 'payment_success',     // 決済成功
+        'payment_failed'      => 'payment_failed',      // 決済失敗
         'group_task_created'  => 'group_task_created',  // グループタスク作成
         'group_task_assigned' => 'group_task_assigned', // グループタスク割当
+        'avatar_generated'    => 'avatar_generated',    // アバター生成完了
+        'approval_required'   => 'approval_required',   // 承認待ち
+        'task_approved'       => 'task_approved',       // タスク承認
+        'task_rejected'       => 'task_rejected',       // タスク却下
+        
+        // 管理者通知
+        'admin_announcement'  => 'admin_announcement',  // お知らせ
+        'admin_maintenance'   => 'admin_maintenance',   // メンテナンス
+        'admin_update'        => 'admin_update',        // アップデート
+        'admin_warning'       => 'admin_warning',       // 警告
+    ],
+
+    /**
+     * 通知の発信元定義
+     */
+    'notification_sources' => [
+        'system' => 'system', // システム自動生成
+        'admin'  => 'admin',  // 管理者作成
+    ],
+
+    /**
+     * 通知の優先度定義
+     */
+    'notification_priorities' => [
+        'info'      => 'info',      // 情報
+        'normal'    => 'normal',    // 通常
+        'important' => 'important', // 重要
+    ],
+
+    /**
+     * 通知の配信対象タイプ定義
+     */
+    'notification_target_types' => [
+        'all'    => 'all',    // 全ユーザー
+        'users'  => 'users',  // 特定ユーザー
+        'groups' => 'groups', // 特定グループ
     ],
 
     // ========================================
@@ -136,6 +176,8 @@ return [
         'tag_deleted'                 => 'tag_deleted',
         'group_created'               => 'group_created',
         'group_deleted'               => 'group_deleted',
+        'notification_created'        => 'notification_created',
+        'notification_updated'        => 'notification_updated',
     ],
 
     // ========================================
@@ -162,32 +204,36 @@ return [
         'tag_deleted'                 => 'ユーザーがタグを削除したとき',
         'group_created'               => 'ユーザーがグループを作成したとき',
         'group_deleted'               => 'ユーザーがグループを削除したとき',
+        'notification_created'        => 'ユーザーが通知を作成したとき',
+        'notification_updated'        => 'ユーザーが通知を更新したとき'
     ],
 
     // ========================================
     // アバターイベント×表情タイプ
     // ========================================
     'avatar_event_expression_types' => [
-        'task_created'                => 'normal',       // タスク作成 - バストアップ - 通常
-        'task_updated'                => 'normal',       // タスク更新 - バストアップ - 通常
+        'task_created'                => 'normal',      // タスク作成 - バストアップ - 通常
+        'task_updated'                => 'normal',      // タスク更新 - バストアップ - 通常
         'task_deleted'                => 'sad',         // タスク削除 - バストアップ - 悲しみ
         'task_completed'              => 'happy',       // タスク完了 - バストアップ - 喜び
-        'task_breakdown'              => 'normal',       // タスク分解 - バストアップ - 通常
+        'task_breakdown'              => 'normal',      // タスク分解 - バストアップ - 通常
         'task_breakdown_refine'       => 'surprise',    // タスク分解改善 - バストアップ - 驚き
         'group_task_created'          => 'happy',       // グループタスク作成 - バストアップ - 喜び
-        'group_task_updated'          => 'normal',       // グループタスク更新 - バストアップ - 通常
-        'group_edited'                => 'normal',       // グループ編集 - バストアップ - 通常
+        'group_task_updated'          => 'normal',      // グループタスク更新 - バストアップ - 通常
+        'group_edited'                => 'normal',      // グループ編集 - バストアップ - 通常
         'login'                       => 'happy',       // ログイン - バストアップ - 喜び
         'logout'                      => 'sad',         // ログアウト - バストアップ - 悲しみ
         'login_gap'                   => 'surprise',    // 3日ぶりログイン - バストアップ - 驚き
         'token_purchased'             => 'happy',       // トークン購入 - バストアップ - 喜び
-        'performance_personal_viewed' => 'normal',       // 個人実績閲覧 - 全身 - 通常
-        'performance_group_viewed'    => 'normal',       // グループ実績閲覧 - 全身 - 通常
+        'performance_personal_viewed' => 'normal',      // 個人実績閲覧 - 全身 - 通常
+        'performance_group_viewed'    => 'normal',      // グループ実績閲覧 - 全身 - 通常
         'tag_created'                 => 'happy',       // タグ作成 - バストアップ - 喜び
-        'tag_updated'                 => 'normal',       // タグ更新 - バストアップ - 通常
+        'tag_updated'                 => 'normal',      // タグ更新 - バストアップ - 通常
         'tag_deleted'                 => 'sad',         // タグ削除 - バストアップ - 悲しみ
         'group_created'               => 'happy',       // グループ作成 - バストアップ - 喜び
         'group_deleted'               => 'sad',         // グループ削除 - バストアップ - 悲しみ
+        'notification_created'        => 'normal',      // お知らせ作成 - バストアップ - 通常
+        'notification_updated'        => 'normal'       // お知らせ更新 - バストアップ - 通常
     ],
 
     // ========================================
@@ -211,4 +257,13 @@ return [
 
     // 事前見積トークン数
     'estimate_token' => 2000,
+
+    // OpenAIの入力プロンプトと出力プロンプトの比率
+    'openai_prompt_completion_ratio' => 4,
+
+    // 画像サイズ
+    'image_size' => [
+        'width' => '512',
+        'height' => '512',
+    ],
 ];

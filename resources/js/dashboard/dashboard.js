@@ -302,7 +302,27 @@ class ModalController {
         const store = Alpine.store('dashboard');
         const tasksHTML = tasks.map((task, index) => {
             const selectedSpan = store?.selectedTaskSpans?.[index] || 2;
-            const selectedDueDate = store?.selectedTaskDueDates?.[index] || '';
+            let selectedDueDate = store?.selectedTaskDueDates?.[index] || '';
+            // デフォルト値を設定
+            if (!selectedDueDate) {
+                if (selectedSpan == 1) {
+                    // 短期の場合: 今日の日付をセット
+                    selectedDueDate = new Date().toISOString().split('T')[0];
+                } else if (selectedSpan == 2) {
+                    // 中期の場合: 今年の年をセット
+                    selectedDueDate = new Date().getFullYear().toString();
+                } else {
+                    // 長期の場合: 空文字のまま
+                    selectedDueDate = '';
+                }
+                
+                // Store に初期値を設定
+                if (store && store.selectedTaskDueDates) {
+                    const updatedDueDates = [...store.selectedTaskDueDates];
+                    updatedDueDates[index] = selectedDueDate;
+                    store.selectedTaskDueDates = updatedDueDates;
+                }
+            }
             
             return `
                 <div class="task-list flex items-start gap-3 p-3 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition bg-white">
@@ -419,10 +439,23 @@ class ModalController {
                 if (store) {
                     store.setTaskSpan(index, newSpan);
                     
+                    // スパン変更時にデフォルト値を設定
+                    let defaultDueDate = '';
+                    if (newSpan == 1) {
+                        defaultDueDate = new Date().toISOString().split('T')[0];
+                    } else if (newSpan == 2) {
+                        defaultDueDate = new Date().getFullYear().toString();
+                    }
+                    
+                    // Store に反映
+                    const updatedDueDates = [...store.selectedTaskDueDates];
+                    updatedDueDates[index] = defaultDueDate;
+                    store.selectedTaskDueDates = updatedDueDates;
+                    
                     // 期限フィールドを再レンダリング
                     const dueDateContainer = document.querySelector(`.due-date-container[data-task-index="${index}"]`);
                     if (dueDateContainer) {
-                        dueDateContainer.innerHTML = this.renderDueDateField(index, newSpan, '');
+                        dueDateContainer.innerHTML = this.renderDueDateField(index, newSpan, defaultDueDate);
                         this.bindDueDateChangeEvents();
                     }
                 }
@@ -442,10 +475,13 @@ class ModalController {
                 const index = parseInt(e.target.getAttribute('data-task-index'));
                 const newDueDate = e.target.value;
                 
-                // Store を更新
+                // Store を更新（リアクティビティを発火させる）
                 const store = Alpine.store('dashboard');
                 if (store && store.selectedTaskDueDates) {
-                    store.selectedTaskDueDates[index] = newDueDate;
+                    // 配列を新しいオブジェクトとして再代入してリアクティビティを発火
+                    const updatedDueDates = [...store.selectedTaskDueDates];
+                    updatedDueDates[index] = newDueDate;
+                    store.selectedTaskDueDates = updatedDueDates;
                 }
             });
         });
@@ -734,6 +770,7 @@ class DashboardController {
             this.modal.showLoading();
             this.updateState({ isProposing: true });
 
+            // タスク分解APIを呼び出す
             const response = await TaskAPI.propose(title, span, context, isRefinement);
 
             let proposedTasksArray = response.proposed_tasks || [];
@@ -831,6 +868,15 @@ class DashboardController {
         const proposedTasks = store?.proposedTasks ?? this.state.proposedTasks;
         const selectedTaskSpans = store?.selectedTaskSpans ?? this.state.selectedTaskSpans;
         const dueDates = store?.selectedTaskDueDates || [];
+
+        console.log('[confirmProposal] Store Data', {
+            proposedTasks,
+            selectedTaskSpans,
+            dueDates,
+            store: store ? {
+                selectedTaskDueDates: store.selectedTaskDueDates
+            } : null
+        });
 
         if (!proposedTasks || proposedTasks.length === 0) {
             return;
@@ -1024,8 +1070,6 @@ class DashboardController {
      * @param {string} tagName - タグ名
      */
     updateTaskList(tasks, tagName) {
-        console.log('[updateTaskList]', { tasks, tagName });
-
         if (!tasks || tasks.length === 0) {
             return;
         }
@@ -1052,7 +1096,6 @@ class DashboardController {
 
         // タグバケツが存在しない場合は新規作成
         if (!bucketContainer) {
-            console.log('[updateTaskList] Creating new bucket for tag:', tagName);
             this.createNewBucket(tagName, tasks);
             return;
         }
@@ -1075,8 +1118,6 @@ class DashboardController {
             const taskCard = this.createTaskCard(task);
             taskListContainer.insertAdjacentHTML('beforeend', taskCard);
         });
-
-        console.log('[updateTaskList] Tasks added to existing bucket');
     }
 
     /**
@@ -1089,7 +1130,7 @@ class DashboardController {
         const taskCardsHTML = tasks.map(task => this.createTaskCard(task)).join('');
 
         const bucketHTML = `
-            <div class="bento-card task-card-enter p-6 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50" data-bucket-name="${this.escapeHtml(tagName)}">
+            <div class="bento-card group relative rounded-2xl shadow-lg hover:shadow-2xl p-6 cursor-pointer" data-bucket-name="${this.escapeHtml(tagName)}">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#59B9C6] to-[#3b82f6] flex items-center justify-center shadow-lg">
@@ -1132,8 +1173,6 @@ class DashboardController {
 
         // 新しいバケツを先頭に追加
         gridContainer.insertAdjacentHTML('afterbegin', bucketHTML);
-
-        console.log('[createNewBucket] New bucket created');
     }
 
     /**
@@ -1351,23 +1390,6 @@ class DashboardEventHandler {
             };
             simpleRegisterBtn.addEventListener('click', simpleRegisterHandler, { once: false });
         }
-
-        // // グループタスク登録ボタン - 上記と同じ処理
-        // const groupTaskRegisterBtn = document.getElementById('register-group-task-btn');
-        // if (groupTaskRegisterBtn) {
-        //     const groupTaskRegisterHandler = (ev) => {
-        //         const form = document.getElementById('group-task-form');
-        //         if (form) {
-        //             if (!form.checkValidity()) {
-        //                 form.reportValidity();
-        //                 ev.preventDefault();
-        //                 return;
-        //             }
-        //             // ← タスク登録と同じ処理
-        //         }
-        //     };
-        //     groupTaskRegisterBtn.addEventListener('click', groupTaskRegisterHandler, { once: false });
-        // }
     }
 
     /**

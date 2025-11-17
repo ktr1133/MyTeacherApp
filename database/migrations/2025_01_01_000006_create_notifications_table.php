@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             
             // 通知種別
-            $table->enum('type', array_keys(config('const.notification_types')))->comment('通知種別');
+            $table->string('type', 50)->comment('通知種別'); // const.notification_types参照
             
             // 通知内容
             $table->string('title');

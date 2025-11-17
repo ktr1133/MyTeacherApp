@@ -68,6 +68,11 @@ class TagService implements TagServiceInterface
      */
     public function deleteTag(int $id): bool
     {
+        // 付属するタスクがあれば削除できないようにする
+        $tag = $this->tags->findById($id);
+        if ($tag && $tag->tasks()->count() > 0) {
+            return false;
+        }
         return $this->tags->deleteTag($id);
     }
 

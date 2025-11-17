@@ -6,6 +6,7 @@ use App\Models\TeacherAvatar;
 use App\Services\AI\OpenAIService;
 use App\Services\AI\StableDiffusionServiceInterface;
 use App\Services\AI\AICostServiceInterface;
+use App\Services\Notification\NotificationServiceInterface;
 use App\Services\Token\TokenServiceInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -104,7 +105,8 @@ class GenerateAvatarImagesJob implements ShouldQueue
         StableDiffusionServiceInterface $sdService,
         OpenAIService $openAIService,
         AICostServiceInterface $aiCostService,
-        TokenServiceInterface $tokenService
+        TokenServiceInterface $tokenService,
+        NotificationServiceInterface $notificationService
     ): void {
         $avatar = TeacherAvatar::find($this->avatarId);
 
@@ -127,7 +129,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
             $aiUsageDetails = [];
 
             // ===================================
-            // 画像生成（anything-v4.0 + rembg）
+            // 画像生成
             // ===================================
             
             $basePrompt = $this->buildBasePrompt($avatar);
@@ -169,6 +171,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
                     // リトライ機構付き画像生成
                     $generatedData = $this->generateImageWithRetry(
                         $sdService,
+                        $avatar,
                         $fullPrompt,
                         $seed,
                         $expressionType,
@@ -193,24 +196,35 @@ class GenerateAvatarImagesJob implements ShouldQueue
                     ]);
                     
                     // コスト計算（AICostService を使用）
-                    $generationCost = $aiCostService->calculateReplicateCost('anything-v4.0', '512x512', 1);
-                    
-                    $transparentData = $sdService->removeBackground($generatedData['url']);
-                    
-                    if (!$transparentData || !isset($transparentData['url'])) {
-                        Log::error('[GenerateAvatarImages] Background removal failed', [
-                            'pose_type' => $poseType,
-                            'expression_type' => $expressionType,
-                        ]);
-                        continue;
+                    $model = $avatar->draw_model_version ?? 'anything-v4.0';
+                    $imageSize = config('const.image_size.width') . 'x' . config('const.image_size.height');
+                    $generationCost = $aiCostService->calculateReplicateCost($model, $imageSize, 1);
+
+                    // 背景除去
+                    $removalCost = 0;
+                    if ($avatar->is_transparent) {
+                        $transparentData = $sdService->removeBackground($generatedData['url']);
+                        
+                        if (!$transparentData || !isset($transparentData['url'])) {
+                            Log::error('[GenerateAvatarImages] Background removal failed', [
+                                'pose_type' => $poseType,
+                                'expression_type' => $expressionType,
+                            ]);
+                            continue;
+                        }
+                        
+                        // コスト計算（背景除去）
+                        $removalCost = $aiCostService->calculateReplicateCost('rembg', null, 1);
                     }
-                    
-                    // コスト計算（背景除去）
-                    $removalCost = $aiCostService->calculateReplicateCost('rembg', null, 1);
-                    
+
+                    // アップロードURLの決定
+                    $uploadUrl = $avatar->is_transparent && isset($transparentData['url'])
+                        ? $transparentData['url']
+                        : $generatedData['url'];
+
                     // S3にアップロード
                     $s3Path = $this->uploadToS3(
-                        $transparentData['url'], 
+                        $uploadUrl, 
                         $avatar->user_id, 
                         $poseType,
                         $expressionType
@@ -277,23 +291,25 @@ class GenerateAvatarImagesJob implements ShouldQueue
                     );
                     
                     // ログ記録（背景除去）
-                    $aiCostService->logUsage(
-                        $avatar->user,
-                        TeacherAvatar::class,
-                        $avatar->id,
-                        'rembg',
-                        "{$poseType}_{$expressionType}_transparent",
-                        1.0,
-                        $removalCost,
-                        [
-                            'original_url' => $generatedData['url'],
-                            'prediction_id' => $transparentData['prediction_id'] ?? null,
-                        ],
-                        [
-                            'transparent_url' => $transparentData['url'],
-                            's3_path' => $s3Path,
-                        ]
-                    );
+                    if ($avatar->is_transparent && isset($transparentData['url'])) {
+                        $aiCostService->logUsage(
+                            $avatar->user,
+                            TeacherAvatar::class,
+                            $avatar->id,
+                            'rembg',
+                            "{$poseType}_{$expressionType}_transparent",
+                            1.0,
+                            $removalCost,
+                            [
+                                'original_url' => $generatedData['url'],
+                                'prediction_id' => $transparentData['prediction_id'] ?? null,
+                            ],
+                            [
+                                'transparent_url' => $transparentData['url'],
+                                's3_path' => $s3Path,
+                            ]
+                        );
+                    }
                 }
             }
             
@@ -322,7 +338,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
             $tokenService->recordAICost(
                 $avatar->user,
                 $totalTokenCost,
-                'アバター生成（anything-v4.0 + rembg + GPT-4）',
+                'アバター生成コスト',
                 $avatar,
                 $aiUsageDetails
             );
@@ -337,22 +353,13 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 $avatar
             );
 
+            // ステータス更新
             $avatar->update([
                 'generation_status' => 'completed',
                 'last_generated_at' => now(),
             ]);
-
-            Log::info('[GenerateAvatarImages] Completed with NSFW protection', [
-                'avatar_id' => $avatar->id,
-                'seed' => $seed,
-                'total_token_cost' => $totalTokenCost,
-                'total_images' => count($aiUsageDetails) - 1,
-                'breakdown' => [
-                    'images' => $totalTokenCost - $commentTokenCost,
-                    'comments' => $commentTokenCost,
-                ],
-            ]);
-
+            // 生成結果
+            $result = true;
         } catch (\Exception $e) {
             Log::error('[GenerateAvatarImages] Error', [
                 'avatar_id' => $avatar->id,
@@ -360,8 +367,21 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 'trace' => $e->getTraceAsString(),
             ]);
 
+            // ステータスを失敗に更新
             $avatar->update(['generation_status' => 'failed']);
+            // 生成結果
+            $result = false;
         }
+
+        $tile = $result ? 'アバター画像の生成が完了しました' : 'アバター画像の生成に失敗しました。';
+        $msg = $this->buildNotificationMessage($avatar, $totalTokenCost, $result);
+        $notificationService->sendNotification(
+            $avatar->user->id,
+            $avatar->user->id,
+            config('const.notification_types.avatar_generated'),
+            $tile,
+            $msg
+        );
     }
 
     /**
@@ -371,6 +391,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
      */
     private function generateImageWithRetry(
         StableDiffusionServiceInterface $sdService,
+        TeacherAvatar $avatar,
         string $fullPrompt,
         int $seed,
         string $expressionType,
@@ -389,8 +410,12 @@ class GenerateAvatarImagesJob implements ShouldQueue
                     'max_retries' => $maxRetries,
                     'prompt_preview' => substr($currentPrompt, 0, 150) . '...',
                 ]);
-                
-                $result = $sdService->generateImage($currentPrompt, $seed);
+
+                // オプション設定
+                $options = [
+                    'draw_model_version' => $avatar->draw_model_version,
+                ];
+                $result = $sdService->generateImage($currentPrompt, $seed, $options);
                 
                 if ($result && isset($result['url'])) {
                     Log::info('[GenerateImageWithRetry] Success', [
@@ -518,7 +543,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
     }
 
     /**
-     * ★ NSFW エラー時のフォールバック処理
+     * NSFW エラー時のフォールバック処理
      * 
      * normal 表情の画像を複製して使用
      */
@@ -626,7 +651,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
         $parts = array_filter($parts);
 
         return sprintf(
-            '1person, solo character, anime style teacher character ID %d, %s',
+            '1person, solo character, anime style teacher character ID %d, clothing colors that harmonize with hair color, %s',
             $avatar->seed,
             implode(', ', $parts)
         );
@@ -898,5 +923,32 @@ class GenerateAvatarImagesJob implements ShouldQueue
             'comment_id' => $comment->id,
             'was_recently_created' => $comment->wasRecentlyCreated,
         ]);
+    }
+
+    /**
+     * 通知メッセージ生成
+     *
+     * @param TeacherAvatar $avatar
+     * @param int $totalTokenCost
+     * @param bool $result
+     */
+    private function buildNotificationMessage(TeacherAvatar $avatar, int $totalTokenCost, bool $result): string
+    {
+        // 使用したモデルを取得
+        $model_name = $avatar->draw_model_version ?? 'default model';
+
+        if ($result) {
+            return sprintf(
+                "アバター画像の生成が完了しました！\n使用モデル: %s\n合計トークンコスト: %dトークン\n教師アバターページで新しいアバターを確認してください。",
+                $model_name,
+                $totalTokenCost
+            );
+        } else {
+            return sprintf(
+                "アバター画像の生成に失敗しました。\n使用モデル: %s\n合計トークンコスト: %dトークン\n再度お試しください。",
+                $model_name,
+                $totalTokenCost
+            );
+        }
     }
 }

@@ -139,6 +139,199 @@
     background: rgba(89, 185, 198, 0.05);
 }
 
+/* モデルアイコンのグラデーション */
+.model-icon-gradient {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* モデル選択カード */
+.draw-model-card {
+    display: block;
+}
+
+.draw-model-card-inner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+    border-color: rgba(16, 185, 129, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.dark .draw-model-card-inner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* ホバー時のアニメーション */
+.draw-model-card:hover .draw-model-card-inner {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -5px rgba(16, 185, 129, 0.3),
+                0 8px 16px -8px rgba(5, 150, 105, 0.2);
+}
+
+/* シマー効果 */
+.draw-model-card-inner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.draw-model-card:hover .draw-model-card-inner::before {
+    left: 100%;
+}
+
+/* 選択状態 */
+.draw-model-radio:checked + .draw-model-card-inner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
+    border-color: #10b981;
+    border-width: 2px;
+    box-shadow: 0 8px 20px -5px rgba(16, 185, 129, 0.4),
+                0 6px 12px -8px rgba(5, 150, 105, 0.3),
+                0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.dark .draw-model-radio:checked + .draw-model-card-inner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
+    border-color: #10b981;
+}
+
+/* チェックマーク */
+.draw-model-check {
+    background: rgba(229, 231, 235, 0.5);
+    border-color: rgba(209, 213, 219, 1);
+    transition: all 0.3s ease;
+}
+
+.dark .draw-model-check {
+    background: rgba(55, 65, 81, 0.5);
+    border-color: rgba(75, 85, 99, 1);
+}
+
+.draw-model-radio:checked + .draw-model-card-inner .draw-model-check {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.draw-model-radio:checked + .draw-model-card-inner .draw-model-check svg {
+    opacity: 1;
+}
+
+/* モデルアイコン */
+.draw-model-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 6px 16px -4px rgba(16, 185, 129, 0.4);
+    transition: transform 0.3s ease;
+}
+
+.draw-model-card:hover .draw-model-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.draw-model-radio:checked + .draw-model-card-inner .draw-model-icon {
+    background: linear-gradient(135deg, #059669, #047857);
+    box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.5);
+    transform: scale(1.05);
+}
+
+/* 特徴タグ */
+.draw-model-tag {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.dark .draw-model-tag {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.draw-model-radio:checked + .draw-model-card-inner .draw-model-tag {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border-color: transparent;
+    font-weight: 600;
+}
+
+/* モデル情報カード */
+.model-info-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.dark .model-info-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.model-info-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* アニメーション */
+@keyframes pulse-green {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+}
+
+.draw-model-radio:checked + .draw-model-card-inner {
+    animation: pulse-green 2s ease-in-out infinite;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 768px) {
+    .draw-model-card-inner {
+        padding: 1rem;
+    }
+
+    .draw-model-icon {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .draw-model-icon svg {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    .draw-model-card:hover .draw-model-card-inner {
+        transform: none;
+    }
+
+    .draw-model-card:hover .draw-model-icon {
+        transform: none;
+    }
+
+    .draw-model-card-inner::before {
+        display: none;
+    }
+
+    .draw-model-radio:checked + .draw-model-card-inner {
+        animation: none;
+    }
+}
+
+/* フォーカス状態 */
+.draw-model-radio:focus + .draw-model-card-inner {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+}
+
+
 /* ========================================
    アバターウィジェット
    ======================================== */

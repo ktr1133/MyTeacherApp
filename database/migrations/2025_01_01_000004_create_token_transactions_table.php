@@ -34,7 +34,8 @@ return new class extends Migration
             $table->string('reason')->nullable()->comment('task_decomposition, teacher_avatar等');
             
             // 関連情報（Polymorphic: Task, TaskProposal等）
-            $table->morphs('related');
+            $table->string('related_type')->nullable();
+            $table->unsignedBigInteger('related_id')->nullable();
             
             // Stripe関連（購入の場合）
             $table->string('stripe_payment_intent_id')->nullable()->index();
@@ -48,6 +49,7 @@ return new class extends Migration
             $table->softDeletes();
             
             // インデックス
+            $table->index(['related_type', 'related_id']);
             $table->index(['tokenable_type', 'tokenable_id', 'created_at']);
             $table->index(['user_id', 'created_at']);
             $table->index('type');

@@ -132,8 +132,8 @@
             availableSelect.innerHTML = '';
             attachBtn.disabled = true;
         }, 300); // CSSのtransition-durationと合わせる
-        
-        console.log('Modal closed');
+        // 画面をリロードする
+        location.reload();
     }
 
     /**
@@ -348,8 +348,6 @@
      */
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('[data-action="open-tag-modal"]');
-        console.log('Click detected:', e.target);
-        console.log('Button found:', btn);
         
         if (!btn) return;
 
@@ -366,7 +364,6 @@
 
         try {
             const data = await fetchTagTasks(currentTagId);
-            console.log('Fetched tasks:', data);
             renderLinkedTasks(data.linked || []);
             renderAvailableTasks(data.available || []);
             openModal();

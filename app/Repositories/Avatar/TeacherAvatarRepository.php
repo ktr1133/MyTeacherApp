@@ -30,21 +30,21 @@ class TeacherAvatarRepository implements TeacherAvatarRepositoryInterface
      */
     public function create(User $user, array $data): TeacherAvatar
     {
-        return TeacherAvatar::create([
-            'user_id' => $user->id,
-            'seed' => $data['seed'],
-            'sex' => $data['sex'],
-            'hair_color' => $data['hair_color'],
-            'eye_color' => $data['eye_color'],
-            'clothing' => $data['clothing'],
-            'accessory' => $data['accessory'] ?? null,
-            'body_type' => $data['body_type'],
-            'tone' => $data['tone'],
-            'enthusiasm' => $data['enthusiasm'],
-            'formality' => $data['formality'],
-            'humor' => $data['humor'],
-            'generation_status' => 'pending',
-        ]);
+        // TeacherAvatarモデルのfillableを取得
+        $fillable = (new TeacherAvatar())->getFillable();
+
+        // fillableに含まれるカラムのみを抽出
+        $attributes = array_intersect_key($data, array_flip($fillable));
+
+        // user_idを追加（必須項目）
+        $attributes['user_id'] = $user->id;
+
+        // generation_statusが未設定の場合はデフォルト値を設定
+        if (!isset($attributes['generation_status'])) {
+            $attributes['generation_status'] = 'pending';
+        }
+
+        return TeacherAvatar::create($attributes);
     }
 
     /**

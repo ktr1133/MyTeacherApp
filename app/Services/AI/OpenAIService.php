@@ -76,7 +76,7 @@ class OpenAIService
             'usage' => [
                 'prompt_tokens' => $usage['prompt_tokens'] ?? 0,
                 'completion_tokens' => $usage['completion_tokens'] ?? 0,
-                'total_tokens' => $usage['total_tokens'] ?? 0,
+                'total_tokens' => $usage['prompt_tokens'] + $usage['completion_tokens'] * config('const.openai_prompt_completion_ratio') ?? 0, // OpenAIの入力プロンプトと出力プロンプトの比率で重みづけ
             ],
             'model' => $data['model'] ?? $this->model,
         ];
@@ -95,7 +95,6 @@ class OpenAIService
         if (!$this->apiKey) {
             throw new \RuntimeException('OpenAI API key is not configured.');
         }
-        logger()->info('prompt', [$prompt]);
 
         $payload = [
             'model' => 'dall-e-3',
