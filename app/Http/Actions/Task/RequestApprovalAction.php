@@ -13,11 +13,12 @@ class RequestApprovalAction
      * Constructor
      */
     public function __construct(
-        private TaskApprovalServiceInterface $taskApprovalService
+        private TaskApprovalServiceInterface $taskApprovalService,
     ) {}
 
     public function __invoke(Request $request, Task $task)
     {
+        // タスクの完了申請
         $this->taskApprovalService->requestApproval($task, Auth::user());
 
         return redirect()->route('dashboard')->with('success', '完了申請しました。承認をお待ちください。');

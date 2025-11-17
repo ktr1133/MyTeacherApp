@@ -37,7 +37,7 @@ class IndexNotificationAction
     {
         $userId = $request->user()->id;
         
-        $notifications = $this->service->getUserNotifications($userId, 20);
+        $notifications = $this->service->getUserNotifications($userId, 15);
         $unreadCount = $this->service->getUnreadCount($userId);
 
         return $this->responder->index($notifications, $unreadCount);

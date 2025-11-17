@@ -7,6 +7,7 @@ use App\Models\NotificationTemplate;
 use App\Models\User;
 use App\Models\UserNotification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +28,7 @@ class NotificationRepository implements NotificationRepositoryInterface
      * @param int $perPage 1ページあたりの件数
      * @return LengthAwarePaginator
      */
-    public function getUserNotifications(int $userId, int $perPage = 20): LengthAwarePaginator
+    public function getUserNotifications(int $userId, int $perPage = 15): LengthAwarePaginator
     {
         return UserNotification::where('user_id', $userId)
             ->with(['template' => function ($query) {
@@ -232,5 +233,107 @@ class NotificationRepository implements NotificationRepositoryInterface
         }
 
         return $query->limit($limit)->get();
+    }
+
+    /**
+     * お知らせ一覧ページの検索処理(非同期)
+     *
+     * @param array $validated
+     * @return Collection
+     */
+    public function search(array $validated): Collection
+    {
+        // クエリビルダーを作成
+        $query = UserNotification::query()
+            ->where('user_id', $validated['user_id'])
+            ->with(['template' => function ($q) {
+                $q->withTrashed()->with(['sender', 'updatedBy']);
+            }])
+            ->latest();
+
+        $query->whereHas('template', function ($q) use ($validated) {
+            $this->applyTemplateSearchTerms($q, $validated);
+        });
+
+        return $query->limit(10)->get();
+    }
+
+    /**
+     * お知らせ検索結果表示ページの検索処理
+     *
+     * @param array $validated
+     * @return LengthAwarePaginator
+     */
+    public function searchForDisplayResult(array $validated): LengthAwarePaginator
+    {
+        // クエリビルダーを作成
+        $query = UserNotification::query()
+            ->where('user_id', $validated['user_id'])
+            ->with(['template' => function ($q) {
+                $q->withTrashed()->with(['sender', 'updatedBy']);
+            }])
+            ->latest();
+            
+        $query->whereHas('template', function ($q) use ($validated) {
+            $this->applyTemplateSearchTerms($q, $validated);
+        });
+
+        // ページネーション（15件/ページ）
+        return $query->paginate(15);
+    }
+
+    /**
+     * テンプレートに対する検索条件を適用
+     *
+     * @param Builder $query NotificationTemplate のクエリビルダー
+     * @param array $validated バリデーション済みデータ
+     * @return void
+     */
+    private function applyTemplateSearchTerms(Builder $query, array $validated): void
+    {
+        // AND検索
+        if ($validated['operator'] === 'and') {
+            foreach ($validated['terms'] as $term) {
+                $query->where(function ($q) use ($term) {
+                    $this->applySearchTerm($q, $term);
+                });
+            }
+        }
+        // OR検索
+        else {
+            $query->where(function ($q) use ($validated) {
+                foreach ($validated['terms'] as $term) {
+                    $q->orWhere(function ($subQ) use ($term) {
+                        $this->applySearchTerm($subQ, $term);
+                    });
+                }
+            });
+        }
+    }
+
+    /**
+     * 検索条件を適用
+     *
+     * @param Builder $query
+     * @param string $term
+     */
+    private function applySearchTerm(Builder $query, string $term): void
+    {
+        // 公式検索
+        if (in_array(mb_strtolower($term), ['公式', 'official', 'admin'])) {
+            $query->where('source', 'admin');
+        }
+        // システム検索
+        elseif (in_array(mb_strtolower($term), ['システム', 'system'])) {
+            $query->where('source', 'system');
+        }
+        // 日付検索（部分一致: YYYY, YYYY-MM, YYYY-MM-DD）
+        elseif (preg_match('/^\d{4}(-\d{2})?(-\d{2})?$/', $term)) {
+            $query->where('publish_at', 'LIKE', "{$term}%");
+        }
+        // 件名検索
+        else {
+            $query->where('title', 'LIKE', "%{$term}%");
+        }
     }
 }

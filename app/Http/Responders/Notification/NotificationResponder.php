@@ -4,6 +4,7 @@ namespace App\Http\Responders\Notification;
 
 use App\Models\NotificationTemplate;
 use App\Models\UserNotification;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -23,7 +24,7 @@ class NotificationResponder
      * @param int $unreadCount
      * @return View
      */
-    public function index($notifications, int $unreadCount): View
+    public function index(LengthAwarePaginator $notifications, int $unreadCount): View
     {
         return view('notifications.index', compact('notifications', 'unreadCount'));
     }
@@ -61,5 +62,18 @@ class NotificationResponder
     {
         return redirect()->route('notifications.index')
             ->with('success', 'すべての通知を既読にしました。');
+    }
+
+    /**
+     * 検索結果画面
+     *
+     * @param LengthAwarePaginator $notifications
+     * @param array $searchTerms 検索語句
+     * @param string $operator 検索演算子
+     * @return View
+     */
+    public function searchResults(LengthAwarePaginator $notifications,  array $searchTerms, string $operator): View
+    {
+        return view('notifications.search-results', compact('notifications', 'searchTerms', 'operator'));
     }
 }

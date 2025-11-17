@@ -9,6 +9,7 @@
 
     @push('scripts')
         @vite(['resources/js/notifications/notifications.js'])
+        @vite(['resources/js/notifications/notification-search.js'])
     @endpush
 
     <div x-data="{ showSidebar: false }" class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
@@ -99,6 +100,22 @@
             {{-- メインコンテンツ --}}
             <main class="flex-1 custom-scrollbar">
                 <div class="max-w-5xl mx-auto px-4 lg:px-6 py-6 lg:py-8">
+                    {{-- 検索バー --}}
+                    <div class="mb-6">
+                        <div class="relative w-full">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <input 
+                                type="search"
+                                id="notification-search-input"
+                                placeholder="通知を検索... (空白でOR検索、&でAND検索、例: 公式 重要 2025-11)"
+                                class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent focus:outline-none transition-all duration-300 text-sm placeholder-gray-400 dark:placeholder-gray-500 dark:text-white"
+                                autocomplete="off">
+                        </div>
+                    </div>
                     {{-- 成功メッセージ --}}
                     @if(session('success'))
                         <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-5 py-4 rounded-xl relative notification-alert shadow-lg backdrop-blur-sm" role="alert">

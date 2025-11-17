@@ -303,13 +303,25 @@ class ModalController {
         const tasksHTML = tasks.map((task, index) => {
             const selectedSpan = store?.selectedTaskSpans?.[index] || 2;
             let selectedDueDate = store?.selectedTaskDueDates?.[index] || '';
-            // 短期の場合
-            if (selectedSpan == 1) {
-                // 今日の日付をセット
-                selectedDueDate = selectedDueDate || new Date().toISOString().split('T')[0];
-            } else if (selectedSpan == 2) {
-                // 中期の場合、今年の年をセット
-                selectedDueDate = selectedDueDate || new Date().getFullYear().toString();
+            // デフォルト値を設定
+            if (!selectedDueDate) {
+                if (selectedSpan == 1) {
+                    // 短期の場合: 今日の日付をセット
+                    selectedDueDate = new Date().toISOString().split('T')[0];
+                } else if (selectedSpan == 2) {
+                    // 中期の場合: 今年の年をセット
+                    selectedDueDate = new Date().getFullYear().toString();
+                } else {
+                    // 長期の場合: 空文字のまま
+                    selectedDueDate = '';
+                }
+                
+                // Store に初期値を設定
+                if (store && store.selectedTaskDueDates) {
+                    const updatedDueDates = [...store.selectedTaskDueDates];
+                    updatedDueDates[index] = selectedDueDate;
+                    store.selectedTaskDueDates = updatedDueDates;
+                }
             }
             
             return `
@@ -427,10 +439,23 @@ class ModalController {
                 if (store) {
                     store.setTaskSpan(index, newSpan);
                     
+                    // スパン変更時にデフォルト値を設定
+                    let defaultDueDate = '';
+                    if (newSpan == 1) {
+                        defaultDueDate = new Date().toISOString().split('T')[0];
+                    } else if (newSpan == 2) {
+                        defaultDueDate = new Date().getFullYear().toString();
+                    }
+                    
+                    // Store に反映
+                    const updatedDueDates = [...store.selectedTaskDueDates];
+                    updatedDueDates[index] = defaultDueDate;
+                    store.selectedTaskDueDates = updatedDueDates;
+                    
                     // 期限フィールドを再レンダリング
                     const dueDateContainer = document.querySelector(`.due-date-container[data-task-index="${index}"]`);
                     if (dueDateContainer) {
-                        dueDateContainer.innerHTML = this.renderDueDateField(index, newSpan, '');
+                        dueDateContainer.innerHTML = this.renderDueDateField(index, newSpan, defaultDueDate);
                         this.bindDueDateChangeEvents();
                     }
                 }
@@ -450,10 +475,13 @@ class ModalController {
                 const index = parseInt(e.target.getAttribute('data-task-index'));
                 const newDueDate = e.target.value;
                 
-                // Store を更新
+                // Store を更新（リアクティビティを発火させる）
                 const store = Alpine.store('dashboard');
                 if (store && store.selectedTaskDueDates) {
-                    store.selectedTaskDueDates[index] = newDueDate;
+                    // 配列を新しいオブジェクトとして再代入してリアクティビティを発火
+                    const updatedDueDates = [...store.selectedTaskDueDates];
+                    updatedDueDates[index] = newDueDate;
+                    store.selectedTaskDueDates = updatedDueDates;
                 }
             });
         });
@@ -840,6 +868,15 @@ class DashboardController {
         const proposedTasks = store?.proposedTasks ?? this.state.proposedTasks;
         const selectedTaskSpans = store?.selectedTaskSpans ?? this.state.selectedTaskSpans;
         const dueDates = store?.selectedTaskDueDates || [];
+
+        console.log('[confirmProposal] Store Data', {
+            proposedTasks,
+            selectedTaskSpans,
+            dueDates,
+            store: store ? {
+                selectedTaskDueDates: store.selectedTaskDueDates
+            } : null
+        });
 
         if (!proposedTasks || proposedTasks.length === 0) {
             return;

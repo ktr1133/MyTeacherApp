@@ -366,11 +366,11 @@
                                                     <option value="{{ $key }}" {{ $avatar->draw_model_version === $key ? 'selected' : '' }}>
                                                         {{ $key }} - 
                                                         @if($key === 'anything-v4.0')
-                                                            線の細いタッチで描画
+                                                            -- 推定トークン使用量: {{ number_format(config('services.estimated_token_usages')['anything-v4.0']) }}
                                                         @elseif($key === 'animagine-xl-3.1')
-                                                            豊かな色彩のイラスト
+                                                            -- 推定トークン使用量: {{ number_format(config('services.estimated_token_usages')['animagine-xl-3.1']) }}
                                                         @elseif($key === 'stable-diffusion-3.5-medium')
-                                                            25億のパラメータで高品質描画
+                                                            -- 推定トークン使用量: {{ number_format(config('services.estimated_token_usages')['stable-diffusion-3.5-medium']) }}
                                                         @endif
                                                     </option>
                                                 @endforeach

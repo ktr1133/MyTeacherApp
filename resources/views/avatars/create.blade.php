@@ -159,7 +159,7 @@
                                 </svg>
                                 イラストスタイル
                             </label>
-                            <select name="draw_model_version" class="avatar-form-input model-select" required>
+                            <select id="draw-model-version" name="draw_model_version" class="avatar-form-input model-select" required>
                                 @foreach (config('services.draw_model_versions') as $key => $value)
                                     <option value="{{ $key }}">
                                         {{ $key }} - 
@@ -216,7 +216,7 @@
                             </svg>
                             <div>
                                 <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-300">トークン消費について</p>
-                                <p class="text-sm text-yellow-700 dark:text-yellow-400 mt-1">アバター作成には <strong id="token-amount"></strong><strong>トークン</strong> が必要です。</p>
+                                <p class="text-sm text-yellow-700 dark:text-yellow-400 mt-1">アバター作成には <strong id="token-amount">{{ number_format(config('services.estimated_token_usages')['anything-v4.0']) }}</strong><strong>トークン</strong> が必要です。</p>
                             </div>
                         </div>
                     </div>

@@ -6,6 +6,7 @@ use App\Models\NotificationTemplate;
 use App\Repositories\Notification\NotificationRepositoryInterface;
 use App\Repositories\Profile\GroupRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -37,7 +38,7 @@ class NotificationService implements NotificationServiceInterface
      * @param int $perPage 1ページあたりの件数
      * @return LengthAwarePaginator
      */
-    public function getUserNotifications(int $userId, int $perPage = 20): LengthAwarePaginator
+    public function getUserNotifications(int $userId, int $perPage = 15): LengthAwarePaginator
     {
         return $this->repository->getUserNotifications($userId, $perPage);
     }
@@ -239,5 +240,27 @@ class NotificationService implements NotificationServiceInterface
             'new_notifications' => $newNotifications->toArray(),
             'timestamp' => now()->toIso8601String(),
         ];
+    }
+
+    /**
+     * お知らせ一覧ページの検索処理
+     *
+     * @param array $validated
+     * @return Collection
+     */
+    public function search(array $validated): Collection
+    {
+        return $this->repository->search($validated);
+    }
+
+    /**
+     * お知らせ検索結果表示ページの検索処理
+     *
+     * @param array $validated
+     * @return LengthAwarePaginator
+     */
+    public function searchForDisplayResult(array $validated): LengthAwarePaginator
+    {
+        return $this->repository->searchForDisplayResult($validated);
     }
 }

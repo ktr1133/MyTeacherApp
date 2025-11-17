@@ -166,8 +166,8 @@ class User extends Authenticatable
                 'tokenable_id' => $this->id
             ],
             [
-                'balance' => FreeTokenSetting::getAmount() ?? 10000,
-                'free_balance' => FreeTokenSetting::getAmount() ?? 10000,
+                'balance' => FreeTokenSetting::getAmount() ?? 25000,
+                'free_balance' => FreeTokenSetting::getAmount() ?? 25000,
                 'paid_balance' => 0,
                 'free_balance_reset_at' => now()->addMonth(),
                 'monthly_consumed_reset_at' => now()->addMonth(),

@@ -33,6 +33,7 @@ export default defineConfig({
                 'resources/js/dashboard/group-task.js',
                 'resources/js/notifications/notifications.js',
                 'resources/js/notifications/admin-notifications.js',
+                'resources/js/notifications/notification-search.js',
                 'resources/js/reports/performance.js',
                 'resources/js/profile/profile-validation.js',
                 'resources/js/sidebar/sidebar-store.js',

@@ -31,6 +31,7 @@ return new class extends Migration
             // 描画モデル
             $table->string('draw_model_version', 100)->nullable()->comment('描画モデルバージョン');
             $table->boolean('is_transparent')->default(true)->comment('背景透過');
+            $table->integer('estimated_token_usage')->default(0)->comment('推定使用トークン量');
 
             // 生成ステータス
             $table->enum('generation_status', array_keys(config('const.avatar_generation_statuses')))->default('pending');

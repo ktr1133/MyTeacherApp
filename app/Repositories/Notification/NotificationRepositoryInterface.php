@@ -23,10 +23,10 @@ interface NotificationRepositoryInterface
      * 通知テンプレートとのリレーションを eager loading する。
      *
      * @param int $userId ユーザーID
-     * @param int $perPage 1ページあたりの件数（デフォルト: 20）
+     * @param int $perPage 1ページあたりの件数（デフォルト: 15）
      * @return LengthAwarePaginator ページネーション済みの通知一覧
      */
-    public function getUserNotifications(int $userId, int $perPage = 20): LengthAwarePaginator;
+    public function getUserNotifications(int $userId, int $perPage = 15): LengthAwarePaginator;
 
     /**
      * ユーザーの未読通知件数を取得
@@ -114,4 +114,20 @@ interface NotificationRepositoryInterface
      * @return Collection
      */
     public function getNewNotificationsSince(int $userId, ?string $since = null, int $limit = 5): Collection;
+
+    /**
+     * お知らせ一覧ページの検索処理(非同期)
+     *
+     * @param array $validated
+     * @return Collection
+     */
+    public function search(array $validated): Collection;
+
+    /**
+     * お知らせ検索結果表示ページの検索処理
+     *
+     * @param array $validated
+     * @return LengthAwarePaginator
+     */
+    public function searchForDisplayResult(array $validated): LengthAwarePaginator;
 }

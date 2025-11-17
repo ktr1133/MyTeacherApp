@@ -147,4 +147,10 @@ return [
         'animagine-xl-3.1' => env('REPLICATE_MODEL_VERSION_V2'),
         'stable-diffusion-3.5-medium' => env('REPLICATE_MODEL_VERSION_V3'),
     ],
+    //// 推定使用トークン量
+    'estimated_token_usages' => [
+        'anything-v4.0'    => 5000,
+        'animagine-xl-3.1' => 2000,
+        'stable-diffusion-3.5-medium' => 23000,
+    ],
 ];

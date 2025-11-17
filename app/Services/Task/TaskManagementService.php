@@ -136,7 +136,7 @@ class TaskManagementService implements TaskManagementServiceInterface
         if ($data['span'] == config('const.task_spans.mid')) {
             try {
                 // 更新の場合は既存のdue_dateをパース
-                $tmp_due_data = Carbon::parse($data['due_date'])->format('Y-m-d');
+                $data['due_date'] = Carbon::parse($data['due_date'])->format('Y-m-d');
             } catch (\Exception $e) {
                 // 新規の場合はdue_dataは年末に設定
                 $tmp_due_data = $data['due_date'];
@@ -241,6 +241,7 @@ class TaskManagementService implements TaskManagementServiceInterface
                 $taskData['is_completed'] = false;
                 $taskData['source_proposal_id'] = $proposalId;
                 // タスクを作成
+                logger()->info('タスク受け入れサービス', ['taskData' => $taskData, 'tasks' => $tasks]);
                 $task = $this->taskRepository->create($taskData);
 
                 // タグの処理（タグ名の配列）

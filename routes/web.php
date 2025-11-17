@@ -45,6 +45,8 @@ use App\Http\Actions\Notification\IndexNotificationAction;
 use App\Http\Actions\Notification\MarkNotificationAsReadAction;
 use App\Http\Actions\Notification\MarkAllNotificationsAsReadAction;
 use App\Http\Actions\Notification\ShowNotificationAction;
+use App\Http\Actions\Notification\SearchNotificationsAction;
+use App\Http\Actions\Notification\SearchResultsNotificationAction;
 use App\Http\Actions\Profile\EditProfileAction;
 use App\Http\Actions\Profile\UpdateProfileAction;
 use App\Http\Actions\Profile\DeleteProfileAction;
@@ -241,6 +243,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{notification}', ShowNotificationAction::class)->name('show');
         Route::post('/{notification}/read', MarkNotificationAsReadAction::class)->name('read');
         Route::post('/read-all', MarkAllNotificationsAsReadAction::class)->name('read-all');
+        Route::get('/search/api', SearchNotificationsAction::class)->name('search.api');
+        Route::get('/search/results', SearchResultsNotificationAction::class)->name('search.results');
     });
 
     // ========================================

@@ -3,6 +3,7 @@
 namespace App\Services\Notification;
 
 use App\Models\NotificationTemplate;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 /**
@@ -18,10 +19,10 @@ interface NotificationServiceInterface
      * ユーザーの通知一覧を取得
      *
      * @param int $userId ユーザーID
-     * @param int $perPage 1ページあたりの件数（デフォルト: 20）
+     * @param int $perPage 1ページあたりの件数（デフォルト: 15）
      * @return LengthAwarePaginator ページネーション済みの通知一覧
      */
-    public function getUserNotifications(int $userId, int $perPage = 20): LengthAwarePaginator;
+    public function getUserNotifications(int $userId, int $perPage = 15): LengthAwarePaginator;
 
     /**
      * 未読通知件数を取得
@@ -121,4 +122,20 @@ interface NotificationServiceInterface
      * @return array ['unread_count' => int, 'new_notifications' => array, 'timestamp' => string]
      */
     public function getUnreadCountWithNew(int $userId, ?string $lastCheckedAt = null): array;
+
+    /**
+     * お知らせ一覧ページの検索処理
+     *
+     * @param array $validated
+     * @return Collection
+     */
+    public function search(array $validated): Collection;
+
+    /**
+     * お知らせ検索結果表示ページの検索処理
+     *
+     * @param array $validated
+     * @return LengthAwarePaginator
+     */
+    public function searchForDisplayResult(array $validated): LengthAwarePaginator;
 }
