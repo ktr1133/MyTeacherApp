@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/css/auth/register-validation.css',
                 'resources/css/avatar/avatar.css',
                 'resources/css/batch.css',
+                'resources/css/child-theme.css',
                 'resources/css/dashboard.css',
                 'resources/css/notifications.css',
                 'resources/css/tags.css',

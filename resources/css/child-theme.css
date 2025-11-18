@@ -1,0 +1,1814 @@
+/* ===================================
+   CSS変数定義（子ども向けテーマ）
+   =================================== */
+:root {
+    /* RPG風カラーパレット */
+    --child-primary: #FF6B6B;           /* 明るい赤 */
+    --child-secondary: #4ECDC4;         /* ターコイズ */
+    --child-accent: #FFE66D;            /* 黄色 */
+    --child-success: #95E1D3;           /* ミントグリーン */
+    --child-warning: #FFA07A;           /* サーモンピンク */
+    --child-quest: #9b59b6;             /* パープル（クエスト） */
+    --child-coin: #f39c12;              /* ゴールド（コイン） */
+    
+    /* フォントサイズ（大人用の1.25倍） */
+    --child-text-xs: 0.875rem;          /* 14px */
+    --child-text-sm: 1rem;              /* 16px */
+    --child-text-base: 1.125rem;        /* 18px */
+    --child-text-lg: 1.375rem;          /* 22px */
+    --child-text-xl: 1.75rem;           /* 28px */
+    --child-text-2xl: 2.25rem;          /* 36px */
+    
+    /* スペーシング */
+    --child-spacing-card: 1.5rem;       /* カード内余白 */
+    --child-spacing-gap: 1.25rem;       /* グリッドギャップ */
+    
+    /* アニメーション */
+    --child-transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --child-transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===================================
+   グローバルフォント設定
+   =================================== */
+.child-theme {
+    font-family: 'Nunito', 'Noto Sans JP', sans-serif;
+    font-size: var(--child-text-base);
+}
+
+.child-theme h1 { font-size: var(--child-text-2xl); font-weight: 800; }
+.child-theme h2 { font-size: var(--child-text-xl); font-weight: 700; }
+.child-theme h3 { font-size: var(--child-text-lg); font-weight: 700; }
+.child-theme p, .child-theme span { font-size: var(--child-text-base); }
+.child-theme .text-sm { font-size: var(--child-text-sm); }
+.child-theme .text-xs { font-size: var(--child-text-xs); }
+
+/* ===================================
+   背景デザイン
+   =================================== */
+.child-theme .dashboard-gradient-bg {
+    background: 
+        linear-gradient(135deg, 
+            rgba(255, 107, 107, 0.1) 0%, 
+            rgba(78, 205, 196, 0.1) 50%, 
+            rgba(255, 230, 109, 0.1) 100%),
+        #FFF8E1;
+}
+
+.dark .child-theme .dashboard-gradient-bg {
+    background: 
+        linear-gradient(135deg, 
+            rgba(255, 107, 107, 0.2) 0%, 
+            rgba(78, 205, 196, 0.2) 50%, 
+            rgba(255, 230, 109, 0.2) 100%),
+        #1a1a2e;
+}
+
+/* 背景装飾の非表示（子ども向けはシンプルに） */
+.child-theme .dashboard-floating-decoration {
+    display: none;
+}
+
+/* ===================================
+   グリッドレイアウト調整（iPadで大きく表示）
+   =================================== */
+
+/* iPad縦向き（768px）: 1カラム */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+    .child-theme .bento-grid {
+        grid-template-columns: 1fr;
+        gap: var(--child-spacing-gap);
+    }
+}
+
+/* iPad横向き（1024px）: 2カラム */
+@media (min-width: 1024px) and (max-width: 1365px) {
+    .child-theme .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--child-spacing-gap);
+    }
+}
+
+/* iPad Pro 12.9（横向き・1366px以上）: 3カラム */
+@media (min-width: 1366px) {
+    .child-theme .bento-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--child-spacing-gap);
+    }
+}
+
+/* モバイル: 1カラム */
+@media (max-width: 767px) {
+    .child-theme .bento-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* ===================================
+   バケツカード（タグごとのまとまり）拡大
+   =================================== */
+.child-theme .bento-card {
+    min-height: 280px;
+    padding: var(--child-spacing-card);
+    font-size: var(--child-text-base);
+    background: 
+        linear-gradient(135deg, 
+            rgba(255, 255, 255, 0.95) 0%, 
+            rgba(255, 248, 225, 0.95) 100%);
+    border: 3px solid var(--child-primary);
+    border-radius: 1.5rem;
+    box-shadow: 
+        0 8px 16px rgba(255, 107, 107, 0.2),
+        0 4px 8px rgba(78, 205, 196, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.dark .child-theme .bento-card {
+    background: 
+        linear-gradient(135deg, 
+            rgba(45, 45, 68, 0.95) 0%, 
+            rgba(26, 26, 46, 0.95) 100%);
+    border-color: var(--child-secondary);
+}
+
+/* ホバー時のバウンドアニメーション */
+.child-theme .bento-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    transition: all 0.4s var(--child-transition-bounce);
+    box-shadow: 
+        0 16px 32px rgba(255, 107, 107, 0.3),
+        0 8px 16px rgba(78, 205, 196, 0.25);
+}
+
+/* カード出現アニメーション */
+@keyframes slideInBounce {
+    0% {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.child-theme .bento-grid > div {
+    animation: slideInBounce 0.6s var(--child-transition-bounce);
+}
+
+/* スタガード（段階的）アニメーション */
+.child-theme .bento-grid > div:nth-child(1) { animation-delay: 0.1s; }
+.child-theme .bento-grid > div:nth-child(2) { animation-delay: 0.2s; }
+.child-theme .bento-grid > div:nth-child(3) { animation-delay: 0.3s; }
+.child-theme .bento-grid > div:nth-child(4) { animation-delay: 0.4s; }
+.child-theme .bento-grid > div:nth-child(5) { animation-delay: 0.5s; }
+.child-theme .bento-grid > div:nth-child(6) { animation-delay: 0.6s; }
+
+/* カードの星キラキラ装飾 */
+.child-theme .bento-card::before {
+    content: '✨';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5rem;
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1) rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2) rotate(180deg);
+    }
+}
+
+/* ===================================
+   タスクカード拡大（modal-tag-tasks内）
+   =================================== */
+.child-theme .task-card-modern {
+    min-width: 360px;
+    min-height: 240px;
+    font-size: var(--child-text-base);
+    border-width: 3px;
+    border-radius: 1.25rem;
+    box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.1),
+        0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.child-theme .task-card-modern h3 {
+    font-size: var(--child-text-lg);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.child-theme .task-card-modern .text-sm {
+    font-size: var(--child-text-sm);
+}
+
+.child-theme .task-card-modern svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+/* ホバー時のバウンド */
+.child-theme .task-card-modern:hover {
+    transform: translateY(-8px) scale(1.02);
+    transition: all 0.4s var(--child-transition-bounce);
+    box-shadow: 
+        0 12px 24px rgba(0, 0, 0, 0.15),
+        0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ===================================
+   クエスト専用デザイン
+   =================================== */
+
+/* クエストカード（グループタスク） */
+.child-theme .task-card-modern[data-is-quest="true"],
+.child-theme .bento-card[data-has-quest="true"] {
+    background: 
+        linear-gradient(135deg, 
+            rgba(155, 89, 182, 0.15) 0%, 
+            rgba(236, 72, 153, 0.15) 100%),
+        white;
+    border-color: var(--child-quest);
+    border-width: 4px;
+}
+
+.dark .child-theme .task-card-modern[data-is-quest="true"],
+.dark .child-theme .bento-card[data-has-quest="true"] {
+    background: 
+        linear-gradient(135deg, 
+            rgba(155, 89, 182, 0.25) 0%, 
+            rgba(236, 72, 153, 0.25) 100%),
+        rgba(45, 45, 68, 0.95);
+}
+
+/* クエストバッジ */
+.child-theme .quest-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #9b59b6 0%, #ec4899 100%);
+    color: white;
+    border-radius: 9999px;
+    font-size: var(--child-text-sm);
+    font-weight: 700;
+    box-shadow: 0 4px 8px rgba(155, 89, 182, 0.4);
+}
+
+/* コイン表示 */
+.child-theme .coin-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    color: white;
+    border-radius: 9999px;
+    font-size: var(--child-text-lg);
+    font-weight: 800;
+    box-shadow: 0 4px 8px rgba(243, 156, 18, 0.4);
+    animation: coinShine 2s ease-in-out infinite;
+}
+
+@keyframes coinShine {
+    0%, 100% {
+        box-shadow: 0 4px 8px rgba(243, 156, 18, 0.4);
+    }
+    50% {
+        box-shadow: 0 6px 12px rgba(243, 156, 18, 0.6),
+                    0 0 20px rgba(243, 156, 18, 0.3);
+    }
+}
+
+.child-theme .coin-display::before {
+    content: '🪙';
+    font-size: 1.5rem;
+    animation: coinFlip 3s ease-in-out infinite;
+}
+
+@keyframes coinFlip {
+    0%, 100% {
+        transform: rotateY(0deg);
+    }
+    50% {
+        transform: rotateY(180deg);
+    }
+}
+
+/* ===================================
+   完了報告ボタン（大きく目立つ）
+   =================================== */
+.child-theme .btn-complete-quest {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    font-size: var(--child-text-lg);
+    font-weight: 800;
+    border-radius: 1rem;
+    border: none;
+    box-shadow: 
+        0 6px 12px rgba(16, 185, 129, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transition: all 0.3s var(--child-transition-bounce);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.child-theme .btn-complete-quest::before {
+    content: '✅';
+    margin-right: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.child-theme .btn-complete-quest:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 
+        0 12px 24px rgba(16, 185, 129, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.child-theme .btn-complete-quest:active {
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* ボタン押下時のパーティクルエフェクト準備 */
+.child-theme .btn-complete-quest::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.child-theme .btn-complete-quest:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* ===================================
+   モーダルのテーマ切替
+   =================================== */
+.child-theme .modal-content {
+    background: 
+        linear-gradient(135deg, 
+            rgba(255, 248, 225, 0.98) 0%, 
+            rgba(255, 235, 205, 0.98) 100%);
+    border: 4px solid var(--child-primary);
+    border-radius: 1.5rem;
+}
+
+.dark .child-theme .modal-content {
+    background: 
+        linear-gradient(135deg, 
+            rgba(45, 45, 68, 0.98) 0%, 
+            rgba(26, 26, 46, 0.98) 100%);
+    border-color: var(--child-secondary);
+}
+
+.child-theme .modal-header {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    border-bottom-color: rgba(255, 107, 107, 0.3);
+}
+
+.child-theme .modal-header h3 {
+    font-size: var(--child-text-xl);
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* モーダルボタン */
+.child-theme button[type="submit"],
+.child-theme #decompose-btn,
+.child-theme #adopt-proposal-btn,
+.child-theme #submit-refine-btn {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    border-color: #047857;
+    font-size: var(--child-text-base);
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.child-theme button[type="submit"]:hover,
+.child-theme #decompose-btn:hover,
+.child-theme #adopt-proposal-btn:hover,
+.child-theme #submit-refine-btn:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* タグチップの選択状態 */
+.child-theme .task-tag-chip,
+.child-theme .group-tag-chip {
+    background: rgba(255, 107, 107, 0.1);
+    border: 2px solid var(--child-primary);
+    font-size: var(--child-text-sm);
+    padding: 0.5rem 1rem;
+}
+
+.child-theme .task-tag-chip:has(:checked),
+.child-theme .group-tag-chip:has(:checked) {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    border-color: var(--child-primary);
+    box-shadow: 0 4px 8px rgba(255, 107, 107, 0.4);
+    transform: scale(1.1);
+}
+
+/* ===================================
+   タスク完了時の花火エフェクト（準備）
+   =================================== */
+.child-theme .confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* ===================================
+   通知バッジのパルスアニメーション
+   =================================== */
+.child-theme .notification-badge {
+    animation: pulseBadge 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseBadge {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+}
+
+/* ===================================
+   サイドバーのスライドイン時にバウンド
+   =================================== */
+.child-theme aside {
+    animation: slideInBounceLeft 0.6s var(--child-transition-bounce);
+}
+
+@keyframes slideInBounceLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+    60% {
+        opacity: 1;
+        transform: translateX(10px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+/* ===================================
+   アクセシビリティ（アニメーション削減）
+   =================================== */
+@media (prefers-reduced-motion: reduce) {
+    .child-theme * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .child-theme .bento-card:hover,
+    .child-theme .task-card-modern:hover {
+        transform: none;
+    }
+}
+
+/* ===================================
+   モバイル最適化
+   =================================== */
+@media (max-width: 767px) {
+    .child-theme .bento-card {
+        min-height: 240px;
+        padding: 1.25rem;
+    }
+    
+    .child-theme .task-card-modern {
+        min-width: 100%;
+        min-height: 200px;
+    }
+    
+    .child-theme h1 { font-size: 1.75rem; }
+    .child-theme h2 { font-size: 1.5rem; }
+    .child-theme h3 { font-size: 1.25rem; }
+}
+
+/* ===================================
+   タブナビゲーション（子ども向け）
+   =================================== */
+
+/* タブコンテナ */
+.child-theme .dashboard-header-blur {
+    background: rgba(255, 248, 225, 0.95) !important;
+    backdrop-filter: blur(10px);
+}
+
+.dark .child-theme .dashboard-header-blur {
+    background: rgba(26, 26, 46, 0.95) !important;
+}
+
+/* タブボタンの基本スタイル */
+.child-theme .dashboard-tab {
+    position: relative;
+    padding: 0.875rem 1.5rem;
+    font-size: var(--child-text-base);
+    font-weight: 700;
+    border-bottom: 4px solid transparent;
+    background: transparent;
+    color: #94a3b8;
+    transition: all 0.3s var(--child-transition-bounce);
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+
+/* ホバー時 */
+.child-theme .dashboard-tab:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.1) 0%, 
+        rgba(78, 205, 196, 0.1) 100%);
+    color: var(--child-primary);
+    transform: translateY(-2px);
+}
+
+/* アクティブなタブ */
+.child-theme .dashboard-tab.active {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    border-bottom-color: var(--child-accent);
+    box-shadow: 
+        0 4px 12px rgba(255, 107, 107, 0.4),
+        0 2px 6px rgba(78, 205, 196, 0.3);
+    transform: translateY(-4px) scale(1.05);
+}
+
+/* アクティブなタブのキラキラエフェクト */
+.child-theme .dashboard-tab.active::before {
+    content: '⭐';
+    position: absolute;
+    left: 0.2rem;
+    top: 20%;
+    transform: translateY(-20%);
+    font-size: 1.25rem;
+    animation: starBounce 1s ease-in-out infinite;
+}
+
+@keyframes starBounce {
+    0%, 100% {
+        transform: translateY(-50%) scale(1);
+    }
+    50% {
+        transform: translateY(-50%) scale(1.2);
+    }
+}
+
+/* タブのテキスト（YET/DONE）を大きく */
+.child-theme .dashboard-tab {
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* タブコンテナの背景をグラデーションに */
+.child-theme header > div:last-child {
+    background: linear-gradient(to right, 
+        rgba(255, 107, 107, 0.05) 0%, 
+        rgba(78, 205, 196, 0.05) 50%,
+        rgba(255, 230, 109, 0.05) 100%);
+    border-top: 2px solid rgba(255, 107, 107, 0.2);
+}
+
+.dark .child-theme header > div:last-child {
+    background: linear-gradient(to right, 
+        rgba(255, 107, 107, 0.1) 0%, 
+        rgba(78, 205, 196, 0.1) 50%,
+        rgba(255, 230, 109, 0.1) 100%);
+    border-top-color: rgba(78, 205, 196, 0.3);
+}
+
+/* ===================================
+   ヘッダーボタン（タスク登録等）の子ども向けデザイン
+   =================================== */
+
+/* タスク登録ボタン */
+.child-theme .dashboard-btn-primary {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    font-size: var(--child-text-base);
+    font-weight: 800;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.child-theme .dashboard-btn-primary:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.5);
+}
+
+/* グループタスクボタン */
+.child-theme .dashboard-btn-group {
+    background: linear-gradient(135deg, #9b59b6 0%, #ec4899 100%);
+    font-size: var(--child-text-base);
+    font-weight: 800;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.child-theme .dashboard-btn-group:hover {
+    background: linear-gradient(135deg, #8e44ad 0%, #e91e63 100%);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 16px rgba(155, 89, 182, 0.5);
+}
+
+/* 通知ボタン */
+.child-theme .notification-btn {
+    background: linear-gradient(135deg, #FFE66D 0%, #FFA07A 100%);
+    border: 3px solid var(--child-accent);
+    box-shadow: 0 4px 12px rgba(255, 230, 109, 0.4);
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.child-theme .notification-btn:hover {
+    background: linear-gradient(135deg, #FFD700 0%, #FF8C69 100%);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 16px rgba(255, 230, 109, 0.5);
+}
+
+/* ===================================
+   ヘッダーアイコン（クリップボード）の子ども向けデザイン
+   =================================== */
+.child-theme .dashboard-header-icon {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+/* ===================================
+   ヘッダータイトルの子ども向けデザイン
+   =================================== */
+.child-theme .dashboard-header-title {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: var(--child-text-xl);
+    font-weight: 900;
+    text-shadow: none;
+}
+
+/* ===================================
+   モバイル最適化（タブ）
+   =================================== */
+@media (max-width: 767px) {
+    .child-theme .dashboard-tab {
+        padding: 0.75rem 1rem;
+        font-size: var(--child-text-sm);
+    }
+    
+    .child-theme .dashboard-tab.active::before {
+        font-size: 1rem;
+        left: 0.25rem;
+    }
+}
+
+/* ===================================
+   サイドバー（子ども向け）
+   =================================== */
+
+/* サイドバー背景 */
+.child-theme aside {
+    background: linear-gradient(180deg, 
+        rgba(255, 248, 225, 0.95) 0%, 
+        rgba(255, 235, 205, 0.95) 100%) !important;
+    border-right: 4px solid var(--child-primary) !important;
+    box-shadow: 4px 0 16px rgba(255, 107, 107, 0.2);
+}
+
+.dark .child-theme aside {
+    background: linear-gradient(180deg, 
+        rgba(45, 45, 68, 0.95) 0%, 
+        rgba(26, 26, 46, 0.95) 100%) !important;
+    border-right-color: var(--child-secondary) !important;
+}
+
+/* ナビゲーションリンク（子ども向け） */
+.child-theme .sidebar-nav-link {
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid transparent;
+    border-radius: 1rem;
+    padding: 0.875rem 1rem;
+    font-size: var(--child-text-sm);
+    font-weight: 700;
+    transition: all 0.3s var(--child-transition-bounce);
+    margin-bottom: 0.5rem;
+}
+
+.dark .child-theme .sidebar-nav-link {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ナビゲーションリンクのホバー */
+.child-theme .sidebar-nav-link:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.2) 0%, 
+        rgba(78, 205, 196, 0.2) 100%);
+    border-color: var(--child-primary);
+    transform: translateX(8px) scale(1.02);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+/* アクティブなナビゲーションリンク */
+.child-theme .sidebar-nav-link.active {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white !important;
+    border-color: var(--child-accent);
+    box-shadow: 
+        0 6px 16px rgba(255, 107, 107, 0.4),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    transform: translateX(8px) scale(1.05);
+}
+
+.child-theme .sidebar-nav-link.active svg {
+    color: white !important;
+}
+
+/* ナビゲーションリンクのアイコン */
+.child-theme .sidebar-nav-link svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.child-theme .sidebar-nav-link:hover svg {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.child-theme .sidebar-nav-link.active svg {
+    animation: iconBounce 1s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+/* バッジ（タスク数等） */
+.child-theme .badge-gradient {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FFA07A 100%);
+    font-size: var(--child-text-xs);
+    font-weight: 800;
+    min-width: 2rem;
+    height: 1.75rem;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.6);
+    }
+}
+
+/* 警告バッジ（承認待ち等） */
+.child-theme .badge-warning {
+    background: linear-gradient(135deg, #FFA07A 0%, #FFE66D 100%);
+    animation: badgeWarningPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes badgeWarningPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 160, 122, 0.4);
+    }
+    50% {
+        transform: scale(1.15);
+        box-shadow: 0 4px 12px rgba(255, 160, 122, 0.6);
+    }
+}
+
+/* トークン残高エリア */
+.child-theme aside .bg-gradient-to-br {
+    background: linear-gradient(135deg, #FFE66D 0%, #FFA07A 100%) !important;
+    border: 3px solid var(--child-coin);
+    box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+}
+
+.child-theme aside .bg-gradient-to-br svg {
+    color: #8B4513 !important; /* 茶色 */
+}
+
+.child-theme aside .bg-gradient-to-br .text-amber-900 {
+    color: #8B4513 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.child-theme aside .bg-gradient-to-br .text-amber-600,
+.child-theme aside .bg-gradient-to-br .text-amber-700 {
+    color: #A0522D !important; /* より明るい茶色 */
+}
+
+/* トークン購入リンク */
+.child-theme aside .bg-gradient-to-br a {
+    color: #8B4513 !important;
+    font-weight: 800;
+    font-size: var(--child-text-sm);
+}
+
+.child-theme aside .bg-gradient-to-br a:hover {
+    color: #5D3A1A !important;
+    text-decoration: underline;
+}
+
+/* 管理者メニューのセパレーター */
+.child-theme aside .text-gray-500 {
+    color: var(--child-primary) !important;
+    font-size: var(--child-text-sm);
+    font-weight: 800;
+}
+
+/* サイドバーのスクロールバー */
+.child-theme aside::-webkit-scrollbar {
+    width: 8px;
+}
+
+.child-theme aside::-webkit-scrollbar-track {
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 4px;
+}
+
+.child-theme aside::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    border-radius: 4px;
+}
+
+.child-theme aside::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #E55A5A 0%, #3DB3A9 100%);
+}
+
+/* トグルボタン */
+.child-theme aside button[aria-label*="サイドバー"] {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%) !important;
+    border: 3px solid var(--child-accent) !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.child-theme aside button[aria-label*="サイドバー"]:hover {
+    background: linear-gradient(135deg, #E55A5A 0%, #3DB3A9 100%) !important;
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.5);
+}
+
+.child-theme aside button[aria-label*="サイドバー"] svg {
+    color: white !important;
+}
+
+/* モバイルサイドバー */
+.child-theme .lg\:hidden aside {
+    background: linear-gradient(180deg, 
+        rgba(255, 248, 225, 0.98) 0%, 
+        rgba(255, 235, 205, 0.98) 100%) !important;
+    border-right: 4px solid var(--child-primary);
+}
+
+.dark .child-theme .lg\:hidden aside {
+    background: linear-gradient(180deg, 
+        rgba(45, 45, 68, 0.98) 0%, 
+        rgba(26, 26, 46, 0.98) 100%) !important;
+}
+
+/* モバイルサイドバーの閉じるボタン */
+.child-theme .lg\:hidden aside button {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+}
+
+.child-theme .lg\:hidden aside button:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
+}
+
+/* ===================================
+   モバイル最適化（サイドバー）
+   =================================== */
+@media (max-width: 767px) {
+    .child-theme .sidebar-nav-link {
+        padding: 0.75rem 1rem;
+        font-size: var(--child-text-sm);
+    }
+    
+    .child-theme .sidebar-nav-link svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+}
+
+/* ===================================
+   モーダル内タスクグリッド（子ども向け）
+   =================================== */
+
+/* modal-tag-tasks 内のグリッドレイアウト */
+.child-theme .tag-tasks-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+/* デスクトップ（1366px以上）: 2カラム */
+@media (min-width: 1366px) {
+    .child-theme .tag-tasks-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* iPad横向き（1024px〜1365px）: 2カラム */
+@media (min-width: 1024px) and (max-width: 1365px) {
+    .child-theme .tag-tasks-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* iPad縦向き（768px〜1023px）: 1カラム */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .child-theme .tag-tasks-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* モバイル（767px以下）: 1カラム */
+@media (max-width: 767px) {
+    .child-theme .tag-tasks-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* ===================================
+   モーダルのガラスモーフィズム効果
+   =================================== */
+.child-theme .modal-glass {
+    background: linear-gradient(135deg, 
+        rgba(255, 248, 225, 0.95) 0%, 
+        rgba(255, 235, 205, 0.95) 100%);
+    border: 3px solid var(--child-primary);
+    box-shadow: 0 20px 40px rgba(255, 107, 107, 0.3);
+}
+
+.dark .child-theme .modal-glass {
+    background: linear-gradient(135deg, 
+        rgba(45, 45, 68, 0.95) 0%, 
+        rgba(26, 26, 46, 0.95) 100%);
+    border-color: var(--child-secondary);
+}
+
+/* ===================================
+   モーダルヘッダー
+   =================================== */
+.child-theme .modal-glass > div:first-child {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.2) 0%, 
+        rgba(78, 205, 196, 0.2) 100%);
+    border-bottom: 3px solid var(--child-primary);
+}
+
+.dark .child-theme .modal-glass > div:first-child {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.3) 0%, 
+        rgba(78, 205, 196, 0.3) 100%);
+    border-bottom-color: var(--child-secondary);
+}
+
+/* モーダルタイトル */
+.child-theme .modal-glass h3 {
+    font-size: var(--child-text-lg);
+    font-weight: 800;
+}
+
+/* タスク数表示 */
+.child-theme .modal-glass p.text-xs {
+    font-size: var(--child-text-sm);
+}
+
+/* ===================================
+   スパンフィルタータブ（子ども向け）
+   =================================== */
+.child-theme .tag-modal-filter {
+    font-size: var(--child-text-sm);
+    font-weight: 700;
+    padding: 0.75rem 1.25rem;
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+/* 非アクティブなタブ */
+.child-theme .tag-modal-filter-inactive {
+    background: rgba(255, 255, 255, 0.5);
+    color: #64748b;
+    border: 2px solid transparent;
+}
+
+.dark .child-theme .tag-modal-filter-inactive {
+    background: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+}
+
+.child-theme .tag-modal-filter-inactive:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.15) 0%, 
+        rgba(78, 205, 196, 0.15) 100%);
+    border-color: var(--child-primary);
+    transform: translateY(-2px);
+}
+
+/* アクティブなタブ */
+.child-theme .tag-modal-filter-active {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    border: 2px solid var(--child-accent);
+    box-shadow: 
+        0 4px 12px rgba(255, 107, 107, 0.4),
+        0 2px 6px rgba(78, 205, 196, 0.3);
+    transform: translateY(-4px) scale(1.05);
+}
+
+/* タブ内のカウントバッジ */
+.child-theme .tag-modal-filter span.ml-1\.5 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.25rem;
+    padding: 0 0.5rem;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 9999px;
+    font-size: var(--child-text-xs);
+    font-weight: 800;
+}
+
+.child-theme .tag-modal-filter-active span.ml-1\.5 {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* ===================================
+   モーダル内タスクカードの調整
+   =================================== */
+
+/* iPad縦向きでは幅を100%に */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+    .child-theme .modal-glass .task-card-modern {
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* iPad横向きでは最大幅を設定 */
+@media (min-width: 1024px) and (max-width: 1365px) and (orientation: landscape) {
+    .child-theme .modal-glass .task-card-modern {
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* デスクトップでは最大幅を設定 */
+@media (min-width: 1366px) {
+    .child-theme .modal-glass .task-card-modern {
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* ===================================
+   空の状態メッセージ
+   =================================== */
+.child-theme .modal-glass .text-center {
+    padding: 3rem 1rem;
+}
+
+.child-theme .modal-glass .text-center svg {
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+}
+
+.child-theme .modal-glass .text-center p {
+    font-size: var(--child-text-base);
+    font-weight: 600;
+}
+
+/* ===================================
+   モーダルのスクロールバー
+   =================================== */
+.child-theme .modal-glass .custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+}
+
+.child-theme .modal-glass .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 5px;
+}
+
+.child-theme .modal-glass .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    border-radius: 5px;
+}
+
+.child-theme .modal-glass .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #E55A5A 0%, #3DB3A9 100%);
+}
+
+/* ===================================
+   モーダル閉じるボタン
+   =================================== */
+.child-theme .modal-glass button[aria-label="閉じる"] {
+    background: rgba(255, 107, 107, 0.1);
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.child-theme .modal-glass button[aria-label="閉じる"]:hover {
+    background: rgba(255, 107, 107, 0.2);
+    transform: scale(1.1) rotate(90deg);
+}
+
+/* ===================================
+   タブエリアのスクロールバー非表示
+   =================================== */
+.child-theme .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.child-theme .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* ===================================
+   モバイル最適化（モーダル）
+   =================================== */
+@media (max-width: 767px) {
+    .child-theme .modal-glass {
+        max-height: 95vh;
+        border-width: 2px;
+    }
+    
+    .child-theme .tag-modal-filter {
+        padding: 0.625rem 1rem;
+        font-size: var(--child-text-xs);
+    }
+    
+    .child-theme .modal-glass h3 {
+        font-size: var(--child-text-base);
+    }
+    
+    .child-theme .modal-glass p.text-xs {
+        font-size: var(--child-text-xs);
+    }
+    
+    .child-theme .task-card-modern {
+        min-height: 200px;
+    }
+}
+
+/* ===================================
+   アニメーション（フィルタリング時）
+   =================================== */
+.child-theme .tag-tasks-grid > div {
+    animation: taskCardFadeIn 0.3s var(--child-transition-smooth);
+}
+
+@keyframes taskCardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===================================
+   アバター編集画面（子ども向け）
+   =================================== */
+
+/* ヘッダーアイコン */
+.child-theme .avatar-header-icon {
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    box-shadow: 0 6px 16px rgba(236, 72, 153, 0.4);
+}
+
+/* ヘッダータイトル */
+.child-theme .avatar-header-title {
+    font-size: var(--child-text-xl);
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+}
+
+/* ヘッダー副題は非表示 */
+.child-theme .avatar-header-subtitle {
+    display: none;
+}
+
+/* 戻るボタン */
+.child-theme .avatar-back-btn {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.1) 0%, 
+        rgba(78, 205, 196, 0.1) 100%);
+    border: 2px solid var(--child-primary);
+    font-size: var(--child-text-sm);
+    font-weight: 700;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+}
+
+.child-theme .avatar-back-btn:hover {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.2) 0%, 
+        rgba(78, 205, 196, 0.2) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(255, 107, 107, 0.3);
+}
+
+/* アバターカード */
+.child-theme .avatar-card {
+    background: linear-gradient(135deg, 
+        rgba(255, 248, 225, 0.98) 0%, 
+        rgba(255, 235, 205, 0.98) 100%);
+    border: 3px solid var(--child-primary);
+    border-radius: 1.5rem;
+    box-shadow: 
+        0 12px 24px rgba(255, 107, 107, 0.2),
+        0 6px 12px rgba(78, 205, 196, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+.dark .child-theme .avatar-card {
+    background: linear-gradient(135deg, 
+        rgba(45, 45, 68, 0.98) 0%, 
+        rgba(26, 26, 46, 0.98) 100%);
+    border-color: var(--child-secondary);
+}
+
+/* アバター画像の拡大（1.3倍） */
+.child-theme .avatar-image {
+    width: 325px;
+    height: 390px;
+    filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.2));
+}
+
+@media (max-width: 640px) {
+    .child-theme .avatar-image {
+        width: 234px;
+        height: 286px;
+    }
+}
+
+/* アバターカードの内部コンテンツ */
+.child-theme .avatar-card > * {
+    flex-shrink: 0;
+}
+
+/* スライダー（子供向け） */
+
+/* 表情ラベル（子ども向け） */
+.child-theme .avatar-expression-label-child {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border-radius: 1rem;
+    font-size: var(--child-text-sm);
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* サムネイルボタン（子ども向け） */
+.child-theme .avatar-thumbnail-child {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s var(--child-transition-bounce);
+    border: 3px solid transparent;
+}
+
+/* 非アクティブなサムネイル（子ども向け） */
+.child-theme .avatar-thumbnail-inactive {
+    opacity: 0.5;
+    border-color: rgba(156, 163, 175, 0.3);
+}
+
+.child-theme .avatar-thumbnail-inactive:hover {
+    opacity: 0.8;
+    border-color: var(--child-secondary);
+    transform: scale(1.1) rotate(2deg);
+    box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+}
+
+/* アクティブなサムネイル（子ども向け） */
+.child-theme .avatar-thumbnail-active {
+    opacity: 1;
+    border-color: var(--child-primary);
+    box-shadow: 
+        0 0 0 4px rgba(255, 107, 107, 0.2),
+        0 6px 16px rgba(255, 107, 107, 0.4);
+    transform: scale(1.15);
+}
+
+/* サムネイルのラベル（子ども向け） */
+.child-theme .avatar-thumbnail-label-child {
+    background: linear-gradient(to top, 
+        rgba(255, 107, 107, 0.95), 
+        rgba(255, 107, 107, 0.7));
+    color: white;
+    padding: 0.375rem 0;
+    text-align: center;
+    font-weight: 700;
+}
+
+/* スライドアニメーション */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+/* ========================================
+   レスポンシブ対応（サムネイル）
+   ======================================== */
+@media (max-width: 640px) {
+    .avatar-expression-label,
+    .child-theme .avatar-expression-label-child {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .avatar-thumbnail-label,
+    .child-theme .avatar-thumbnail-label-child {
+        font-size: 0.625rem;
+        padding: 0.125rem 0;
+    }
+}
+
+/* 表情スライダー全体のコンパクト化 */
+.child-theme .avatar-card .space-y-4 {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+}
+
+/* 表情スライダーコンテナ */
+.child-theme .avatar-card > div > div[x-data*="expressionSlider"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* 画像表示エリアのマージン削減 */
+.child-theme .avatar-card .relative.overflow-hidden.rounded-lg {
+    margin-bottom: 0 !important;
+}
+
+/* 画像スライダーコンテナの余白削減 */
+.child-theme .avatar-card .relative.touch-pan-y {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* 画像自体の下部マージン削減 */
+.child-theme .avatar-card img,
+.child-theme .avatar-card .aspect-square {
+    display: block;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* インジケーターエリアの余白削減 */
+.child-theme .avatar-card .flex.items-center.justify-center.gap-2 {
+    padding: 0.5rem 0 !important;
+    margin: 0 !important;
+}
+
+/* 表情カウンターの余白削減 */
+.child-theme .avatar-card > div > div[x-data*="expressionSlider"] > .text-center {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.child-theme .avatar-card > div > div[x-data*="expressionSlider"] > .text-center p {
+    margin: 0 !important;
+    line-height: 1.5;
+}
+
+/* アバター表示設定エリアの上部マージン削減 */
+.child-theme .avatar-card > div:has(form[action*="toggle-visibility"]) {
+    margin-top: 0.75rem !important;
+    padding-top: 0.75rem !important;
+}
+
+/* ===================================
+   サムネイルグリッドの調整（子ども向け）
+   =================================== */
+
+/* サムネイルグリッドの間隔を広げる */
+.child-theme .avatar-card .grid-cols-6 {
+    gap: 0.75rem;
+}
+
+/* サムネイルにキラキラエフェクト */
+.child-theme .avatar-thumbnail-active::before {
+    content: '⭐';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 0.75rem;
+    z-index: 10;
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+/* アクティブなサムネイルのパルスアニメーション */
+.child-theme .avatar-thumbnail-active {
+    animation: thumbnailPulse 2s ease-in-out infinite;
+}
+
+@keyframes thumbnailPulse {
+    0%, 100% {
+        box-shadow: 
+            0 0 0 4px rgba(255, 107, 107, 0.2),
+            0 6px 16px rgba(255, 107, 107, 0.4);
+    }
+    50% {
+        box-shadow: 
+            0 0 0 6px rgba(255, 107, 107, 0.3),
+            0 8px 20px rgba(255, 107, 107, 0.5);
+    }
+}
+
+/* モバイルでサムネイルを3カラムに */
+@media (max-width: 640px) {
+    .child-theme .avatar-card .grid-cols-6 {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+}
+
+/* 表情スライダーボタンのサイズ最適化 */
+.child-theme .avatar-slider-btn {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.child-theme .avatar-slider-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* 表情インジケーター */
+.child-theme .avatar-indicator {
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.child-theme .avatar-indicator.active {
+    background: var(--child-primary);
+    width: 0.875rem;
+    height: 0.875rem;
+    box-shadow: 0 0 12px var(--child-primary);
+}
+
+.child-theme .avatar-indicator:not(.active) {
+    background: rgba(156, 163, 175, 0.4);
+}
+
+/* フォームラベル */
+.child-theme .avatar-form-label {
+    font-size: var(--child-text-sm);
+    font-weight: 800;
+    color: #1f2937;
+}
+
+.dark .child-theme .avatar-form-label {
+    color: #f3f4f6;
+}
+
+/* セクションタイトル */
+.child-theme .avatar-section-title {
+    font-size: var(--child-text-lg);
+    font-weight: 900;
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* フォーム入力欄 */
+.child-theme .avatar-form-input {
+    border: 3px solid #e5e7eb;
+    border-radius: 1rem;
+    font-size: var(--child-text-sm);
+    padding: 0.875rem 1rem;
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.dark .child-theme .avatar-form-input {
+    border-color: #374151;
+    background: #1f2937;
+}
+
+.child-theme .avatar-form-input:focus {
+    border-color: var(--child-primary);
+    box-shadow: 
+        0 0 0 4px rgba(255, 107, 107, 0.15),
+        0 4px 12px rgba(255, 107, 107, 0.2);
+    transform: scale(1.01);
+}
+
+/* チェックボックス */
+.child-theme .avatar-form-checkbox {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 3px solid var(--child-primary);
+    border-radius: 0.5rem;
+}
+
+.child-theme .avatar-form-checkbox:checked {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    border-color: var(--child-primary);
+}
+
+/* 保存ボタン（大きく目立つ） */
+.child-theme .avatar-btn-primary {
+    width: 100% !important;
+    padding: 1rem 1.5rem !important;
+    font-size: var(--child-text-lg) !important;
+    font-weight: 900 !important;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border-radius: 1rem !important;
+    box-shadow: 
+        0 8px 16px rgba(16, 185, 129, 0.4),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3) !important;
+    transition: all 0.3s var(--child-transition-bounce) !important;
+}
+
+.child-theme .avatar-btn-primary:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    transform: translateY(-4px) scale(1.02) !important;
+    box-shadow: 
+        0 12px 24px rgba(16, 185, 129, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.child-theme .avatar-btn-primary:active {
+    transform: translateY(-2px) scale(1.01) !important;
+}
+
+/* 再生成ボタン（ピンク×パープル - 目立つ配色） */
+.child-theme .avatar-btn-regenerate {
+    width: 100% !important;
+    padding: 1rem 1.5rem !important;
+    font-size: var(--child-text-base) !important;
+    font-weight: 900 !important;
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%) !important;
+    color: white !important;
+    border: 3px solid #ec4899 !important;
+    border-radius: 1rem !important;
+    box-shadow: 
+        0 8px 16px rgba(236, 72, 153, 0.4),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3) !important;
+    transition: all 0.3s var(--child-transition-bounce) !important;
+}
+
+.child-theme .avatar-btn-regenerate:hover {
+    background: linear-gradient(135deg, #db2777 0%, #9333ea 100%);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 
+        0 12px 24px rgba(236, 72, 153, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.child-theme .avatar-btn-regenerate:active {
+    transform: translateY(-2px) scale(1.01);
+}
+
+/* 再生成ボタンの注意事項カード */
+.child-theme .regenerate-warning-card {
+    background: linear-gradient(135deg, 
+        rgba(236, 72, 153, 0.1) 0%, 
+        rgba(168, 85, 247, 0.1) 100%);
+    border: 3px solid #ec4899;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+.dark .child-theme .regenerate-warning-card {
+    background: linear-gradient(135deg, 
+        rgba(236, 72, 153, 0.15) 0%, 
+        rgba(168, 85, 247, 0.15) 100%);
+}
+
+.child-theme .regenerate-warning-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
+    flex-shrink: 0;
+}
+
+.child-theme .regenerate-warning-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: white;
+}
+
+/* モデル情報カード */
+.child-theme .model-info-card {
+    background: linear-gradient(135deg, 
+        rgba(255, 230, 109, 0.15) 0%, 
+        rgba(255, 160, 122, 0.15) 100%);
+    border: 2px solid var(--child-accent);
+    border-radius: 1rem;
+}
+
+.dark .child-theme .model-info-card {
+    background: linear-gradient(135deg, 
+        rgba(255, 230, 109, 0.2) 0%, 
+        rgba(255, 160, 122, 0.2) 100%);
+}
+
+.child-theme .model-info-icon {
+    background: linear-gradient(135deg, #FFE66D 0%, #FFA07A 100%);
+    box-shadow: 0 4px 12px rgba(255, 230, 109, 0.4);
+}
+
+/* トグルスイッチ */
+.child-theme .avatar-toggle {
+    width: 3rem;
+    height: 1.75rem;
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.child-theme .avatar-toggle.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.child-theme .avatar-toggle:not(.active) {
+    background: rgba(156, 163, 175, 0.4);
+}
+
+.child-theme .avatar-toggle span {
+    width: 1.25rem;
+    height: 1.25rem;
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.child-theme .avatar-toggle.active span {
+    transform: translateX(1.25rem);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* アバター吹き出し */
+.child-theme .avatar-bubble {
+    background: linear-gradient(135deg, 
+        rgba(255, 248, 225, 0.98) 0%, 
+        rgba(255, 235, 205, 0.98) 100%);
+    border: 3px solid var(--child-primary);
+    box-shadow: 
+        0 8px 16px rgba(255, 107, 107, 0.3),
+        0 4px 8px rgba(78, 205, 196, 0.2);
+}
+
+.dark .child-theme .avatar-bubble {
+    background: linear-gradient(135deg, 
+        rgba(45, 45, 68, 0.98) 0%, 
+        rgba(26, 26, 46, 0.98) 100%);
+    border-color: var(--child-secondary);
+}
+
+.child-theme .avatar-bubble-arrow {
+    border-top-color: var(--child-primary);
+}
+
+/* 閉じるボタン */
+.child-theme .avatar-close-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.child-theme .avatar-close-btn:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: scale(1.15) rotate(90deg);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5);
+}
+
+/* ===================================
+   モバイル最適化（アバター編集画面）
+   =================================== */
+@media (max-width: 767px) {
+    .child-theme .avatar-section-title {
+        font-size: var(--child-text-base);
+    }
+    
+    .child-theme .avatar-btn-primary,
+    .child-theme .avatar-btn-regenerate {
+        font-size: var(--child-text-base);
+        padding: 0.875rem 1.25rem;
+    }
+    
+    .child-theme .avatar-form-label {
+        font-size: var(--child-text-xs);
+    }
+    
+    .child-theme .regenerate-warning-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+    
+    .child-theme .regenerate-warning-icon svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+    
+    /* モバイルでのスペース削減強化 */
+    .child-theme .avatar-card .space-y-4 {
+        gap: 0.5rem !important;
+    }
+    
+    .child-theme .avatar-card > div > div[x-data*="expressionSlider"] {
+        gap: 0.375rem;
+    }
+    
+    .child-theme .avatar-card .flex.items-center.justify-center.gap-2 {
+        padding: 0.375rem 0 !important;
+    }
+}

@@ -78,6 +78,7 @@ use App\Http\Actions\Task\RequestApprovalAction;
 use App\Http\Actions\Task\SearchTasksAction;
 use App\Http\Actions\Task\StoreTaskAction;
 use App\Http\Actions\Task\TaskSearchResultsAction;
+use App\Http\Actions\Task\ToggleTaskCompletionAction;
 use App\Http\Actions\Task\UpdateTaskAction;
 use App\Http\Actions\Task\UpdateTaskDescriptionAction;
 use App\Http\Actions\Task\UploadTaskImageAction;
@@ -136,6 +137,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/tasks/destroy', DestroyTaskAction::class)->name('tasks.destroy');
     Route::get('/tasks/search', SearchTasksAction::class)->name('tasks.search');
     Route::get('/tasks/search/results', TaskSearchResultsAction::class)->name('tasks.search.results');
+    Route::patch('/tasks/{task}/toggle', ToggleTaskCompletionAction::class)->name('tasks.toggle');
 
     // タスク承認関連
     Route::post('/tasks/{task}/request-approval', RequestApprovalAction::class)->name('tasks.request-approval');
@@ -177,10 +179,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/group/transfer/{newMaster}', TransferGroupMasterAction::class)->name('group.master.transfer');
         Route::delete('/group/member/{member}', RemoveMemberAction::class)->name('group.member.remove');
     });
-
-    // --- その他のタスク操作 (更新、削除など) ---
-    // 例: タスクの完了状態トグル
-    Route::patch('/tasks/{task}/toggle', App\Http\Actions\Task\ToggleTaskCompletionAction::class)->name('tasks.toggle');
 
     // ========================================
     // スケジュールタスク管理（Batch）

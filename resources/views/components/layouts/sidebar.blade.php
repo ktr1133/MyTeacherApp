@@ -86,7 +86,12 @@
                       x-transition:leave-start="opacity-100"
                       x-transition:leave-end="opacity-0"
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
-                    タスクリスト
+                    @if(!$isChildTheme)
+                        タスクリスト
+                    @else
+                        ToDo
+                    @endif
+
                 </span>
                 <span x-show="!collapsed" 
                       x-transition:enter="transition ease-out duration-200"
@@ -173,7 +178,11 @@
                       x-transition:leave-start="opacity-100"
                       x-transition:leave-end="opacity-0"
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
-                    教師アバター
+                    @if(!$isChildTheme)
+                        教師アバター
+                    @else
+                        サポートアバター
+                    @endif
                 </span>
             </x-nav-link>
 
@@ -215,7 +224,11 @@
                       x-transition:leave-start="opacity-100"
                       x-transition:leave-end="opacity-0"
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
-                    トークン
+                    @if(!$isChildTheme)
+                        トークン
+                    @else
+                        コイン
+                    @endif
                 </span>
                 @if($isLowBalance)
                     <span x-show="!collapsed" 
@@ -464,7 +477,11 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                <span class="text-sm font-medium flex-1">タスクリスト</span>
+                @if(!$isChildTheme)
+                    <span class="text-sm font-medium flex-1">タスクリスト</span>
+                @else
+                    <span class="text-sm font-medium flex-1">ToDo</span>
+                @endif
                 <span class="badge-gradient inline-flex items-center justify-center min-w-[1.75rem] h-6 px-2 rounded-full text-white text-xs font-bold">
                     {{ $sidebarTaskTotal }}
                 </span>
@@ -512,7 +529,11 @@
                 <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                 </svg>
-                <span class="text-sm font-medium">教師アバター</span>
+                @if(!$isChildTheme)
+                    <span class="text-sm font-medium">教師アバター</span>
+                @else
+                    <span class="text-sm font-medium">サポートアバター</span>
+                @endif
             </x-nav-link>
 
             {{-- 実績 --}}
@@ -538,7 +559,11 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span class="text-sm font-medium flex-1">トークン</span>
+                @if(!$isChildTheme)
+                    <span class="text-sm font-medium flex-1">トークン</span>
+                @else
+                    <span class="text-sm font-medium">コイン</span>
+                @endif
                 @if($isLowBalance)
                     <span class="inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 @endif

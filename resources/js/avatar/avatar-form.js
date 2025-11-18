@@ -54,7 +54,7 @@ window.avatarForm = function() {
 
 // モデルの種類によってトークン消費量を更新
 document.addEventListener('DOMContentLoaded', function() {
-    const modelSelect = document.getElementById('draw-model-version');
+    const modelSelect = document.querySelector('select[name="draw_model_version"]');
     const tokenAmountDisplay = document.getElementById('token-amount');
 
     if (modelSelect && tokenAmountDisplay) {
@@ -77,8 +77,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     tokenCost = 2000;
             }
 
-            tokenAmountDisplay.textContent = `${tokenCost.toLocaleString()}`;
+            const formattedTokenCost = tokenCost.toLocaleString();
+
+            // 作成画面と編集画面のトークン量表示を更新（同じIDを使用）
+            tokenAmountDisplay.textContent = formattedTokenCost;
         });
     }
 });
-

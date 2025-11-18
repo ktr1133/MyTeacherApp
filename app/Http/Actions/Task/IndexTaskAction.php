@@ -14,8 +14,6 @@ use App\Models\Tag;
 
 /**
  * メインメニュー画面 (タスク一覧) の表示を処理するアクションクラス。
- * * HTTPリクエストを受け付け、TaskListServiceに処理を委譲し、
- * TaskListResponderを通じてビューを返却する、ルーティングとレスポンスの橋渡し役を担う。
  */
 class IndexTaskAction
 {
@@ -25,13 +23,6 @@ class IndexTaskAction
     protected NotificationServiceInterface $notificationService;
     protected TaskListResponder $responder;
 
-    /**
-     * コンストラクタ。依存性の注入によりサービスとレスポンダを受け取る。
-     *
-     * @param TaskListService $service タスク一覧のビジネスロジックを提供するサービス
-     * @param TagServiceInterface $tag_service タグ関連のビジネスロジックを提供するサービス
-     * @param TaskListResponder $responder ビューの構築とHTTP応答を担当するレスポンダ
-     */
     public function __construct(
         TaskListServiceInterface $taskListService,
         TagServiceInterface $tagService,
@@ -48,15 +39,12 @@ class IndexTaskAction
     }
 
     /**
-     * アクションの実行メソッド (__invoke)。GETリクエストを処理する。
-     *
-     * @param Request $request HTTPリクエストオブジェクト（認証済みユーザー情報、フィルタパラメータを含む）
-     * @return Response|\Illuminate\View\View ビューを含むHTTPレスポンス
+     * アクションの実行メソッド
      */
     public function __invoke(Request $request): Response|\Illuminate\View\View
     {
-        // ユーザーIDと検索・フィルタパラメータを取得
-        $userId = $request->user()->id;
+        $user = $request->user();
+        $userId = $user->id;
         $filters = $request->only(['search', 'status', 'priority', 'tags']);
         
         // タスクデータを取得
@@ -66,11 +54,13 @@ class IndexTaskAction
         // 未読通知件数を取得
         $notificationData = $this->notificationService->getUnreadCountWithNew($userId);
 
-        // Responderでビューを構築し、返却
-        return $this->responder->respond([
-            'tasks'                 => $tasks,
-            'tags'                  => $tags,
-            'notificationCount'     => $notificationData['unread_count'] ?? 0,
-        ]);
+        $data = [
+            'tasks' => $tasks,
+            'tags' => $tags,
+            'notificationCount' => $notificationData['unread_count'] ?? 0,
+        ];
+
+        // 大人向けダッシュボード（既存）
+        return $this->responder->respond($data);
     }
 }

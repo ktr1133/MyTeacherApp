@@ -4,7 +4,7 @@
     use Carbon\Carbon;
 
     // 期限の状態を判定
-    $dueStatus = 'none'; // none, overdue, approaching, safe
+    $dueStatus = 'none';
     $dueMessage = '';
     
     if ($task->due_date && $task->span === config('const.task_spans.short')) {
@@ -56,8 +56,9 @@
         config('const.task_spans.short') => '短期',
     ];
 
-    // グループタスクの場合は紫色
-    if ($task->isGroupTask()) {
+    // グループタスク（クエスト）の場合は紫色
+    $isQuest = $task->isGroupTask();
+    if ($isQuest) {
         $colors['border'] = 'border-l-purple-500';
         $colors['icon'] = 'text-purple-500';
         $colors['bg'] = 'bg-gradient-to-br from-purple-500/5 to-purple-500/10';
@@ -82,6 +83,7 @@
      data-task-id="{{ $task->id }}"
      data-tags="{{ $tagNames }}"
      data-due-date="{{ $task->due_date }}"
+     data-is-quest="{{ $isQuest ? 'true' : 'false' }}"
      @click="$dispatch('open-task-modal-{{ $task->id }}')">
     
     {{-- 期限アラートバナー --}}
@@ -105,8 +107,8 @@
     <div class="p-4">
         {{-- ヘッダー部 --}}
         <div class="flex items-start gap-3 mb-3">
-            {{-- チェックボックス or グループアイコン --}}
-            @if(!$task->isGroupTask())
+            {{-- チェックボックス or クエストアイコン --}}
+            @if(!$isQuest)
                 <label for="task-{{ $task->id }}" class="flex items-center cursor-pointer shrink-0 mt-1" @click.stop>
                     <input 
                         type="checkbox" 
@@ -117,9 +119,12 @@
                 </label>
             @else
                 <div class="flex items-center shrink-0 mt-1">
-                    <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
-                    </svg>
+                    <div class="quest-badge">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                        </svg>
+                        <span>{{ $isChildTheme ? 'クエスト' : 'グループタスク' }}</span>
+                    </div>
                 </div>
             @endif
             
@@ -141,13 +146,10 @@
         
         {{-- 詳細情報エリア --}}
         <div class="space-y-2 text-sm">
-            {{-- グループタスク情報 --}}
-            @if($task->isGroupTask())
-                <div class="flex items-center gap-2 text-purple-600 dark:text-purple-400">
-                    <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-                    </svg>
-                    <span class="font-semibold">報酬: {{ number_format($task->reward) }}円</span>
+            {{-- クエスト情報 --}}
+            @if($isQuest)
+                <div class="coin-display inline-flex">
+                    <span>{{ number_format($task->reward) }} {{ $isChildTheme ? 'コイン' : '円' }}</span>
                 </div>
                 
                 @if($task->isPendingApproval())
@@ -155,7 +157,7 @@
                         <svg class="w-4 h-4 shrink-0 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
                         </svg>
-                        <span class="font-semibold">承認待ち</span>
+                        <span class="font-semibold">{{ $isChildTheme ? 'チェック待ち' : '承認待ち' }}</span>
                     </div>
                 @elseif($task->isApproved())
                     <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
@@ -182,7 +184,7 @@
                     <svg class="w-4 h-4 {{ $colors['icon'] }} shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                     </svg>
-                    <span class="truncate font-medium">期限: {{ $dueDate }}</span>
+                    <span class="truncate font-medium">{{ $isChildTheme ? 'しめきり' : '期限' }}: {{ $dueDate }}</span>
                 </div>
             @endif
             
@@ -216,7 +218,7 @@
     <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-{{ $colors['icon'] }} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
     {{-- 通常タスクの場合のみトグルフォーム --}}
-    @if(!$task->isGroupTask())
+    @if(!$isQuest)
         <form id="toggle-task-{{ $task->id }}" method="POST" action="{{ route('tasks.toggle', $task) }}" class="hidden">
             @csrf
             @method('PATCH')

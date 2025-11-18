@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('groups', function (Blueprint $table) {
             // Stripe関連 (グループ課金用)
-            $table->string('stripe_id')->nullable()->index()->after('master_user_id');
-            $table->string('pm_type')->nullable()->after('stripe_id');
-            $table->string('pm_last_four', 4)->nullable()->after('pm_type');
-            $table->timestamp('trial_ends_at')->nullable()->after('pm_last_four');
+            $table->string('stripe_id')->nullable()->index()->after('master_user_id')->comment('Stripe顧客ID');
+            $table->string('pm_type')->nullable()->after('stripe_id')->comment('支払い方法タイプ');
+            $table->string('pm_last_four', 4)->nullable()->after('pm_type')->comment('支払い方法の下4桁');
+            $table->timestamp('trial_ends_at')->nullable()->after('pm_last_four')->comment('トライアル終了日時');
         });
     }
 

@@ -34,6 +34,7 @@ class User extends Authenticatable
         'group_edit_flg',
         'is_admin',
         'last_login_at',
+        'theme',
     ];
     
     /**
@@ -240,5 +241,57 @@ class User extends Authenticatable
     public function teacherAvatar()
     {
         return $this->hasOne(TeacherAvatar::class);
+    }
+
+    /**
+     * 親ユーザーかどうか（グループマスターまたは編集権を持つ）
+     */
+    public function isParent(): bool
+    {
+        if (!$this->group_id) {
+            return false;
+        }
+
+        // グループマスターの場合
+        if ($this->group && $this->group->master_user_id === $this->id) {
+            return true;
+        }
+
+        // 編集権を持つ場合
+        return $this->group_edit_flg;
+    }
+
+    /**
+     * 子ユーザーかどうか（編集権を持たない）
+     */
+    public function isChild(): bool
+    {
+        return $this->group_id && !$this->isParent();
+    }
+
+    /**
+     * 子ども向けテーマを使用するか
+     */
+    public function useChildTheme(): bool
+    {
+        return $this->theme === 'child';
+    }
+
+    /**
+     * 指定ユーザーのテーマを変更する権限があるか
+     */
+    public function canChangeThemeOf(User $targetUser): bool
+    {
+        // 自分自身のテーマは変更可能
+        if ($this->id === $targetUser->id) {
+            return true;
+        }
+
+        // 親が子のテーマを変更可能
+        if ($this->isParent() && $targetUser->isChild() && $this->group_id === $targetUser->group_id) {
+            return true;
+        }
+
+        return false;
     }
 }

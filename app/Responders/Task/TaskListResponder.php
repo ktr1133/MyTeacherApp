@@ -18,11 +18,10 @@ class TaskListResponder
      */
     public function respond(array $data): View
     {
-        // 必要に応じてここでタスクのデータをビュー向けに整形する処理を記述
-        
         return view('dashboard', [
-            'tasks' => $data['tasks'],
-            'tags'  => $data['tags'],
+            'tasks'             => $data['tasks'],
+            'tags'              => $data['tags'],
+            'notificationCount' => $data['notificationCount'] ?? 0,
         ]);
     }
 }

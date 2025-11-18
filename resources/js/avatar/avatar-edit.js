@@ -31,7 +31,7 @@ window.avatarEdit = function() {
 };
 
 /**
- * ★ 表情スライダーコンポーネント
+ * 表情スライダーコンポーネント（サムネイル型 + 動的背景）
  */
 window.expressionSlider = function(expressions) {
     return {
@@ -42,25 +42,18 @@ window.expressionSlider = function(expressions) {
         minSwipeDistance: 50, // スワイプの最小距離（px）
         
         /**
-         * 前の表情へ移動
+         * 現在の画像URLを取得（背景用）
          */
-        prevExpression() {
-            if (this.currentIndex > 0) {
-                this.currentIndex--;
+        get currentImageUrl() {
+            const currentExpr = this.expressions[this.currentIndex];
+            if (currentExpr && currentExpr.image) {
+                return currentExpr.image.s3_url || currentExpr.image.public_url;
             }
+            return null;
         },
         
         /**
-         * 次の表情へ移動
-         */
-        nextExpression() {
-            if (this.currentIndex < this.expressions.length - 1) {
-                this.currentIndex++;
-            }
-        },
-        
-        /**
-         * 指定インデックスの表情へ移動
+         * 指定インデックスの表情へ移動（サムネイルクリック用）
          */
         goToExpression(index) {
             if (index >= 0 && index < this.expressions.length) {
@@ -83,18 +76,22 @@ window.expressionSlider = function(expressions) {
         },
         
         /**
-         * タッチ終了
+         * タッチ終了（スライドアニメーション）
          */
         handleTouchEnd(event) {
             const swipeDistance = this.touchStartX - this.touchEndX;
             
             // 右スワイプ（前へ）
             if (swipeDistance < -this.minSwipeDistance) {
-                this.prevExpression();
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                }
             }
             // 左スワイプ（次へ）
             else if (swipeDistance > this.minSwipeDistance) {
-                this.nextExpression();
+                if (this.currentIndex < this.expressions.length - 1) {
+                    this.currentIndex++;
+                }
             }
             
             // リセット
