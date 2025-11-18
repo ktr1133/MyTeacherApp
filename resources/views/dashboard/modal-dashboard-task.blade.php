@@ -52,7 +52,6 @@
                         </label>
                         <input type="text" 
                                id="taskTitle" 
-                               x-model="$store.dashboard.taskTitle" 
                                name="title" 
                                required
                                placeholder="{{ $isChildTheme ? '例：お部屋の掃除' : '例：レポート作成' }}"
@@ -68,13 +67,12 @@
                             期間 <span class="text-red-500">*</span>
                         </label>
                         <select id="taskSpan" 
-                                x-model.number="$store.dashboard.taskSpan" 
                                 name="span" 
                                 required
                                 class="w-full px-4 py-2.5 border {{ $isChildTheme ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500' : 'border-[#59B9C6]/30 dark:border-[#59B9C6]/40 focus:ring-[#59B9C6] focus:border-transparent' }} rounded-lg bg-white dark:bg-gray-800 focus:ring-2 transition text-sm">
-                            <option value="{{ config('const.task_spans.short') }}">短期（すぐにやる）</option>
-                            <option value="{{ config('const.task_spans.mid') }}">中期（今年中）</option>
-                            <option value="{{ config('const.task_spans.long') }}">長期（いつかやる）</option>
+                            <option value="{{ config('const.task_spans.short') }}">{{ !$isChildTheme ? '短期' : 'すぐにやる' }}</option>
+                            <option value="{{ config('const.task_spans.mid') }}" selected>{{ !$isChildTheme ? '中期' : '今年中' }}</option>
+                            <option value="{{ config('const.task_spans.long') }}">{{ !$isChildTheme ? '長期' : 'いつかやる' }}</option>
                         </select>
                     </div>
 
@@ -84,42 +82,45 @@
                             <svg class="w-4 h-4 inline-block mr-1 {{ $isChildTheme ? 'text-amber-600' : 'text-[#59B9C6]' }}" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                             </svg>
-                            期限
+                            {{ !$isChildTheme ? '期限' : 'しめきり' }}
                         </label>
                         
                         {{-- 短期の場合：日付選択 --}}
-                        <div x-show="$store.dashboard.taskSpan == {{ config('const.task_spans.short') }}" 
-                             x-transition>
+                        <div id="due-date-short-container" 
+                             class="due-date-field {{ $isChildTheme ? 'due-date-field-child' : '' }}" 
+                             style="display: none;">
                             <input type="date" 
                                 id="due_date_short" 
                                 name="due_date"
-                                x-model="$store.dashboard.due_date"
-                                class="w-full px-4 py-2.5 border {{ $isChildTheme ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500' : 'border-[#59B9C6]/30 dark:border-[#59B9C6]/40 focus:ring-[#59B9C6] focus:border-transparent' }} rounded-lg bg-white dark:bg-gray-800 focus:ring-2 transition text-sm"
-                                :min="new Date().toISOString().split('T')[0]">
+                                disabled
+                                class="w-full px-4 py-2.5 border {{ $isChildTheme ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500' : 'border-[#59B9C6]/30 dark:border-[#59B9C6]/40 focus:ring-[#59B9C6] focus:border-transparent' }} rounded-lg bg-white dark:bg-gray-800 focus:ring-2 transition text-sm">
                         </div>
 
                         {{-- 中期の場合：年選択 --}}
-                        <div x-show="$store.dashboard.taskSpan == {{ config('const.task_spans.mid') }}" 
-                             x-transition>
-                            <select name="due_date" 
-                                    x-model="$store.dashboard.due_date"
+                        <div id="due-date-mid-container" 
+                             class="due-date-field {{ $isChildTheme ? 'due-date-field-child' : '' }}" 
+                             style="display: block;">
+                            <select id="due_date_mid"
+                                    name="due_date" 
                                     class="w-full px-4 py-2.5 border {{ $isChildTheme ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500' : 'border-[#59B9C6]/30 dark:border-[#59B9C6]/40 focus:ring-[#59B9C6] focus:border-transparent' }} rounded-lg bg-white dark:bg-gray-800 focus:ring-2 transition text-sm">
                                 @php
                                     $currentYear = date('Y');
                                     $years = range($currentYear, $currentYear + 5);
                                 @endphp
                                 @foreach($years as $year)
-                                    <option value="{{ $year }}">{{ $year }}年</option>
+                                    <option value="{{ $year }}" {{ $year == $currentYear ? 'selected' : '' }}>{{ $year }}年</option>
                                 @endforeach
                             </select>
                         </div>
 
                         {{-- 長期の場合：テキスト入力 --}}
-                        <div x-show="$store.dashboard.taskSpan == {{ config('const.task_spans.long') }}" 
-                             x-transition>
+                        <div id="due-date-long-container" 
+                             class="due-date-field {{ $isChildTheme ? 'due-date-field-child' : '' }}" 
+                             style="display: none;">
                             <input type="text" 
+                                id="due_date_long"
                                 name="due_date" 
-                                x-model="$store.dashboard.due_date"
+                                disabled
                                 placeholder="例：5年後"
                                 class="w-full px-4 py-2.5 border {{ $isChildTheme ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500' : 'border-[#59B9C6]/30 dark:border-[#59B9C6]/40 focus:ring-[#59B9C6] focus:border-transparent' }} rounded-lg bg-white dark:bg-gray-800 focus:ring-2 transition text-sm placeholder-gray-400">
                         </div>
@@ -135,12 +136,11 @@
                         </label>
                         <div class="flex flex-wrap gap-2">
                             @foreach($tags as $tag)
-                                <label class="task-tag-chip inline-flex items-center px-3 py-1.5 rounded-lg cursor-pointer transition {{ $isChildTheme ? 'has-[:checked]:bg-amber-500 has-[:checked]:text-white bg-amber-100 text-amber-800 hover:bg-amber-200' : 'has-[:checked]:bg-[#59B9C6] has-[:checked]:text-white bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                <label class="task-tag-chip inline-flex items-center px-3 py-1.5 rounded-lg cursor-pointer transition {{ $isChildTheme ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}" data-tag-id="{{ $tag->id }}">
                                     <input type="checkbox" 
                                         name="tags[]" 
                                         value="{{ $tag->id }}"
-                                        x-model="$store.dashboard.selectedTags"
-                                        class="sr-only">
+                                        class="sr-only tag-checkbox">
                                     <span class="text-xs font-medium">{{ $tag->name }}</span>
                                 </label>
                             @endforeach
@@ -205,16 +205,16 @@
         <div class="px-6 py-4 border-t {{ $isChildTheme ? 'border-amber-300 bg-gradient-to-r from-amber-100/50 to-orange-100/50' : 'border-[#59B9C6]/20 dark:border-[#59B9C6]/30 bg-gradient-to-r from-[#59B9C6]/5 to-blue-50/50 dark:from-[#59B9C6]/10 dark:to-blue-900/10' }} flex justify-end gap-3 shrink-0">
             {{-- 状態1のボタン --}}
             <div id="state-1-buttons" class="flex gap-3">
-                <button type="submit" form="task-form" id="simple-register-btn" :disabled="!$store.dashboard.taskTitle"
+                <button type="submit" form="task-form" id="simple-register-btn" disabled
                         class="inline-flex justify-center items-center px-5 py-2 border-2 {{ $isChildTheme ? 'border-amber-500 text-amber-700 bg-white hover:bg-amber-50' : 'border-[#59B9C6] text-[#59B9C6] bg-white dark:bg-gray-800 hover:bg-[#59B9C6]/10 dark:hover:bg-[#59B9C6]/20' }} text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
-                    登録
+                    {{ !$isChildTheme ? '登録' : 'つくる'}}
                 </button>
-                <button type="button" id="decompose-btn" :disabled="!$store.dashboard.taskTitle"
+                <button type="button" id="decompose-btn" disabled
                         class="inline-flex justify-center items-center px-5 py-2 border border-transparent text-sm font-semibold rounded-lg text-white {{ $isChildTheme ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-[#59B9C6] to-blue-600 hover:from-[#4AA0AB] hover:to-blue-700' }} shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 {{ $isChildTheme ? 'focus:ring-green-500' : 'focus:ring-[#59B9C6]' }} transition disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
-                    AIで分解
+                    {{ !$isChildTheme ? 'AIで分解' : 'こまかくする'}}
                 </button>
             </div>
 

@@ -83,11 +83,7 @@
                         <div>
                             <div class="avatar-card rounded-2xl p-4 lg:p-6 hero-fade-in">
                                 <h2 class="text-base lg:text-lg font-bold text-gray-900 dark:text-white mb-4">
-                                    @if (!$isChildTheme)
-                                        アバター画像
-                                    @else
-                                        アバター
-                                    @endif
+                                    アバター画像
                                 </h2>
                                 
                                 @if($avatar->generation_status === 'completed')
@@ -222,6 +218,7 @@
                                             </span>
                                             <button 
                                                 type="submit"
+                                                id="avatar-display-btn"
                                                 class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors
                                                        {{ $avatar->is_visible ? 'bg-[#59B9C6]' : 'bg-gray-300 dark:bg-gray-600' }}"
                                             >
@@ -431,7 +428,7 @@
                                     {{-- ボタン群 --}}
                                     <div class="flex flex-col sm:flex-row justify-between gap-4">
                                         <div>
-                                            <button type="submit" class="avatar-btn-primary px-6 py-2.5 w-full sm:w-auto">
+                                            <button type="submit" id="store-setting-btn" class="avatar-btn-primary px-6 py-2.5 w-full sm:w-auto">
                                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                                 </svg>

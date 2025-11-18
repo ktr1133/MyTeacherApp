@@ -830,6 +830,29 @@
     transition: opacity 0.3s ease-in-out;
 }
 
+/* ========================================
+   期限フィールドの表示制御（JavaScript制御）
+   ======================================== */
+
+/* 期限フィールドのデフォルトスタイル */
+.due-date-field {
+    display: none;
+    opacity: 0;
+}
+
+/* 大人用画面：アニメーションなし（即座に切り替え） */
+.due-date-field:not(.due-date-field-child) {
+    transition: none;
+}
+
+/* 表示状態（JavaScriptで制御） */
+.due-date-field.show {
+    display: block !important;
+    opacity: 1 !important;
+}
+
+
+
 /* 弁当箱レイアウト */
 .bento-auto-rows {
     grid-auto-rows: 140px;

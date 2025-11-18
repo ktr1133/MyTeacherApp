@@ -54,6 +54,7 @@ use App\Http\Actions\Profile\Group\EditGroupAction;
 use App\Http\Actions\Profile\Group\UpdateGroupAction;
 use App\Http\Actions\Profile\Group\AddMemberAction;
 use App\Http\Actions\Profile\Group\UpdateMemberPermissionAction;
+use App\Http\Actions\Profile\Group\ToggleMemberThemeAction;
 use App\Http\Actions\Profile\Group\TransferGroupMasterAction;
 use App\Http\Actions\Profile\Group\RemoveMemberAction;
 use App\Http\Actions\Reports\IndexPerformanceAction;
@@ -175,7 +176,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/group', EditGroupAction::class)->name('group.edit');
         Route::patch('/group', UpdateGroupAction::class)->name('group.update');
         Route::post('/group/member', AddMemberAction::class)->name('group.member.add');
-        Route::patch('/group/member/{member}', UpdateMemberPermissionAction::class)->name('group.member.permission');
+        Route::patch('/group/member/{member}/permission', UpdateMemberPermissionAction::class)->name('group.member.permission');
+        Route::patch('/group/member/{member}/theme', ToggleMemberThemeAction::class)->name('group.member.theme');
         Route::post('/group/transfer/{newMaster}', TransferGroupMasterAction::class)->name('group.master.transfer');
         Route::delete('/group/member/{member}', RemoveMemberAction::class)->name('group.member.remove');
     });

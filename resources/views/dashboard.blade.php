@@ -9,75 +9,9 @@
         @if(Auth::user()->canEditGroup())
             @vite(['resources/js/dashboard/group-task.js'])
         @endif
-        
-        {{-- 子ども向け花火エフェクトスクリプト --}}
-        @if($isChildTheme)
-            <script>
-                // タスク完了時の花火エフェクト
-                document.addEventListener('DOMContentLoaded', function() {
-                    document.querySelectorAll('.btn-complete-quest').forEach(btn => {
-                        btn.addEventListener('click', function(e) {
-                            // 花火を発射
-                            confetti({
-                                particleCount: 100,
-                                spread: 70,
-                                origin: { y: 0.6 }
-                            });
-                            
-                            // 0.3秒後にもう一度
-                            setTimeout(() => {
-                                confetti({
-                                    particleCount: 50,
-                                    angle: 60,
-                                    spread: 55,
-                                    origin: { x: 0 }
-                                });
-                                confetti({
-                                    particleCount: 50,
-                                    angle: 120,
-                                    spread: 55,
-                                    origin: { x: 1 }
-                                });
-                            }, 300);
-                        });
-                    });
-                });
-            </script>
-        @endif
-        
-        {{-- ログインイベント発火 --}}
-        <script>
-            let avatarEventFired = false;
-            let dispatchAttempts = 0;
-            
-            document.addEventListener('DOMContentLoaded', function() {
-                @if(session('avatar_event'))
-                    if (avatarEventFired) {
-                        console.warn('[Dashboard] Avatar event already fired, skipping');
-                        return;
-                    }
-                    
-                    const waitForAlpineAvatar = setInterval(() => {
-                        dispatchAttempts++;
-                        
-                        if (window.Alpine && typeof window.dispatchAvatarEvent === 'function') {
-                            clearInterval(waitForAlpineAvatar);
-                            avatarEventFired = true;
-
-                            setTimeout(() => {
-                                window.dispatchAvatarEvent('{{ session('avatar_event') }}');
-                            }, 500);
-                        }
-                        
-                        if (dispatchAttempts > 100) {
-                            clearInterval(waitForAlpineAvatar);
-                            console.error('[Dashboard] Alpine initialization timeout');
-                        }
-                    }, 50);
-                @endif
-            });
-        </script>
     @endpush
+    {{-- アバターイベント監視用 --}}
+    <x-layouts.avatar-event-common />
 
     <div x-data="{ 
         showTaskModal: false, 

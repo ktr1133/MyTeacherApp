@@ -3,67 +3,13 @@
         @vite(['resources/css/dashboard.css'])
         @vite(['resources/css/auth/register-validation.css'])
     @endpush
-    @php
-        $avatarEvent = session('avatar_event');
-        $timestamp = microtime(true);
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
-        
-        logger('[Dashboard Blade] Rendering', [
-            'avatar_event' => $avatarEvent,
-            'timestamp' => $timestamp,
-            'session_id' => session()->getId(),
-            'request_method' => request()->method(),
-            'request_url' => request()->fullUrl(),
-            'request_path' => request()->path(),
-            'referer' => request()->header('referer'),
-            'user_agent' => request()->header('user-agent'),
-            'all_session' => session()->all(), // セッション全体を確認
-            'backtrace' => array_map(fn($t) => [
-                'file' => $t['file'] ?? 'unknown',
-                'line' => $t['line'] ?? '?',
-                'function' => $t['function'] ?? 'unknown',
-            ], $backtrace),
-        ]);
-    @endphp
     @push('scripts')
         @vite(['resources/js/profile/profile-validation.js'])
-        {{-- ログインイベント発火 --}}
-        <script>
-            let avatarEventFired = false;
-            let dispatchAttempts = 0;
-            
-            // DOMContentLoadedを直接使用
-            document.addEventListener('DOMContentLoaded', function() {
-                @if(session('avatar_event'))
-                    if (avatarEventFired) {
-                        console.warn('[Dashboard] Avatar event already fired, skipping');
-                        return;
-                    }
-                    
-                    const waitForAlpineAvatar = setInterval(() => {
-                        dispatchAttempts++;
-                        
-                        if (window.Alpine && typeof window.dispatchAvatarEvent === 'function') {
-                            clearInterval(waitForAlpineAvatar);
-                            avatarEventFired = true;
-
-                            setTimeout(() => {
-                                window.dispatchAvatarEvent('{{ session('avatar_event') }}');
-                            }, 500);
-                        }
-                        
-                        // 5秒（100回）でタイムアウト
-                        if (dispatchAttempts > 100) {
-                            clearInterval(waitForAlpineAvatar);
-                            console.error('[Dashboard] Alpine initialization timeout', {
-                                attempts: dispatchAttempts,
-                            });
-                        }
-                    }, 50);
-                @endif
-            });
-        </script>
     @endpush
+
+    {{-- アバターイベント監視用 --}}
+    <x-layouts.avatar-event-common />
+
     <div x-data="{ showSidebar: false }" 
          x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
          class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
@@ -159,6 +105,8 @@
                                             メンバーを追加しました。
                                         @elseif (session('status') === 'permission-updated')
                                             権限を更新しました。
+                                        @elseif (session('status') === 'theme-updated')
+                                            メンバーのテーマ設定を更新しました。
                                         @elseif (session('status') === 'master-transferred')
                                             グループマスターを譲渡しました。
                                         @elseif (session('status') === 'member-removed')

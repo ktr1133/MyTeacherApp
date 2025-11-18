@@ -201,4 +201,25 @@ class GroupService implements GroupServiceInterface
     {
         return $user->group_edit_flg || $this->isGroupMaster($user);
     }
+
+    /**
+     * グループメンバーのテーマ設定を切り替える。
+     *
+     * @param User $actor
+     * @param User $member
+     * @param bool $theme
+     * @return void
+     */
+    public function toggleMemberTheme(User $actor, User $member, bool $theme): void
+    {
+        $group = $actor->group;
+        if (!$group || !$this->canEditGroup($actor)) {
+            abort(403, 'グループメンバーのテーマ設定を変更する権限がありません。');
+        }
+
+        // 子ども用テーマ設定
+        $mode = $theme ? 'child' : 'adult';
+        
+        $this->groupUsers->update($member, ['theme' => $mode]);
+    }
 }

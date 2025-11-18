@@ -69,8 +69,9 @@ class StoreTaskAction
 
             // タスクの所有者は担当者
             $userId = $data['assigned_user_id'];
-            // 担当者が未設定の場合は、グループの編集権限のないメンバー全員宛にタスクを作成する
-            $groupFlg = is_null($userId) ? true : false;
+
+            // グループタスクフラグを立てる
+            $groupFlg = true;
         }
 
         $user = isset($userId) && !is_null($userId) ? $this->taskManagementService->getUserById($userId) : Auth::user();

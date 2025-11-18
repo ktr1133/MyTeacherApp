@@ -57,4 +57,13 @@ interface GroupServiceInterface
      * @return void
      */
     public function removeMember(User $actor, User $member): void;
+
+    /**
+     * メンバーのテーマ設定を切り替える。
+     * @param User $actor
+     * @param User $member
+     * @param bool $theme
+     * @return void
+     */
+    public function toggleMemberTheme(User $actor, User $member, bool $theme): void;
 }

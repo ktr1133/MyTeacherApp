@@ -396,7 +396,7 @@
 }
 
 /* モーダルボタン */
-.child-theme button[type="submit"],
+.child-theme button[type="submit"]:not(#avatar-display-btn, #store-setting-btn, #simple-register-btn),
 .child-theme #decompose-btn,
 .child-theme #adopt-proposal-btn,
 .child-theme #submit-refine-btn {
@@ -408,7 +408,7 @@
     box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
 }
 
-.child-theme button[type="submit"]:hover,
+.child-theme button[type="submit"]:hover:not(#avatar-display-btn, #store-setting-btn, #simple-register-btn),
 .child-theme #decompose-btn:hover,
 .child-theme #adopt-proposal-btn:hover,
 .child-theme #submit-refine-btn:hover {
@@ -435,17 +435,22 @@
     transform: scale(1.1);
 }
 
-/* ===================================
-   タスク完了時の花火エフェクト（準備）
-   =================================== */
-.child-theme .confetti-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 9999;
+/* ========================================
+   期限フィールドの表示制御（JavaScript制御）
+   ======================================== */
+/* 子ども用画面：フェードアニメーション */
+.child-theme .due-date-field-child {
+    transition: opacity 0.3s var(--child-transition-bounce), 
+                transform 0.3s var(--child-transition-bounce);
+}
+/* 子ども用のフェードイン */
+.child-theme .due-date-field-child.show {
+    transform: translateY(0);
+}
+
+/* 子ども用のフェードアウト準備 */
+.child-theme .due-date-field-child:not(.show) {
+    transform: translateY(-8px);
 }
 
 /* ===================================
