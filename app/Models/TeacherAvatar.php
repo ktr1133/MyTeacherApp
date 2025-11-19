@@ -17,6 +17,7 @@ class TeacherAvatar extends Model
         'user_id',
         'seed',
         'sex',
+        'hair_style',
         'hair_color',
         'eye_color',
         'clothing',

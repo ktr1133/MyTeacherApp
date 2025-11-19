@@ -118,7 +118,7 @@
                                                         class="relative"
                                                     >
                                                         {{-- 表情ラベル（オーバーレイ） --}}
-                                                        <div class="absolute top-3 left-3 z-10 {{ $isChildTheme ? 'avatar-expression-label-child' : 'avatar-expression-label' }}">
+                                                        <div class="absolute top-3 left-3 z-20 {{ $isChildTheme ? 'avatar-expression-label-child' : 'avatar-expression-label' }}">
                                                             <span x-text="expr.label" class="font-bold"></span>
                                                         </div>
 

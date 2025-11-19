@@ -18,6 +18,7 @@ class ScheduledGroupTask extends Model
         'title',
         'description',
         'requires_image',
+        'requires_approval',
         'reward',
         'assigned_user_id',
         'auto_assign',
@@ -36,6 +37,7 @@ class ScheduledGroupTask extends Model
     protected $casts = [
         'schedules' => 'array',
         'requires_image' => 'boolean',
+        'requires_approval' => 'boolean',
         'auto_assign' => 'boolean',
         'skip_holidays' => 'boolean',
         'move_to_next_business_day' => 'boolean',

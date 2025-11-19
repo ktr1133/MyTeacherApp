@@ -70,7 +70,7 @@ class TaskManagementService implements TaskManagementServiceInterface
         $taskData['priority'] = $data['priority'] ?? 3;
         $taskData['is_completed'] = false;
         $is_charged = isset($data['assigned_user_id']) ? true : false;
-        logger()->info('タスク登録処理 トランザクション前', ['user' => $user, 'data' => $data, 'taskData' => $taskData, 'groupFlg' => $groupFlg]);
+
         DB::transaction(function () use ($user, $data, $taskData, $groupFlg, $is_charged, &$task) {
             // グループタスクの場合
             if ($groupFlg) {

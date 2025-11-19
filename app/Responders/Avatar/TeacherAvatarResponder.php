@@ -2,21 +2,31 @@
 
 namespace App\Responders\Avatar;
 
+use App\Models\TeacherAvatar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class TeacherAvatarResponder
 {
     /**
-     * 教師アバター作成画面を表示
+     * アバター作成画面を表示
      */
     public function create(): View
     {
+        // ビュー共有変数（ミドルウェアでセット済み）を利用
+        $isChildTheme = view()->shared('isChildTheme', false);
+        
+        // 子ども用テーマの場合
+        if ($isChildTheme) {
+            return view('avatars.create-child');
+        }
+        
+        // 大人用テーマの場合
         return view('avatars.create');
     }
 
     /**
-     * 教師アバター編集画面を表示
+     * アバター編集画面を表示
      *
      * @param array $data
      * @return View

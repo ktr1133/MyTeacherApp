@@ -34,6 +34,10 @@ class StoreTeacherAvatarRequest extends FormRequest
                 'required',
                 Rule::in(array_keys(config('services.sex'))),
             ],
+            'hair_style' => [
+                'nullable',
+                Rule::in(array_keys(config('services.hair_style'))),
+            ],
             'hair_color' => [
                 'required',
                 Rule::in(array_keys(config('services.hair_color'))),
@@ -97,6 +101,7 @@ class StoreTeacherAvatarRequest extends FormRequest
             // 外見設定
             'sex.required' => '性別を選択してください。',
             'sex.in' => '選択された性別は無効です。',
+            'hair_style.in' => '選択した髪型は無効です。',
             'hair_color.required' => '髪の色を選択してください。',
             'hair_color.in' => '選択された髪の色は無効です。',
             'eye_color.required' => '目の色を選択してください。',
@@ -134,6 +139,7 @@ class StoreTeacherAvatarRequest extends FormRequest
     {
         return [
             'sex' => '性別',
+            'hair_style' => '髪型',
             'hair_color' => '髪の色',
             'eye_color' => '目の色',
             'clothing' => '服装',

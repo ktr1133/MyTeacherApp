@@ -8,10 +8,12 @@
          class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
 
         {{-- 背景装飾 --}}
-        <div class="absolute inset-0 -z-10 pointer-events-none">
-            <div class="dashboard-floating-decoration absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl"></div>
-            <div class="dashboard-floating-decoration absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" style="animation-delay: 5s;"></div>
-        </div>
+        @if(!$isChildTheme)
+            <div class="absolute inset-0 -z-10 pointer-events-none">
+                <div class="dashboard-floating-decoration absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl"></div>
+                <div class="dashboard-floating-decoration absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" style="animation-delay: 5s;"></div>
+            </div>
+        @endif
 
         {{-- サイドバー --}}
         <x-layouts.sidebar />
@@ -40,10 +42,16 @@
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="dashboard-header-title text-lg font-bold">
-                                    アカウント管理
-                                </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">プロフィールとセキュリティ設定</p>
+                                @if (!$isChildTheme)
+                                    <h1 class="dashboard-header-title text-lg font-bold">
+                                        アカウント管理
+                                    </h1>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">プロフィールとセキュリティ設定</p>
+                                @else
+                                    <h1 class="dashboard-header-title text-lg font-bold">
+                                        アカウント管理
+                                    </h1>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -52,6 +60,7 @@
                         @csrf
                         <button 
                             type="submit"
+                            id="logout-btn"
                             class="inline-flex items-center justify-center shrink-0 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#59B9C6] transition px-3 py-2 text-sm font-medium backdrop-blur-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

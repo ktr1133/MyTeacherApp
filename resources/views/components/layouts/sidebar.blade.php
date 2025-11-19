@@ -157,7 +157,11 @@
                       x-transition:leave-start="opacity-100"
                       x-transition:leave-end="opacity-0"
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
-                    タグ管理
+                    @if(!$isChildTheme)
+                        タグ管理
+                    @else
+                        タグ
+                    @endif
                 </span>
             </x-nav-link>
 
@@ -517,7 +521,11 @@
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                 </svg>
-                <span class="text-sm font-medium">タグ管理</span>
+                @if(!$isChildTheme)
+                    <span class="text-sm font-medium">タグ管理</span>
+                @else
+                    <span class="text-sm font-medium">タグ</span>
+                @endif
             </x-nav-link>
 
             {{-- 教師アバター設定 --}}

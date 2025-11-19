@@ -17,6 +17,7 @@ return new class extends Migration
             // 外見設定
             $table->enum('sex', array_keys(config('const.avatar_sex_types')))->comment('性別');
             $table->string('hair_color', 50)->comment('髪の色');
+            $table->string('hair_style', 50)->nullable()->comment('髪型');
             $table->string('eye_color', 50)->comment('目の色');
             $table->string('clothing', 50)->comment('服装');
             $table->string('accessory', 50)->nullable()->comment('アクセサリー');
@@ -30,7 +31,7 @@ return new class extends Migration
 
             // 描画モデル
             $table->string('draw_model_version', 100)->nullable()->comment('描画モデルバージョン');
-            $table->boolean('is_transparent')->default(true)->comment('背景透過');
+            $table->boolean('is_transparent')->default(false)->comment('背景透過');
             $table->integer('estimated_token_usage')->default(0)->comment('推定使用トークン量');
 
             // 生成ステータス

@@ -17,10 +17,12 @@
     >
 
         {{-- 背景装飾 --}}
-        <div class="absolute inset-0 -z-10 pointer-events-none">
-            <div class="dashboard-floating-decoration absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl"></div>
-            <div class="dashboard-floating-decoration absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" style="animation-delay: 5s;"></div>
-        </div>
+        @if(!$isChildTheme)
+            <div class="absolute inset-0 -z-10 pointer-events-none">
+                <div class="dashboard-floating-decoration absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl"></div>
+                <div class="dashboard-floating-decoration absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" style="animation-delay: 5s;"></div>
+            </div>
+        @endif
 
         {{-- サイドバー --}}
         <x-layouts.sidebar />
@@ -49,10 +51,16 @@
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="tag-header-title text-lg font-bold">
-                                    タグ管理
-                                </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">タスクの分類と整理</p>
+                                @if(!$isChildTheme)
+                                    <h1 class="tag-header-title text-lg font-bold">
+                                        タグ管理
+                                    </h1>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">タスクの分類と整理</p>
+                                @else
+                                    <h1 class="tag-header-title text-lg font-bold">
+                                        タグ
+                                    </h1>
+                                @endif
                             </div>
                         </div>
                     </div>

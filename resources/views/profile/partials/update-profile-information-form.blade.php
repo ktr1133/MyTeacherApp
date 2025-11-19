@@ -24,7 +24,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('保存') }}</x-primary-button>
+            <x-primary-button id="profile-update-btn">{{ __('保存') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
                 <p

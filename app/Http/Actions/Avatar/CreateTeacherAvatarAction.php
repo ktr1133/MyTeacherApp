@@ -26,6 +26,7 @@ class CreateTeacherAvatarAction
             return redirect()->route('avatars.edit');
         }
 
+        // テーマに応じたビューを返す（ミドルウェアでセット済み）
         return $this->responder->create();
     }
 }

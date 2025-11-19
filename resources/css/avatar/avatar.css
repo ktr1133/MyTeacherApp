@@ -877,3 +877,23 @@
         justify-content: center;
     }
 }
+
+/**
+ * アバターウィザード共通スタイル
+ * - 大人用・子ども用で共有
+ */
+
+/* プログレスバーの基本スタイル */
+.wizard-progress {
+    margin-bottom: 2rem;
+}
+
+/* フォームの基本スタイル */
+#avatar-wizard-form {
+    width: 100%;
+}
+
+/* トランジション効果 */
+[x-cloak] {
+    display: none !important;
+}

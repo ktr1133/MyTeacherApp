@@ -25,7 +25,7 @@ async function validateGroupName() {
     // 空の場合は非表示
     if (!groupName || groupName.length === 0) {
         hideValidationMessage('group_name');
-        updateSubmitButtonState('group-update-button', ['group_name']); // ★ ボタン状態更新
+        updateSubmitButtonState('group-update-button', ['group_name']);
         return;
     }
 

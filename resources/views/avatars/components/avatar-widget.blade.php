@@ -1,56 +1,30 @@
 @if($avatar && $avatar->is_visible)
     <div 
-        x-data="avatarWidget()" 
-        x-show="($store.avatar.isVisible || visible) && !isForcedHidden"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 translate-y-4"
-        x-transition:enter-end="opacity-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 translate-y-4"
-        class="avatar-widget"
-        :style="`left: ${position.x}px; top: ${position.y}px;`"
-        @mousedown="startDrag($event)"
-        @avatar-event.window="handleEvent($event.detail)"
-        x-cloak
+        id="avatar-widget"
+        class="avatar-widget hidden opacity-0 translate-y-4"
+        style="left: 0px; top: 0px;"
+        data-default-image="{{ $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
+        data-happy-image="{{ $avatar->bustImageHappy?->public_url ?? $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
+        data-surprised-image="{{ $avatar->bustImageSurprised?->public_url ?? $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
+        data-angry-image="{{ $avatar->bustImageAngry?->public_url ?? $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
+        data-sad-image="{{ $avatar->bustImageSad?->public_url ?? $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
     >
         <div class="avatar-container">
-            {{-- 吹き出し（ストアまたはローカル state から取得） --}}
-            <div 
-                class="avatar-bubble" 
-                x-show="$store.avatar.currentComment || comment"
-            >
-                <p 
-                    class="text-sm text-gray-900 dark:text-white" 
-                    x-text="$store.avatar.currentComment || comment"
-                ></p>
+            {{-- 吹き出し --}}
+            <div class="avatar-bubble">
+                <p class="text-sm text-gray-900 dark:text-white"></p>
                 <div class="avatar-bubble-arrow"></div>
             </div>
 
-            {{-- アバター画像（ストアまたはローカル state から取得） --}}
+            {{-- アバター画像 --}}
             <img 
-                :src="$store.avatar.currentImageUrl || currentImage" 
+                src="{{ $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}" 
                 alt="Teacher Avatar"
-                class="avatar-image"
-                :class="$store.avatar.currentAnimation || animationClass"
+                class="avatar-image avatar-idle"
             />
 
             {{-- 閉じるボタン --}}
             <button 
-                @click.stop="
-                    console.log('[Avatar Widget] Close button clicked');
-                    console.log('[Avatar Widget] Before close:', { 
-                        visible: visible, 
-                        storeVisible: $store.avatar.isVisible,
-                        isForcedHidden: isForcedHidden
-                    });
-                    closeAvatar();
-                    console.log('[Avatar Widget] After close:', { 
-                        visible: visible, 
-                        storeVisible: $store.avatar.isVisible,
-                        isForcedHidden: isForcedHidden
-                    });
-                " 
                 class="avatar-close-btn"
                 type="button"
                 title="閉じる"
@@ -64,13 +38,17 @@
 @endif
 
 <style>
+    /* ウィジェットの基本スタイル */
     .avatar-widget {
         position: fixed;
         z-index: 9999;
         cursor: move;
+        user-select: none;
+        -webkit-user-select: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
-    /* ★ 強制非表示クラス（!important で確実に非表示） */
+    /* 強制非表示クラス（!important で確実に非表示） */
     .avatar-force-hidden {
         display: none !important;
         opacity: 0 !important;
@@ -78,75 +56,85 @@
         visibility: hidden !important;
     }
 
+    /* コンテナ */
     .avatar-container {
         position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
     }
 
+    /* アバター画像 */
     .avatar-image {
-        width: 270px;
-        height: auto;
+        width: 250px;
+        height: 300px;
         object-fit: contain;
+        filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
+        transition: transform 0.3s ease;
     }
 
+    @media (max-width: 640px) {
+        .avatar-image {
+            width: 180px;
+            height: 220px;
+        }
+    }
+
+    /* 吹き出し */
     .avatar-bubble {
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        margin-bottom: 1rem;
+        position: relative;
+        max-width: 300px;
+        padding: 1rem 1.5rem;
         background: white;
-        border-radius: 0.75rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        padding: 1rem;
-        max-width: 20rem;
-        min-width: 12rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(0, 0, 0, 0.05);
     }
 
+    .dark .avatar-bubble {
+        background: #1f2937;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* 吹き出しの矢印 */
     .avatar-bubble-arrow {
         position: absolute;
-        bottom: 0;
+        bottom: -8px;
         left: 50%;
-        transform: translate(-50%, 100%);
+        transform: translateX(-50%);
         width: 0;
         height: 0;
-        border-left: 0.5rem solid transparent;
-        border-right: 0.5rem solid transparent;
-        border-top: 0.5rem solid white;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid white;
     }
 
+    .dark .avatar-bubble-arrow {
+        border-top-color: #1f2937;
+    }
+
+    /* 閉じるボタン */
     .avatar-close-btn {
         position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        background: rgb(249, 64, 64);
-        border-radius: 9999px;
-        padding: 0.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        transition: background-color 0.2s;
+        top: -10px;
+        right: -10px;
+        width: 32px;
+        height: 32px;
+        background: #ef4444;
         color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
     }
 
     .avatar-close-btn:hover {
-        background: rgb(220, 38, 38);
-    }
-
-    /* アニメーション */
-    .avatar-idle {
-        animation: idle 3s ease-in-out infinite;
-    }
-
-    .avatar-secretary {
-        animation: secretary 2s ease-in-out infinite;
-    }
-
-    @keyframes idle {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-5px); }
-    }
-
-    @keyframes secretary {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        25% { transform: translateY(-3px) rotate(-2deg); }
-        75% { transform: translateY(-3px) rotate(2deg); }
+        background: #dc2626;
+        transform: scale(1.1);
     }
 </style>

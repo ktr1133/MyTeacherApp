@@ -37,7 +37,11 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         $data['seed'] = random_int(1, 2147483647);
 
         // 背景透過設定
-        $data['is_transparent'] = isset($data['is_transparent']) ? true : false;
+        if (isset($data['is_transparent']) && ($data['is_transparent'] == 'on' || $data['is_transparent'] == '1')) {
+            $data['is_transparent'] = true;
+        } else {
+            $data['is_transparent'] = false;
+        }
 
         // 推定使用トークン量設定
         $estimated_token_usage = config('services.estimated_token_usages')[$data['draw_model_version']] ?? 0;

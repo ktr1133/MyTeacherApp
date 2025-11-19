@@ -220,7 +220,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/read-all', MarkAllNotificationsAsReadAction::class)->name('notifications.read-all');
 
     // ========================================
-    // アバター作成
+    // アバター管理
     // ========================================
     // アバター作成（初回のみ）
     Route::get('/avatars/create', CreateTeacherAvatarAction::class)->name('avatars.create');

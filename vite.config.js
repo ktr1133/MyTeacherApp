@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/css/auth.css',
                 'resources/css/auth/register-validation.css',
                 'resources/css/avatar/avatar.css',
+                'resources/css/avatar/avatar-wizard-child.css',
                 'resources/css/batch.css',
                 'resources/css/child-theme.css',
                 'resources/css/dashboard.css',
@@ -27,6 +28,7 @@ export default defineConfig({
                 'resources/js/avatar/avatar-controller.js',
                 'resources/js/avatar/avatar-edit.js',
                 'resources/js/avatar/avatar-form.js',
+                // 'resources/js/avatar/avatar-wizard-child.js', // Bladeテンプレート内でインライン定義
                 'resources/js/common/notification-polling.js',
                 'resources/js/common/validation-core.js',
                 'resources/js/dashboard/dashboard.js',

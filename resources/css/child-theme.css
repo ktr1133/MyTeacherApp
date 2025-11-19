@@ -396,7 +396,7 @@
 }
 
 /* モーダルボタン */
-.child-theme button[type="submit"]:not(#avatar-display-btn, #store-setting-btn, #simple-register-btn),
+.child-theme button[type="submit"]:not(#avatar-display-btn, #store-setting-btn, #simple-register-btn, #logout-btn),
 .child-theme #decompose-btn,
 .child-theme #adopt-proposal-btn,
 .child-theme #submit-refine-btn {
@@ -1815,5 +1815,489 @@
     
     .child-theme .avatar-card .flex.items-center.justify-center.gap-2 {
         padding: 0.375rem 0 !important;
+    }
+}
+
+/* ===================================
+   実績画面（子ども向け）
+   =================================== */
+
+/* 背景装飾の非表示（子ども向けはシンプルに） */
+.child-theme .performance-floating-decoration {
+    display: none !important;
+}
+
+/* 実績画面のグラデーション背景 */
+.child-theme .performance-gradient-bg {
+    background: 
+        linear-gradient(135deg, 
+            rgba(255, 107, 107, 0.1) 0%, 
+            rgba(78, 205, 196, 0.1) 50%, 
+            rgba(255, 230, 109, 0.1) 100%),
+        #FFF8E1;
+}
+
+.dark .child-theme .performance-gradient-bg {
+    background: 
+        linear-gradient(135deg, 
+            rgba(255, 107, 107, 0.2) 0%, 
+            rgba(78, 205, 196, 0.2) 50%, 
+            rgba(255, 230, 109, 0.2) 100%),
+        #1a1a2e;
+}
+
+/* 実績ヘッダーアイコン */
+.child-theme .performance-header-icon {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+/* 実績ヘッダータイトル */
+.child-theme .performance-header-title {
+    font-size: var(--child-text-xl);
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+}
+
+/* 実績ヘッダーの副題 */
+.child-theme .performance-header-subtitle {
+    font-size: var(--child-text-sm);
+}
+
+/* ===================================
+   タブナビゲーション（やること/クエスト）
+   =================================== */
+
+/* タブコンテナの背景（dashboard.bladeと同じ） */
+.child-theme .performance-header-blur {
+    background: linear-gradient(to right, 
+        rgba(255, 107, 107, 0.05) 0%, 
+        rgba(78, 205, 196, 0.05) 50%,
+        rgba(255, 230, 109, 0.05) 100%) !important;
+    border-top: 2px solid rgba(255, 107, 107, 0.2);
+}
+
+.dark .child-theme .performance-header-blur {
+    background: linear-gradient(to right, 
+        rgba(255, 107, 107, 0.1) 0%, 
+        rgba(78, 205, 196, 0.1) 50%,
+        rgba(255, 230, 109, 0.1) 100%) !important;
+    border-top-color: rgba(78, 205, 196, 0.3);
+}
+
+/* タブエリア自体の背景を透明に */
+.child-theme .performance-header-blur .flex.gap-2 {
+    background: transparent !important;
+}
+
+/* タブボタンの基本スタイル（dashboard.bladeと同じ） */
+.child-theme .performance-tab {
+    position: relative;
+    padding: 0.875rem 1.5rem;
+    font-size: var(--child-text-base);
+    font-weight: 800;
+    border-bottom: 4px solid transparent;
+    background: transparent !important;
+    color: #94a3b8;
+    transition: all 0.3s var(--child-transition-bounce);
+    border-radius: 0.75rem 0.75rem 0 0;
+    letter-spacing: 0.05em;
+}
+
+/* ホバー時 */
+.child-theme .performance-tab:hover:not(.performance-tab-active) {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.1) 0%, 
+        rgba(78, 205, 196, 0.1) 100%) !important;
+    color: var(--child-primary);
+    transform: translateY(-2px);
+}
+
+/* やること（通常タスク）タブ - アクティブ */
+.child-theme .performance-tab-normal.performance-tab-active {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%) !important;
+    color: white;
+    border-bottom-color: var(--child-accent);
+    box-shadow: 
+        0 4px 12px rgba(255, 107, 107, 0.4),
+        0 2px 6px rgba(78, 205, 196, 0.3);
+    transform: translateY(-4px) scale(1.05);
+}
+
+/* クエスト（グループタスク）タブ - アクティブ */
+.child-theme .performance-tab-group.performance-tab-active {
+    background: linear-gradient(135deg, #9b59b6 0%, #ec4899 100%) !important;
+    color: white;
+    border-bottom-color: var(--child-accent);
+    box-shadow: 
+        0 4px 12px rgba(155, 89, 182, 0.4),
+        0 2px 6px rgba(236, 72, 153, 0.3);
+    transform: translateY(-4px) scale(1.05);
+}
+
+/* アクティブなタブのキラキラエフェクト */
+.child-theme .performance-tab-active::before {
+    content: '⭐';
+    position: absolute;
+    left: 0.5rem;
+    top: 10%;
+    transform: translateY(-10%);
+    font-size: 1.25rem;
+    animation: starBounce 1s ease-in-out infinite;
+}
+
+/* 非アクティブなタブ */
+.child-theme .performance-tab-inactive {
+    background: rgba(255, 255, 255, 0.3) !important;
+    color: #94a3b8;
+    border: 2px solid transparent;
+}
+
+.dark .child-theme .performance-tab-inactive {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #9ca3af;
+}
+
+/* ===================================
+   メンバー選択セレクトボックス
+   =================================== */
+.child-theme #user-select {
+    font-size: var(--child-text-sm);
+    font-weight: 700;
+    border: 3px solid #9b59b6;
+    border-radius: 1rem;
+    padding: 0.875rem 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.dark .child-theme #user-select {
+    background: rgba(31, 41, 55, 0.9);
+}
+
+.child-theme #user-select:focus {
+    border-color: #ec4899;
+    box-shadow: 
+        0 0 0 4px rgba(236, 72, 153, 0.2),
+        0 4px 12px rgba(155, 89, 182, 0.3);
+    transform: scale(1.02);
+}
+
+/* ===================================
+   期間選択ボタン（Weekly/Monthly/Yearly）
+   =================================== */
+.child-theme .period-button {
+    font-size: var(--child-text-sm);
+    font-weight: 800;
+    padding: 0.875rem 1.5rem;
+    border: 3px solid transparent;
+    border-radius: 1rem;
+    transition: all 0.3s var(--child-transition-bounce);
+    background: rgba(255, 255, 255, 0.8);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dark .child-theme .period-button {
+    background: rgba(31, 41, 55, 0.8);
+}
+
+.child-theme .period-button:hover:not(.active) {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.2) 0%, 
+        rgba(78, 205, 196, 0.2) 100%);
+    border-color: var(--child-primary);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.3);
+}
+
+.child-theme .period-button.active {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    border-color: var(--child-accent);
+    box-shadow: 
+        0 6px 16px rgba(255, 107, 107, 0.4),
+        0 3px 8px rgba(78, 205, 196, 0.3);
+    transform: translateY(-4px) scale(1.08);
+}
+
+/* ===================================
+   ナビゲーションボタン（前へ/次へ）
+   =================================== */
+.child-theme .nav-button {
+    font-size: var(--child-text-sm);
+    font-weight: 800;
+    padding: 0.75rem 1.25rem;
+    border: 3px solid var(--child-primary);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s var(--child-transition-bounce);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dark .child-theme .nav-button {
+    background: rgba(31, 41, 55, 0.9);
+}
+
+.child-theme .nav-button:hover:not(.disabled) {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+.child-theme .nav-button.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #d1d5db;
+}
+
+/* ===================================
+   期間表示エリア
+   =================================== */
+.child-theme .period-display {
+    font-size: var(--child-text-base);
+    font-weight: 800;
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, 
+        rgba(255, 230, 109, 0.3) 0%, 
+        rgba(255, 160, 122, 0.3) 100%);
+    border: 3px solid var(--child-accent);
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(255, 230, 109, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ===================================
+   グラフコンテナ
+   =================================== */
+.child-theme .chart-container-large {
+    border: 4px solid var(--child-primary);
+    border-radius: 1.5rem;
+    box-shadow: 
+        0 12px 24px rgba(255, 107, 107, 0.2),
+        0 6px 12px rgba(78, 205, 196, 0.15);
+    background: linear-gradient(135deg, 
+        rgba(255, 248, 225, 0.98) 0%, 
+        rgba(255, 235, 205, 0.98) 100%);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.dark .child-theme .chart-container-large {
+    background: linear-gradient(135deg, 
+        rgba(45, 45, 68, 0.98) 0%, 
+        rgba(26, 26, 46, 0.98) 100%);
+    border-color: var(--child-secondary);
+}
+
+/* やること（通常タスク）のグラフ */
+.child-theme .chart-container-large.chart-normal {
+    border-color: var(--child-primary);
+}
+
+/* クエスト（グループタスク）のグラフ */
+.child-theme .chart-container-large.chart-group {
+    border-color: var(--child-quest);
+}
+
+/* グラフヘッダー */
+.child-theme .chart-header {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.2) 0%, 
+        rgba(78, 205, 196, 0.2) 100%);
+    border-bottom: 3px solid var(--child-primary);
+    padding: 1rem 1.5rem;
+}
+
+.child-theme .chart-container-large.chart-group .chart-header {
+    background: linear-gradient(135deg, 
+        rgba(155, 89, 182, 0.2) 0%, 
+        rgba(236, 72, 153, 0.2) 100%);
+    border-bottom-color: var(--child-quest);
+}
+
+/* グラフタイトル */
+.child-theme .chart-title {
+    font-size: var(--child-text-lg);
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* グラフボディ */
+.child-theme .chart-body {
+    padding: 1.5rem;
+    flex: 1;
+    min-height: 0;
+}
+
+/* グラフフッター（統計情報） */
+.child-theme .chart-footer {
+    background: linear-gradient(135deg, 
+        rgba(255, 230, 109, 0.15) 0%, 
+        rgba(255, 160, 122, 0.15) 100%);
+    border-top: 3px solid var(--child-accent);
+    padding: 1rem 1.5rem;
+}
+
+/* 統計情報の表示（YET/DONE/ごうけい） */
+.child-theme .chart-footer .flex {
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.child-theme .chart-footer span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--child-text-base);
+    font-weight: 800;
+    padding: 0.625rem 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 1rem;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.dark .child-theme .chart-footer span {
+    background: rgba(45, 45, 68, 0.8);
+}
+
+.child-theme .chart-footer span:hover {
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* 統計情報の絵文字サイズ */
+.child-theme .chart-footer span::before {
+    font-size: 1.5rem;
+}
+
+/* YET（未完了） - オレンジ */
+.child-theme .chart-footer .stat-yet {
+    border-color: #fb923c;
+}
+
+.child-theme .chart-footer .stat-yet::before {
+    content: '⏳';
+}
+
+/* DONE（完了） - 緑 */
+.child-theme .chart-footer .stat-done {
+    border-color: #10b981;
+}
+
+.child-theme .chart-footer .stat-done::before {
+    content: '✅';
+}
+
+/* ごうけい（累計完了） - 紫 */
+.child-theme .chart-footer .stat-total {
+    border-color: #a855f7;
+}
+
+.child-theme .chart-footer .stat-total::before {
+    content: '🏆';
+}
+
+/* コイン（報酬累計 - クエストのみ） - ゴールド */
+.child-theme .chart-footer .stat-coin {
+    border-color: var(--child-coin);
+}
+
+.child-theme .chart-footer .stat-coin::before {
+    content: '🪙';
+}
+
+/* ===================================
+   グラフ出現アニメーション
+   =================================== */
+.child-theme .chart-container-large {
+    animation: chartFadeIn 0.6s var(--child-transition-bounce);
+}
+
+@keyframes chartFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===================================
+   モバイル最適化（実績画面）
+   =================================== */
+@media (max-width: 767px) {
+    .child-theme .performance-header-title {
+        font-size: var(--child-text-lg);
+    }
+    
+    .child-theme .performance-tab {
+        padding: 0.75rem 1rem;
+        font-size: var(--child-text-sm);
+    }
+    
+    .child-theme .performance-tab-active::before {
+        font-size: 1rem;
+        left: 0.25rem;
+    }
+    
+    .child-theme .period-button {
+        padding: 0.625rem 1rem;
+        font-size: var(--child-text-xs);
+    }
+    
+    .child-theme .nav-button {
+        padding: 0.625rem 1rem;
+        font-size: var(--child-text-xs);
+    }
+    
+    .child-theme .period-display {
+        padding: 0.625rem 1rem;
+        font-size: var(--child-text-sm);
+    }
+    
+    .child-theme .chart-title {
+        font-size: var(--child-text-base);
+    }
+    
+    .child-theme .chart-footer span {
+        font-size: var(--child-text-sm);
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .child-theme .chart-footer span::before {
+        font-size: 1.25rem;
+    }
+}
+
+/* ===================================
+   アクセシビリティ対応
+   =================================== */
+@media (prefers-reduced-motion: reduce) {
+    .child-theme .chart-container-large,
+    .child-theme .performance-tab-active::before {
+        animation: none !important;
+    }
+    
+    .child-theme .performance-tab:hover,
+    .child-theme .period-button:hover,
+    .child-theme .nav-button:hover {
+        transform: none;
     }
 }

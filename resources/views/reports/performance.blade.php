@@ -1,3 +1,4 @@
+
 <x-app-layout>
     @push('styles')
         @vite(['resources/css/reports/performance.css', 'resources/css/dashboard.css'])
@@ -23,11 +24,13 @@
          x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
          class="flex min-h-screen max-h-screen performance-gradient-bg relative overflow-hidden">
         
-        {{-- 背景装飾 --}}
-        <div class="absolute inset-0 pointer-events-none z-0">
-            <div class="absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl performance-floating-decoration"></div>
-            <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl performance-floating-decoration" style="animation-delay: -10s;"></div>
-        </div>
+        {{-- 背景装飾（大人用のみ） --}}
+        @if(!$isChildTheme)
+            <div class="absolute inset-0 pointer-events-none z-0">
+                <div class="absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl performance-floating-decoration"></div>
+                <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl performance-floating-decoration" style="animation-delay: -10s;"></div>
+            </div>
+        @endif
 
         {{-- サイドバー --}}
         <x-layouts.sidebar />
@@ -37,7 +40,7 @@
             
             {{-- ヘッダー --}}
             <header class="shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 performance-header-blur shadow-sm">
-                <div class="px-4 lg:px-6 h-14 lg:h-16 flex items-center justify-between gap-3">
+                <div class="px-3 py-3 sticky top-0 z-10 border-b border-gray-200/50 dark:border-gray-700/50 dashboard-header-blur shadow-sm {{ $isChildTheme ? 'child-theme' : '' }}" >
                     <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <button
                             type="button"
@@ -57,31 +60,39 @@
                             </div>
                             <div>
                                 <h1 class="performance-header-title text-base lg:text-lg font-bold">
-                                    実績ダッシュボード
+                                    @if(!$isChildTheme)
+                                        実績ダッシュボード
+                                    @else
+                                        実績
+                                    @endif
                                 </h1>
-                                <p class="hidden sm:block text-xs text-gray-600 dark:text-gray-400">タスクの進捗状況を可視化</p>
+                                @if(!$isChildTheme)
+                                    <p class="performance-header-subtitle hidden sm:block text-xs text-gray-600 dark:text-gray-400">タスクの進捗状況を可視化</p>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- タブナビゲーション（通常タスク/グループタスク） --}}
+                {{-- タブナビゲーション（やること/クエスト） --}}
                 <div class="flex gap-2 border-t border-gray-200 dark:border-gray-700 px-4 lg:px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
                     <a href="?tab=normal&period={{ $period }}&offset={{ $offset }}"
-                       :class="'{{ $tab }}' === 'normal' ? 'border-[#59B9C6] text-[#59B9C6] performance-tab active' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 performance-tab'"
-                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition inline-flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
-                        <span>通常タスク</span>
+                       :class="'{{ $tab }}' === 'normal' ? 'performance-tab performance-tab-normal performance-tab-active' : 'performance-tab performance-tab-inactive'"
+                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition">
+                        @if(!$isChildTheme)
+                            通常タスク
+                        @else
+                            やること
+                        @endif
                     </a>
                     <a href="?tab=group&period={{ $period }}&offset={{ $offset }}"
-                       :class="'{{ $tab }}' === 'group' ? 'border-purple-600 text-purple-600 performance-tab active' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 performance-tab'"
-                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition inline-flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
-                        </svg>
-                        <span>グループタスク</span>
+                       :class="'{{ $tab }}' === 'group' ? 'performance-tab performance-tab-group performance-tab-active' : 'performance-tab performance-tab-inactive'"
+                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition">
+                        @if(!$isChildTheme)
+                            グループタスク
+                        @else
+                            クエスト
+                        @endif
                     </a>
                 </div>
             </header>
@@ -96,13 +107,23 @@
                             <svg class="w-4 h-4 inline-block mr-1 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
                             </svg>
-                            メンバー選択
+                            @if(!$isChildTheme)
+                                メンバー選択
+                            @else
+                                だれのグラフをみる？
+                            @endif
                         </label>
                         <select 
                             id="user-select" 
                             onchange="window.location.href='?tab=group&period={{ $period }}&offset={{ $offset }}&user_id=' + this.value"
                             class="w-full max-w-xs text-sm border-purple-200 dark:border-purple-700 rounded-lg shadow-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-600/50 bg-white dark:bg-gray-800 pr-8">
-                            <option value="0" {{ $isGroupWhole ? 'selected' : '' }}>グループ全体</option>
+                            <option value="0" {{ $isGroupWhole ? 'selected' : '' }}>
+                                @if(!$isChildTheme)
+                                    グループ全体
+                                @else
+                                    みんな
+                                @endif
+                            </option>
                             @foreach($members as $member)
                                 <option value="{{ $member->id }}" {{ $targetUser && $targetUser->id === $member->id ? 'selected' : '' }}>
                                     {{ $member->username }}
@@ -112,28 +133,40 @@
                     </div>
                 @endif
 
-                {{-- 期間区分選択（週間/月間/年間） --}}
+                {{-- 期間区分選択（Weekly/Monthly/Yearly） --}}
                 <div class="flex gap-2 shrink-0 flex-wrap">
                     <a href="?tab={{ $tab }}&period=week&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
                        class="period-button {{ $period === 'week' ? 'active' : '' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
-                        週間
+                        @if(!$isChildTheme)
+                            週間
+                        @else
+                            Weekly
+                        @endif
                     </a>
                     <a href="?tab={{ $tab }}&period=month&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
                        class="period-button {{ $period === 'month' ? 'active' : '' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
-                        月間
+                        @if(!$isChildTheme)
+                            月間
+                        @else
+                            Monthly
+                        @endif
                     </a>
                     <a href="?tab={{ $tab }}&period=year&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
                        class="period-button {{ $period === 'year' ? 'active' : '' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
-                        年間
+                        @if(!$isChildTheme)
+                            年間
+                        @else
+                            Yearly
+                        @endif
                     </a>
                 </div>
 
@@ -149,7 +182,13 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
-                        <span class="hidden sm:inline">前へ</span>
+                        <span class="hidden sm:inline">
+                            @if(!$isChildTheme)
+                                前へ
+                            @else
+                                まえ
+                            @endif
+                        </span>
                     </a>
 
                     <div class="period-display">
@@ -162,7 +201,13 @@
                     <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset + 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
                        class="nav-button {{ !$periodInfo['canGoNext'] ? 'disabled' : '' }}"
                        @if(!$periodInfo['canGoNext']) onclick="event.preventDefault(); return false;" @endif>
-                        <span class="hidden sm:inline">次へ</span>
+                        <span class="hidden sm:inline">
+                            @if(!$isChildTheme)
+                                次へ
+                            @else
+                                つぎ
+                            @endif
+                        </span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
@@ -171,24 +216,25 @@
 
                 {{-- グラフ表示エリア（画面内に収まるように調整） --}}
                 <div class="flex-1 min-h-0">
-                    <div class="chart-container-large {{ $tab === 'normal' ? 'chart-normal' : 'chart-group' }}">
+                    <div class="chart-container-large {{ $tab === 'normal' ? 'chart-normal' : 'chart-group' }} h-full flex flex-col">
                         <div class="chart-header">
                             <h3 class="chart-title">
                                 @if($tab === 'normal')
-                                    <svg class="w-4 h-4 text-[#59B9C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                    </svg>
-                                    通常タスク -
+                                    @if(!$isChildTheme)
+                                        通常タスク - {{ $periodInfo['displayText'] }}
+                                    @else
+                                        やること - {{ $periodInfo['displayText'] }}
+                                    @endif
                                 @else
-                                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
-                                    </svg>
-                                    グループタスク -
+                                    @if(!$isChildTheme)
+                                        グループタスク - {{ $periodInfo['displayText'] }}
+                                    @else
+                                        クエスト - {{ $periodInfo['displayText'] }}
+                                    @endif
                                 @endif
-                                {{ $periodInfo['displayText'] }}
                             </h3>
                         </div>
-                        <div class="chart-body">
+                        <div class="chart-body flex-1 min-h-0">
                             <canvas id="performance-chart"></canvas>
                         </div>
                         <div class="chart-footer">

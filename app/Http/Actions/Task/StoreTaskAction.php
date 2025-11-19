@@ -82,20 +82,18 @@ class StoreTaskAction
 
         $avatar_event = $groupFlg ? config('const.avatar_events.group_task_created') : config('const.avatar_events.task_created');
 
-        if ($groupFlg) {
-            session()->flash('avatar_event', $avatar_event);
+        // 通常タスク: リダイレクト（同期処理）
+        if (!$groupFlg) {
+            return redirect()->route('dashboard')
+                ->with('success', $msg)
+                ->with('avatar_event', $avatar_event);
         }
 
-        // アバターイベント発火用のセッションをセットしてリダイレクト
-        $route = !$groupFlg
-            ? redirect()->route('dashboard')
-                ->with('success', $msg)
-                ->with('avatar_event', $avatar_event)
-            : response()->json([
-                'message' => $msg,
-                'avatar_event' => $avatar_event,
-            ]);
-
-        return $route;
+        // グループタスク: JSON レスポンス（非同期処理）
+        return response()->json([
+            'message' => $msg,
+            'avatar_event' => $avatar_event,
+            'redirect' => route('dashboard'), // リダイレクト先を追加
+        ]);
     }
 }

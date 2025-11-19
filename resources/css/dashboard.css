@@ -13,13 +13,14 @@
     display: none !important;
 }
 
-.grid > div > * {
+/* 弁当箱グリッド専用に限定（修正） */
+.bento-grid > div > * {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-.grid > div > * > div {
+.bento-grid > div > * > div {
     flex: 1;
 }
 

@@ -408,6 +408,8 @@ class TokenService implements TokenServiceInterface
                     'required' => $additionalAmount,
                     'balance' => $balance->balance,
                 ]);
+                // 事前消費分を返金
+                $this->refundTokens($user, $estimatedAmount, $reason . '（事前消費分返金）', $related);
                 throw new \RuntimeException('トークン残高が不足しています。');
             }
 

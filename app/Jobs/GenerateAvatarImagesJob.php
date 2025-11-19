@@ -344,7 +344,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
             );
 
             // 事前見積もり精算
-            $estimatedCost = config('const.estimate_token');
+            $estimatedCost = $avatar->estimated_token_usage ?? 0;
             $tokenService->settleTokenConsumption(
                 $avatar->user,
                 $estimatedCost,
@@ -605,6 +605,11 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 'female' => 'female',
                 'other' => 'androgynous',
             ],
+            'hair_style' => [
+                'short' => 'short hair',
+                'middle' => 'medium hair',
+                'long' => 'long hair',
+            ],
             'hair_color' => [
                 'black' => 'black hair',
                 'brown' => 'brown hair',
@@ -641,6 +646,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
 
         $parts = [
             $appearanceMap['sex'][$avatar->sex] ?? 'person',
+            $appearanceMap['hair_style'][$avatar->hair_style] ?? '',
             $appearanceMap['hair_color'][$avatar->hair_color] ?? '',
             $appearanceMap['eye_color'][$avatar->eye_color] ?? '',
             $appearanceMap['clothing'][$avatar->clothing] ?? '',

@@ -21,7 +21,6 @@ class StoreTeacherAvatarAction
     {
         // バリデーション済みデータを取得
         $validated = $request->validated();
-
         try {
             $this->teacherAvatarService->createAvatar($request->user(), $validated);
 
