@@ -20,12 +20,6 @@ class ValidateGroupNameAction
         $groupName = $request->input('group_name');
         $currentGroupId = $request->input('current_group_id');
 
-        Log::info('[ValidateGroupName] Request received', [
-            'group_name' => $groupName,
-            'current_group_id' => $currentGroupId,
-            'user_id' => $request->user()->id,
-        ]);
-
         // 空文字チェック
         if (empty($groupName)) {
             return response()->json([
@@ -52,20 +46,11 @@ class ValidateGroupNameAction
         $exists = $query->exists();
 
         if ($exists) {
-            Log::info('[ValidateGroupName] Duplicate group name found', [
-                'group_name' => $groupName,
-                'current_group_id' => $currentGroupId,
-            ]);
-
             return response()->json([
                 'valid' => false,
                 'message' => '× このグループ名は既に使用されています',
             ]);
         }
-
-        Log::info('[ValidateGroupName] Group name is available', [
-            'group_name' => $groupName,
-        ]);
 
         return response()->json([
             'valid' => true,

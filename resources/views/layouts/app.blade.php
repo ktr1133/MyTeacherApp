@@ -30,8 +30,11 @@
         @stack('styles')
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/sidebar/sidebar-store.js'])
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
         
+        {{-- サイドバー制御（Alpine.jsの代わり） --}}
+        @vite(['resources/js/common/sidebar.js'])
+
         {{-- 子ども向けテーマの場合、child-theme.css を読み込む --}}
         @if($isChildTheme ?? false)
             @vite(['resources/css/child-theme.css'])

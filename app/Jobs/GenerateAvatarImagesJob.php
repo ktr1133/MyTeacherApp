@@ -834,8 +834,17 @@ class GenerateAvatarImagesJob implements ShouldQueue
 
         $eventDesc = $eventDescriptions[$eventType] ?? 'ユーザーが何かアクションを起こしたとき';
 
+        // ユーザが子どもである場合は子ども向けのプロンプトを生成
+        $user = $avatar->user;
+        if (($user && $user->useChildTheme())) {
+            $avatarCharacter = "子どもを励まし応援するサポートアバター";
+            $eventDesc .= '（子ども向け）';
+        } else {
+            $avatarCharacter = "教師アバター";
+        }
+
         return <<<PROMPT
-            あなたは以下の性格を持つ教師アバターです：
+            あなたは以下の性格を持つ{$avatarCharacter}です：
             - 口調: {$personalityDesc['tone']}
             - 熱意: {$personalityDesc['enthusiasm']}
             - 丁寧さ: {$personalityDesc['formality']}

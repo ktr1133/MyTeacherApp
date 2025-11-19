@@ -3,6 +3,9 @@
         @vite(['resources/css/dashboard.css', 'resources/css/tasks/pending-approvals.css'])
     @endpush
 
+    {{-- アバターイベント監視用 --}}
+    <x-layouts.avatar-event-common />
+
     <div x-data="{ showSidebar: false }" class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
         {{-- 背景装飾 --}}
         <div class="absolute inset-0 -z-10 pointer-events-none">

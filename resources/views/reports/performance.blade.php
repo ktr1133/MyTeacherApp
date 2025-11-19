@@ -17,6 +17,16 @@
                 period: @json($period),
                 currentData: @json($currentData)
             };
+            
+            // 累積データの確認ログ（デバッグ用）
+            console.log('[Performance] Current data:', window.performanceData.currentData);
+            
+            @if($tab === 'normal')
+                console.log('[Performance] Normal task cumulative:', window.performanceData.currentData.nCumulative);
+            @else
+                console.log('[Performance] Group task cumulative:', window.performanceData.currentData.gCumulative);
+                console.log('[Performance] Reward cumulative:', window.performanceData.currentData.gRewardCumulative);
+            @endif
         </script>
     @endpush
 
@@ -71,6 +81,43 @@
                                 @endif
                             </div>
                         </div>
+
+                        {{-- 期間区分選択（Weekly/Monthly/Yearly） --}}
+                        <div class="flex gap-2 shrink-0 flex-wrap">
+                            <a href="?tab={{ $tab }}&period=week&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                            class="period-button {{ $period === 'week' ? 'active' : '' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                @if(!$isChildTheme)
+                                    週間
+                                @else
+                                    Weekly
+                                @endif
+                            </a>
+                            <a href="?tab={{ $tab }}&period=month&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                            class="period-button {{ $period === 'month' ? 'active' : '' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                @if(!$isChildTheme)
+                                    月間
+                                @else
+                                    Monthly
+                                @endif
+                            </a>
+                            <a href="?tab={{ $tab }}&period=year&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                            class="period-button {{ $period === 'year' ? 'active' : '' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                @if(!$isChildTheme)
+                                    年間
+                                @else
+                                    Yearly
+                                @endif
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -99,7 +146,6 @@
 
             {{-- メインコンテンツエリア --}}
             <main class="flex-1 flex flex-col overflow-hidden px-3 lg:px-6 py-3 lg:py-4 gap-3">
-                
                 {{-- グループタスクのメンバー選択 --}}
                 @if ($tab === 'group' && $members->isNotEmpty())
                     <div class="shrink-0">
@@ -132,43 +178,6 @@
                         </select>
                     </div>
                 @endif
-
-                {{-- 期間区分選択（Weekly/Monthly/Yearly） --}}
-                <div class="flex gap-2 shrink-0 flex-wrap">
-                    <a href="?tab={{ $tab }}&period=week&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                       class="period-button {{ $period === 'week' ? 'active' : '' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        @if(!$isChildTheme)
-                            週間
-                        @else
-                            Weekly
-                        @endif
-                    </a>
-                    <a href="?tab={{ $tab }}&period=month&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                       class="period-button {{ $period === 'month' ? 'active' : '' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        @if(!$isChildTheme)
-                            月間
-                        @else
-                            Monthly
-                        @endif
-                    </a>
-                    <a href="?tab={{ $tab }}&period=year&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                       class="period-button {{ $period === 'year' ? 'active' : '' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        @if(!$isChildTheme)
-                            年間
-                        @else
-                            Yearly
-                        @endif
-                    </a>
-                </div>
 
                 @php
                     $periodInfo = $currentData['periodInfo'];

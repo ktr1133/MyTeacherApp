@@ -30,6 +30,7 @@ export default defineConfig({
                 'resources/js/avatar/avatar-form.js',
                 // 'resources/js/avatar/avatar-wizard-child.js', // Bladeテンプレート内でインライン定義
                 'resources/js/common/notification-polling.js',
+                'resources/js/common/sidebar.js',
                 'resources/js/common/validation-core.js',
                 'resources/js/dashboard/dashboard.js',
                 'resources/js/dashboard/task-search.js',
@@ -39,7 +40,7 @@ export default defineConfig({
                 'resources/js/notifications/notification-search.js',
                 'resources/js/reports/performance.js',
                 'resources/js/profile/profile-validation.js',
-                'resources/js/sidebar/sidebar-store.js',
+                // 'resources/js/sidebar/sidebar-store.js',
                 'resources/js/tags/tags.js',
                 'resources/js/tasks/pending-approvals.js',
                 'resources/js/tasks/search-tasks.js',

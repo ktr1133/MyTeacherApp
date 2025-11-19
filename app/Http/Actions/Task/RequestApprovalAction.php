@@ -21,6 +21,9 @@ class RequestApprovalAction
         // タスクの完了申請
         $this->taskApprovalService->requestApproval($task, Auth::user());
 
-        return redirect()->route('dashboard')->with('success', '完了申請しました。承認をお待ちください。');
+        return redirect()
+            ->route('dashboard')
+            ->with('success', '完了申請しました。承認をお待ちください。')
+            ->with('avatar_event', config('const.avatar_events.task_completed'));
     }
 }

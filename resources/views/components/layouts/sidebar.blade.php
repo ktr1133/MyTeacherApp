@@ -23,6 +23,7 @@
     x-data="{ collapsed: $store.sidebar?.isCollapsed || false }"
     x-init="$watch('$store.sidebar.isCollapsed', value => collapsed = value)"
     :class="collapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2'"
+    data-sidebar="desktop"
     class="hidden lg:flex lg:flex-col shrink-0 bg-white/80 dark:bg-gray-900/80 border-r border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm z-10 transition-all duration-300 overflow-hidden">
     
     <nav class="flex flex-col h-full">
@@ -31,10 +32,11 @@
             {{-- トグルボタン（左側に配置） --}}
             <button 
                 @click="$store.sidebar.toggle()"
+                data-sidebar-action="toggle-desktop"
                 :aria-label="collapsed ? 'サイドバーを展開' : 'サイドバーを最小化'"
                 :aria-expanded="!collapsed"
                 class="mr-4 group relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#59B9C6]/10 to-purple-600/10 hover:from-[#59B9C6]/20 hover:to-purple-600/20 border border-[#59B9C6]/20 hover:border-[#59B9C6]/30 transition-all duration-200 shrink-0"
-                :class="collapsed ? 'mx-auto' : ''">
+            >
                 {{-- 展開時: 左向き二重矢印 --}}
                 <svg x-show="!collapsed" 
                      class="w-5 h-5 text-[#59B9C6] group-hover:text-[#4A9AA5] transition-colors" 
@@ -443,8 +445,8 @@
     <div 
         x-show="showSidebar"
         x-transition.opacity
+        data-sidebar-overlay="mobile"
         class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-        style="pointer-events: auto;"
         @click.stop="showSidebar = false"
         @touchstart.stop="showSidebar = false">
     </div>
@@ -458,6 +460,7 @@
         x-transition:leave="transform transition ease-in duration-200"
         x-transition:leave-start="translate-x-0"
         x-transition:leave-end="-translate-x-full"
+        data-sidebar="mobile"
         class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto"
         @click.stop>
         

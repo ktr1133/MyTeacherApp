@@ -21,7 +21,7 @@
                 if (!isset($bucketMap[0])) {
                     $bucketMap[0] = [
                         'id' => 0,
-                        'name' => '未分類',
+                        'name' => Auth::user()->theme === 'child' ? 'そのほか' : '未分類',
                         'tasks' => collect(),
                     ];
                 }

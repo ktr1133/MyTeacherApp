@@ -19,6 +19,9 @@ class RegenerateAvatarImageAction
     public function __invoke(Request $request)
     {
         $avatar = $this->teacherAvatarService->getUserAvatar($request->user());
+        // シード値を新しく生成して設定
+        $avatar->seed =  random_int(1, 2147483647);
+        $avatar->save();
 
         if (!$avatar) {
             return redirect()->route('avatars.create');
