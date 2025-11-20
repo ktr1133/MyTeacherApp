@@ -5,6 +5,7 @@ namespace App\Services\Task;
 use App\Models\Task;
 use App\Models\User;
 use App\Repositories\Profile\ProfileUserRepositoryInterface;
+use App\Repositories\Tag\TagRepositoryInterface;
 use App\Repositories\Task\TaskRepositoryInterface;
 use App\Services\AI\OpenAIService;
 use App\Services\Notification\NotificationServiceInterface;
@@ -23,6 +24,7 @@ use Illuminate\Support\Carbon;
 class TaskManagementService implements TaskManagementServiceInterface
 {
     protected TaskRepositoryInterface $taskRepository;
+    protected TagRepositoryInterface $tagRepository;
     protected ProfileUserRepositoryInterface $profileUserRepository;
     protected OpenAIService $openAIService;
     protected TagServiceInterface $tagService;
@@ -34,6 +36,7 @@ class TaskManagementService implements TaskManagementServiceInterface
      */
     public function __construct(
         TaskRepositoryInterface $taskRepository,
+        TagRepositoryInterface $tagRepository,
         ProfileUserRepositoryInterface $profileUserRepository,
         OpenAIService $openAIService,
         TagServiceInterface $tagService,
@@ -41,6 +44,7 @@ class TaskManagementService implements TaskManagementServiceInterface
         NotificationServiceInterface $notificationService
     ){
         $this->taskRepository = $taskRepository;
+        $this->tagRepository = $tagRepository;
         $this->profileUserRepository = $profileUserRepository;
         $this->openAIService = $openAIService;
         $this->tagService = $tagService;
@@ -65,8 +69,9 @@ class TaskManagementService implements TaskManagementServiceInterface
         $taskData = $this->makeTaskBaseData($data);
         $taskData['priority'] = $data['priority'] ?? 3;
         $taskData['is_completed'] = false;
+        $is_charged = isset($data['assigned_user_id']) ? true : false;
 
-        DB::transaction(function () use ($user, $data, $taskData, $groupFlg, &$task) {
+        DB::transaction(function () use ($user, $data, $taskData, $groupFlg, $is_charged, &$task) {
             // グループタスクの場合
             if ($groupFlg) {
                 // 追加フィールドの設定
@@ -75,7 +80,7 @@ class TaskManagementService implements TaskManagementServiceInterface
                 $taskData['assigned_by_user_id'] = Auth::user()->id;
                 $taskData['group_task_id'] = $data['group_task_id'];
                 // 担当者が未設定の場合はグループの編集権限のないメンバー全員分にタスクを作成する
-                if (is_null($data['user_id'])) {
+                if (!$is_charged) {
                     // グループメンバのうち、編集権限のないユーザを取得
                     $users = $this->profileUserRepository->getMembersWithoutEditPermission($user->id);
                     foreach ($users as $user) {
@@ -117,7 +122,8 @@ class TaskManagementService implements TaskManagementServiceInterface
                 $task = $this->taskRepository->createTask($user->id, $taskData);
                 // タグを関連付け（タグ名の配列）
                 if (isset($data['tags']) && is_array($data['tags'])) {
-                    $this->taskRepository->syncTagsByName($task, $data['tags']);
+                    $tagNames = $this->tagRepository->findByIds($data['tags'])->pluck('name')->toArray();
+                    $this->taskRepository->syncTagsByName($task, $tagNames);
                 }            
             }
         });

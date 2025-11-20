@@ -17,10 +17,12 @@
     >
 
         {{-- 背景装飾 --}}
-        <div class="absolute inset-0 -z-10 pointer-events-none">
-            <div class="dashboard-floating-decoration absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl"></div>
-            <div class="dashboard-floating-decoration absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" style="animation-delay: 5s;"></div>
-        </div>
+        @if(!$isChildTheme)
+            <div class="absolute inset-0 -z-10 pointer-events-none">
+                <div class="dashboard-floating-decoration absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl"></div>
+                <div class="dashboard-floating-decoration absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" style="animation-delay: 5s;"></div>
+            </div>
+        @endif
 
         {{-- サイドバー --}}
         <x-layouts.sidebar />
@@ -49,10 +51,16 @@
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="tag-header-title text-lg font-bold">
-                                    タグ管理
-                                </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">タスクの分類と整理</p>
+                                @if(!$isChildTheme)
+                                    <h1 class="tag-header-title text-lg font-bold">
+                                        タグ管理
+                                    </h1>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">タスクの分類と整理</p>
+                                @else
+                                    <h1 class="tag-header-title text-lg font-bold">
+                                        タグ
+                                    </h1>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -62,7 +70,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                         </svg>
-                        <span class="hidden sm:inline">タスクリストへ戻る</span>
+                        <span class="hidden sm:inline">{{ !$isChildTheme ? 'タスクリストへ戻る' : 'ToDoにもどる' }}</span>
                     </a>
                 </div>
             </header>

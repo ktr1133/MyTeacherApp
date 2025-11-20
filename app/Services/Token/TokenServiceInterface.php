@@ -4,8 +4,8 @@ namespace App\Services\Token;
 
 use App\Models\User;
 use App\Models\TokenBalance;
-use App\Repositories\Token\TokenRepositoryInterface;
-use Illuminate\Support\Facades\Log;
+use App\Models\TokenPackage;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * トークン管理サービス インターフェース
@@ -99,4 +99,30 @@ interface TokenServiceInterface
         string $reason,
         $related = null
     ): void;
+
+    /**
+     * 利用可能なトークンパッケージ一覧を取得
+     *
+     * @return Collection
+     */
+    public function getAvailablePackages(): Collection;
+
+    /**
+     * IDでトークンパッケージを取得
+     *
+     * @param int $packageId
+     * @return ?TokenPackage
+     */
+    public function findPackageById(int $packageId): ?TokenPackage;
+
+    /**
+     * ユーザーにトークンを付与
+     *
+     * @param User $user ユーザー
+     * @param int $amount 付与量
+     * @param string $reason 理由
+     * @param mixed $related 関連モデル
+     * @return bool
+     */
+    public function grantTokens(User $user, int $amount, string $reason, $related = null): bool;
 }

@@ -26,7 +26,6 @@ class PurchaseTokenRequest extends FormRequest
     {
         return [
             'package_id' => 'required|exists:token_packages,id',
-            'payment_method' => 'required|string',
         ];
     }
 
@@ -40,7 +39,6 @@ class PurchaseTokenRequest extends FormRequest
         return [
             'package_id.required' => 'パッケージを選択してください。',
             'package_id.exists' => '選択されたパッケージが存在しません。',
-            'payment_method.required' => '支払い方法を選択してください。',
         ];
     }
 }

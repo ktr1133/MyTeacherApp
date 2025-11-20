@@ -48,4 +48,13 @@ interface TeacherAvatarRepositoryInterface
      * @return bool
      */
     public function toggleVisibility(TeacherAvatar $avatar): bool;
+
+    /**
+     * イベントに応じたコメントを取得
+     *
+     * @param TeacherAvatar $avatar
+     * @param string $eventType
+     * @return string|null
+     */
+    public function getCommentForEvent(TeacherAvatar $avatar, string $eventType): ?string;
 }

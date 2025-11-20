@@ -117,16 +117,38 @@ class ModalController {
         this.wrapper = document.getElementById('task-modal-wrapper');
         this.content = document.getElementById('task-modal-content');
         this.loadingOverlay = document.getElementById('modal-loading-overlay');
+        // 各ビューの要素
         this.views = {
             input: document.getElementById('modal-state-1'),
             decomposition: document.getElementById('modal-state-2'),
             refine: document.getElementById('modal-state-3')
         };
+        // タスク登録ボタン群
         this.buttons = {
             state1: document.getElementById('state-1-buttons'),
             state2: document.getElementById('state-2-buttons'),
             state3: document.getElementById('state-3-buttons')
         };
+        // 期限フィールドのコンテナ
+        this.dueDateContainers = {
+            short: document.getElementById('due-date-short-container'),
+            mid: document.getElementById('due-date-mid-container'),
+            long: document.getElementById('due-date-long-container')
+        };
+        // 期限入力フィールド
+        this.dueDateInputs = {
+            short: document.getElementById('due_date_short'),
+            mid: document.getElementById('due_date_mid'),
+            long: document.getElementById('due_date_long')
+        };
+        // 子ども用テーマかどうか
+        this.isChildTheme = document.body.classList.contains('child-theme');
+
+        // フォーム要素への参照
+        this.taskTitleInput = document.getElementById('taskTitle');
+        this.taskSpanSelect = document.getElementById('taskSpan');
+        this.simpleRegisterBtn = document.getElementById('simple-register-btn');
+        this.decomposeBtn = document.getElementById('decompose-btn');
     }
 
     /**
@@ -135,12 +157,28 @@ class ModalController {
     open() {
         if (!this.wrapper) return;
         
-        // Alpine.js Store の入力値をリセット
+        // フォームをリセット
+        const form = document.getElementById('task-form');
+        if (form) {
+            form.reset();
+        }
+        
+        // タグのチェックを外す
+        const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
+        tagCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            const label = checkbox.closest('.task-tag-chip');
+            if (label) {
+                this.updateTagChipStyle(label, false);
+            }
+        });
+        
+        // Alpine.js Store をリセット
         const store = Alpine.store?.('dashboard');
         if (store) {
             store.taskTitle = '';
-            store.taskSpan = 2; // デフォルトは中期
-            store.due_date = new Date().getFullYear().toString(); // 現在年
+            store.taskSpan = 2;
+            store.due_date = new Date().getFullYear().toString();
             store.refinementPoints = '';
             store.selectedTags = [];
             store.proposedTasks = [];
@@ -152,12 +190,22 @@ class ModalController {
         // 初期状態にリセット
         this.switchView('input');
         this.hideLoading();
+
+        // スパンを中期に設定
+        if (this.taskSpanSelect) {
+            this.taskSpanSelect.value = '2';
+        }
+
+        // 期限フィールドを初期化（中期をデフォルト表示）
+        this.switchDueDateField(2);
         
+        // ボタンを無効化
+        this.updateButtonStates();
+
         // モーダルを表示
         this.wrapper.classList.remove('hidden');
         this.wrapper.classList.add('flex');
         
-        // トランジション用の遅延
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 this.wrapper.classList.remove('opacity-0');
@@ -172,11 +220,151 @@ class ModalController {
         
         // タイトル入力欄にフォーカス
         setTimeout(() => {
-            const titleInput = document.getElementById('taskTitle');
-            if (titleInput) {
-                titleInput.focus();
+            if (this.taskTitleInput) {
+                this.taskTitleInput.focus();
             }
-        }, 350); // トランジション完了後
+        }, 350);
+    }
+
+    /**
+     * ボタンの有効/無効を更新
+     */
+    updateButtonStates() {
+        const title = this.taskTitleInput?.value.trim() || '';
+        const hasTitle = title.length > 0;
+        
+        console.log('[updateButtonStates] Title:', title, 'HasTitle:', hasTitle);
+        
+        if (this.simpleRegisterBtn) {
+            this.simpleRegisterBtn.disabled = !hasTitle;
+        }
+        if (this.decomposeBtn) {
+            this.decomposeBtn.disabled = !hasTitle;
+        }
+    }
+
+    /**
+     * タグチップのスタイルを更新
+     * @param {HTMLElement} label - ラベル要素
+     * @param {boolean} checked - チェック状態
+     */
+    updateTagChipStyle(label, checked) {
+        const isChildTheme = this.isChildTheme;
+        
+        if (checked) {
+            if (isChildTheme) {
+                label.classList.remove('bg-amber-100', 'text-amber-800');
+                label.classList.add('bg-amber-500', 'text-white');
+            } else {
+                label.classList.remove('bg-gray-100', 'text-gray-700');
+                label.classList.add('bg-[#59B9C6]', 'text-white');
+            }
+        } else {
+            if (isChildTheme) {
+                label.classList.remove('bg-amber-500', 'text-white');
+                label.classList.add('bg-amber-100', 'text-amber-800');
+            } else {
+                label.classList.remove('bg-[#59B9C6]', 'text-white');
+                label.classList.add('bg-gray-100', 'text-gray-700');
+            }
+        }
+    }
+
+    /**
+     * 期限フィールドを切り替える（JavaScriptで制御）
+     * @param {number} span - スパン値（1: 短期, 2: 中期, 3: 長期）
+     */
+    switchDueDateField(span) {
+        // 現在表示中のコンテナを特定
+        const currentContainer = Object.values(this.dueDateContainers).find(c => 
+            c && c.classList.contains('show')
+        );
+        
+        // 対象コンテナを決定
+        let targetContainer = null;
+        let targetInput = null;
+        let defaultValue = '';
+        
+        if (span === 1) {
+            targetContainer = this.dueDateContainers.short;
+            targetInput = this.dueDateInputs.short;
+            defaultValue = new Date().toISOString().split('T')[0];
+        } else if (span === 2) {
+            targetContainer = this.dueDateContainers.mid;
+            targetInput = this.dueDateInputs.mid;
+            defaultValue = new Date().getFullYear().toString();
+        } else if (span === 3) {
+            targetContainer = this.dueDateContainers.long;
+            targetInput = this.dueDateInputs.long;
+            defaultValue = '';
+        }
+        
+        if (!targetContainer || !targetInput) {
+            console.error('[switchDueDateField] Target container or input not found');
+            return;
+        }
+        
+        // 既に表示中の場合は何もしない
+        if (currentContainer === targetContainer) {
+            console.log('[switchDueDateField] Already showing target container');
+            return;
+        }
+        
+        // すべてのフィールドを無効化
+        Object.values(this.dueDateInputs).forEach(input => {
+            if (input) {
+                input.disabled = true;
+            }
+        });
+        
+        // ターゲットフィールドのみ有効化
+        targetInput.disabled = false;
+        targetInput.value = defaultValue;
+        
+        // Alpine.js Store の due_date を更新
+        const store = Alpine.store?.('dashboard');
+        if (store) {
+            store.due_date = defaultValue;
+        }
+        
+        // 子ども用画面：フェードアニメーション
+        if (this.isChildTheme) {
+            // フェードアウト（現在のコンテナ）
+            if (currentContainer) {
+                currentContainer.classList.remove('show');
+            }
+            
+            // フェードイン（新しいコンテナ）
+            setTimeout(() => {
+                // 非表示状態をクリア
+                Object.values(this.dueDateContainers).forEach(container => {
+                    if (container && container !== targetContainer) {
+                        container.classList.remove('show');
+                        container.style.display = 'none';
+                    }
+                });
+                
+                // ターゲットを表示
+                targetContainer.style.display = 'block';
+                requestAnimationFrame(() => {
+                    targetContainer.classList.add('show');
+                });
+            }, 300); // フェードアウト完了を待つ
+        } 
+        // 大人用画面：即座に切り替え
+        else {
+            // すべて非表示
+            Object.values(this.dueDateContainers).forEach(container => {
+                if (container) {
+                    container.classList.remove('show');
+                    container.style.display = 'none';
+                }
+            });
+            
+            // ターゲットを表示
+            targetContainer.style.display = 'block';
+            targetContainer.classList.add('show');
+        }
     }
 
     /**
@@ -597,8 +785,8 @@ document.addEventListener('alpine:init', () => {
         showRefineModal: false,
         isProposing: false,
         taskTitle: '',
-        taskSpan: 2,
-        due_date: '',
+        taskSpan: 2, // デフォルトは中期
+        due_date: new Date().getFullYear().toString(), // デフォルトは現在年
         refinementPoints: '',
         decompositionProposal: null,
         selectedTags: [],
@@ -631,35 +819,17 @@ document.addEventListener('alpine:init', () => {
         /**
          * タスクのスパンを設定する
          * @param {number} index - タスクのインデックス
-         * @param {string} span - 'short'|'mid'|'long'
+         * @param {number} span - スパン値（1: 短期, 2: 中期, 3: 長期）
          */
         setTaskSpan(index, span) {
             this.selectedTaskSpans[index] = span;
-            // スパン変更時は期限をクリア
-            this.selectedTaskDueDates[index] = '';
-        },
-
-        /**
-         * span 変更時の処理
-         * - 1: date input 用に今日をデフォルト
-         * - 2: 年選択用に現在年をセット
-         * - 3: フリーテキスト（空にする）
-         */
-        handleSpanChange(spanValue) {
-            // 文字列で渡される可能性があるため parseInt で数値化
-            const span = parseInt(spanValue, 10);
-            this.taskSpan = span;
-            
+            // スパン変更時は期限をデフォルト値に設定
             if (span === 1) {
-                // 短期: 今日の日付をセット
-                const today = new Date().toISOString().split('T')[0];
-                this.due_date = today;
+                this.selectedTaskDueDates[index] = new Date().toISOString().split('T')[0];
             } else if (span === 2) {
-                // 中期: 現在年をセット
-                this.due_date = new Date().getFullYear().toString();
-            } else if (span === 3) {
-                // 長期: 空にする
-                this.due_date = '';
+                this.selectedTaskDueDates[index] = new Date().getFullYear().toString();
+            } else {
+                this.selectedTaskDueDates[index] = '';
             }
         },
 
@@ -1295,7 +1465,7 @@ class DashboardEventHandler {
         document.addEventListener('keydown', escHandler);
         this.boundHandlers.set('escape-key', escHandler);
 
-        // タイトル入力欄の変更を監視（Alpine.js のフォールバック）
+        // タイトル入力欄の変更を監視
         const taskTitleInput = document.getElementById('taskTitle');
         if (taskTitleInput) {
             const titleInputHandler = (e) => {
@@ -1304,31 +1474,57 @@ class DashboardEventHandler {
                     store.taskTitle = e.target.value;
                 }
                 this.dashboard.state.taskTitle = e.target.value;
+                
+                // ボタンの有効/無効を更新
+                this.dashboard.modal.updateButtonStates();
             };
             taskTitleInput.addEventListener('input', titleInputHandler);
             this.boundHandlers.set('taskTitle-input', titleInputHandler);
         }
 
-        // スパン変更時の処理（期限入力フィールドの表示切替を JavaScript で制御）
+        // スパン変更時の処理
         const taskSpanSelect = document.getElementById('taskSpan');
         if (taskSpanSelect) {
             const spanHandler = (e) => {
                 const span = parseInt(e.target.value, 10);
+                console.log('[spanHandler] Span changed to:', span);
+                
                 const store = Alpine.store?.('dashboard');
                 if (store) {
-                    store.handleSpanChange(span);
+                    store.taskSpan = span;
                 }
                 this.dashboard.state.taskSpan = span;
                 
-                // 期限入力フィールドの表示切替
-                this.#toggleDueDateFields(span);
+                // 期限フィールドの表示切替
+                this.dashboard.modal.switchDueDateField(span);
             };
             taskSpanSelect.addEventListener('change', spanHandler);
             this.boundHandlers.set('taskSpan-change', spanHandler);
-            
-            // 初期表示
-            this.#toggleDueDateFields(parseInt(taskSpanSelect.value, 10));
         }
+
+        // タグチェックボックスの変更を監視
+        const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
+        tagCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const label = e.target.closest('.task-tag-chip');
+                if (label) {
+                    this.dashboard.modal.updateTagChipStyle(label, e.target.checked);
+                }
+                
+                // Alpine.js Store を更新
+                const store = Alpine.store?.('dashboard');
+                if (store) {
+                    const tagId = parseInt(e.target.value);
+                    if (e.target.checked) {
+                        if (!store.selectedTags.includes(tagId)) {
+                            store.selectedTags = [...store.selectedTags, tagId];
+                        }
+                    } else {
+                        store.selectedTags = store.selectedTags.filter(id => id !== tagId);
+                    }
+                }
+            });
+        });
 
         // 再提案の観点入力の変更を監視
         const refinementInput = document.getElementById('refinementPoints');
@@ -1354,17 +1550,17 @@ class DashboardEventHandler {
             this.dashboard.confirmProposal();
         });
 
-        // 分解キャンセル - 初期入力画面に戻る
+        // 分解キャンセル
         this.#bindButton('cancel-decomposition-btn', () => {
             this.dashboard.modal.switchView('input');
         });
 
-        // 再提案 - 再提案入力画面へ
+        // 再提案
         this.#bindButton('refine-proposal-btn', () => {
             this.dashboard.modal.switchView('refine');
         });
 
-        // 再提案キャンセル - 提案レビュー画面に戻る
+        // 再提案キャンセル
         this.#bindButton('cancel-refine-btn', () => {
             this.dashboard.modal.switchView('decomposition');
         });
@@ -1374,7 +1570,7 @@ class DashboardEventHandler {
             this.dashboard.decomposeTask(true);
         });
 
-        // そのまま登録（フォーム送信のみ）
+        // そのまま登録
         const simpleRegisterBtn = document.getElementById('simple-register-btn');
         if (simpleRegisterBtn) {
             const simpleRegisterHandler = (ev) => {
@@ -1385,25 +1581,10 @@ class DashboardEventHandler {
                         ev.preventDefault();
                         return;
                     }
-                    // ← ここで何もしない（フォームが送信される）
                 }
             };
             simpleRegisterBtn.addEventListener('click', simpleRegisterHandler, { once: false });
         }
-    }
-
-    /**
-     * 期限入力フィールドの表示切替（JavaScript で制御）
-     * @param {number} span - スパン値
-     */
-    #toggleDueDateFields(span) {
-        const shortField = document.querySelector('[name="due_date"][type="date"]')?.closest('div');
-        const midField = document.querySelector('[name="due_date"] select')?.closest('div');
-        const longField = document.querySelector('[name="due_date"][type="text"]')?.closest('div');
-
-        if (shortField) shortField.style.display = span === 1 ? 'block' : 'none';
-        if (midField) midField.style.display = span === 2 ? 'block' : 'none';
-        if (longField) longField.style.display = span === 3 ? 'block' : 'none';
     }
 
     #bindButton(id, handler) {

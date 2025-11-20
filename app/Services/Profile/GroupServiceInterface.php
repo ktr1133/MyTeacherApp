@@ -57,4 +57,29 @@ interface GroupServiceInterface
      * @return void
      */
     public function removeMember(User $actor, User $member): void;
+
+    /**
+     * グループ編集権限があるか確認
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function canEditGroup(User $user): bool;
+
+    /**
+     * メンバーのテーマ設定を切り替える。
+     * @param User $actor
+     * @param User $member
+     * @param bool $theme
+     * @return void
+     */
+    public function toggleMemberTheme(User $actor, User $member, bool $theme): void;
+
+    /**
+     * 指定ユーザーのテーマ設定を変更できるか。
+     * @param User $actor
+     * @param User $member
+     * @return bool
+     */
+    public function canChangeThemeOf(User $actor, User $member): bool;
 }

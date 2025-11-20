@@ -1,0 +1,536 @@
+/**
+ * 子ども向けアバターウィザードのスタイル
+ * - カラフルで大きなUI
+ * - アニメーション豊富
+ * - タップしやすいサイズ
+ */
+
+/* ===========================
+   ウィザードステップ
+   =========================== */
+
+.wizard-step-child {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===========================
+   カード（ステップ全体）
+   =========================== */
+
+.wizard-card-child {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.95) 0%, 
+        rgba(255, 250, 240, 0.95) 100%);
+    padding: 2rem;
+    border-radius: 2rem;
+    box-shadow: 
+        0 10px 40px rgba(251, 191, 36, 0.3),
+        0 0 0 4px rgba(251, 146, 60, 0.2);
+    border: 4px solid #fbbf24;
+}
+
+.dark .wizard-card-child {
+    background: linear-gradient(135deg, 
+        rgba(30, 27, 23, 0.95) 0%, 
+        rgba(41, 37, 36, 0.95) 100%);
+    border-color: #f59e0b;
+    box-shadow: 
+        0 10px 40px rgba(251, 191, 36, 0.2),
+        0 0 0 4px rgba(245, 158, 11, 0.3);
+}
+
+/* ===========================
+   タイトル
+   =========================== */
+
+.wizard-title-child {
+    font-size: 2rem;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #78350f;
+    text-shadow: 2px 2px 0 rgba(251, 191, 36, 0.3);
+}
+
+.dark .wizard-title-child {
+    color: #fbbf24;
+    text-shadow: 2px 2px 0 rgba(120, 53, 15, 0.5);
+}
+
+.wizard-subtitle-child {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #92400e;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dark .wizard-subtitle-child {
+    color: #fbbf24;
+}
+
+/* ===========================
+   選択グリッド
+   =========================== */
+
+.selection-grid-child {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+    .selection-grid-child {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* ===========================
+   選択カード
+   =========================== */
+
+.selection-card-child {
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+    border: 4px solid #fbbf24;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 140px;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+}
+
+.dark .selection-card-child {
+    background: linear-gradient(135deg, #292524 0%, #44403c 100%);
+    border-color: #f59e0b;
+}
+
+.selection-card-child:hover {
+    transform: scale(1.08) rotate(2deg);
+    box-shadow: 0 8px 24px rgba(251, 146, 60, 0.4);
+    border-color: #fb923c;
+}
+
+.selection-card-child:active {
+    transform: scale(0.95);
+}
+
+/* 選択状態 */
+.selection-card-active {
+    background: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%);
+    border-color: #f59e0b;
+    box-shadow: 
+        0 8px 24px rgba(251, 146, 60, 0.6),
+        0 0 0 4px rgba(251, 191, 36, 0.3);
+    transform: scale(1.05);
+}
+
+.dark .selection-card-active {
+    background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+}
+
+.selection-card-active .card-label-child,
+.selection-card-active .card-icon-emoji {
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* ===========================
+   カードアイコン
+   =========================== */
+
+.card-icon-emoji {
+    font-size: 3.5rem;
+    line-height: 1;
+}
+
+.card-icon-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+/* ===========================
+   カードラベル
+   =========================== */
+
+.card-label-child {
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: #78350f;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.dark .card-label-child {
+    color: #fef3c7;
+}
+
+/* ===========================
+   チェックマーク
+   =========================== */
+
+.card-checkmark-child {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 900;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.selection-card-active .card-checkmark-child {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ===========================
+   カラーカード（髪色・目の色）
+   =========================== */
+
+.color-card-child {
+    background: linear-gradient(135deg, 
+        var(--card-color, #ffffff) 0%, 
+        color-mix(in srgb, var(--card-color, #ffffff) 70%, white) 100%);
+}
+
+.color-card-child.selection-card-active {
+    background: linear-gradient(135deg, 
+        var(--card-color, #fbbf24) 0%, 
+        color-mix(in srgb, var(--card-color, #fbbf24) 80%, black) 100%);
+}
+
+.color-circle-child {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--card-color, #ffffff);
+    border: 4px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        inset 0 2px 8px rgba(255, 255, 255, 0.3);
+}
+
+/* ===========================
+   モデルグリッド（画風選択）
+   =========================== */
+
+.model-grid-child {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+@media (max-width: 640px) {
+    .model-grid-child {
+        grid-template-columns: 1fr;
+    }
+}
+
+.model-card-child {
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+    border: 4px solid #fbbf24;
+    border-radius: 2rem;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.2);
+}
+
+.dark .model-card-child {
+    background: linear-gradient(135deg, #292524 0%, #44403c 100%);
+    border-color: #f59e0b;
+}
+
+.model-card-child:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(251, 146, 60, 0.4);
+}
+
+.model-card-active {
+    border-color: #fb923c;
+    box-shadow: 
+        0 16px 40px rgba(251, 146, 60, 0.6),
+        0 0 0 6px rgba(251, 191, 36, 0.3);
+    transform: scale(1.05);
+}
+
+.model-sample-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.model-info {
+    padding: 1.5rem;
+}
+
+.model-label-child {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #78350f;
+    margin-bottom: 0.5rem;
+}
+
+.dark .model-label-child {
+    color: #fbbf24;
+}
+
+.model-description-child {
+    font-size: 1rem;
+    color: #92400e;
+    margin-bottom: 1rem;
+}
+
+.dark .model-description-child {
+    color: #fde68a;
+}
+
+.model-features-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature-tag-child {
+    background: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.model-cost-child {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 1rem;
+    font-weight: 800;
+}
+
+.dark .model-cost-child {
+    background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+}
+
+.coin-icon {
+    font-size: 1.5rem;
+}
+
+.cost-amount {
+    font-size: 1.25rem;
+    color: #78350f;
+}
+
+.dark .cost-amount {
+    color: #fbbf24;
+}
+
+.cost-label {
+    color: #92400e;
+}
+
+.dark .cost-label {
+    color: #fde68a;
+}
+
+/* ===========================
+   トグルスイッチ
+   =========================== */
+
+.toggle-switch-child {
+    position: relative;
+    width: 70px;
+    height: 36px;
+    background: #d1d5db;
+    border-radius: 9999px;
+    transition: background 0.3s;
+    border: 3px solid #9ca3af;
+}
+
+.toggle-switch-child.toggle-active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-color: #10b981;
+}
+
+.toggle-slider-child {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 26px;
+    height: 26px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-active .toggle-slider-child {
+    transform: translateX(34px);
+}
+
+/* ===========================
+   確認画面
+   =========================== */
+
+.confirmation-grid-child {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.confirmation-item-child {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    border: 3px solid #fbbf24;
+}
+
+.dark .confirmation-item-child {
+    background: linear-gradient(135deg, #44403c 0%, #57534e 100%);
+    border-color: #f59e0b;
+}
+
+.confirmation-label-child {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 0.5rem;
+}
+
+.dark .confirmation-label-child {
+    color: #fde68a;
+}
+
+.confirmation-value-child {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #78350f;
+}
+
+.dark .confirmation-value-child {
+    color: #fbbf24;
+}
+
+/* ===========================
+   ナビゲーションボタン
+   =========================== */
+
+.wizard-btn-primary-child {
+    background: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%);
+    color: white;
+    padding: 1rem 3rem;
+    border-radius: 9999px;
+    font-size: 1.25rem;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 20px rgba(251, 146, 60, 0.4);
+}
+
+.wizard-btn-primary-child:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 28px rgba(251, 146, 60, 0.6);
+}
+
+.wizard-btn-primary-child:active {
+    transform: scale(0.95);
+}
+
+.wizard-btn-secondary-child {
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    color: #374151;
+    padding: 1rem 3rem;
+    border-radius: 9999px;
+    font-size: 1.25rem;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    display: inline-block;
+}
+
+.wizard-btn-secondary-child:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+}
+
+.wizard-btn-create-child {
+    background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+    color: white;
+    padding: 1.25rem 3.5rem;
+    border-radius: 9999px;
+    font-size: 1.5rem;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 12px 28px rgba(236, 72, 153, 0.5),
+        0 0 0 4px rgba(236, 72, 153, 0.2);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 
+            0 12px 28px rgba(236, 72, 153, 0.5),
+            0 0 0 4px rgba(236, 72, 153, 0.2);
+    }
+    50% {
+        box-shadow: 
+            0 12px 28px rgba(236, 72, 153, 0.7),
+            0 0 0 8px rgba(236, 72, 153, 0.3);
+    }
+}
+
+.wizard-btn-create-child:hover {
+    transform: scale(1.1);
+    box-shadow: 
+        0 16px 36px rgba(236, 72, 153, 0.7),
+        0 0 0 6px rgba(236, 72, 153, 0.3);
+}
+
+.wizard-btn-create-child:active {
+    transform: scale(0.98);
+}

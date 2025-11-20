@@ -343,13 +343,21 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 $aiUsageDetails
             );
 
-            // 事前見積もり精算
-            $estimatedCost = config('const.estimate_token');
-            $tokenService->settleTokenConsumption(
+            // // 事前見積もり精算
+            // $estimatedCost = $avatar->estimated_token_usage ?? 0;
+            // $tokenService->settleTokenConsumption(
+            //     $avatar->user,
+            //     $estimatedCost,
+            //     $totalTokenCost,
+            //     'アバター生成精算',
+            //     $avatar
+            // );
+
+            // トークン消費
+            $tokenService->consumeTokens(
                 $avatar->user,
-                $estimatedCost,
                 $totalTokenCost,
-                'アバター生成精算',
+                'アバター画像生成',
                 $avatar
             );
 
@@ -605,6 +613,11 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 'female' => 'female',
                 'other' => 'androgynous',
             ],
+            'hair_style' => [
+                'short' => 'short hair',
+                'middle' => 'medium hair',
+                'long' => 'long hair',
+            ],
             'hair_color' => [
                 'black' => 'black hair',
                 'brown' => 'brown hair',
@@ -641,6 +654,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
 
         $parts = [
             $appearanceMap['sex'][$avatar->sex] ?? 'person',
+            $appearanceMap['hair_style'][$avatar->hair_style] ?? '',
             $appearanceMap['hair_color'][$avatar->hair_color] ?? '',
             $appearanceMap['eye_color'][$avatar->eye_color] ?? '',
             $appearanceMap['clothing'][$avatar->clothing] ?? '',
@@ -828,8 +842,17 @@ class GenerateAvatarImagesJob implements ShouldQueue
 
         $eventDesc = $eventDescriptions[$eventType] ?? 'ユーザーが何かアクションを起こしたとき';
 
+        // ユーザが子どもである場合は子ども向けのプロンプトを生成
+        $user = $avatar->user;
+        if (($user && $user->useChildTheme())) {
+            $avatarCharacter = "子どもを励まし応援するサポートアバター";
+            $eventDesc .= '（子ども向け）';
+        } else {
+            $avatarCharacter = "教師アバター";
+        }
+
         return <<<PROMPT
-            あなたは以下の性格を持つ教師アバターです：
+            あなたは以下の性格を持つ{$avatarCharacter}です：
             - 口調: {$personalityDesc['tone']}
             - 熱意: {$personalityDesc['enthusiasm']}
             - 丁寧さ: {$personalityDesc['formality']}

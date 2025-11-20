@@ -4,8 +4,12 @@ namespace App\Services\Token;
 
 use App\Models\User;
 use App\Models\TokenBalance;
+use App\Models\TokenPackage;
+use App\Repositories\Token\TokenPackageRepositoryInterface;
 use App\Repositories\Token\TokenRepositoryInterface;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * トークン管理サービス実装
@@ -17,6 +21,7 @@ class TokenService implements TokenServiceInterface
 {
     public function __construct(
         private TokenRepositoryInterface $tokenRepository,
+        private TokenPackageRepositoryInterface $tokenPackageRepository,
     ) {}
 
     /**
@@ -26,7 +31,7 @@ class TokenService implements TokenServiceInterface
     {
         try {
             $balance = $this->getBalanceForUser($user);
-            logger()->info('処理前の残高', [$balance]);
+
             // 残高チェック
             if ($balance->balance < $amount) {
                 Log::warning('Insufficient token balance', [
@@ -39,10 +44,6 @@ class TokenService implements TokenServiceInterface
 
             // トークン消費の計算
             $consumptionData = $this->calculateConsumption($balance, $amount);
-            logger()->info('トークン消費結果', [
-                'user_id' => $user->id,
-                'consumptionData' => $consumptionData,
-            ]);
 
             // 残高更新
             $this->tokenRepository->updateTokenBalance($balance, $consumptionData['balanceUpdate']);
@@ -408,6 +409,8 @@ class TokenService implements TokenServiceInterface
                     'required' => $additionalAmount,
                     'balance' => $balance->balance,
                 ]);
+                // 事前消費分を返金
+                $this->refundTokens($user, $estimatedAmount, $reason . '（事前消費分返金）', $related);
                 throw new \RuntimeException('トークン残高が不足しています。');
             }
 
@@ -470,6 +473,78 @@ class TokenService implements TokenServiceInterface
                 'amount' => $amount,
                 'error' => $e->getMessage(),
             ]);
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAvailablePackages(): Collection
+    {
+        return $this->tokenRepository->getAvailablePackages();
+    }
+
+    /**
+     * IDでトークンパッケージを取得
+     *
+     * @param int $packageId
+     * @return ?TokenPackage
+     */
+    public function findPackageById(int $packageId): ?TokenPackage
+    {
+        return $this->tokenPackageRepository->find($packageId);
+    }
+
+    /**
+     * ユーザーにトークンを付与
+     *
+     * @param User $user ユーザー
+     * @param int $amount 付与量
+     * @param string $reason 理由
+     * @param mixed $related 関連モデル
+     * @return bool
+     */
+    public function grantTokens(User $user, int $amount, string $reason, $related = null): bool
+    {
+        try {
+            $balance = $this->getBalanceForUser($user);
+
+            // 有料残高に付与
+            $newBalance = $balance->balance + $amount;
+            $newPaidBalance = $balance->paid_balance + $amount;
+
+            $this->tokenRepository->updateTokenBalance($balance, [
+                'balance' => $newBalance,
+                'paid_balance' => $newPaidBalance,
+            ]);
+
+            // related が文字列の場合は null に変換
+            if (is_string($related)) {
+                $related = null;
+            }
+
+            // トランザクション記録
+            $this->tokenRepository->createTransaction([
+                'tokenable_type' => $balance->tokenable_type,
+                'tokenable_id'   => $balance->tokenable_id,
+                'user_id'        => $user->id,
+                'type'           => config('const.token_transaction_types.purchase'),
+                'amount'         => $amount,
+                'balance_after'  => $newBalance,
+                'reason'         => $reason,
+                'related_type'   => ($related && is_object($related)) ? get_class($related) : null,
+                'related_id'     => ($related && is_object($related)) ? $related->id : null,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('トークン購入処理でエラーが発生しました。', [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'error' => $e->getMessage(),
+            ]);
+
             return false;
         }
     }

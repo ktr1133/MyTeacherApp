@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             TokenPackageSeeder::class,
             AICostRateSeeder::class,
+            FreeTokenSettingSeeder::class,
         ]);
     }
 }

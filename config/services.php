@@ -73,6 +73,12 @@ return [
         'female'    => '女性',
         'other'     => 'その他',
     ],
+    //// 髪型
+    'hair_style' => [
+        'short'  => '短い',
+        'middle' => '中くらい',
+        'long'   => '長い',
+    ],
     //// 髪色
     'hair_color' => [
         'black'     => '黒',

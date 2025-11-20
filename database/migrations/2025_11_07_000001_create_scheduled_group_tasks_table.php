@@ -17,10 +17,11 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             
             // タスク情報
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->boolean('requires_image')->default(false);
-            $table->integer('reward')->default(0);
+            $table->string('title')->comment('件名');
+            $table->text('description')->nullable()->comment('説明');
+            $table->boolean('requires_image')->default(false)->comment('画像が必要かどうか');
+            $table->integer('reward')->default(0)->comment('報酬');
+            $table->boolean('requires_approval')->default(false)->comment('承認が必要かどうか');
             
             // 担当者設定
             $table->foreignId('assigned_user_id')->nullable()->constrained('users')->onDelete('set null');

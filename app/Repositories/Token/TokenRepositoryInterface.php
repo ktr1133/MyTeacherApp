@@ -149,4 +149,11 @@ interface TokenRepositoryInterface
      * @return FreeTokenSetting
      */
     public function getFreeTokenSettings(): FreeTokenSetting;
+
+    /**
+     * 利用可能なトークンパッケージ一覧を取得
+     *
+     * @return Collection
+     */
+    public function getAvailablePackages(): Collection;
 }

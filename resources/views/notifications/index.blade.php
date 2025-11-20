@@ -46,10 +46,16 @@
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="dashboard-header-title text-lg font-bold">
-                                    お知らせ
-                                </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">通知の確認と管理</p>
+                                @if (!$isChildTheme)
+                                    <h1 class="dashboard-header-title text-lg font-bold">
+                                        お知らせ
+                                    </h1>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">通知の確認と管理</p>
+                                @else
+                                    <h1 class="dashboard-header-title text-lg font-bold">
+                                        お知らせ
+                                    </h1>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -62,7 +68,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                 </svg>
-                                <span class="text-sm font-semibold whitespace-nowrap">すべて既読</span>
+                                <span class="text-sm font-semibold whitespace-nowrap">{{ $isChildTheme ? 'すべて読んだことにする' : 'すべて既読' }}</span>
                             </button>
                         </form>
                     @endif

@@ -10,6 +10,7 @@ use App\Models\PaymentHistory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * トークン関連リポジトリ実装
@@ -165,7 +166,7 @@ class TokenEloquentRepository implements TokenRepositoryInterface
     {
         // 通知システムが実装されている場合はここで作成
         // 現時点では実装なし
-        \Log::info('Token notification', $data);
+        Log::info('Token notification', $data);
         return null;
     }
 
@@ -195,5 +196,15 @@ class TokenEloquentRepository implements TokenRepositoryInterface
     public function getFreeTokenSettings(): FreeTokenSetting
     {
         return FreeTokenSetting::first();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAvailablePackages(): Collection
+    {
+        return TokenPackage::where('is_active', true)
+            ->orderBy('price')
+            ->get();
     }
 }

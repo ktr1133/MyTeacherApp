@@ -34,6 +34,7 @@ class User extends Authenticatable
         'group_edit_flg',
         'is_admin',
         'last_login_at',
+        'theme',
     ];
     
     /**
@@ -240,5 +241,96 @@ class User extends Authenticatable
     public function teacherAvatar()
     {
         return $this->hasOne(TeacherAvatar::class);
+    }
+
+    /**
+     * 親ユーザーかどうか（グループマスターまたは編集権を持つ）
+     */
+    public function isParent(): bool
+    {
+        if (!$this->group_id) {
+            return false;
+        }
+
+        // グループマスターの場合
+        if ($this->group && $this->group->master_user_id === $this->id) {
+            return true;
+        }
+
+        // 編集権を持つ場合
+        return $this->group_edit_flg;
+    }
+
+    /**
+     * 子ユーザーかどうか（編集権を持たない）
+     */
+    public function isChild(): bool
+    {
+        return $this->group_id && !$this->isParent();
+    }
+
+    /**
+     * 子ども向けテーマを使用するか
+     */
+    public function useChildTheme(): bool
+    {
+        return $this->theme === 'child';
+    }
+
+    /**
+     * 指定ユーザーのテーマを変更する権限があるか
+     */
+    public function canChangeThemeOf(User $targetUser): bool
+    {
+        // 自分自身のテーマは変更可能
+        if ($this->id === $targetUser->id) {
+            return true;
+        }
+
+        // 親が子のテーマを変更可能
+        if ($this->isParent() && $targetUser->isChild() && $this->group_id === $targetUser->group_id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * トークン購入時に親の承認が必要かどうか
+     */
+    public function requiresPurchaseApproval(): bool
+    {
+        return $this->isChild() && $this->requires_purchase_approval;
+    }
+
+    /**
+     * トークン購入リクエストとのリレーション
+     */
+    public function tokenPurchaseRequests(): HasMany
+    {
+        return $this->hasMany(TokenPurchaseRequest::class);
+    }
+
+    /**
+     * 承認待ちのトークン購入リクエストを取得
+     */
+    public function pendingPurchaseRequests()
+    {
+        return $this->tokenPurchaseRequests()->pending();
+    }
+
+    /**
+     * 自分の子どものトークン購入リクエストを取得（親用）
+     */
+    public function childrenPurchaseRequests()
+    {
+        if (!$this->isParent()) {
+            return collect();
+        }
+        
+        return TokenPurchaseRequest::whereHas('user', function ($query) {
+            $query->where('group_id', $this->group_id)
+                  ->where('id', '!=', $this->id);
+        })->pending()->with(['user', 'package'])->get();
     }
 }

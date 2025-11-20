@@ -1,7 +1,12 @@
+{{-- filepath: /home/ktr/mtdev/laravel/resources/views/tasks/pending-approvals.blade.php --}}
+
 <x-app-layout>
     @push('styles')
         @vite(['resources/css/dashboard.css', 'resources/css/tasks/pending-approvals.css'])
     @endpush
+
+    {{-- アバターイベント監視用 --}}
+    <x-layouts.avatar-event-common />
 
     <div x-data="{ showSidebar: false }" class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
         {{-- 背景装飾 --}}
@@ -39,9 +44,9 @@
                             </div>
                             <div>
                                 <h1 class="approval-header-title text-lg font-bold">
-                                    承認待ちタスク
+                                    承認待ち一覧
                                 </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">タスクの承認と却下</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">タスク・トークン購入の承認と却下</p>
                             </div>
                         </div>
                     </div>
@@ -91,111 +96,189 @@
             {{-- メインコンテンツ --}}
             <main class="flex-1 p-4 lg:p-6 custom-scrollbar">
                 <div class="max-w-5xl mx-auto">
-                    @php
-                        // 自分が承認者として設定されている承認待ちタスクのみ
-                        $myPendingTasks = $pendingTasks->filter(fn($t) => $t->shouldShowInApprovalList(Auth::id()));
-                    @endphp
+                    @if($approvals->total() > 0)
+                        <div class="space-y-4 mb-6">
+                            @foreach($approvals as $approval)
+                                @if($approval['type'] === 'task')
+                                    {{-- タスクカード --}}
+                                    <div class="bento-card approval-card-task bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 task-card-enter hover:shadow-xl transition-all duration-300 cursor-pointer"
+                                         @click="$dispatch('open-task-modal-{{ $approval['model']->id }}')">
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="flex-1">
+                                                {{-- タイプバッジ --}}
+                                                <div class="mb-3">
+                                                    <span class="approval-type-badge approval-type-task">
+                                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        タスク
+                                                    </span>
+                                                </div>
 
-                    @if($myPendingTasks->count() > 0)
-                        <div class="space-y-4">
-                            @foreach($myPendingTasks as $task)
-                                <div class="bento-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 task-card-enter hover:shadow-xl transition-all duration-300 cursor-pointer"
-                                     @click="$dispatch('open-approval-task-modal-{{ $task->id }}')">
-                                    <div class="flex items-start justify-between mb-4">
-                                        <div class="flex-1">
-                                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ $task->title }}</h3>
-                                            <div class="flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                                <div class="flex items-center gap-1">
-                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    <span>{{ $task->user->username }}</span>
-                                                </div>
-                                                <div class="flex items-center gap-1">
-                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    <span>{{ $task->completed_at->format('Y/m/d H:i') }}</span>
-                                                </div>
-                                            </div>
-                                            
-                                            @if($task->description)
-                                                <p class="text-sm text-gray-700 dark:text-gray-300 mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg line-clamp-3">{{ $task->description }}</p>
-                                            @endif
-                                            
-                                            @if($task->reward)
-                                                <div class="mt-3 inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg">
-                                                    <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    <span class="text-sm font-semibold text-purple-600 dark:text-purple-400">報酬: {{ number_format($task->reward) }}円</span>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-
-                                    {{-- 添付画像プレビュー --}}
-                                    @if($task->images->count() > 0)
-                                        <div class="mb-4">
-                                            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-                                                </svg>
-                                                添付画像 ({{ $task->images->count() }}枚)
-                                            </h4>
-                                            <div class="grid grid-cols-3 gap-2">
-                                                @foreach($task->images->take(3) as $image)
-                                                    <div class="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
-                                                        <img src="{{ Storage::url($image->file_path) }}" 
-                                                             class="w-full h-full object-cover"
-                                                             alt="タスク画像">
+                                                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ $approval['title'] }}</h3>
+                                                
+                                                <div class="flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                    <div class="flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        <span>{{ $approval['requester_name'] }}</span>
                                                     </div>
-                                                @endforeach
+                                                    <div class="flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        <span>{{ $approval['requested_at']->format('Y/m/d H:i') }}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                @if($approval['description'])
+                                                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg line-clamp-3">{{ $approval['description'] }}</p>
+                                                @endif
+                                                
+                                                @if($approval['reward'])
+                                                    <div class="mt-3 inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg">
+                                                        <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        <span class="text-sm font-semibold text-purple-600 dark:text-purple-400">報酬: {{ number_format($approval['reward']) }}円</span>
+                                                    </div>
+                                                @endif
+
+                                                @if($approval['has_images'])
+                                                    <div class="mt-3 inline-flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400">
+                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        添付画像 {{ $approval['images_count'] }}枚
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
-                                    @endif
 
-                                    {{-- 承認/却下ボタン --}}
-                                    <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
-                                         @click.stop>
-                                        <form method="POST" action="{{ route('tasks.approve', $task) }}" class="flex-1">
-                                            @csrf
-                                            <button type="submit" 
-                                                    onclick="return confirm('このタスクを承認しますか？')"
-                                                    class="approval-btn-approve w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-semibold shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 hover:-translate-y-0.5">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                </svg>
-                                                承認する
-                                            </button>
-                                        </form>
-                                        
-                                        <form method="POST" action="{{ route('tasks.reject', $task) }}" class="flex-1">
-                                            @csrf
-                                            <button type="submit" 
-                                                    onclick="return confirm('このタスクを却下しますか？\n担当者は再度完了申請が必要になります。')"
-                                                    class="approval-btn-reject w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-semibold shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:-translate-y-0.5">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        {{-- 承認/却下ボタン --}}
+                                        <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
+                                             @click.stop>
+                                            <form method="POST" action="{{ route('tasks.approve', $approval['model']) }}" class="flex-1">
+                                                @csrf
+                                                <button type="submit" 
+                                                        onclick="return confirm('このタスクを承認しますか？')"
+                                                        class="btn-approve w-full">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                    承認する
+                                                </button>
+                                            </form>
+                                            
+                                            <button type="button"
+                                                    onclick="openRejectModal('task', {{ $approval['model']->id }}, '{{ $approval['title'] }}')"
+                                                    class="btn-reject flex-1"
+                                                    @click.stop>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                 </svg>
                                                 却下する
                                             </button>
-                                        </form>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {{-- タスク編集モーダル --}}
-                                @include('tasks.modal-approval-task-detail', ['task' => $task])
+                                    {{-- タスク詳細モーダル --}}
+                                    @include('dashboard.modal-group-task-detail', ['task' => $approval['model']])
+
+                                @else
+                                    {{-- トークン購入カード --}}
+                                    <div class="bento-card approval-card-token bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 task-card-enter hover:shadow-xl transition-all duration-300">
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="flex-1">
+                                                {{-- タイプバッジ --}}
+                                                <div class="mb-3">
+                                                    <span class="approval-type-badge approval-type-token">
+                                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        トークン購入
+                                                    </span>
+                                                </div>
+
+                                                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">{{ $approval['package_name'] }}</h3>
+                                                
+                                                <div class="flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                    <div class="flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        <span>{{ $approval['requester_name'] }}</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        <span>{{ $approval['requested_at']->format('Y/m/d H:i') }}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="flex gap-4 mt-3">
+                                                    <div class="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-lg">
+                                                        <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"/>
+                                                        </svg>
+                                                        <span class="text-sm font-semibold text-amber-600 dark:text-amber-400">{{ number_format($approval['token_amount']) }} トークン</span>
+                                                    </div>
+                                                    <div class="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-lg">
+                                                        <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        <span class="text-sm font-semibold text-amber-600 dark:text-amber-400">{{ number_format($approval['price']) }}円</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- 承認/却下ボタン --}}
+                                        <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                            <form method="POST" action="{{ route('tokens.requests.approve', $approval['model']) }}" class="flex-1">
+                                                @csrf
+                                                <button type="submit" 
+                                                        onclick="return confirm('このトークン購入を承認しますか？')"
+                                                        class="btn-approve w-full">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                    承認する
+                                                </button>
+                                            </form>
+                                            
+                                            <button type="button"
+                                                    onclick="openRejectModal('token', {{ $approval['model']->id }}, '{{ $approval['package_name'] }}')"
+                                                    class="btn-reject flex-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                                却下する
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
+
+                        {{-- ページネーション --}}
+                        <div class="flex justify-center">
+                            {{ $approvals->links() }}
+                        </div>
+
                     @else
+                        {{-- 空状態 --}}
                         <div class="empty-state text-center py-16 bento-card rounded-2xl shadow-lg">
                             <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <p class="text-lg font-semibold text-gray-900 dark:text-white mb-2">承認待ちのタスクがありません</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">タスクの完了申請があるとここに表示されます</p>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white mb-2">承認待ちの項目がありません</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">すべての申請を処理しました</p>
                         </div>
                     @endif
                 </div>
@@ -203,7 +286,71 @@
         </div>
     </div>
 
+    {{-- 却下理由入力モーダル --}}
+    <div id="reject-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900/75 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">却下理由の入力</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                「<span id="reject-target-name" class="font-semibold"></span>」を却下します
+            </p>
+            
+            <form id="reject-form" method="POST" action="">
+                @csrf
+                <textarea id="reject-reason" 
+                          name="reason" 
+                          rows="4" 
+                          placeholder="却下理由を入力してください（任意）"
+                          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none custom-scrollbar mb-4"></textarea>
+                
+                <div class="flex gap-3">
+                    <button type="button" 
+                            onclick="closeRejectModal()"
+                            class="flex-1 px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                        キャンセル
+                    </button>
+                    <button type="submit"
+                            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition">
+                        却下する
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @push('scripts')
         @vite(['resources/js/tasks/pending-approvals.js'])
+        <script>
+            function openRejectModal(type, id, name) {
+                const modal = document.getElementById('reject-modal');
+                const form = document.getElementById('reject-form');
+                const nameSpan = document.getElementById('reject-target-name');
+                
+                // アクション URL を設定
+                if (type === 'task') {
+                    form.action = `/tasks/${id}/reject`;
+                } else {
+                    form.action = `/tokens/requests/${id}/reject`;
+                }
+                
+                // 対象名を表示
+                nameSpan.textContent = name;
+                
+                // モーダルを表示
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            
+            function closeRejectModal() {
+                const modal = document.getElementById('reject-modal');
+                const textarea = document.getElementById('reject-reason');
+                
+                // フォームをリセット
+                textarea.value = '';
+                
+                // モーダルを非表示
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        </script>
     @endpush
 </x-app-layout>

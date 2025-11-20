@@ -52,6 +52,7 @@ class ToggleTaskCompletionAction
             session()->flash('avatar_event', config('const.avatar_events.task_completed'));
         } else {
             $message = 'タスクを未完了に戻しました。';
+            session()->flash('avatar_event', config('const.avatar_events.task_deleted'));
         }
 
         return redirect()->back()->with('success', $message);

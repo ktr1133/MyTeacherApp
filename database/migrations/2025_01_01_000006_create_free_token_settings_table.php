@@ -13,13 +13,6 @@ class CreateFreeTokenSettingsTable extends Migration
             $table->integer('amount')->default(10000)->comment('無料トークン数');
             $table->timestamps();
         });
-
-        // 初期レコード挿入
-        DB::table('free_token_settings')->insert([
-            'amount' => 10000,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
     }
 
     public function down(): void

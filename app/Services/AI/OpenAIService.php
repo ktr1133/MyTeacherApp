@@ -2,6 +2,7 @@
 
 namespace App\Services\AI;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -37,9 +38,16 @@ class OpenAIService
             throw new \RuntimeException('OpenAI API key is not configured.');
         }
 
-        $systemPrompt = $isRefinement
-            ? 'あなたはタスク細分化の専門家です。与えられたタスクをより小さく具体的なサブタスクに分解してください。箇条書きで短いタスク名だけを出力してください。'
-            : 'あなたはタスク分解の専門家です。与えられたタスクを実行可能な複数のサブタスクに分解してください。箇条書きで短いタスク名だけを出力してください。';
+        $user = Auth::user();
+        if ($user->useChildTheme()) {
+            $systemPrompt = $isRefinement
+                ? 'あなたはタスク細分化の専門家です。与えられたタスクをより小さく具体的なサブタスクに分解してください。箇条書きでタスク名だけを出力してください。ただし、出力するタスク名は小学生程度の子どもに分かるようにしてください。'
+                : 'あなたはタスク分解の専門家です。与えられたタスクを実行可能な複数のサブタスクに分解してください。箇条書きで短いタスク名だけを出力してください。ただし、出力するタスク名は小学生程度の子どもに分かるようにしてください。';
+        } else {
+            $systemPrompt = $isRefinement
+                ? 'あなたはタスク細分化の専門家です。与えられたタスクをより小さく具体的なサブタスクに分解してください。箇条書きで短いタスク名だけを出力してください。'
+                : 'あなたはタスク分解の専門家です。与えられたタスクを実行可能な複数のサブタスクに分解してください。箇条書きで短いタスク名だけを出力してください。';
+        }
 
         $payload = [
             'model' => $this->model,

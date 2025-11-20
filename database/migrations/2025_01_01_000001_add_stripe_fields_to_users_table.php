@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // Stripe関連 (Laravel Cashier)
-            $table->string('stripe_id')->nullable()->index()->after('remember_token');
-            $table->string('pm_type')->nullable()->after('stripe_id');
-            $table->string('pm_last_four', 4)->nullable()->after('pm_type');
-            $table->timestamp('trial_ends_at')->nullable()->after('pm_last_four');
+            $table->string('stripe_id')->nullable()->index()->after('remember_token')->comment('Stripe顧客ID');
+            $table->string('pm_type')->nullable()->after('stripe_id')->comment('支払い方法タイプ');
+            $table->string('pm_last_four', 4)->nullable()->after('pm_type')->comment('支払い方法の下4桁');
+            $table->timestamp('trial_ends_at')->nullable()->after('pm_last_four')->comment('トライアル終了日時');
             
             // トークン管理モード
             $table->enum('token_mode', ['individual', 'group'])

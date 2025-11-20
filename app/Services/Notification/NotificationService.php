@@ -3,6 +3,7 @@
 namespace App\Services\Notification;
 
 use App\Models\NotificationTemplate;
+use App\Models\User;
 use App\Repositories\Notification\NotificationRepositoryInterface;
 use App\Repositories\Profile\GroupRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -23,11 +24,11 @@ class NotificationService implements NotificationServiceInterface
     /**
      * コンストラクタ
      *
-     * @param NotificationRepositoryInterface $repository 通知リポジトリ
+     * @param NotificationRepositoryInterface $notificationRepository 通知リポジトリ
      * @param GroupRepositoryInterface $groupRepository グループリポジトリ
      */
     public function __construct(
-        private NotificationRepositoryInterface $repository,
+        private NotificationRepositoryInterface $notificationRepository,
         private GroupRepositoryInterface $groupRepository
     ) {}
 
@@ -40,7 +41,7 @@ class NotificationService implements NotificationServiceInterface
      */
     public function getUserNotifications(int $userId, int $perPage = 15): LengthAwarePaginator
     {
-        return $this->repository->getUserNotifications($userId, $perPage);
+        return $this->notificationRepository->getUserNotifications($userId, $perPage);
     }
 
     /**
@@ -51,7 +52,7 @@ class NotificationService implements NotificationServiceInterface
      */
     public function getUnreadCount(int $userId): int
     {
-        return $this->repository->getUnreadCount($userId);
+        return $this->notificationRepository->getUnreadCount($userId);
     }
 
     /**
@@ -62,7 +63,7 @@ class NotificationService implements NotificationServiceInterface
      */
     public function markAsRead(int $userNotificationId): void
     {
-        $this->repository->markAsRead($userNotificationId);
+        $this->notificationRepository->markAsRead($userNotificationId);
     }
 
     /**
@@ -73,7 +74,7 @@ class NotificationService implements NotificationServiceInterface
      */
     public function markAllAsRead(int $userId): void
     {
-        $this->repository->markAllAsRead($userId);
+        $this->notificationRepository->markAllAsRead($userId);
     }
 
     /**
@@ -91,8 +92,8 @@ class NotificationService implements NotificationServiceInterface
             $data['sender_id'] = $senderId;
             $data['source'] = 'admin';
             
-            $template = $this->repository->createTemplate($data);
-            $this->repository->distributeNotification($template);
+            $template = $this->notificationRepository->createTemplate($data);
+            $this->notificationRepository->distributeNotification($template);
             
             return $template;
         });
@@ -108,7 +109,7 @@ class NotificationService implements NotificationServiceInterface
      */
     public function updateNotification(int $templateId, array $data, int $updatedBy): NotificationTemplate
     {
-        return $this->repository->updateTemplate($templateId, $data, $updatedBy);
+        return $this->notificationRepository->updateTemplate($templateId, $data, $updatedBy);
     }
 
     /**
@@ -119,7 +120,7 @@ class NotificationService implements NotificationServiceInterface
      */
     public function deleteNotification(int $templateId): void
     {
-        $this->repository->deleteTemplate($templateId);
+        $this->notificationRepository->deleteTemplate($templateId);
     }
 
     /**
@@ -129,7 +130,7 @@ class NotificationService implements NotificationServiceInterface
      */
     public function cleanupExpiredNotifications(): int
     {
-        return $this->repository->deleteExpiredNotifications();
+        return $this->notificationRepository->deleteExpiredNotifications();
     }
 
     /**
@@ -161,9 +162,9 @@ class NotificationService implements NotificationServiceInterface
         
         DB::transaction(function () use ($data) {
             // 通知テンプレートを作成
-            $template = $this->repository->createTemplate($data);
+            $template = $this->notificationRepository->createTemplate($data);
             // ユーザに通知を送信
-            $this->repository->distributeNotification($template);
+            $this->notificationRepository->distributeNotification($template);
         });
     }
 
@@ -198,9 +199,9 @@ class NotificationService implements NotificationServiceInterface
         
         DB::transaction(function () use ($data) {
             // 通知テンプレートを作成
-            $template = $this->repository->createTemplate($data);
+            $template = $this->notificationRepository->createTemplate($data);
             // ユーザに通知を送信
-            $this->repository->distributeNotification($template);
+            $this->notificationRepository->distributeNotification($template);
         });
     }
 
@@ -214,12 +215,12 @@ class NotificationService implements NotificationServiceInterface
     public function getUnreadCountWithNew(int $userId, ?string $lastCheckedAt = null): array
     {
         // 未読件数
-        $unreadCount = $this->repository->getUnreadCount($userId);
+        $unreadCount = $this->notificationRepository->getUnreadCount($userId);
 
         // 最後のチェック以降の新規通知（最大5件）
         $newNotifications = collect();
         if ($lastCheckedAt) {
-            $notifications = $this->repository->getNewNotificationsSince($userId, $lastCheckedAt, 5);
+            $notifications = $this->notificationRepository->getNewNotificationsSince($userId, $lastCheckedAt, 5);
             
             $newNotifications = $notifications->map(function ($notification) {
                 $template = $notification->template;
@@ -250,7 +251,7 @@ class NotificationService implements NotificationServiceInterface
      */
     public function search(array $validated): Collection
     {
-        return $this->repository->search($validated);
+        return $this->notificationRepository->search($validated);
     }
 
     /**
@@ -261,6 +262,179 @@ class NotificationService implements NotificationServiceInterface
      */
     public function searchForDisplayResult(array $validated): LengthAwarePaginator
     {
-        return $this->repository->searchForDisplayResult($validated);
+        return $this->notificationRepository->searchForDisplayResult($validated);
+    }
+
+    /**
+     * コイン購入リクエスト通知を作成（親向け）
+     * 
+     * 【役割】
+     * 子どもがコイン購入をリクエストした際、親に通知を送る。
+     * 既存の createTaskAssignmentNotification() と異なり、
+     * コイン購入という特定の目的に特化した通知。
+     * 
+     * @param User $parent 通知を受け取る親
+     * @param User $child リクエストした子ども
+     * @param \App\Models\TokenPackage $package 購入希望のパッケージ
+     * @return NotificationTemplate
+     */
+    public function createPurchaseRequestNotification(User $parent, User $child, $package): NotificationTemplate
+    {
+        $isChildTheme = $parent->theme === 'child';
+        
+        $title = $isChildTheme 
+            ? "{$child->username}が コインを買いたいって言ってるよ！"
+            : "{$child->username}さんがトークン購入を希望しています";
+        
+        $message = $isChildTheme
+            ? "{$package->name}（{$package->tokens}コイン）を買いたいんだって！"
+            : "{$package->name}（{$package->tokens}トークン）の購入リクエストです。";
+        
+        $templateData = [
+            'sender_id' => $child->id,
+            'source' => 'system',
+            'type' => 'purchase_request',
+            'priority' => 'normal',
+            'title' => $title,
+            'message' => $message,
+            'action_url' => route('tasks.pending-approvals'),
+            'action_text' => $isChildTheme ? '見る' : '承認画面へ',
+            'target_type' => 'users',
+            'target_ids' => [$parent->id],
+            'publish_at' => now(),
+        ];
+        
+        return $this->notificationRepository->createAndDistributeToUser($templateData, $parent->id);
+    }
+
+    /**
+     * コイン購入承認通知を作成（子ども向け）
+     * 
+     * 【役割】
+     * 親がコイン購入を承認した際、子どもに通知を送る。
+     * 既存の createTaskApprovalNotification() と異なり、
+     * コイン購入の承認という特定の目的に特化。
+     * 
+     * @param User $child 通知を受け取る子ども
+     * @param User $parent 承認した親
+     * @param \App\Models\TokenPackage $package 承認されたパッケージ
+     * @return NotificationTemplate
+     */
+    public function createPurchaseApprovedNotification(User $child, User $parent, $package): NotificationTemplate
+    {
+        $isChildTheme = $child->theme === 'child';
+        
+        $title = $isChildTheme 
+            ? "やった！コインを買ってもらえたよ！"
+            : "トークンが購入されあなたに付与されました。";
+        
+        $message = $isChildTheme
+            ? "{$parent->username}が{$package->name}を買ってくれたよ！"
+            : "{$parent->username}さんが{$package->name}を購入しトークンをあなたに付与しました。";
+        
+        $templateData = [
+            'sender_id' => $parent->id,
+            'source' => 'system',
+            'type' => 'purchase_approved',
+            'priority' => 'normal',
+            'title' => $title,
+            'message' => $message,
+            'action_url' => route('dashboard'),
+            'action_text' => $isChildTheme ? '見に行く' : 'トップページへ',
+            'target_type' => 'users',
+            'target_ids' => [$child->id],
+            'publish_at' => now(),
+        ];
+        
+        return $this->notificationRepository->createAndDistributeToUser($templateData, $child->id);
+    }
+
+    /**
+     * コイン購入却下通知を作成（子ども向け）
+     * 
+     * 【役割】
+     * 親がコイン購入を却下した際、子どもに通知を送る。
+     * 却下理由も表示する点が特徴。
+     * 
+     * @param User $child 通知を受け取る子ども
+     * @param User $parent 却下した親
+     * @param \App\Models\TokenPackage $package 却下されたパッケージ
+     * @param string|null $reason 却下理由
+     * @return NotificationTemplate
+     */
+    public function createPurchaseRejectedNotification(User $child, User $parent, $package, ?string $reason = null): NotificationTemplate
+    {
+        $isChildTheme = $child->theme === 'child';
+        
+        $title = $isChildTheme 
+            ? "ざんねん...今回はダメだって"
+            : "トークン購入が却下されました";
+        
+        $message = $isChildTheme
+            ? "{$parent->username}が「今回はダメ」って。{$package->name}は買えないよ。"
+            : "{$parent->username}さんが{$package->name}の購入を却下しました。";
+        
+        if ($reason) {
+            $message .= $isChildTheme 
+                ? "\n理由：{$reason}"
+                : "\n却下理由：{$reason}";
+        }
+        
+        $templateData = [
+            'sender_id' => $parent->id,
+            'source' => 'system',
+            'type' => 'purchase_rejected',
+            'priority' => 'info',
+            'title' => $title,
+            'message' => $message,
+            'action_url' => null,
+            'action_text' => null,
+            'target_type' => 'users',
+            'target_ids' => [$child->id],
+            'publish_at' => now(),
+        ];
+        
+        return $this->notificationRepository->createAndDistributeToUser($templateData, $child->id);
+    }
+
+    /**
+     * コイン購入取り下げ通知を作成（親向け）
+     * 
+     * 【役割】
+     * 子どもがコイン購入リクエストを取り下げた際、親に通知を送る。
+     * 新規メソッドとして追加。
+     * 
+     * @param User $parent 通知を受け取る親
+     * @param User $child 取り下げた子ども
+     * @param \App\Models\TokenPackage $package 取り下げられたパッケージ
+     * @return NotificationTemplate
+     */
+    public function createPurchaseCanceledNotification(User $parent, User $child, $package): NotificationTemplate
+    {
+        $isChildTheme = $parent->theme === 'child';
+        
+        $title = $isChildTheme 
+            ? "{$child->username}が やっぱりやめたって"
+            : "{$child->username}さんがトークン購入をキャンセルしました";
+        
+        $message = $isChildTheme
+            ? "{$package->name}の「買いたい」をやめたんだって。"
+            : "{$package->name}の購入リクエストが取り下げられました。";
+        
+        $templateData = [
+            'sender_id' => $child->id,
+            'source' => 'system',
+            'type' => 'purchase_canceled',
+            'priority' => 'info',
+            'title' => $title,
+            'message' => $message,
+            'action_url' => null,
+            'action_text' => null,
+            'target_type' => 'users',
+            'target_ids' => [$parent->id],
+            'publish_at' => now(),
+        ];
+        
+        return $this->notificationRepository->createAndDistributeToUser($templateData, $parent->id);
     }
 }

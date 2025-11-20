@@ -14,11 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'check.tokens' => \App\Http\Middleware\CheckTokenBalance::class,
-        ]);
-    })
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ]);
+        // ★ Web ミドルウェアグループに追加
+        $middleware->web(append: [
+            \App\Http\Middleware\SetUserTheme::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

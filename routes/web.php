@@ -54,6 +54,7 @@ use App\Http\Actions\Profile\Group\EditGroupAction;
 use App\Http\Actions\Profile\Group\UpdateGroupAction;
 use App\Http\Actions\Profile\Group\AddMemberAction;
 use App\Http\Actions\Profile\Group\UpdateMemberPermissionAction;
+use App\Http\Actions\Profile\Group\ToggleMemberThemeAction;
 use App\Http\Actions\Profile\Group\TransferGroupMasterAction;
 use App\Http\Actions\Profile\Group\RemoveMemberAction;
 use App\Http\Actions\Reports\IndexPerformanceAction;
@@ -78,13 +79,18 @@ use App\Http\Actions\Task\RequestApprovalAction;
 use App\Http\Actions\Task\SearchTasksAction;
 use App\Http\Actions\Task\StoreTaskAction;
 use App\Http\Actions\Task\TaskSearchResultsAction;
+use App\Http\Actions\Task\ToggleTaskCompletionAction;
 use App\Http\Actions\Task\UpdateTaskAction;
 use App\Http\Actions\Task\UpdateTaskDescriptionAction;
 use App\Http\Actions\Task\UploadTaskImageAction;
+use App\Http\Actions\Token\ApproveTokenPurchaseRequestAction;
+use App\Http\Actions\Token\CancelTokenPurchaseRequestAction;
 use App\Http\Actions\Token\HandleStripeWebhookAction;
+use App\Http\Actions\Token\IndexPendingTokenPurchaseRequestsAction;
+use App\Http\Actions\Token\IndexTokenHistoryAction;
 use App\Http\Actions\Token\IndexTokenPurchaseAction;
 use App\Http\Actions\Token\ProcessTokenPurchaseAction;
-use App\Http\Actions\Token\IndexTokenHistoryAction;
+use App\Http\Actions\Token\RejectTokenPurchaseRequestAction;
 use App\Http\Actions\Validation\ValidateGroupNameAction;
 
 use Illuminate\Support\Facades\Route;
@@ -136,6 +142,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/tasks/destroy', DestroyTaskAction::class)->name('tasks.destroy');
     Route::get('/tasks/search', SearchTasksAction::class)->name('tasks.search');
     Route::get('/tasks/search/results', TaskSearchResultsAction::class)->name('tasks.search.results');
+    Route::patch('/tasks/{task}/toggle', ToggleTaskCompletionAction::class)->name('tasks.toggle');
 
     // タスク承認関連
     Route::post('/tasks/{task}/request-approval', RequestApprovalAction::class)->name('tasks.request-approval');
@@ -173,14 +180,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/group', EditGroupAction::class)->name('group.edit');
         Route::patch('/group', UpdateGroupAction::class)->name('group.update');
         Route::post('/group/member', AddMemberAction::class)->name('group.member.add');
-        Route::patch('/group/member/{member}', UpdateMemberPermissionAction::class)->name('group.member.permission');
+        Route::patch('/group/member/{member}/permission', UpdateMemberPermissionAction::class)->name('group.member.permission');
+        Route::patch('/group/member/{member}/theme', ToggleMemberThemeAction::class)->name('group.member.theme');
         Route::post('/group/transfer/{newMaster}', TransferGroupMasterAction::class)->name('group.master.transfer');
         Route::delete('/group/member/{member}', RemoveMemberAction::class)->name('group.member.remove');
     });
-
-    // --- その他のタスク操作 (更新、削除など) ---
-    // 例: タスクの完了状態トグル
-    Route::patch('/tasks/{task}/toggle', App\Http\Actions\Task\ToggleTaskCompletionAction::class)->name('tasks.toggle');
 
     // ========================================
     // スケジュールタスク管理（Batch）
@@ -212,15 +216,24 @@ Route::middleware(['auth'])->group(function () {
     // トークン購入
     Route::get('/tokens/purchase', IndexTokenPurchaseAction::class)->name('tokens.purchase');
     Route::post('/tokens/purchase', ProcessTokenPurchaseAction::class)->name('tokens.purchase.process');
+    // トークン購入リクエスト承認・却下・取り下げ
+    Route::post('/tokens/requests/{purchaseRequest}/approve', ApproveTokenPurchaseRequestAction::class)->name('tokens.requests.approve');
+    Route::post('/tokens/requests/{purchaseRequest}/reject', RejectTokenPurchaseRequestAction::class)->name('tokens.requests.reject');
+    Route::delete('/tokens/requests/{purchaseRequest}/cancel', CancelTokenPurchaseRequestAction::class)->name('tokens.requests.cancel');
+    // トークン購入承認待ち一覧（親用）
+    Route::get('/tokens/pending-approvals', IndexPendingTokenPurchaseRequestsAction::class)->name('tokens.pending-approvals');
     // トークン履歴
-    Route::get('/tokens/history', IndexTokenHistoryAction::class)->name('tokens.history');    
+    Route::get('/tokens/history', IndexTokenHistoryAction::class)->name('tokens.history');
+
+    // ========================================   
     // 通知
+    // ========================================
     Route::get('/notifications', IndexNotificationAction::class)->name('notifications.index');
     Route::post('/notifications/{notification}/read', MarkNotificationAsReadAction::class)->name('notifications.read');
     Route::post('/notifications/read-all', MarkAllNotificationsAsReadAction::class)->name('notifications.read-all');
 
     // ========================================
-    // アバター作成
+    // アバター管理
     // ========================================
     // アバター作成（初回のみ）
     Route::get('/avatars/create', CreateTeacherAvatarAction::class)->name('avatars.create');

@@ -7,8 +7,8 @@ use App\Models\User;
 use App\Repositories\Avatar\TeacherAvatarRepositoryInterface;
 use App\Jobs\GenerateAvatarImagesJob;
 use App\Services\Token\TokenServiceInterface;
-use Illuminate\Support\Str;
 use App\Exceptions\RedirectException;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * 教師アバターサービス
@@ -37,7 +37,11 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         $data['seed'] = random_int(1, 2147483647);
 
         // 背景透過設定
-        $data['is_transparent'] = isset($data['is_transparent']) ? true : false;
+        if (isset($data['is_transparent']) && ($data['is_transparent'] == 'on' || $data['is_transparent'] == '1')) {
+            $data['is_transparent'] = true;
+        } else {
+            $data['is_transparent'] = false;
+        }
 
         // 推定使用トークン量設定
         $estimated_token_usage = config('services.estimated_token_usages')[$data['draw_model_version']] ?? 0;
@@ -51,22 +55,22 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         // アバター作成
         $avatar = $this->repository->create($user, $data);
 
-        // トークン消費
-        $consumed = $this->tokenService->consumeTokens(
-            $user,
-            $avatar->estimated_token_usage,
-            'アバター作成',
-            $avatar
-        );
+        // // トークン消費
+        // $consumed = $this->tokenService->consumeTokens(
+        //     $user,
+        //     $avatar->estimated_token_usage,
+        //     'アバター作成(事前消費)',
+        //     $avatar
+        // );
 
-        if (!$consumed) {
-            logger()->error('Failed to consume tokens for avatar creation', [
-                'user_id' => $user->id,
-                'avatar_id' => $avatar->id,
-            ]);
-            $avatar->delete();
-            throw new RedirectException('トークンが不足しています。');
-        }
+        // if (!$consumed) {
+        //     logger()->error('Failed to consume tokens for avatar creation', [
+        //         'user_id' => $user->id,
+        //         'avatar_id' => $avatar->id,
+        //     ]);
+        //     $avatar->delete();
+        //     throw new RedirectException('トークンが不足しています。');
+        // }
 
         // 画像生成ジョブをディスパッチ
         GenerateAvatarImagesJob::dispatch($avatar->id);
@@ -97,21 +101,10 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
             throw new RedirectException('トークンが不足しています。画像再生成には' . number_format($avatar->estimated_token_usage) . 'トークンが必要です。');
 
         }
-        // トークン消費
-        $consumed = $this->tokenService->consumeTokens(
-            $avatar->user,
-            $avatar->estimated_token_usage,
-            'アバター画像再生成',
-            $avatar
-        );
-
-        if (!$consumed) {
-            throw new \RuntimeException('トークンが不足しています。画像再生成には' . number_format($avatar->estimated_token_usage) . 'トークンが必要です。');
-        }
 
         // 既存画像削除
         foreach ($avatar->images as $image) {
-            \Storage::disk('s3')->delete($image->s3_path);
+            Storage::disk('s3')->delete($image->s3_path);
             $image->delete();
         }
 
