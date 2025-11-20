@@ -1,0 +1,19 @@
+/* トークン履歴画面専用スタイル */
+.history-gradient-bg {
+    background: linear-gradient(135deg, #F3F3F2 0%, #ffffff 50%, #e0e7ff 100%);
+}
+
+.dark .history-gradient-bg {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #312e81 100%);
+}
+
+/* テーブルのレスポンシブ対応 */
+@media (max-width: 640px) {
+    table {
+        font-size: 0.875rem;
+    }
+    
+    th, td {
+        padding: 0.75rem 0.5rem;
+    }
+}

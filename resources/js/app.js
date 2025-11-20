@@ -5,4 +5,7 @@ import './dashboard/dashboard.js';
 
 Alpine.plugin(focus);
 window.Alpine = Alpine;
-Alpine.start();
+// DOMContentLoaded後にAlpineを起動
+document.addEventListener('DOMContentLoaded', () => {
+    Alpine.start();
+});

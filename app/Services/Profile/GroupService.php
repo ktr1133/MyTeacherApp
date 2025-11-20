@@ -4,11 +4,14 @@ namespace App\Services\Profile;
 
 use App\Models\User;
 use App\Models\Group;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Hash;
+use App\Models\FreeTokenSetting;
 use App\Services\Profile\GroupServiceInterface;
+use App\Services\Token\TokenServiceInterface;
 use App\Repositories\Profile\GroupRepositoryInterface;
 use App\Repositories\Profile\GroupUserRepositoryInterface;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class GroupService implements GroupServiceInterface
 {
@@ -17,10 +20,12 @@ class GroupService implements GroupServiceInterface
      *
      * @param GroupRepositoryInterface $groups
      * @param GroupUserRepositoryInterface $groupUsers
+     * @param 
      */
     public function __construct(
         private GroupRepositoryInterface $groups,
-        private GroupUserRepositoryInterface $groupUsers
+        private GroupUserRepositoryInterface $groupUsers,
+        private TokenServiceInterface $tokenService,
     ) {}
 
     /**
@@ -45,16 +50,18 @@ class GroupService implements GroupServiceInterface
      *
      * @param User $actor
      * @param string $groupName
-     * @return Group
+     * @return string
      */
-    public function createOrUpdateGroup(User $actor, string $groupName): Group
+    public function createOrUpdateGroup(User $actor, string $groupName): string
     {
         $group = $actor->group;
         if ($group) {
             if (!$this->canEditGroup($actor)) {
                 abort(403, 'グループを編集する権限がありません。');
             }
-            return $this->groups->rename($group, $groupName);
+            $this->groups->rename($group, $groupName);
+
+            return config('const.avatar_events.group_edited');
         }
 
         $group = $this->groups->create([
@@ -68,7 +75,7 @@ class GroupService implements GroupServiceInterface
             'group_edit_flg' => true,
         ]);
 
-        return $group;
+        return config('const.avatar_events.group_created');
     }
 
     /**
@@ -87,12 +94,19 @@ class GroupService implements GroupServiceInterface
             abort(403, 'グループメンバーを追加する権限がありません。');
         }
 
-        return $this->groupUsers->create([
-            'username' => $username,
-            'password' => Hash::make($password),
-            'group_id' => $group->id,
-            'group_edit_flg' => $canEdit,
-        ]);
+        return DB::transaction(function () use ($username, $password, $group, $canEdit, &$user): User {
+            if (User::where('username', $username)->exists()) {
+                abort(422, '指定されたユーザー名は既に存在します。');
+            }
+
+            // ユーザー作成＆グループ作成
+            return $this->groupUsers->create([
+                'username' => $username,
+                'password' => Hash::make($password),
+                'group_id' => $group->id,
+                'group_edit_flg' => $canEdit,
+            ]);
+        });
     }
 
     /**
@@ -183,8 +197,40 @@ class GroupService implements GroupServiceInterface
      * @param User $user
      * @return bool
      */
-    private function canEditGroup(User $user): bool
+    public function canEditGroup(User $user): bool
     {
         return $user->group_edit_flg || $this->isGroupMaster($user);
+    }
+
+    /**
+     * グループメンバーのテーマ設定を切り替える。
+     *
+     * @param User $actor
+     * @param User $member
+     * @param bool $theme
+     * @return void
+     */
+    public function toggleMemberTheme(User $actor, User $member, bool $theme): void
+    {
+        $group = $actor->group;
+        if (!$group || !$this->canEditGroup($actor)) {
+            abort(403, 'グループメンバーのテーマ設定を変更する権限がありません。');
+        }
+
+        // 子ども用テーマ設定
+        $mode = $theme ? 'child' : 'adult';
+        
+        $this->groupUsers->update($member, ['theme' => $mode]);
+    }
+
+    /**
+     * 指定ユーザーのテーマ設定を変更できるか。
+     * @param User $actor
+     * @param User $member
+     * @return bool
+     */
+    public function canChangeThemeOf(User $actor, User $member): bool
+    {
+        return $actor->canChangeThemeOf($member);
     }
 }

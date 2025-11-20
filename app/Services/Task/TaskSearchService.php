@@ -22,9 +22,31 @@ class TaskSearchService implements TaskSearchServiceInterface
     public function search(int $userId, string $type, string $operator, array $terms): array
     {
         if ($type === 'tag') {
-            return $this->taskRepository->searchByTags($userId, $terms, $operator);
+            $result = $this->taskRepository->searchByTags($userId, $terms, $operator);
+            return $result->isNotEmpty() ? $result->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'span' => $task->span,
+                    'due_date' => $task->due_date,
+                    'tags' => $task->tags->pluck('name')->toArray(),
+                ];
+            })->toArray()
+            : [];
         }
 
-        return $this->taskRepository->searchByTitle($userId, $terms, $operator);
+        $result = $this->taskRepository->searchByTitle($userId, $terms, $operator);
+
+        return $result->isNotEmpty() ? $result->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'span' => $task->span,
+                    'due_date' => $task->due_date,
+                    'tags' => $task->tags->pluck('name')->toArray(),
+                ];
+            })
+            ->toArray()
+            : [];
     }
 }

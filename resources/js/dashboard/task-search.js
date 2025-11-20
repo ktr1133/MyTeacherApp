@@ -9,7 +9,9 @@ class TaskSearchController {
         this.searchTimeout = null;
         this.currentFocusIndex = -1;
         this.searchResults = [];
-        this.currentSearchType = 'title'; // 現在の検索タイプを保持
+        this.currentSearchType = 'title';
+        this.currentTerms = [];
+        this.currentOperator = 'or';
     }
 
     /**
@@ -19,8 +21,8 @@ class TaskSearchController {
         this.searchInput = document.querySelector('input[type="search"]');
         this.filterSelect = document.querySelector('select');
         
-        if (!this.searchInput || !this.filterSelect) {
-            console.warn('Search or filter elements not found');
+        if (!this.searchInput) {
+            console.warn('Search element not found');
             return;
         }
 
@@ -37,7 +39,7 @@ class TaskSearchController {
     createResultsContainer() {
         this.resultsContainer = document.createElement('div');
         this.resultsContainer.id = 'search-results';
-        this.resultsContainer.className = 'absolute top-full left-0 right-0 mt-2 bg-white border rounded-lg shadow-lg z-50 hidden max-h-96 overflow-y-auto';
+        this.resultsContainer.className = 'absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 hidden max-h-96 overflow-y-auto';
         
         const parent = this.searchInput.closest('.relative');
         if (parent) {
@@ -61,7 +63,7 @@ class TaskSearchController {
             
             this.searchTimeout = setTimeout(() => {
                 this.performSearch(e.target.value);
-            }, 2000);
+            }, 300);
         });
 
         // キーボード操作
@@ -85,16 +87,23 @@ class TaskSearchController {
                     this.hideResults();
                     break;
                 case 'Tab':
-                    e.preventDefault();
-                    this.focusNext();
+                    if (!e.shiftKey) {
+                        e.preventDefault();
+                        this.focusNext();
+                    } else {
+                        e.preventDefault();
+                        this.focusPrevious();
+                    }
                     break;
             }
         });
 
-        // フィルター変更
-        this.filterSelect.addEventListener('change', (e) => {
-            this.applyFilter(e.target.value);
-        });
+        // フィルター変更（存在する場合のみ）
+        if (this.filterSelect) {
+            this.filterSelect.addEventListener('change', (e) => {
+                this.applyFilter(e.target.value);
+            });
+        }
 
         // 外側をクリックしたら結果を閉じる
         document.addEventListener('click', (e) => {
@@ -111,6 +120,9 @@ class TaskSearchController {
         try {
             const searchParams = this.parseSearchQuery(query);
             this.currentSearchType = searchParams.type;
+            this.currentTerms = searchParams.terms;
+            this.currentOperator = searchParams.operator;
+            
             const response = await this.searchTasks(searchParams);
             
             this.searchResults = response.tasks || [];
@@ -188,7 +200,7 @@ class TaskSearchController {
         this.currentFocusIndex = -1;
         
         if (!tasks || tasks.length === 0) {
-            this.resultsContainer.innerHTML = '<div class="p-4 text-gray-500 text-center">検索結果は0件でした</div>';
+            this.resultsContainer.innerHTML = '<div class="p-4 text-gray-500 dark:text-gray-400 text-center">検索結果は0件でした</div>';
             this.resultsContainer.classList.remove('hidden');
             return;
         }
@@ -211,13 +223,14 @@ class TaskSearchController {
             const dueDate = task.due_date || '-';
             
             return `
-                <div class="search-result-item p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0" 
+                <div class="search-result-item p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition" 
                      data-index="${index}"
                      data-task-id="${task.id}"
-                     data-result-type="task">
-                    <div class="font-medium">${this.escapeHtml(task.title)}</div>
-                    <div class="text-sm text-gray-600 mt-1">
-                        <span class="text-[#59B9C6]">${tags}</span>
+                     data-result-type="task"
+                     tabindex="0">
+                    <div class="font-medium text-gray-900 dark:text-white">${this.escapeHtml(task.title)}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <span class="text-[#59B9C6] dark:text-[#6BCAD7]">${tags}</span>
                         <span class="mx-2">|</span>
                         <span>${span}</span>
                         <span class="mx-2">|</span>
@@ -230,12 +243,20 @@ class TaskSearchController {
         this.resultsContainer.innerHTML = html;
         this.resultsContainer.classList.remove('hidden');
 
-        // クリックイベントを設定
-        this.resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
+        // クリックイベントとEnterキーイベントを設定
+        this.resultsContainer.querySelectorAll('.search-result-item').forEach((item, index) => {
+            // クリックイベント
             item.addEventListener('click', () => {
-                const taskId = item.dataset.taskId;
-                this.filterDashboardByTask(taskId);
-                this.hideResults();
+                this.navigateToSearchResults();
+            });
+            
+            // Enterキーイベント
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.currentFocusIndex = index;
+                    this.navigateToSearchResults();
+                }
             });
         });
     }
@@ -255,13 +276,15 @@ class TaskSearchController {
             });
         });
 
-        const html = Object.entries(tagGroups).map(([tag, tagTasks]) => {
+        const html = Object.entries(tagGroups).map(([tag, tagTasks], index) => {
             return `
-                <div class="search-result-item p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0" 
+                <div class="search-result-item p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition" 
+                     data-index="${index}"
                      data-tag-name="${tag}"
-                     data-result-type="tag">
-                    <div class="font-medium text-[#59B9C6]">#${this.escapeHtml(tag)}</div>
-                    <div class="text-sm text-gray-600 mt-1">
+                     data-result-type="tag"
+                     tabindex="0">
+                    <div class="font-medium text-[#59B9C6] dark:text-[#6BCAD7]">#${this.escapeHtml(tag)}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         ${tagTasks.length}件のタスク
                     </div>
                 </div>
@@ -271,61 +294,35 @@ class TaskSearchController {
         this.resultsContainer.innerHTML = html;
         this.resultsContainer.classList.remove('hidden');
 
-        // クリックイベントを設定
-        this.resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
+        // クリックイベントとEnterキーイベントを設定
+        this.resultsContainer.querySelectorAll('.search-result-item').forEach((item, index) => {
+            // クリックイベント
             item.addEventListener('click', () => {
-                const tagName = item.dataset.tagName;
-                this.filterDashboardByTag(tagName);
-                this.hideResults();
+                this.navigateToSearchResults();
+            });
+            
+            // Enterキーイベント
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.currentFocusIndex = index;
+                    this.navigateToSearchResults();
+                }
             });
         });
     }
 
     /**
-     * ダッシュボードを特定のタスクのみ表示
+     * 検索結果画面に遷移
      */
-    filterDashboardByTask(taskId) {
-        const gridContainer = document.querySelector('.grid');
-        if (!gridContainer) return;
-
-        const allTaskWrappers = gridContainer.querySelectorAll(':scope > div');
-        
-        allTaskWrappers.forEach(wrapper => {
-            const taskCard = wrapper.querySelector('[data-task-id]');
-            if (taskCard && taskCard.dataset.taskId === taskId) {
-                wrapper.style.display = 'flex';
-            } else {
-                wrapper.style.display = 'none';
-            }
+    navigateToSearchResults() {
+        const params = new URLSearchParams({
+            type: this.currentSearchType,
+            operator: this.currentOperator,
         });
-
-        // リセットボタンを表示
-        this.showResetButton();
-    }
-
-    /**
-     * ダッシュボードをタグで絞り込み
-     */
-    filterDashboardByTag(tagName) {
-        const gridContainer = document.querySelector('.grid');
-        if (!gridContainer) return;
-
-        const allTaskWrappers = gridContainer.querySelectorAll(':scope > div');
+        this.currentTerms.forEach(term => params.append('terms[]', term));
         
-        allTaskWrappers.forEach(wrapper => {
-            const taskCard = wrapper.querySelector('[data-task-id]');
-            if (taskCard) {
-                const taskTags = taskCard.dataset.tags?.split(',') || [];
-                if (taskTags.includes(tagName)) {
-                    wrapper.style.display = 'flex';
-                } else {
-                    wrapper.style.display = 'none';
-                }
-            }
-        });
-
-        // リセットボタンを表示
-        this.showResetButton();
+        window.location.href = `/tasks/search/results?${params.toString()}`;
     }
 
     /**
@@ -345,7 +342,104 @@ class TaskSearchController {
     }
 
     /**
-     * フィルターを適用
+     * リセットボタンを非表示
+     */
+    hideResetButton() {
+        const resetBtn = document.getElementById('reset-filter-btn');
+        if (resetBtn) {
+            resetBtn.style.display = 'none';
+        }
+    }
+
+    /**
+     * スパンをフォーマット
+     */
+    formatSpan(span) {
+        const spanMap = {
+            1: '短期',
+            2: '中期',
+            3: '長期',
+            'short': '短期',
+            'mid': '中期',
+            'long': '長期'
+        };
+        return spanMap[span] || span;
+    }
+
+    /**
+     * HTMLエスケープ
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * エラーメッセージを表示
+     */
+    showError(message) {
+        this.resultsContainer.innerHTML = `<div class="p-4 text-red-500 dark:text-red-400 text-center">${message}</div>`;
+        this.resultsContainer.classList.remove('hidden');
+    }
+
+    /**
+     * 検索結果を非表示
+     */
+    hideResults() {
+        this.resultsContainer.classList.add('hidden');
+        this.currentFocusIndex = -1;
+    }
+
+    /**
+     * 次の項目にフォーカス
+     */
+    focusNext() {
+        const items = this.resultsContainer.querySelectorAll('.search-result-item');
+        if (items.length === 0) return;
+
+        this.currentFocusIndex = (this.currentFocusIndex + 1) % items.length;
+        this.updateFocus(items);
+    }
+
+    /**
+     * 前の項目にフォーカス
+     */
+    focusPrevious() {
+        const items = this.resultsContainer.querySelectorAll('.search-result-item');
+        if (items.length === 0) return;
+
+        this.currentFocusIndex = this.currentFocusIndex <= 0 ? items.length - 1 : this.currentFocusIndex - 1;
+        this.updateFocus(items);
+    }
+
+    /**
+     * フォーカスを更新
+     */
+    updateFocus(items) {
+        items.forEach((item, index) => {
+            if (index === this.currentFocusIndex) {
+                item.classList.add('bg-gray-100', 'dark:bg-gray-700');
+                item.scrollIntoView({ block: 'nearest' });
+                item.focus();
+            } else {
+                item.classList.remove('bg-gray-100', 'dark:bg-gray-700');
+            }
+        });
+    }
+
+    /**
+     * 現在フォーカスされている項目を選択
+     */
+    selectCurrent() {
+        const items = this.resultsContainer.querySelectorAll('.search-result-item');
+        if (this.currentFocusIndex >= 0 && this.currentFocusIndex < items.length) {
+            this.navigateToSearchResults();
+        }
+    }
+
+    /**
+     * フィルターを適用（ダッシュボード用 - オプショナル）
      */
     applyFilter(filterValue) {
         const gridContainer = document.querySelector('.grid');
@@ -397,184 +491,6 @@ class TaskSearchController {
         const parent = wrappers[0]?.parentElement;
         if (parent) {
             sortedData.forEach(({ wrapper }) => parent.appendChild(wrapper));
-        }
-    }
-
-    /**
-     * リセットボタンを表示
-     */
-    showResetButton() {
-        let resetBtn = document.getElementById('reset-filter-btn');
-        
-        if (!resetBtn) {
-            resetBtn = document.createElement('button');
-            resetBtn.id = 'reset-filter-btn';
-            resetBtn.className = 'fixed bottom-8 right-8 bg-[#59B9C6] text-white px-4 py-2 rounded-lg shadow-lg hover:bg-[#4AA5B2] transition-colors z-40';
-            resetBtn.innerHTML = '<i class="fas fa-times mr-2"></i>フィルターをリセット';
-            resetBtn.addEventListener('click', () => {
-                this.resetDashboard();
-                this.searchInput.value = '';
-            });
-            document.body.appendChild(resetBtn);
-        } else {
-            resetBtn.style.display = 'block';
-        }
-    }
-
-    /**
-     * リセットボタンを非表示
-     */
-    hideResetButton() {
-        const resetBtn = document.getElementById('reset-filter-btn');
-        if (resetBtn) {
-            resetBtn.style.display = 'none';
-        }
-    }
-
-    /**
-     * スパンをフォーマット
-     */
-    formatSpan(span) {
-        const spanMap = {
-            1: '短期',
-            2: '中期',
-            3: '長期',
-            'short': '短期',
-            'mid': '中期',
-            'long': '長期'
-        };
-        return spanMap[span] || span;
-    }
-
-    /**
-     * HTMLエスケープ
-     */
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    /**
-     * エラーメッセージを表示
-     */
-    showError(message) {
-        this.resultsContainer.innerHTML = `<div class="p-4 text-red-500 text-center">${message}</div>`;
-        this.resultsContainer.classList.remove('hidden');
-    }
-
-    /**
-     * 検索結果を非表示
-     */
-    hideResults() {
-        this.resultsContainer.classList.add('hidden');
-        this.currentFocusIndex = -1;
-    }
-
-    /**
-     * 次の項目にフォーカス
-     */
-    focusNext() {
-        const items = this.resultsContainer.querySelectorAll('.search-result-item');
-        if (items.length === 0) return;
-
-        this.currentFocusIndex = (this.currentFocusIndex + 1) % items.length;
-        this.updateFocus(items);
-    }
-
-    /**
-     * 前の項目にフォーカス
-     */
-    focusPrevious() {
-        const items = this.resultsContainer.querySelectorAll('.search-result-item');
-        if (items.length === 0) return;
-
-        this.currentFocusIndex = this.currentFocusIndex <= 0 ? items.length - 1 : this.currentFocusIndex - 1;
-        this.updateFocus(items);
-    }
-
-    /**
-     * フォーカスを更新
-     */
-    updateFocus(items) {
-        items.forEach((item, index) => {
-            if (index === this.currentFocusIndex) {
-                item.classList.add('bg-gray-100');
-                item.scrollIntoView({ block: 'nearest' });
-            } else {
-                item.classList.remove('bg-gray-100');
-            }
-        });
-    }
-
-    /**
-     * 現在フォーカスされている項目を選択
-     */
-    selectCurrent() {
-        const items = this.resultsContainer.querySelectorAll('.search-result-item');
-        if (this.currentFocusIndex >= 0 && this.currentFocusIndex < items.length) {
-            const item = items[this.currentFocusIndex];
-            const resultType = item.dataset.resultType;
-            
-            if (resultType === 'tag') {
-                const tagName = item.dataset.tagName;
-                this.filterDashboardByTag(tagName);
-            } else {
-                const taskId = item.dataset.taskId;
-                this.filterDashboardByTask(taskId);
-            }
-            
-            this.hideResults();
-        }
-    }
-
-    /**
-     * フィルターを適用
-     */
-    applyFilter(filterValue) {
-        const taskList = document.querySelector('.space-y-4');
-        if (!taskList) return;
-
-        const tasks = Array.from(taskList.querySelectorAll('[data-task-id]')).filter(task => {
-            return task.style.display !== 'none';
-        });
-        
-        if (filterValue === '期限順') {
-            this.sortByDueDate(tasks);
-        } else if (filterValue === 'タグ') {
-            this.sortByTag(tasks);
-        }
-    }
-
-    /**
-     * 期限順にソート
-     */
-    sortByDueDate(tasks) {
-        tasks.sort((a, b) => {
-            const dateA = a.dataset.dueDate || '9999-12-31';
-            const dateB = b.dataset.dueDate || '9999-12-31';
-            return dateA.localeCompare(dateB);
-        });
-
-        const parent = tasks[0]?.parentElement;
-        if (parent) {
-            tasks.forEach(task => parent.appendChild(task));
-        }
-    }
-
-    /**
-     * タグ順にソート
-     */
-    sortByTag(tasks) {
-        tasks.sort((a, b) => {
-            const tagA = a.dataset.tags?.split(',')[0] || '';
-            const tagB = b.dataset.tags?.split(',')[0] || '';
-            return tagA.localeCompare(tagB);
-        });
-
-        const parent = tasks[0]?.parentElement;
-        if (parent) {
-            tasks.forEach(task => parent.appendChild(task));
         }
     }
 }

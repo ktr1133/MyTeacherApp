@@ -1,0 +1,318 @@
+/**
+ * 通知ページ専用スタイル
+ * 
+ * welcome.css と dashboard.css のデザインを踏襲し、
+ * 通知カードの視覚的な統一感を提供。
+ */
+
+/* ========================================
+   一覧ページ - 簡易カード
+   ======================================== */
+
+/**
+ * 一覧カードの基本スタイル
+ */
+.notification-list-card {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.notification-list-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(89, 185, 198, 0.3);
+}
+
+/**
+ * 未読カードのグラデーション
+ */
+.notification-list-card-unread {
+    background: linear-gradient(135deg, 
+        rgba(89, 185, 198, 0.08) 0%, 
+        rgba(139, 92, 246, 0.08) 100%
+    );
+    border-color: rgba(89, 185, 198, 0.3);
+}
+
+.dark .notification-list-card-unread {
+    background: linear-gradient(135deg, 
+        rgba(89, 185, 198, 0.15) 0%, 
+        rgba(139, 92, 246, 0.15) 100%
+    );
+}
+
+/**
+ * 未読ドットのパルスアニメーション
+ */
+.notification-unread-dot {
+    animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    box-shadow: 0 0 0 0 rgba(89, 185, 198, 0.7);
+}
+
+@keyframes pulse-dot {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(89, 185, 198, 0.7);
+    }
+    50% {
+        opacity: 0.8;
+        box-shadow: 0 0 0 4px rgba(89, 185, 198, 0);
+    }
+}
+
+/**
+ * 未読件数バッジ
+ */
+.notification-unread-badge {
+    background: linear-gradient(135deg, #59B9C6 0%, #3b82f6 100%);
+    animation: badge-glow 3s ease-in-out infinite;
+}
+
+@keyframes badge-glow {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(89, 185, 198, 0.4);
+    }
+    50% {
+        box-shadow: 0 6px 20px rgba(89, 185, 198, 0.6);
+    }
+}
+
+/* ========================================
+   優先度バッジ（一覧ページ）
+   ======================================== */
+
+.notification-priority-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    transition: all 0.3s ease;
+}
+
+/**
+ * 重要 - 柔らかい赤系グラデーション
+ */
+.notification-priority-important {
+    background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
+    color: #7f1d1d;
+    box-shadow: 0 2px 8px rgba(248, 113, 113, 0.3);
+}
+
+.dark .notification-priority-important {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: #fecaca;
+}
+
+/**
+ * 通常 - 柔らかい青系グラデーション
+ */
+.notification-priority-normal {
+    background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+    color: #1e3a8a;
+    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+}
+
+.dark .notification-priority-normal {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #dbeafe;
+}
+
+/**
+ * 情報 - 柔らかいグレー系グラデーション
+ */
+.notification-priority-info {
+    background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+    color: #1f2937;
+    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.2);
+}
+
+.dark .notification-priority-info {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: #e5e7eb;
+}
+
+/* ========================================
+   詳細ページ
+   ======================================== */
+
+/**
+ * 詳細カード
+ */
+.notification-detail-card {
+    background: linear-gradient(to bottom, 
+        rgba(255, 255, 255, 0.95) 0%, 
+        rgba(255, 255, 255, 1) 100%
+    );
+}
+
+.dark .notification-detail-card {
+    background: linear-gradient(to bottom, 
+        rgba(31, 41, 55, 0.95) 0%, 
+        rgba(17, 24, 39, 1) 100%
+    );
+}
+
+/**
+ * ヘッダー部分のグラデーション
+ */
+.notification-detail-header {
+    background: linear-gradient(135deg, 
+        #59B9C6 0%, 
+        #3b82f6 50%, 
+        #8b5cf6 100%
+    );
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+    position: relative;
+}
+
+.notification-detail-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, 
+        rgba(255, 255, 255, 0.1) 0%, 
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+@keyframes gradient-shift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/**
+ * 本文部分
+ */
+.notification-detail-body {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.dark .notification-detail-body {
+    background: rgba(17, 24, 39, 0.5);
+}
+
+/**
+ * 詳細ページの優先度バッジ
+ */
+.notification-detail-priority {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.notification-detail-priority-important {
+    background: linear-gradient(135deg, 
+        rgba(254, 202, 202, 0.9) 0%, 
+        rgba(252, 165, 165, 0.9) 100%
+    );
+    color: #7f1d1d;
+}
+
+.dark .notification-detail-priority-important {
+    background: linear-gradient(135deg, 
+        rgba(220, 38, 38, 0.9) 0%, 
+        rgba(185, 28, 28, 0.9) 100%
+    );
+    color: #fef2f2;
+}
+
+.notification-detail-priority-normal {
+    background: linear-gradient(135deg, 
+        rgba(219, 234, 254, 0.9) 0%, 
+        rgba(191, 219, 254, 0.9) 100%
+    );
+    color: #1e3a8a;
+}
+
+.dark .notification-detail-priority-normal {
+    background: linear-gradient(135deg, 
+        rgba(59, 130, 246, 0.9) 0%, 
+        rgba(37, 99, 235, 0.9) 100%
+    );
+    color: #eff6ff;
+}
+
+.notification-detail-priority-info {
+    background: linear-gradient(135deg, 
+        rgba(229, 231, 235, 0.9) 0%, 
+        rgba(209, 213, 219, 0.9) 100%
+    );
+    color: #1f2937;
+}
+
+.dark .notification-detail-priority-info {
+    background: linear-gradient(135deg, 
+        rgba(107, 114, 128, 0.9) 0%, 
+        rgba(75, 85, 99, 0.9) 100%
+    );
+    color: #f3f4f6;
+}
+
+/* ========================================
+   アラート（成功メッセージ）
+   ======================================== */
+
+.notification-alert {
+    animation: slide-in-down 0.5s ease-out;
+}
+
+@keyframes slide-in-down {
+    from {
+        opacity: 0;
+        transform: translateY(-1rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   レスポンシブ調整
+   ======================================== */
+
+@media (max-width: 640px) {
+    .notification-list-card {
+        padding: 1rem;
+    }
+
+    .notification-detail-header {
+        padding: 1.5rem;
+    }
+
+    .notification-detail-body {
+        padding: 1.5rem;
+    }
+}
+
+/* ========================================
+   アクセシビリティ（モーション削減）
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .notification-list-card,
+    .notification-unread-dot,
+    .notification-unread-badge,
+    .notification-detail-header,
+    .notification-alert {
+        animation: none !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -2,11 +2,14 @@
 
 namespace App\Http\Actions\Task;
 
+use App\Http\Requests\Task\StoreTaskRequest;
+use App\Services\Profile\GroupServiceInterface;
+use App\Services\Profile\ProfileManagementServiceInterface;
 use App\Services\Task\TaskManagementServiceInterface;
-use Illuminate\Http\Request;
+use App\Services\Task\TaskApprovalServiceInterface;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 /**
@@ -14,50 +17,42 @@ use Illuminate\Support\Str;
  */
 class StoreTaskAction
 {
-    protected TaskManagementServiceInterface $service;
+    protected TaskManagementServiceInterface $taskManagementService;
+    protected GroupServiceInterface $groupService;
+    protected ProfileManagementServiceInterface $profileService;
+    protected TaskApprovalServiceInterface $taskApprovalService;
 
     /**
      * コンストラクタ。タスク管理サービスインターフェースを注入。
      */
     public function __construct(
-        TaskManagementServiceInterface $service
+        TaskManagementServiceInterface $taskManagementService,
+        GroupServiceInterface $groupService,
+        ProfileManagementServiceInterface $profileService,
+        TaskApprovalServiceInterface $taskApprovalService
     ) {
-        $this->task_management_service = $service;
+        $this->taskManagementService = $taskManagementService;
+        $this->groupService = $groupService;
+        $this->profileService = $profileService;
+        $this->taskApprovalService = $taskApprovalService;
     }
 
     /**
      * タスクをDBに保存し、リダイレクトする。
      *
-     * @param Request $request POSTリクエスト
-     * @return RedirectResponse メインメニューへのリダイレクト
+     * @param StoreTaskRequest $request POSTリクエスト
+     * @return RedirectResponse|JsonResponse
      */
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(StoreTaskRequest $request): RedirectResponse|JsonResponse
     {
-        $rules = [
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'span' => ['required', 'integer', 'in:1,2,3'],
-            'due_date' => ['nullable', 'string'],
-            'priority' => ['nullable', 'integer', 'between:1,5'],
-            'tags' => ['nullable', 'array'],
-            'tags.*' => ['string', 'max:50'],
-        ];
-        
-        // グループタスクの場合の追加バリデーション
-        if ($request->boolean('is_group_task')) {
-            $rules['assigned_user_id'] = ['nullable', 'integer', 'exists:users,id'];
-            $rules['reward'] = ['required', 'integer', 'min:0'];
-            $rules['requires_approval'] = ['required', 'boolean'];
-        }
-
-        $data = $request->validate($rules);
+        $data = $request->validated();
 
         // グループタスクの場合、追加フィールドを設定
         $groupFlg = false;
-        if ($request->boolean('is_group_task')) {
-            // グループタスク作成
+        if ($request->isGroupTask()) {
+            // グループタスク作成権限チェック
             $user = Auth::user();
-            if (!$user->canEditGroup() || !$user->group_id) {
+            if (!$this->groupService->canEditGroup($user) || !$user->group_id) {
                 abort(403, 'グループタスク作成権限がありません。');
             }
 
@@ -65,20 +60,49 @@ class StoreTaskAction
 
             // 共通識別子を生成
             $data['group_task_id'] = (string) Str::uuid();
-            logger()->info('Generated group_task_id: ' . $data['group_task_id']);
+
             // タスクの所有者は担当者
             $userId = $data['assigned_user_id'];
-            // 担当者が未設定の場合は、グループの編集権限のないメンバー全員宛にタスクを作成する
-            $groupFlg = is_null($userId) ? true : false;
-            unset($data['assigned_user_id']);
+
+            // グループタスクフラグを立てる
+            $groupFlg = true;
+
+            // 承認要否を設定（チェックボックスがない場合はfalse）
+            $data['requires_approval'] = $request->requiresApproval();
         }
 
-        $user = isset($userId) && !is_null($userId) ? $this->task_management_service->getUserById($userId) : Auth::user();
+        $user = isset($userId) && !is_null($userId) 
+            ? $this->taskManagementService->getUserById($userId) 
+            : Auth::user();
 
-        // 2. Serviceに処理を委譲
-        $this->task_management_service->createTask($user, $data, $groupFlg);
+        $task = $this->taskManagementService->createTask($user, $data, $groupFlg);
+        
+        // 承認不要のグループタスクの場合は自動承認
+        if ($groupFlg && !$task->requires_approval) {
+            // 承認者（assigned_by_user_id）を取得して自動承認
+            $approver = $this->profileService->findUserById($task->assigned_by_user_id);
+            if ($approver) {
+                $this->taskApprovalService->approveTaskWithoutNotification($task, $approver);
+            }
+        }
 
-        // 3. 成功メッセージと共にリダイレクト
-        return redirect()->route('dashboard')->with('success', 'タスクが登録されました。');
+        $msg = $groupFlg ? 'グループタスクが登録されました。' : 'タスクが登録されました。';
+
+        $avatar_event = $groupFlg 
+            ? config('const.avatar_events.group_task_created') 
+            : config('const.avatar_events.task_created');
+
+        // 通常タスク: リダイレクト（同期処理）
+        if (!$groupFlg) {
+            return redirect()->route('dashboard')
+                ->with('success', $msg)
+                ->with('avatar_event', $avatar_event);
+        }
+
+        // グループタスク: JSON レスポンス（非同期処理）
+        return response()->json([
+            'message' => $msg,
+            'avatar_event' => $avatar_event,
+        ]);
     }
 }

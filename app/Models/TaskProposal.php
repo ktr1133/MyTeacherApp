@@ -29,8 +29,12 @@ class TaskProposal extends Model
         'proposal_context',
         'proposed_tasks_json',
         'model_used',
+        'prompt_tokens',
+        'completion_tokens',
+        'total_tokens',
         'adopted_proposed_tasks_json',
         'was_adopted',
+        'adopted_task_ids',
     ];
 
     /**
@@ -42,6 +46,9 @@ class TaskProposal extends Model
         'proposed_tasks_json' => 'array', // JSONカラムを自動的にPHP配列にキャスト
         'adopted_proposed_tasks_json' => 'array',
         'was_adopted' => 'boolean',
+        'prompt_tokens' => 'integer',
+        'completion_tokens' => 'integer',
+        'total_tokens' => 'integer',
     ];
 
     /**
@@ -59,5 +66,32 @@ class TaskProposal extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * トークン使用量を取得
+     */
+    public function getTokenUsage(): array
+    {
+        return [
+            'prompt_tokens' => $this->prompt_tokens,
+            'completion_tokens' => $this->completion_tokens,
+            'total_tokens' => $this->total_tokens,
+        ];
+    }
+
+    /**
+     * トークンコストを計算（概算）
+     * GPT-4o-miniの場合: 入力$0.150/1M, 出力$0.600/1M
+     */
+    public function estimateCost(): float
+    {
+        $inputCostPer1M = 0.150;
+        $outputCostPer1M = 0.600;
+
+        $inputCost = ($this->prompt_tokens / 1000000) * $inputCostPer1M;
+        $outputCost = ($this->completion_tokens / 1000000) * $outputCostPer1M;
+
+        return round($inputCost + $outputCost, 6);
     }
 }

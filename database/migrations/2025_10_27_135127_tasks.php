@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
 
-            // 外部キー用。nullable OK（外部キー制約は別マイグレーションで追加）
+            // 外部キー用カラム
             $table->unsignedBigInteger('source_proposal_id')->nullable();
             $table->unsignedBigInteger('assigned_by_user_id')->nullable(); // タスクを割り当てたユーザーID
             $table->unsignedBigInteger('approved_by_user_id')->nullable(); // 承認者のユーザーID
@@ -23,7 +23,7 @@ return new class extends Migration
             // タスク基本情報
             $table->string('title');
             $table->text('description')->nullable();
-            $table->date('due_date')->nullable();
+            $table->string('due_date')->nullable();
             $table->integer('span')->nullable();
             $table->smallInteger('priority')->default(3);
 
@@ -42,8 +42,20 @@ return new class extends Migration
             $table->softDeletes();
 
             // 外部キー制約
-            $table->foreign('assigned_by_user_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('approved_by_user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('source_proposal_id')
+                  ->references('id')
+                  ->on('task_proposals')
+                  ->onDelete('set null');
+                  
+            $table->foreign('assigned_by_user_id')
+                  ->references('id')
+                  ->on('users')
+                  ->onDelete('set null');
+                  
+            $table->foreign('approved_by_user_id')
+                  ->references('id')
+                  ->on('users')
+                  ->onDelete('set null');
         });
     }
 

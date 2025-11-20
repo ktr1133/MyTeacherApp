@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 
 class Task extends Model
 {
@@ -133,7 +134,7 @@ class Task extends Model
      */
     public function isGroupTask(): bool
     {
-        return (bool) $this->requires_approval;
+        return !is_null($this->group_task_id);
     }
 
     /**
@@ -213,7 +214,7 @@ class Task extends Model
                 $task->tags()->detach();
                 // 画像ファイルも削除
                 foreach ($task->images as $image) {
-                    \Storage::disk('public')->delete($image->file_path);
+                    Storage::disk('s3')->delete($image->file_path);
                     $image->delete();
                 }
             }

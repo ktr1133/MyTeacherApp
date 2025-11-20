@@ -1,0 +1,899 @@
+/* ========================================
+   アバター作成画面
+   ======================================== */
+
+.hero-fade-in {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-fade-in-delay {
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.avatar-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .avatar-card {
+    background: rgba(31, 41, 55, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.avatar-form-group {
+    margin-bottom: 1rem;
+}
+
+.avatar-form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.dark .avatar-form-label {
+    color: #d1d5db;
+}
+
+.avatar-form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.dark .avatar-form-input {
+    background: #1f2937;
+    border-color: #374151;
+    color: white;
+}
+
+.avatar-form-input:focus {
+    outline: none;
+    border-color: #59B9C6;
+    box-shadow: 0 0 0 3px rgba(89, 185, 198, 0.1);
+}
+
+.avatar-btn-primary {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 100%);
+    color: white;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 15px -3px rgba(89, 185, 198, 0.3);
+}
+
+.avatar-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.avatar-btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.avatar-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 25px -5px rgba(89, 185, 198, 0.4);
+}
+
+.avatar-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: #6b7280;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.dark .avatar-btn-secondary {
+    color: #9ca3af;
+    border-color: #374151;
+}
+
+.avatar-btn-secondary:hover {
+    border-color: #59B9C6;
+    color: #59B9C6;
+    background: rgba(89, 185, 198, 0.05);
+}
+
+/* モデルアイコンのグラデーション */
+.model-icon-gradient {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* モデル選択カード */
+.draw-model-card {
+    display: block;
+}
+
+.draw-model-card-inner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+    border-color: rgba(16, 185, 129, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.dark .draw-model-card-inner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* ホバー時のアニメーション */
+.draw-model-card:hover .draw-model-card-inner {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -5px rgba(16, 185, 129, 0.3),
+                0 8px 16px -8px rgba(5, 150, 105, 0.2);
+}
+
+/* シマー効果 */
+.draw-model-card-inner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.draw-model-card:hover .draw-model-card-inner::before {
+    left: 100%;
+}
+
+/* 選択状態 */
+.draw-model-radio:checked + .draw-model-card-inner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
+    border-color: #10b981;
+    border-width: 2px;
+    box-shadow: 0 8px 20px -5px rgba(16, 185, 129, 0.4),
+                0 6px 12px -8px rgba(5, 150, 105, 0.3),
+                0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.dark .draw-model-radio:checked + .draw-model-card-inner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
+    border-color: #10b981;
+}
+
+/* チェックマーク */
+.draw-model-check {
+    background: rgba(229, 231, 235, 0.5);
+    border-color: rgba(209, 213, 219, 1);
+    transition: all 0.3s ease;
+}
+
+.dark .draw-model-check {
+    background: rgba(55, 65, 81, 0.5);
+    border-color: rgba(75, 85, 99, 1);
+}
+
+.draw-model-radio:checked + .draw-model-card-inner .draw-model-check {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.draw-model-radio:checked + .draw-model-card-inner .draw-model-check svg {
+    opacity: 1;
+}
+
+/* モデルアイコン */
+.draw-model-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 6px 16px -4px rgba(16, 185, 129, 0.4);
+    transition: transform 0.3s ease;
+}
+
+.draw-model-card:hover .draw-model-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.draw-model-radio:checked + .draw-model-card-inner .draw-model-icon {
+    background: linear-gradient(135deg, #059669, #047857);
+    box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.5);
+    transform: scale(1.05);
+}
+
+/* 特徴タグ */
+.draw-model-tag {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.dark .draw-model-tag {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.draw-model-radio:checked + .draw-model-card-inner .draw-model-tag {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border-color: transparent;
+    font-weight: 600;
+}
+
+/* モデル情報カード */
+.model-info-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.dark .model-info-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.model-info-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* アニメーション */
+@keyframes pulse-green {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+}
+
+.draw-model-radio:checked + .draw-model-card-inner {
+    animation: pulse-green 2s ease-in-out infinite;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 768px) {
+    .draw-model-card-inner {
+        padding: 1rem;
+    }
+
+    .draw-model-icon {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .draw-model-icon svg {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    .draw-model-card:hover .draw-model-card-inner {
+        transform: none;
+    }
+
+    .draw-model-card:hover .draw-model-icon {
+        transform: none;
+    }
+
+    .draw-model-card-inner::before {
+        display: none;
+    }
+
+    .draw-model-radio:checked + .draw-model-card-inner {
+        animation: none;
+    }
+}
+
+/* フォーカス状態 */
+.draw-model-radio:focus + .draw-model-card-inner {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+}
+
+/* ========================================
+   サムネイル型スライダー（大人用）
+   ======================================== */
+
+/* 表情ラベル（メイン画像のオーバーレイ） */
+.avatar-expression-label {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* サムネイルボタン */
+.avatar-thumbnail {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+/* 非アクティブなサムネイル */
+.avatar-thumbnail-inactive {
+    opacity: 0.6;
+    border-color: #e5e7eb;
+}
+
+.dark .avatar-thumbnail-inactive {
+    border-color: #374151;
+}
+
+.avatar-thumbnail-inactive:hover {
+    opacity: 1;
+    border-color: #59B9C6;
+    transform: scale(1.05);
+}
+
+/* アクティブなサムネイル */
+.avatar-thumbnail-active {
+    opacity: 1;
+    border-color: #59B9C6;
+    box-shadow: 
+        0 0 0 3px rgba(89, 185, 198, 0.2),
+        0 4px 12px rgba(89, 185, 198, 0.3);
+    transform: scale(1.1);
+}
+
+/* サムネイルのラベル */
+.avatar-thumbnail-label {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    color: white;
+    padding: 0.25rem 0;
+    text-align: center;
+}
+
+/* ========================================
+   動的背景スライダー
+   ======================================== */
+
+/* 背景コンテナ */
+.avatar-slider-bg-container {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.5s ease-in-out;
+}
+
+/* 背景のぼかしとフェードオーバーレイ */
+.avatar-slider-bg-overlay {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    background: inherit;
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px) brightness(1.2);
+    opacity: 0.3;
+    z-index: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* ダークモードでの調整 */
+.dark .avatar-slider-bg-overlay {
+    filter: blur(20px) brightness(0.6);
+    opacity: 0.4;
+}
+
+/* 子ども向けの背景オーバーレイ */
+.child-theme .avatar-slider-bg-overlay {
+    filter: blur(25px) brightness(1.3) saturate(1.2);
+    opacity: 0.25;
+}
+
+.dark .child-theme .avatar-slider-bg-overlay {
+    filter: blur(25px) brightness(0.5) saturate(0.8);
+    opacity: 0.35;
+}
+
+/* 画像がない場合のフォールバック背景 */
+.avatar-slider-bg-container:not([style*="background-image"]) {
+    background: linear-gradient(135deg, 
+        rgba(229, 231, 235, 0.5) 0%, 
+        rgba(243, 244, 246, 0.5) 100%);
+}
+
+.dark .avatar-slider-bg-container:not([style*="background-image"]) {
+    background: linear-gradient(135deg, 
+        rgba(31, 41, 55, 0.5) 0%, 
+        rgba(17, 24, 39, 0.5) 100%);
+}
+
+.child-theme .avatar-slider-bg-container:not([style*="background-image"]) {
+    background: linear-gradient(135deg, 
+        rgba(255, 235, 205, 0.5) 0%, 
+        rgba(255, 248, 225, 0.5) 50%,
+        rgba(255, 230, 200, 0.5) 100%);
+}
+
+.dark .child-theme .avatar-slider-bg-container:not([style*="background-image"]) {
+    background: linear-gradient(135deg, 
+        rgba(45, 45, 68, 0.5) 0%, 
+        rgba(35, 35, 58, 0.5) 50%,
+        rgba(40, 40, 63, 0.5) 100%);
+}
+
+/* アニメーション付きの背景トランジション */
+@keyframes bgFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.3;
+    }
+}
+
+.avatar-slider-bg-overlay {
+    animation: bgFadeIn 0.5s ease-in-out;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 640px) {
+    .avatar-slider-bg-overlay {
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        filter: blur(15px) brightness(1.2);
+    }
+
+    .dark .avatar-slider-bg-overlay {
+        filter: blur(15px) brightness(0.6);
+    }
+
+    .child-theme .avatar-slider-bg-overlay {
+        filter: blur(20px) brightness(1.3) saturate(1.2);
+    }
+
+    .dark .child-theme .avatar-slider-bg-overlay {
+        filter: blur(20px) brightness(0.5) saturate(0.8);
+    }
+}
+
+/* ========================================
+   アバターウィジェット
+   ======================================== */
+
+.avatar-widget {
+    position: fixed;
+    z-index: 9999;
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.avatar-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatar-image {
+    width: 250px;
+    height: 300px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 640px) {
+    .avatar-image {
+        width: 180px;
+        height: 220px;
+    }
+}
+
+.avatar-bubble {
+    position: relative;
+    max-width: 300px;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dark .avatar-bubble {
+    background: #1f2937;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.avatar-bubble-arrow {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid white;
+}
+
+.dark .avatar-bubble-arrow {
+    border-top-color: #1f2937;
+}
+
+.avatar-close-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 32px;
+    height: 32px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.avatar-close-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* ========================================
+   アニメーション
+   ======================================== */
+
+.avatar-idle {
+    animation: avatar-idle 3s ease-in-out infinite;
+}
+
+.avatar-joy {
+    animation: avatar-joy 1s ease-out;
+}
+
+.avatar-worry {
+    animation: avatar-worry 0.5s ease-in-out 3;
+}
+
+.avatar-cheer {
+    animation: avatar-cheer 0.8s ease-out 2;
+}
+
+.avatar-question {
+    animation: avatar-question 1s ease-in-out 2;
+}
+
+.avatar-secretary {
+    animation: avatar-secretary 1s ease-in-out;
+}
+
+.avatar-wave {
+    animation: avatar-wave 1s ease-in-out 2;
+}
+
+.avatar-goodbye {
+    animation: avatar-goodbye 1.5s ease-in-out;
+}
+
+.avatar-thanks {
+    animation: avatar-thanks 1s ease-in-out 2;
+}
+
+.avatar-applause {
+    animation: avatar-applause 1s ease-in-out 3;
+}
+
+.avatar-nod {
+    animation: avatar-nod 0.8s ease-in-out 2;
+}
+
+.avatar-shake {
+    animation: avatar-shake 0.5s ease-in-out 3;
+}
+
+.avatar-bless {
+    animation: avatar-bless 1.2s ease-out;
+}
+
+.avatar-confirm {
+    animation: avatar-confirm 1.5s ease-in-out 2;
+}
+
+@keyframes avatar-idle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes avatar-joy {
+    0% { transform: translateY(0) rotate(0deg) scale(1); }
+    25% { transform: translateY(-20px) rotate(5deg) scale(1.1); }
+    50% { transform: translateY(-30px) rotate(-5deg) scale(1.1); }
+    75% { transform: translateY(-20px) rotate(5deg) scale(1.1); }
+    100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+@keyframes avatar-worry {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-3px) rotate(-2deg); }
+    50% { transform: translateX(3px) rotate(2deg); }
+    75% { transform: translateX(-3px) rotate(-2deg); }
+}
+
+@keyframes avatar-cheer {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-15px) scale(1.05); }
+}
+
+@keyframes avatar-question {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(10deg); }
+}
+
+@keyframes avatar-secretary {
+    0%, 100% { transform: rotateX(0deg); }
+    50% { transform: rotateX(15deg); }
+}
+
+@keyframes avatar-wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+}
+
+@keyframes avatar-goodbye {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(10deg) scale(1.05); }
+}
+
+@keyframes avatar-thanks {
+    0%, 100% { transform: rotateX(0deg) scale(1); }
+    50% { transform: rotateX(20deg) scale(1.1); }
+}
+
+@keyframes avatar-applause {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(5deg); }
+    50% { transform: scale(1) rotate(-5deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
+}
+
+@keyframes avatar-nod {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+}
+
+@keyframes avatar-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+}
+
+@keyframes avatar-bless {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+}
+
+@keyframes avatar-confirm {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    .avatar-image,
+    .avatar-bubble {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* 基本（アイドル状態）: ゆっくり上下 */
+@keyframes avatar-idle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* 喜び（タスク完了）: ジャンプ + 回転 */
+@keyframes avatar-joy {
+    0% { transform: translateY(0) rotate(0deg) scale(1); }
+    25% { transform: translateY(-20px) rotate(5deg) scale(1.1); }
+    50% { transform: translateY(-30px) rotate(-5deg) scale(1.1); }
+    75% { transform: translateY(-20px) rotate(5deg) scale(1.1); }
+    100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+/* 心配（ログイン空白）: 左右に小刻み揺れ */
+@keyframes avatar-worry {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-3px) rotate(-2deg); }
+    50% { transform: translateX(3px) rotate(2deg); }
+    75% { transform: translateX(-3px) rotate(-2deg); }
+}
+
+/* 応援（タスク作成）: 上下に弾む */
+@keyframes avatar-cheer {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-15px) scale(1.05); }
+}
+
+/* 質問（タスク分解再実行）: 首を傾げる */
+@keyframes avatar-question {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(10deg); }
+}
+
+/* 秘書（グループタスク・タスク分解・グループ編集）: 軽くお辞儀 */
+@keyframes avatar-secretary {
+    0%, 100% { transform: rotateX(0deg); }
+    50% { transform: rotateX(15deg); }
+}
+
+/* 挨拶（ログイン）: 手を振る */
+@keyframes avatar-wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+}
+
+/* 見送り（ログアウト）: ゆっくり手を振る */
+@keyframes avatar-goodbye {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(10deg) scale(1.05); }
+}
+
+/* 感謝（トークン購入）: お辞儀 + 拡大 */
+@keyframes avatar-thanks {
+    0%, 100% { transform: rotateX(0deg) scale(1); }
+    50% { transform: rotateX(20deg) scale(1.1); }
+}
+
+/* 称賛（実績表示）: 拍手 */
+@keyframes avatar-applause {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(5deg); }
+    50% { transform: scale(1) rotate(-5deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
+}
+
+/* 承認（タグ作成）: 頷く */
+@keyframes avatar-nod {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+}
+
+/* 注意（タグ削除）: 左右に振る */
+@keyframes avatar-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+}
+
+/* 祝福（グループ作成）: 拡大 + 回転 */
+@keyframes avatar-bless {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+}
+
+/* 確認（グループ削除）: ゆっくり点滅 */
+@keyframes avatar-confirm {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+
+/* ========================================
+   背景装飾アニメーション
+   ======================================== */
+.avatar-floating-decoration {
+    animation: avatarFloat 20s ease-in-out infinite;
+}
+
+@keyframes avatarFloat {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(30px, -30px) scale(1.1);
+    }
+    50% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+    75% {
+        transform: translate(20px, 30px) scale(1.05);
+    }
+}
+
+/* ========================================
+   レスポンシブ対応強化
+   ======================================== */
+@media (max-width: 1024px) {
+    .avatar-card {
+        padding: 1rem;
+    }
+
+    .avatar-form-group {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .avatar-btn-primary,
+    .avatar-btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/**
+ * アバターウィザード共通スタイル
+ * - 大人用・子ども用で共有
+ */
+
+/* プログレスバーの基本スタイル */
+.wizard-progress {
+    margin-bottom: 2rem;
+}
+
+/* フォームの基本スタイル */
+#avatar-wizard-form {
+    width: 100%;
+}
+
+/* トランジション効果 */
+[x-cloak] {
+    display: none !important;
+}

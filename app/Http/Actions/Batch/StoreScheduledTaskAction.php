@@ -27,7 +27,8 @@ class StoreScheduledTaskAction
 
             return redirect()
                 ->route('batch.scheduled-tasks.index', ['group_id' => $data['group_id']])
-                ->with('status', 'scheduled-task-created');
+                ->with('status', 'scheduled-task-created')
+                ->with('avatar_event', config('const.avatar_events.group_task_created'));
 
         } catch (\Exception $e) {
             Log::error('Failed to create scheduled task', [

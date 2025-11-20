@@ -10,6 +10,22 @@ use Illuminate\Database\Eloquent\Collection;
 interface TagRepositoryInterface
 {
     /**
+     * 指定されたIDのタグを取得する。
+     *
+     * @param int $id
+     * @return Tag|null
+     */
+    public function findById(int $id): ?Tag;
+
+    /**
+     * 指定されたIDのタグを取得する。
+     *
+     * @param array<int> $ids
+     * @return Collection<Tag>
+     */
+    public function findByIds(array $ids): Collection;
+
+    /**
      * 指定されたタグ名のID配列を取得する。
      *
      * 存在しないタグ名があれば新規作成し、そのIDも含める。

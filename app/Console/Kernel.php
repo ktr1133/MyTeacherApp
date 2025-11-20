@@ -84,6 +84,15 @@ class Kernel extends ConsoleKernel
         ->weeklyOn(0, '03:00') // 日曜日3時
         ->name('cleanup-execution-history')
         ->onOneServer();
+
+        // ========================================
+        // 期限切れ通知の削除（毎日深夜3時）
+        // ========================================
+        $schedule->command('notifications:delete-expired')
+            ->dailyAt('03:00')
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/notifications-cleanup.log'));
     }
 
     /**

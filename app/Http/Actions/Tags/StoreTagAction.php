@@ -48,6 +48,9 @@ class StoreTagAction
         $this->tagService->createTag($request->user(), $validated);
 
         // 成功メッセージと共にリダイレクト
-        return redirect()->route('tags.list')->with('success', 'タグが登録されました。');
+        return redirect()
+            ->route('tags.list')
+            ->with('success', 'タグが登録されました。')
+            ->with('avatar_event', config('const.avatar_events.tag_created'));
     }
 }

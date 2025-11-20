@@ -1,0 +1,194 @@
+/* ========================================
+   検索結果画面専用スタイル
+   ======================================== */
+
+/* グラデーション背景 */
+.search-results-gradient-bg {
+    background: linear-gradient(135deg, #F3F3F2 0%, #ffffff 50%, #e5e7eb 100%);
+}
+
+.dark .search-results-gradient-bg {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #0f172a 100%);
+}
+
+/* フローティング背景装飾 */
+@keyframes float-slow {
+    0%, 100% {
+        transform: translate(0, 0);
+    }
+    33% {
+        transform: translate(30px, -30px);
+    }
+    66% {
+        transform: translate(-20px, 20px);
+    }
+}
+
+.floating-decoration {
+    animation: float-slow 20s ease-in-out infinite;
+}
+
+/* ヘッダーのブラー効果 */
+.search-header-blur {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.dark .search-header-blur {
+    background: rgba(31, 41, 55, 0.85);
+}
+
+/* ヘッダーアイコン */
+.search-header-icon {
+    background: linear-gradient(135deg, #59B9C6 0%, #3b82f6 100%);
+}
+
+/* ヘッダータイトル */
+.search-header-title {
+    background: linear-gradient(135deg, #59B9C6 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 検索クエリチップ */
+.search-query-chip {
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.15), rgba(59, 130, 246, 0.15));
+    border: 1px solid rgba(89, 185, 198, 0.3);
+    color: #59B9C6;
+}
+
+.dark .search-query-chip {
+    background: linear-gradient(135deg, rgba(89, 185, 198, 0.25), rgba(59, 130, 246, 0.25));
+    border-color: rgba(89, 185, 198, 0.4);
+    color: #6BCAD7;
+}
+
+/* 検索演算子バッジ */
+.search-operator-badge {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* ダッシュボードに戻るボタン */
+.back-to-dashboard-btn {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #59B9C6 0%, #3b82f6 100%);
+    transition: all 0.3s ease;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+}
+
+.back-to-dashboard-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.back-to-dashboard-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.back-to-dashboard-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -5px rgba(89, 185, 198, 0.5),
+                0 10px 15px -6px rgba(59, 130, 246, 0.4);
+}
+
+.back-to-dashboard-btn:active {
+    transform: translateY(0);
+}
+
+/* タスク結果アイテム */
+.task-result-item {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* スタガードアニメーション */
+.task-result-item:nth-child(1) { animation-delay: 0.05s; }
+.task-result-item:nth-child(2) { animation-delay: 0.1s; }
+.task-result-item:nth-child(3) { animation-delay: 0.15s; }
+.task-result-item:nth-child(4) { animation-delay: 0.2s; }
+.task-result-item:nth-child(5) { animation-delay: 0.25s; }
+.task-result-item:nth-child(6) { animation-delay: 0.3s; }
+.task-result-item:nth-child(7) { animation-delay: 0.35s; }
+.task-result-item:nth-child(8) { animation-delay: 0.4s; }
+.task-result-item:nth-child(9) { animation-delay: 0.45s; }
+.task-result-item:nth-child(10) { animation-delay: 0.5s; }
+
+/* 空状態 */
+.empty-state {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* スクロールバー */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #59B9C6 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #59B9C6, #3b82f6);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #4AA0AB, #2563eb);
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 640px) {
+    .task-result-item {
+        padding: 0;
+    }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .back-to-dashboard-btn::before {
+        display: none;
+    }
+    
+    .back-to-dashboard-btn:hover {
+        transform: none;
+    }
+}

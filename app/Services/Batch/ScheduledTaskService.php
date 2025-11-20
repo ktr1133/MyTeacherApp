@@ -7,6 +7,7 @@ use App\Repositories\Batch\ScheduledTaskRepositoryInterface;
 use App\Repositories\Batch\HolidayRepositoryInterface;
 use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use App\Repositories\Task\TaskRepositoryInterface;
+use App\Services\Notification\NotificationServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -18,7 +19,8 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
         private ProfileUserRepositoryInterface $profileUserRepository,
         private ScheduledTaskRepositoryInterface $scheduledTaskRepository,
         private TaskRepositoryInterface $taskRepository,
-        private HolidayRepositoryInterface $holidayRepository
+        private HolidayRepositoryInterface $holidayRepository,
+        private NotificationServiceInterface $notificationService,
     ) {}
 
     /**
@@ -200,7 +202,6 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
         foreach ($schedules as $schedule) {
             // 時刻が一致しない場合はスキップ
-            logger()->info('スケジュールチェック', ['schedule' => $schedule, 'current_time' => $currentTime]);
             if (isset($schedule['time']) && $schedule['time'] !== $currentTime) {
                 continue;
             }
@@ -269,17 +270,17 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
         // タスク作成データを準備
         $taskData = [
-            'title' => $scheduledTask->title,
-            'span' => config('const.task_spans.short'),
-            'description' => $scheduledTask->description,
-            'group_id' => $scheduledTask->group_id,
+            'title'               => $scheduledTask->title,
+            'span'                => config('const.task_spans.short'),
+            'description'         => $scheduledTask->description,
+            'group_id'            => $scheduledTask->group_id,
             'assigned_by_user_id' => $scheduledTask->created_by,
-            'group_task_id' => (string) Str::uuid(),
-            'due_date' => $dueDate,
-            'requires_image' => $scheduledTask->requires_image,
-            'requires_approval' => true,
-            'reward' => $scheduledTask->reward,
-            'created_by' => $scheduledTask->created_by,
+            'group_task_id'       => (string) Str::uuid(),
+            'due_date'            => $dueDate,
+            'requires_image'      => $scheduledTask->requires_image,
+            'requires_approval'   => $scheduledTask->requires_approval,
+            'reward'              => $scheduledTask->reward,
+            'created_by'          => $scheduledTask->created_by,
         ];
 
         // 担当者が未設定の場合は編集権限のないメンバ全員向けのタスクを作成
@@ -297,6 +298,13 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                     $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
                 }
             }
+            // 担当者に通知
+            $this->notificationService->sendNotificationForGroup(
+                config('const.notification_types.group_task_created'),
+                '新しいグループタスクが作成されました。',
+                '新しいグループタスク: ' . $taskData['title'] . 'が作成されました。タスクリストを確認してください。',
+                'important'
+            );
         // 担当者指定の場合はその担当者向けのタスクを作成
         } else {
             $taskData['user_id'] = $assignedUserId;
@@ -309,6 +317,15 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             if (!empty($tagNames)) {
                 $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
             }
+            // 担当者に通知を送信
+            $this->notificationService->sendNotification(
+                Auth::user()->id,
+                $assignedUserId,
+                config('const.notification_types.group_task_created'),
+                '新しいグループタスクが作成されました。',
+                '新しいグループタスク: ' . $taskData['title'] . 'が作成されました。タスクリストを確認してください。',
+                'important'
+            );       
         }
 
         return $task;
@@ -355,18 +372,4 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
         return $dueDate;
     }
-
-    /**
-     * 【将来の通知機能用】タスク作成通知
-     * 
-     * この関数は通知機能実装時に有効化してください
-     */
-    // protected function notifyTaskCreation($task): void
-    // {
-    //     if (!$task->assigned_user_id) {
-    //         return;
-    //     }
-    //
-    //     // メール通知やアプリ内通知をここに実装
-    // }
 }

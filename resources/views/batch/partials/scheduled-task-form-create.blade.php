@@ -62,6 +62,20 @@
         </div>
 
         <div>
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" 
+                       name="requires_approval" 
+                       value="1"
+                       {{ old('requires_approval') ? 'checked' : '' }}
+                       class="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                <div>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">完了申請後に承認が必要</span>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">グループメンバーが完了申請したタスクの承認を必要とするかどうかを設定します。</p>
+                </div>
+            </label>
+        </div>
+
+        <div>
             <label for="reward" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 報酬 <span class="text-red-500">*</span>
             </label>

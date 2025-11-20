@@ -7,11 +7,16 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Services\Task\TaskProposalServiceInterface;
+use App\Services\Token\TokenServiceInterface;
 
+/**
+ * タスク提案アクション
+ */
 class ProposeTaskAction
 {
     public function __construct(
-        private TaskProposalServiceInterface $proposalService
+        private TaskProposalServiceInterface $proposalService,
+        private TokenServiceInterface $tokenService
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -40,11 +45,22 @@ class ProposeTaskAction
             $validated = $validator->validated();
             $user = $request->user();
 
+            // トークン残高チェック（推定1000トークン）
+            $estimatedTokens = 1000;
+            if (!$this->tokenService->checkBalance($user, $estimatedTokens)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'トークン残高不足',
+                    'message' => 'トークン残高が不足しています。トークンを購入してください。',
+                    'action_url' => route('tokens.purchase'),
+                ], 402); // 402 Payment Required
+            }
+
             // 提案生成
             $proposal = $this->proposalService->createProposal(
-                $request->user(),
+                $user,
                 $validated['title'],
-                $validated['span'],
+                (string)$validated['span'],
                 $validated['context'] ?? null,
                 (bool)($validated['is_refinement'] ?? false)
             );
@@ -55,12 +71,43 @@ class ProposeTaskAction
                 'original_task' => $proposal->original_task_text,
                 'proposed_tasks' => $proposal->proposed_tasks_json,
                 'model_used' => $proposal->model_used,
+                'tokens_used' => [
+                    'prompt' => $proposal->prompt_tokens,
+                    'completion' => $proposal->completion_tokens,
+                    'total' => $proposal->total_tokens,
+                ],
             ]);
-        } catch (\Throwable $e) {
+        } catch (\RuntimeException $e) {
+            // トークン不足などのビジネスロジックエラー
+            if (str_contains($e->getMessage(), 'トークン残高')) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'トークン残高不足',
+                    'message' => $e->getMessage(),
+                    'action_url' => route('tokens.purchase'),
+                ], 402);
+            }
+
+            Log::error('Task proposal failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'error' => 'AI提案の生成に失敗しました',
                 'message' => $e->getMessage(),
+            ], 500);
+        } catch (\Throwable $e) {
+            Log::error('Unexpected error in ProposeTaskAction', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'AI提案の生成に失敗しました',
+                'message' => '予期しないエラーが発生しました',
             ], 500);
         }
     }

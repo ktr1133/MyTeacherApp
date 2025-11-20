@@ -14,17 +14,19 @@ return new class extends Migration
         // groups テーブルを先に作成
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); // グループ名
-            $table->unsignedBigInteger('master_user_id')->nullable(); // グループマスターのユーザーID
+            $table->string('name')->unique()->comment('グループ名'); // グループ名
+            $table->unsignedBigInteger('master_user_id')->nullable()->comment('マスターのユーザーID'); // グループマスターのユーザーID
             $table->timestamps();
         });
 
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('username')->unique(); // ログインIDとして使用
-            $table->unsignedBigInteger('group_id')->nullable(); // グループID
-            $table->boolean('group_edit_flg')->default(false); // グループ編集フラグ
-            $table->string('password');
+            $table->string('username')->unique()->comment('ユーザー名'); // ログインIDとして使用
+            $table->unsignedBigInteger('group_id')->nullable()->comment('グループID'); // グループID
+            $table->boolean('group_edit_flg')->default(false)->comment('グループ編集フラグ'); // グループ編集フラグ
+            $table->enum('theme', ['adult', 'child'])->default('adult')->comment('デザインテーマ');
+            $table->string('password')->comment('パスワード');
+            $table->boolean('requires_purchase_approval')->default(true)->comment('トークン購入承認');
             $table->rememberToken();
             $table->timestamps();
             
@@ -43,7 +45,15 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // 1. まず groups テーブルの外部キー制約を削除
+        Schema::table('groups', function (Blueprint $table) {
+            $table->dropForeign(['master_user_id']);
+        });
+
+        // 2. 次に users テーブルを削除（group_id の外部キー制約も一緒に削除される）
         Schema::dropIfExists('users');
+
+        // 3. 最後に groups テーブルを削除
         Schema::dropIfExists('groups');
     }
 };

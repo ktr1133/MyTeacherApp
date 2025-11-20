@@ -42,7 +42,8 @@ class UpdateScheduledTaskAction
 
             return redirect()
                 ->route('batch.scheduled-tasks.index', ['group_id' => $scheduledTask->group_id])
-                ->with('status', 'scheduled-task-updated');
+                ->with('status', 'scheduled-task-updated')
+                ->with('avatar_event', config('const.avatar_events.group_task_updated'));
 
         } catch (\Exception $e) {
             Log::error('Failed to update scheduled task', [

@@ -22,6 +22,9 @@ class ApproveTaskAction
     {
         $this->taskApprovalService->approveTask($task, Auth::user());
 
-        return redirect()->route('tasks.pending-approvals')->with('success', 'タスクを承認しました。');
+        return redirect()
+            ->route('tasks.pending-approvals')
+            ->with('success', 'タスクを承認しました。')
+            ->with('avatar_event', config('const.avatar_events.task_completed'));
     }
 }

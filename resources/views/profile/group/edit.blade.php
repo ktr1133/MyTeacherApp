@@ -1,7 +1,14 @@
 <x-app-layout>
     @push('styles')
         @vite(['resources/css/dashboard.css'])
+        @vite(['resources/css/auth/register-validation.css'])
     @endpush
+    @push('scripts')
+        @vite(['resources/js/profile/profile-validation.js'])
+    @endpush
+
+    {{-- アバターイベント監視用 --}}
+    <x-layouts.avatar-event-common />
 
     <div x-data="{ showSidebar: false }" 
          x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
@@ -98,6 +105,8 @@
                                             メンバーを追加しました。
                                         @elseif (session('status') === 'permission-updated')
                                             権限を更新しました。
+                                        @elseif (session('status') === 'theme-updated')
+                                            メンバーのテーマ設定を更新しました。
                                         @elseif (session('status') === 'master-transferred')
                                             グループマスターを譲渡しました。
                                         @elseif (session('status') === 'member-removed')
@@ -204,8 +213,4 @@
             </main>
         </div>
     </div>
-
-    @push('scripts')
-        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    @endpush
 </x-app-layout>

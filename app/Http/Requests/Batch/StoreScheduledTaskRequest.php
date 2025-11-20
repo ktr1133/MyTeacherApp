@@ -24,6 +24,7 @@ class StoreScheduledTaskRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'requires_image' => ['boolean'],
+            'requires_approval' => ['required', 'boolean'],
             'reward' => ['required', 'integer', 'min:0'],
             'assigned_user_id' => ['nullable', 'exists:users,id'],
             'auto_assign' => ['boolean'],
@@ -60,6 +61,9 @@ class StoreScheduledTaskRequest extends FormRequest
             'reward.required' => '報酬を入力してください。',
             'reward.integer' => '報酬は整数で入力してください。',
             'reward.min' => '報酬は0以上で入力してください。',
+            'requires_image.boolean' => '画像が必要かどうかは真偽値で指定してください。',
+            'requires_approval.required' => '承認の有無を指定してください。',
+            'requires_approval.boolean' => '承認が必要かどうかは真偽値で指定してください。',
             'schedules.required' => 'スケジュールを設定してください。',
             'schedules.min' => '少なくとも1つのスケジュールを設定してください。',
             'schedules.*.type.required' => 'スケジュールタイプを選択してください。',
@@ -82,6 +86,7 @@ class StoreScheduledTaskRequest extends FormRequest
         // チェックボックスの値を正規化
         $this->merge([
             'requires_image' => $this->boolean('requires_image'),
+            'requires_approval' => $this->boolean('requires_approval'),
             'auto_assign' => $this->boolean('auto_assign'),
             'skip_holidays' => $this->boolean('skip_holidays'),
             'move_to_next_business_day' => $this->boolean('move_to_next_business_day'),

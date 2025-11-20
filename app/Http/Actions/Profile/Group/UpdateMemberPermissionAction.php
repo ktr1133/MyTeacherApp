@@ -23,6 +23,9 @@ class UpdateMemberPermissionAction
 
         $this->service->updateMemberPermission(Auth::user(), $member, (bool)$data['group_edit_flg']);
 
-        return $this->responder->redirectToEditWithStatus('permission-updated');
+        return $this->responder->redirectToEditWithStatus([
+            'status' => 'permission-updated',
+            'avatar_event' => config('const.avatar_events.group_edited'),
+        ]);
     }
 }

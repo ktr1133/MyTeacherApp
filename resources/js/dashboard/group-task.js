@@ -113,15 +113,28 @@ if (groupTaskForm) {
             });
             
             if (response.ok) {
+                const data = await response.json();
+                
+                // モーダルを閉じる
                 closeModal(groupModal, groupModalContent);
                 resetForm();
-                window.location.reload();
+                
+                // アバターイベントが返ってきた場合、表示
+                if (data.avatar_event) {
+                    console.log('[Group Task] Dispatching avatar event:', data.avatar_event);
+                    
+                    if (window.dispatchAvatarEvent) {
+                        window.dispatchAvatarEvent(data.avatar_event);
+                    } else {
+                        console.error('[Group Task] dispatchAvatarEvent not found');
+                    }
+                }
             } else {
                 const errorData = await response.json();
                 alert('タスクの作成に失敗しました: ' + (errorData.message || '不明なエラー'));
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('[Group Task] Error:', error);
             alert('タスクの作成中にエラーが発生しました。');
         }
     });

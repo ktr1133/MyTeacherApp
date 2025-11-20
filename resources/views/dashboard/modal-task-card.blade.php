@@ -22,14 +22,15 @@
         }
     }"
     @open-task-modal-{{ $task->id }}.window="open()"
-    @keydown.escape.window="showModal && close()">
+    @keydown.escape.window="showModal && close()"
+>
     
     {{-- モーダルオーバーレイ --}}
     <div 
         x-show="showModal"
         x-transition.opacity
         @click="close()"
-        class="fixed inset-0 z-50 bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4"
+        class="fixed inset-0 z-[60] bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4"
         style="display: none;">
         
         {{-- モーダルコンテンツ --}}
