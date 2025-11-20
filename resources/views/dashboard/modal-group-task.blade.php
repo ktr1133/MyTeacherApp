@@ -39,7 +39,6 @@
             <form id="group-task-form" method="POST" action="{{ route('tasks.store') }}" class="space-y-5">
                 @csrf
                 <input type="hidden" name="is_group_task" value="1">
-                <input type="hidden" name="requires_approval" value="1">
                 
                 {{-- 画像必須設定 --}}
                 <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-4 rounded-xl border border-purple-200/50 dark:border-purple-700/50">
@@ -58,6 +57,23 @@
                     </label>
                 </div>
 
+                {{-- 承認必須設定 --}}
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 rounded-xl border border-amber-200/50 dark:border-amber-700/50">
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <input type="checkbox" name="requires_approval" value="1" checked
+                               class="mt-0.5 w-5 h-5 text-amber-600 focus:ring-amber-600 rounded transition">
+                        <div class="flex-1">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                完了時に承認を必須にする（推奨）
+                            </span>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">タスク完了時に親の承認が必要になります。チェックを外すと即座に完了扱いになります。</p>
+                        </div>
+                    </label>
+                </div>
+                
                 {{-- 担当者選択 --}}
                 <div>
                     <label for="assignedUserId" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">

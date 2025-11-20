@@ -83,10 +83,14 @@ use App\Http\Actions\Task\ToggleTaskCompletionAction;
 use App\Http\Actions\Task\UpdateTaskAction;
 use App\Http\Actions\Task\UpdateTaskDescriptionAction;
 use App\Http\Actions\Task\UploadTaskImageAction;
+use App\Http\Actions\Token\ApproveTokenPurchaseRequestAction;
+use App\Http\Actions\Token\CancelTokenPurchaseRequestAction;
 use App\Http\Actions\Token\HandleStripeWebhookAction;
+use App\Http\Actions\Token\IndexPendingTokenPurchaseRequestsAction;
+use App\Http\Actions\Token\IndexTokenHistoryAction;
 use App\Http\Actions\Token\IndexTokenPurchaseAction;
 use App\Http\Actions\Token\ProcessTokenPurchaseAction;
-use App\Http\Actions\Token\IndexTokenHistoryAction;
+use App\Http\Actions\Token\RejectTokenPurchaseRequestAction;
 use App\Http\Actions\Validation\ValidateGroupNameAction;
 
 use Illuminate\Support\Facades\Route;
@@ -212,9 +216,18 @@ Route::middleware(['auth'])->group(function () {
     // トークン購入
     Route::get('/tokens/purchase', IndexTokenPurchaseAction::class)->name('tokens.purchase');
     Route::post('/tokens/purchase', ProcessTokenPurchaseAction::class)->name('tokens.purchase.process');
+    // トークン購入リクエスト承認・却下・取り下げ
+    Route::post('/tokens/requests/{purchaseRequest}/approve', ApproveTokenPurchaseRequestAction::class)->name('tokens.requests.approve');
+    Route::post('/tokens/requests/{purchaseRequest}/reject', RejectTokenPurchaseRequestAction::class)->name('tokens.requests.reject');
+    Route::delete('/tokens/requests/{purchaseRequest}/cancel', CancelTokenPurchaseRequestAction::class)->name('tokens.requests.cancel');
+    // トークン購入承認待ち一覧（親用）
+    Route::get('/tokens/pending-approvals', IndexPendingTokenPurchaseRequestsAction::class)->name('tokens.pending-approvals');
     // トークン履歴
-    Route::get('/tokens/history', IndexTokenHistoryAction::class)->name('tokens.history');    
+    Route::get('/tokens/history', IndexTokenHistoryAction::class)->name('tokens.history');
+
+    // ========================================   
     // 通知
+    // ========================================
     Route::get('/notifications', IndexNotificationAction::class)->name('notifications.index');
     Route::post('/notifications/{notification}/read', MarkNotificationAsReadAction::class)->name('notifications.read');
     Route::post('/notifications/read-all', MarkAllNotificationsAsReadAction::class)->name('notifications.read-all');

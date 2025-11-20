@@ -26,6 +26,7 @@ return new class extends Migration
             $table->boolean('group_edit_flg')->default(false)->comment('グループ編集フラグ'); // グループ編集フラグ
             $table->enum('theme', ['adult', 'child'])->default('adult')->comment('デザインテーマ');
             $table->string('password')->comment('パスワード');
+            $table->boolean('requires_purchase_approval')->default(true)->comment('トークン購入承認');
             $table->rememberToken();
             $table->timestamps();
             

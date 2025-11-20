@@ -22,7 +22,12 @@ class ToggleMemberThemeAction
     public function __invoke(Request $request, User $member)
     {
         // 権限チェック
-        if (!Auth::user()->canChangeThemeOf($member)) {
+        $user = Auth::user();
+        if (!$user) {
+            abort(404);
+        }
+
+        if (!$this->service->canChangeThemeOf($user, $member)) {
             throw new RedirectException("編集権限がありません。");
         }
 

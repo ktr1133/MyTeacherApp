@@ -50,7 +50,7 @@ class ReportEloquentRepository implements ReportRepositoryInterface
     public function getGroupCompletedCountsByDate(int $userId, Carbon $start, Carbon $end): array
     {
         $rows = Task::where('user_id', $userId)
-            ->where('requires_approval', true)
+            ->whereNotNull('group_task_id')
             ->whereNotNull('approved_at')
             ->whereBetween('approved_at', [$start, $end])
             ->selectRaw('DATE(approved_at) as date, COUNT(*) as count')

@@ -197,7 +197,7 @@ class GroupService implements GroupServiceInterface
      * @param User $user
      * @return bool
      */
-    private function canEditGroup(User $user): bool
+    public function canEditGroup(User $user): bool
     {
         return $user->group_edit_flg || $this->isGroupMaster($user);
     }
@@ -221,5 +221,16 @@ class GroupService implements GroupServiceInterface
         $mode = $theme ? 'child' : 'adult';
         
         $this->groupUsers->update($member, ['theme' => $mode]);
+    }
+
+    /**
+     * 指定ユーザーのテーマ設定を変更できるか。
+     * @param User $actor
+     * @param User $member
+     * @return bool
+     */
+    public function canChangeThemeOf(User $actor, User $member): bool
+    {
+        return $actor->canChangeThemeOf($member);
     }
 }

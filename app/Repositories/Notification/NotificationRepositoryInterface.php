@@ -130,4 +130,16 @@ interface NotificationRepositoryInterface
      * @return LengthAwarePaginator
      */
     public function searchForDisplayResult(array $validated): LengthAwarePaginator;
+
+    /**
+     * 通知を作成し、特定のユーザーに即座に配信
+     * 
+     * システム通知など、単一ユーザーに即座に通知を送る場合に使用。
+     * NotificationTemplate を作成後、UserNotification を作成する。
+     *
+     * @param array $templateData 通知テンプレートデータ
+     * @param int $userId 配信先のユーザーID
+     * @return NotificationTemplate
+     */
+    public function createAndDistributeToUser(array $templateData, int $userId): NotificationTemplate;
 }

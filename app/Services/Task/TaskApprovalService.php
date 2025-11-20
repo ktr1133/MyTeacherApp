@@ -77,9 +77,9 @@ class TaskApprovalService implements TaskApprovalServiceInterface
      */
     public function approveTask(Task $task, User $approver): Task
     {
-        if (!$task->requires_approval || !$task->is_completed || $task->approved_at) {
-            abort(400, 'このタスクは承認できません。');
-        }
+        // if (!$task->requires_approval || !$task->is_completed || $task->approved_at) {
+        //     abort(400, 'このタスクは承認できません。');
+        // }
 
         // 承認権限チェック（割り当てた人 or グループマスター）
         if ($task->assigned_by_user_id !== $approver->id && !$approver->canEditGroup()) {

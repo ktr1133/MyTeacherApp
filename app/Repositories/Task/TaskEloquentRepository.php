@@ -7,6 +7,7 @@ use App\Models\Tag;
 use App\Models\TaskProposal; // task_proposalsテーブル用
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -161,7 +162,7 @@ class TaskEloquentRepository implements TaskRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function createTasksFromProposal(int $userId, int $proposalId, array $proposedTasks): Collection
+    public function createTasksFromProposal(int $userId, int $proposalId, array $proposedTasks): SupportCollection
     {
         $createdTasks = collect();
 

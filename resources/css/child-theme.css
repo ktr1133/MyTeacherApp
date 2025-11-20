@@ -2332,3 +2332,458 @@
         transform: none;
     }
 }
+
+/* ===================================
+   トークン購入画面（子ども向け）
+   =================================== */
+
+/* 背景 */
+.child-theme .token-gradient-bg {
+    background: 
+        linear-gradient(135deg, 
+            rgba(255, 107, 107, 0.1) 0%, 
+            rgba(78, 205, 196, 0.1) 50%, 
+            rgba(255, 230, 109, 0.1) 100%),
+        #FFF8E1;
+}
+
+.dark .child-theme .token-gradient-bg {
+    background: 
+        linear-gradient(135deg, 
+            rgba(255, 107, 107, 0.2) 0%, 
+            rgba(78, 205, 196, 0.2) 50%, 
+            rgba(255, 230, 109, 0.2) 100%),
+        #1a1a2e;
+}
+
+/* 背景装飾の非表示 */
+.child-theme .token-floating-decoration {
+    display: none;
+}
+
+/* ヘッダー */
+.child-theme .token-header-blur {
+    background: rgba(255, 248, 225, 0.95) !important;
+}
+
+.dark.child-theme .token-header-blur {
+    background: rgba(26, 26, 46, 0.95) !important;
+}
+
+.child-theme .token-header-icon {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+.child-theme .token-header-title {
+    font-size: var(--child-text-xl);
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+}
+
+/* タブヘッダー */
+.child-theme .tab-header {
+    border-bottom-color: rgba(255, 107, 107, 0.2);
+    background: linear-gradient(to right, 
+        rgba(255, 107, 107, 0.05) 0%, 
+        rgba(78, 205, 196, 0.05) 50%, 
+        rgba(255, 230, 109, 0.05) 100%);
+}
+
+.dark.child-theme .tab-header {
+    border-bottom-color: rgba(78, 205, 196, 0.3);
+    background: linear-gradient(to right, 
+        rgba(255, 107, 107, 0.1) 0%, 
+        rgba(78, 205, 196, 0.1) 50%, 
+        rgba(255, 230, 109, 0.1) 100%);
+}
+
+/* タブボタン */
+.child-theme .tab-button {
+    padding: 0.875rem 1.5rem;
+    font-size: var(--child-text-base);
+    font-weight: 800;
+    border-bottom: 4px solid transparent;
+    border-radius: 0.75rem 0.75rem 0 0;
+    letter-spacing: 0.05em;
+}
+
+.child-theme .tab-button:hover:not(.active) {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.1) 0%, 
+        rgba(78, 205, 196, 0.1) 100%);
+    color: var(--child-primary);
+    transform: translateY(-2px);
+}
+
+.child-theme .tab-button.active {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    border-bottom-color: var(--child-accent);
+    box-shadow: 
+        0 4px 8px rgba(255, 107, 107, 0.3), 
+        0 2px 6px rgba(78, 205, 196, 0.3);
+    transform: translateY(-4px) scale(1.05);
+}
+
+.child-theme .tab-button.active::before {
+    content: '⭐';
+    position: absolute;
+    left: 0.5rem;
+    top: 10%;
+    transform: translateY(-10%);
+    font-size: 1.25rem;
+    animation: starBounce 1s ease-in-out infinite;
+}
+
+.child-theme .tab-button .emoji,
+.child-theme .tab-button .coin-emoji {
+    font-size: 1.5rem;
+}
+
+.child-theme .badge-count {
+    min-width: 1.5rem;
+    height: 1.25rem;
+    padding: 0 0.5rem;
+    background: rgba(255, 255, 255, 0.4);
+    font-size: var(--child-text-xs);
+    font-weight: 800;
+}
+
+.child-theme .tab-button.active .badge-count {
+    background: rgba(255, 255, 255, 0.5);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* 残高カード */
+.child-theme .balance-card {
+    background: linear-gradient(135deg, #FFE66D 0%, #FFA07A 100%);
+    border: 4px solid var(--child-coin);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+}
+
+.dark.child-theme .balance-card {
+    background: linear-gradient(135deg, 
+        rgba(255, 230, 109, 0.2) 0%, 
+        rgba(255, 160, 122, 0.2) 100%);
+    border-color: var(--child-coin);
+}
+
+.child-theme .coin-icon-large {
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: coinFlip 3s ease-in-out infinite;
+}
+
+@keyframes coinFlip {
+    0%, 100% { transform: rotateY(0deg); }
+    50% { transform: rotateY(180deg); }
+}
+
+.child-theme .btn-history {
+    background: linear-gradient(135deg, 
+        rgba(255, 107, 107, 0.2) 0%, 
+        rgba(78, 205, 196, 0.2) 100%);
+    border: 3px solid var(--child-primary);
+    font-size: var(--child-text-sm);
+    font-weight: 800;
+    border-radius: 1rem;
+}
+
+.child-theme .btn-history:hover {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+/* パッケージグリッド */
+.child-theme .package-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.75rem;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .child-theme .package-grid {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1365px) {
+    .child-theme .package-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1366px) {
+    .child-theme .package-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* パッケージカード */
+.child-theme .package-card {
+    min-height: 320px;
+    background: linear-gradient(135deg, 
+        rgba(255, 235, 205, 0.98) 0%, 
+        rgba(255, 255, 255, 0.98) 100%);
+    border: 4px solid var(--child-primary);
+    border-radius: 1.5rem;
+    padding: var(--child-spacing-card);
+    box-shadow: 
+        0 6px 12px rgba(255, 107, 107, 0.15), 
+        0 3px 6px rgba(78, 205, 196, 0.15);
+}
+
+.dark.child-theme .package-card {
+    background: linear-gradient(135deg, 
+        rgba(26, 26, 46, 0.98) 0%, 
+        rgba(45, 45, 68, 0.98) 100%);
+    border-color: var(--child-secondary);
+}
+
+.child-theme .package-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    transition: all 0.4s var(--child-transition-bounce);
+    box-shadow: 
+        0 16px 32px rgba(255, 107, 107, 0.3), 
+        0 8px 16px rgba(78, 205, 196, 0.3);
+}
+
+.child-theme .package-header {
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.child-theme .coin-badge-large {
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: coinSpin 4s ease-in-out infinite;
+}
+
+@keyframes coinSpin {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(10deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-10deg); }
+}
+
+.child-theme .package-name {
+    font-size: var(--child-text-lg);
+    font-weight: 900;
+    text-align: center;
+}
+
+.child-theme .token-amount {
+    font-size: 3rem;
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.child-theme .token-label {
+    font-size: var(--child-text-base);
+    font-weight: 800;
+    color: var(--child-coin);
+}
+
+.dark .child-theme .token-label {
+    color: #f59e0b;
+}
+
+.child-theme .price-amount {
+    font-size: var(--child-text-xl);
+}
+
+.child-theme .package-description {
+    font-size: var(--child-text-sm);
+    color: #4b5563;
+}
+
+.dark.child-theme .package-description {
+    color: #d1d5db;
+}
+
+/* 購入ボタン */
+.child-theme .btn-purchase {
+    padding: 1rem 1.5rem;
+    font-size: var(--child-text-lg);
+    font-weight: 900;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 1rem;
+    box-shadow: 
+        0 6px 16px rgba(16, 185, 129, 0.4), 
+        inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.child-theme .btn-purchase .emoji {
+    font-size: 1.5rem;
+}
+
+.child-theme .btn-purchase:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 24px rgba(16, 185, 129, 0.5);
+}
+
+.child-theme .btn-purchase:active {
+    transform: translateY(-2px) scale(1.01);
+}
+
+/* 承認待ちリクエスト */
+.child-theme .pending-request-card {
+    background: linear-gradient(135deg, 
+        rgba(255, 235, 205, 0.98) 0%, 
+        rgba(255, 255, 255, 0.98) 100%);
+    border: 3px solid var(--child-primary);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    min-height: 140px;
+}
+
+.dark.child-theme .pending-request-card {
+    background: linear-gradient(135deg, 
+        rgba(26, 26, 46, 0.98) 0%, 
+        rgba(45, 45, 68, 0.98) 100%);
+    border-color: var(--child-secondary);
+}
+
+.child-theme .pending-request-card:hover {
+    transform: translateY(-8px) scale(1.01);
+    transition: all 0.4s var(--child-transition-bounce);
+    box-shadow: 0 12px 24px rgba(255, 107, 107, 0.3);
+}
+
+.child-theme .coin-icon {
+    font-size: 2.5rem;
+    animation: coinBounce 2s ease-in-out infinite;
+}
+
+@keyframes coinBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.child-theme .status-badge.pending {
+    background: linear-gradient(135deg, #FFE66D 0%, #FFA07A 100%);
+    font-size: var(--child-text-sm);
+    font-weight: 800;
+    padding: 0.625rem 1.25rem;
+    box-shadow: 0 4px 12px rgba(255, 230, 109, 0.4);
+}
+
+.child-theme .status-badge.pending .emoji {
+    font-size: 1.25rem;
+}
+
+.child-theme .btn-cancel {
+    background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 0.2) 0%, 
+        rgba(220, 38, 38, 0.2) 100%);
+    border: 3px solid #ef4444;
+    border-radius: 1rem;
+    font-size: var(--child-text-sm);
+    font-weight: 800;
+    padding: 0.75rem 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.child-theme .btn-cancel .emoji {
+    font-size: 1.25rem;
+}
+
+.child-theme .btn-cancel:hover {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 16px rgba(239, 68, 68, 0.4);
+}
+
+.child-theme .empty-state {
+    padding: 4rem 2rem;
+}
+
+.child-theme .empty-state .text-6xl {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+/* 注意事項カード */
+.child-theme .approval-notice {
+    background: linear-gradient(135deg, #FFE66D 0%, #FFA07A 100%);
+    border: 4px solid var(--child-coin);
+    border-radius: 1.25rem;
+    padding: 1.25rem;
+    box-shadow: 0 6px 16px rgba(255, 230, 109, 0.4);
+}
+
+/* スクロールバー */
+.child-theme .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+}
+
+.child-theme .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #E55A5A 0%, #3DB3A9 100%);
+}
+
+/* モバイル最適化 */
+@media (max-width: 767px) {
+    .child-theme .package-card {
+        min-height: 280px;
+    }
+    
+    .child-theme .tab-button {
+        padding: 0.75rem 1.25rem;
+        font-size: var(--child-text-sm);
+    }
+    
+    .child-theme .tab-button .emoji {
+        font-size: 1.25rem;
+    }
+    
+    .child-theme .token-amount {
+        font-size: 2.5rem;
+    }
+}
+
+/* アニメーション削減 */
+@media (prefers-reduced-motion: reduce) {
+    .child-theme .package-card,
+    .child-theme .pending-request-card,
+    .child-theme .tab-button,
+    .child-theme .btn-purchase,
+    .child-theme .btn-cancel,
+    .child-theme .coin-icon,
+    .child-theme .coin-icon-large,
+    .child-theme .coin-badge-large {
+        animation: none;
+        transition: none;
+    }
+    
+    .child-theme .package-card:hover,
+    .child-theme .pending-request-card:hover {
+        transform: none;
+    }
+}

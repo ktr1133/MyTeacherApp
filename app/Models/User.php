@@ -294,4 +294,43 @@ class User extends Authenticatable
 
         return false;
     }
+
+    /**
+     * トークン購入時に親の承認が必要かどうか
+     */
+    public function requiresPurchaseApproval(): bool
+    {
+        return $this->isChild() && $this->requires_purchase_approval;
+    }
+
+    /**
+     * トークン購入リクエストとのリレーション
+     */
+    public function tokenPurchaseRequests(): HasMany
+    {
+        return $this->hasMany(TokenPurchaseRequest::class);
+    }
+
+    /**
+     * 承認待ちのトークン購入リクエストを取得
+     */
+    public function pendingPurchaseRequests()
+    {
+        return $this->tokenPurchaseRequests()->pending();
+    }
+
+    /**
+     * 自分の子どものトークン購入リクエストを取得（親用）
+     */
+    public function childrenPurchaseRequests()
+    {
+        if (!$this->isParent()) {
+            return collect();
+        }
+        
+        return TokenPurchaseRequest::whereHas('user', function ($query) {
+            $query->where('group_id', $this->group_id)
+                  ->where('id', '!=', $this->id);
+        })->pending()->with(['user', 'package'])->get();
+    }
 }

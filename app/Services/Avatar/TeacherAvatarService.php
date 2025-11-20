@@ -7,8 +7,8 @@ use App\Models\User;
 use App\Repositories\Avatar\TeacherAvatarRepositoryInterface;
 use App\Jobs\GenerateAvatarImagesJob;
 use App\Services\Token\TokenServiceInterface;
-use Illuminate\Support\Str;
 use App\Exceptions\RedirectException;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * 教師アバターサービス
@@ -115,7 +115,7 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
 
         // 既存画像削除
         foreach ($avatar->images as $image) {
-            \Storage::disk('s3')->delete($image->s3_path);
+            Storage::disk('s3')->delete($image->s3_path);
             $image->delete();
         }
 

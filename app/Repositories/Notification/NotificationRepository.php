@@ -336,4 +336,29 @@ class NotificationRepository implements NotificationRepositoryInterface
             $query->where('title', 'LIKE', "%{$term}%");
         }
     }
+
+    /**
+     * 通知を作成し、特定のユーザーに即座に配信
+     * 
+     * システム通知など、単一ユーザーに即座に通知を送る場合に使用。
+     * NotificationTemplate を作成後、UserNotification を作成する。
+     *
+     * @param array $templateData 通知テンプレートデータ
+     * @param int $userId 配信先のユーザーID
+     * @return NotificationTemplate
+     */
+    public function createAndDistributeToUser(array $templateData, int $userId): NotificationTemplate
+    {
+        // NotificationTemplate を作成
+        $template = $this->createTemplate($templateData);
+        
+        // UserNotification を作成（即座に配信）
+        UserNotification::create([
+            'user_id' => $userId,
+            'notification_template_id' => $template->id,
+            'is_read' => false,
+        ]);
+        
+        return $template;
+    }
 }

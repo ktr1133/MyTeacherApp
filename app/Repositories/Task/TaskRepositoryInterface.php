@@ -2,8 +2,10 @@
 
 namespace App\Repositories\Task;
 
+use App\Models\TaskProposal;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 use App\Models\Task;
 
 /**
@@ -46,6 +48,27 @@ interface TaskRepositoryInterface
      * ...
      */
     public function syncTagsByName(Task $task, array $tagNames): void;
+
+    /**
+     * タスク提案を作成する
+     *
+     * @param int $userId
+     * @param string $originalTaskText
+     * @param string $context
+     * @param array $aiResponse
+     * @return TaskProposal
+     */
+    public function createProposal(int $userId, string $originalTaskText, string $context, array $aiResponse): TaskProposal;
+
+    /**
+     * AIが提案したタスクを作成する
+     *
+     * @param int $userId
+     * @param int $proposalId
+     * @param array $proposedTasks
+     * @return SupportCollection
+     */
+    public function createTasksFromProposal(int $userId, int $proposalId, array $proposedTasks): SupportCollection;
 
     /**
      * タイトルでタスクを検索

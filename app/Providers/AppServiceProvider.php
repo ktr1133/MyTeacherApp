@@ -31,8 +31,10 @@ use App\Repositories\Task\TaskEloquentRepository;
 use App\Repositories\Task\TaskProposalRepositoryInterface;
 use App\Repositories\Task\EloquentTaskProposalRepository;
 use App\Repositories\Task\TaskRepositoryInterface;
-use App\Repositories\Token\TokenRepositoryInterface;
+use App\Repositories\Token\TokenPurchaseRequestRepositoryInterface;
+use App\Repositories\Token\TokenPurchaseRequestRepository;
 use App\Repositories\Token\TokenEloquentRepository;
+use App\Repositories\Token\TokenRepositoryInterface;
 use App\Repositories\Token\TokenPackageRepositoryInterface;
 use App\Repositories\Token\TokenPackageEloquentRepository;
 // サービスのインポート
@@ -70,6 +72,8 @@ use App\Services\Task\TaskProposalServiceInterface;
 use App\Services\Task\TaskProposalService;
 use App\Services\Task\TaskSearchServiceInterface;
 use App\Services\Task\TaskSearchService;
+use App\Services\Token\TokenPurchaseApprovalServiceInterface;
+use App\Services\Token\TokenPurchaseApprovalService;
 use App\Services\Token\TokenServiceInterface;
 use App\Services\Token\TokenService;
 use App\Services\Token\TokenPackageServiceInterface;
@@ -79,6 +83,7 @@ use App\Services\Token\TokenPackageService;
 use App\Services\AI\OpenAIService;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -122,6 +127,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(HolidayRepositoryInterface::class, HolidayRepository::class);
 
         // --- Token ---
+        $this->app->bind(TokenPurchaseRequestRepositoryInterface::class, TokenPurchaseRequestRepository::class);
         $this->app->bind(TokenRepositoryInterface::class, TokenEloquentRepository::class);
         $this->app->bind(TokenPackageRepositoryInterface::class, TokenPackageEloquentRepository::class);
 
@@ -170,6 +176,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
 
         // --- Token ---
+        $this->app->bind(TokenPurchaseApprovalServiceInterface::class, TokenPurchaseApprovalService::class);
         $this->app->bind(TokenServiceInterface::class, TokenService::class);
         $this->app->bind(TokenPackageServiceInterface::class, TokenPackageService::class);
 

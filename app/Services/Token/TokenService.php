@@ -4,8 +4,11 @@ namespace App\Services\Token;
 
 use App\Models\User;
 use App\Models\TokenBalance;
+use App\Models\TokenPackage;
+use App\Repositories\Token\TokenPackageRepositoryInterface;
 use App\Repositories\Token\TokenRepositoryInterface;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * トークン管理サービス実装
@@ -17,6 +20,7 @@ class TokenService implements TokenServiceInterface
 {
     public function __construct(
         private TokenRepositoryInterface $tokenRepository,
+        private TokenPackageRepositoryInterface $tokenPackageRepository,
     ) {}
 
     /**
@@ -474,5 +478,24 @@ class TokenService implements TokenServiceInterface
             ]);
             return false;
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAvailablePackages(): Collection
+    {
+        return $this->tokenRepository->getAvailablePackages();
+    }
+
+    /**
+     * IDでトークンパッケージを取得
+     *
+     * @param int $packageId
+     * @return ?TokenPackage
+     */
+    public function findPackageById(int $packageId): ?TokenPackage
+    {
+        return $this->tokenPackageRepository->find($packageId);
     }
 }
