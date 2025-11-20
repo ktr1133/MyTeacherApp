@@ -17,12 +17,16 @@ class IndexPerformanceAction
     public function __invoke(Request $request)
     {
         $currentUser = Auth::user();
+        
+        // テーマ判定
+        $isChildTheme = $currentUser->useChildTheme();
 
         // ========================================
-        // URLパラメータの取得と検証
+        // URLパラメータの取得と検証（テーマ別初期値）
         // ========================================
-        $tab = $request->input('tab', 'normal'); // normal | group
-        $period = $request->input('period', 'week'); // week | month | year
+        // 子ども向け: クエスト・月間、大人向け: やること・週間
+        $tab = $request->input('tab', $isChildTheme ? 'group' : 'normal'); // normal | group
+        $period = $request->input('period', $isChildTheme ? 'month' : 'week'); // week | month | year
         $offset = (int) $request->input('offset', 0);
         $selectedUserId = (int) $request->input('user_id', 0);
 

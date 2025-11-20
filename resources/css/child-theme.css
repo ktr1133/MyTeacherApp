@@ -2787,3 +2787,113 @@
         transform: none;
     }
 }
+
+/* ===================================
+   実績画面専用アバター（子ども向け）
+   =================================== */
+
+/* 子ども向け吹き出し強化スタイル */
+.child-theme .performance-avatar-bubble {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA07A 100%) !important;
+    border: 5px solid #FF6B6B !important;
+    box-shadow: 
+        0 10px 30px rgba(255, 107, 107, 0.3),
+        0 0 0 3px rgba(255, 215, 0, 0.5),
+        inset 0 2px 10px rgba(255, 255, 255, 0.3) !important;
+    animation: bubbleGlow 2s ease-in-out infinite !important;
+}
+
+@keyframes bubbleGlow {
+    0%, 100% {
+        box-shadow: 
+            0 10px 30px rgba(255, 107, 107, 0.3),
+            0 0 0 3px rgba(255, 215, 0, 0.5),
+            inset 0 2px 10px rgba(255, 255, 255, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 15px 40px rgba(255, 107, 107, 0.5),
+            0 0 0 5px rgba(255, 215, 0, 0.7),
+            inset 0 2px 15px rgba(255, 255, 255, 0.5);
+    }
+}
+
+.child-theme .performance-avatar-bubble p {
+    font-size: 1.5rem !important;
+    font-weight: 900 !important;
+    color: white !important;
+    text-shadow: 
+        3px 3px 6px rgba(0, 0, 0, 0.3),
+        -1px -1px 0 rgba(255, 215, 0, 0.5) !important;
+    letter-spacing: 0.05em;
+}
+
+.child-theme .performance-avatar-bubble::after {
+    border-top-color: #FFA07A !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* 子ども向けアバター画像の強調 */
+.child-theme .performance-avatar-image {
+    filter: drop-shadow(0 15px 30px rgba(255, 107, 107, 0.4)) !important;
+}
+
+/* 子ども向け浮遊パーティクルの拡大 */
+.child-theme .floating-particle {
+    font-size: 2.5rem !important;
+}
+
+/* iPad横向き（landscape） */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    .child-theme .performance-avatar-bubble p {
+        font-size: 1.5rem !important;
+    }
+    
+    .child-theme .floating-particle {
+        font-size: 2.25rem !important;
+    }
+}
+
+/* iPad縦向き（portrait） */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: portrait) {
+    .child-theme .performance-avatar-bubble p {
+        font-size: 1.75rem !important;
+    }
+    
+    .child-theme .floating-particle {
+        font-size: 2.75rem !important;
+    }
+}
+
+/* デスクトップ（1025px以上） */
+@media (min-width: 1025px) {
+    .child-theme .performance-avatar-bubble p {
+        font-size: 2rem !important;
+    }
+    
+    .child-theme .floating-particle {
+        font-size: 3rem !important;
+    }
+}
+
+/* タブレット以下（768px以下） */
+@media (max-width: 768px) {
+    .child-theme .performance-avatar-bubble p {
+        font-size: 1.25rem !important;
+    }
+    
+    .child-theme .floating-particle {
+        font-size: 2rem !important;
+    }
+}
+
+/* スマートフォン（480px以下） */
+@media (max-width: 480px) {
+    .child-theme .performance-avatar-bubble p {
+        font-size: 1.125rem !important;
+    }
+    
+    .child-theme .floating-particle {
+        font-size: 1.75rem !important;
+    }
+}

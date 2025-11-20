@@ -279,3 +279,133 @@ textarea:focus {
         padding: 0.625rem 1rem;
     }
 }
+
+
+/* ===================================
+   承認カード - タスク用
+   =================================== */
+.approval-card-task {
+    background: linear-gradient(135deg, 
+        rgba(243, 232, 255, 0.95) 0%, 
+        rgba(255, 255, 255, 0.95) 100%);
+    border: 2px solid rgba(168, 85, 247, 0.3);
+}
+
+.dark .approval-card-task {
+    background: linear-gradient(135deg, 
+        rgba(88, 28, 135, 0.2) 0%, 
+        rgba(31, 41, 55, 0.95) 100%);
+    border-color: rgba(168, 85, 247, 0.5);
+}
+
+.approval-card-task:hover {
+    border-color: rgba(168, 85, 247, 0.6);
+    box-shadow: 0 12px 24px rgba(168, 85, 247, 0.15);
+}
+
+.dark .approval-card-task:hover {
+    border-color: rgba(168, 85, 247, 0.8);
+    box-shadow: 0 12px 24px rgba(168, 85, 247, 0.3);
+}
+
+/* ===================================
+   承認カード - トークン購入用
+   =================================== */
+.approval-card-token {
+    background: linear-gradient(135deg, 
+        rgba(254, 243, 199, 0.95) 0%, 
+        rgba(255, 255, 255, 0.95) 100%);
+    border: 2px solid rgba(245, 158, 11, 0.3);
+}
+
+.dark .approval-card-token {
+    background: linear-gradient(135deg, 
+        rgba(120, 53, 15, 0.2) 0%, 
+        rgba(31, 41, 55, 0.95) 100%);
+    border-color: rgba(245, 158, 11, 0.5);
+}
+
+.approval-card-token:hover {
+    border-color: rgba(245, 158, 11, 0.6);
+    box-shadow: 0 12px 24px rgba(245, 158, 11, 0.15);
+}
+
+.dark .approval-card-token:hover {
+    border-color: rgba(245, 158, 11, 0.8);
+    box-shadow: 0 12px 24px rgba(245, 158, 11, 0.3);
+}
+
+/* ===================================
+   タイプバッジ
+   =================================== */
+.approval-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.approval-type-task {
+    background: linear-gradient(135deg, #a855f7 0%, #d946ef 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+}
+
+.approval-type-token {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* ===================================
+   アクションボタン（既存のスタイルを拡張）
+   =================================== */
+.btn-approve,
+.btn-reject {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+    border: 2px solid;
+}
+
+.btn-approve {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-approve:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.btn-reject {
+    background: white;
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.dark .btn-reject {
+    background: rgba(31, 41, 55, 0.8);
+    border-color: #ef4444;
+}
+
+.btn-reject:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}

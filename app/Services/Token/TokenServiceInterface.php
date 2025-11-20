@@ -114,4 +114,15 @@ interface TokenServiceInterface
      * @return ?TokenPackage
      */
     public function findPackageById(int $packageId): ?TokenPackage;
+
+    /**
+     * ユーザーにトークンを付与
+     *
+     * @param User $user ユーザー
+     * @param int $amount 付与量
+     * @param string $reason 理由
+     * @param mixed $related 関連モデル
+     * @return bool
+     */
+    public function grantTokens(User $user, int $amount, string $reason, $related = null): bool;
 }

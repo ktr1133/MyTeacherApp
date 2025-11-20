@@ -52,7 +52,7 @@ class ProcessTokenPurchaseAction
             
             // 通常の購入処理（承認不要の場合）
             $package = $this->tokenService->findPackageById($packageId);
-            
+
             if (!$package) {
                 throw new RedirectException('パッケージが見つかりません。');
             }
@@ -61,10 +61,10 @@ class ProcessTokenPurchaseAction
             // TODO: 決済処理の実装
             
             // トークンを追加
-            $this->tokenService->consumeTokens(
+            $this->tokenService->grantTokens(
                 $user,
                 $package->token_amount,
-                'purchase',
+                'トークン購入',
                 $package
             );
             

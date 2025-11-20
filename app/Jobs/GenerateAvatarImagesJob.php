@@ -343,13 +343,21 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 $aiUsageDetails
             );
 
-            // 事前見積もり精算
-            $estimatedCost = $avatar->estimated_token_usage ?? 0;
-            $tokenService->settleTokenConsumption(
+            // // 事前見積もり精算
+            // $estimatedCost = $avatar->estimated_token_usage ?? 0;
+            // $tokenService->settleTokenConsumption(
+            //     $avatar->user,
+            //     $estimatedCost,
+            //     $totalTokenCost,
+            //     'アバター生成精算',
+            //     $avatar
+            // );
+
+            // トークン消費
+            $tokenService->consumeTokens(
                 $avatar->user,
-                $estimatedCost,
                 $totalTokenCost,
-                'アバター生成精算',
+                'アバター画像生成',
                 $avatar
             );
 

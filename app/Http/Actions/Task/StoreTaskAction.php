@@ -82,7 +82,7 @@ class StoreTaskAction
             // 承認者（assigned_by_user_id）を取得して自動承認
             $approver = $this->profileService->findUserById($task->assigned_by_user_id);
             if ($approver) {
-                $this->taskApprovalService->approveTask($task, $approver);
+                $this->taskApprovalService->approveTaskWithoutNotification($task, $approver);
             }
         }
 

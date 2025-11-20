@@ -6,6 +6,7 @@ use App\Models\TokenPurchaseRequest;
 use App\Models\User;
 use App\Repositories\Token\TokenPurchaseRequestRepositoryInterface;
 use App\Services\Notification\NotificationService;
+use App\Services\Token\TokenServiceInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,6 +18,7 @@ class TokenPurchaseApprovalService implements TokenPurchaseApprovalServiceInterf
 {
     public function __construct(
         private TokenPurchaseRequestRepositoryInterface $repository,
+        private TokenServiceInterface $tokenService,
         private NotificationService $notificationService
     ) {}
     
@@ -43,12 +45,8 @@ class TokenPurchaseApprovalService implements TokenPurchaseApprovalServiceInterf
             
             // 親に通知を送信
             $this->sendRequestNotificationToParent($child, $request);
-            
+
             DB::commit();
-            
-            Log::info('[TokenPurchaseApprovalService] Purchase request created successfully', [
-                'request_id' => $request->id,
-            ]);
             
             return $request;
             
@@ -75,7 +73,7 @@ class TokenPurchaseApprovalService implements TokenPurchaseApprovalServiceInterf
         if ($request->user->group_id !== $parent->group_id) {
             throw new \Exception('異なるグループのリクエストは承認できません。');
         }
-        
+
         // 承認待ちでない場合はエラー
         if (!$request->isPending()) {
             throw new \Exception('承認待ちのリクエストではありません。');
@@ -86,7 +84,29 @@ class TokenPurchaseApprovalService implements TokenPurchaseApprovalServiceInterf
         try {
             // リクエストを承認
             $approvedRequest = $this->repository->approve($request, $parent->id);
-            
+
+            // 承認後、実際にトークンを購入処理
+            // TODO: 実際の決済処理（Stripe等）
+
+            logger()->info('トークン処理開始');
+            $oldbalance = $approvedRequest->user->getOrCreateTokenBalance();
+            logger()->info('購入前残高', [
+                '購入者' => $approvedRequest->user->id,
+                '残高' => $oldbalance,
+            ]);
+            // トークンを子どもに付与
+            $this->tokenService->grantTokens(
+                $approvedRequest->user,
+                $approvedRequest->package->token_amount,
+                'トークン購入',
+                $approvedRequest
+            );
+            $newbalance = $approvedRequest->user->getOrCreateTokenBalance();;
+            logger()->info('トークン処理終了', [
+                '購入者' => $approvedRequest->user->id,
+                '残高' => $newbalance,
+            ]);
+
             // 子どもに承認通知を送信
             $this->sendApprovalNotificationToChild($approvedRequest);
             

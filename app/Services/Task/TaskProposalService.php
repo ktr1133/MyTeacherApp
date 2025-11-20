@@ -44,9 +44,9 @@ class TaskProposalService implements TaskProposalServiceInterface
 
         // 実際に使用したトークン数を取得
         $usage = $aiResult['usage'] ?? [
-            'prompt_tokens' => 0,
+            'prompt_tokens'     => 0,
             'completion_tokens' => 0,
-            'total_tokens' => 0,
+            'total_tokens'      => 0,
         ];
         $actualTokens = $usage['total_tokens'];
 
@@ -54,7 +54,7 @@ class TaskProposalService implements TaskProposalServiceInterface
         $consumed = $this->tokenService->consumeTokens(
             $user,
             $actualTokens,
-            "タスク提案生成: {$originalText}"
+            "タスク提案生成: {$originalText}",
         );
 
         if (!$consumed) {

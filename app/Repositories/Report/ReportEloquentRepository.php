@@ -4,7 +4,6 @@ namespace App\Repositories\Report;
 
 use App\Models\Task;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class ReportEloquentRepository implements ReportRepositoryInterface
 {
@@ -14,7 +13,7 @@ class ReportEloquentRepository implements ReportRepositoryInterface
     public function getNormalCompletedCountsByDate(int $userId, Carbon $start, Carbon $end): array
     {
         $rows = Task::where('user_id', $userId)
-            ->where('requires_approval', false)
+            ->whereNull('group_task_id')
             ->where('is_completed', true)
             ->whereBetween('completed_at', [$start, $end])
             ->selectRaw('DATE(completed_at) as date, COUNT(*) as count')
@@ -31,7 +30,7 @@ class ReportEloquentRepository implements ReportRepositoryInterface
     public function getNormalIncompleteCountsByDueDate(int $userId, Carbon $start, Carbon $end): array
     {
         $rows = Task::where('user_id', $userId)
-            ->where('requires_approval', false)
+            ->whereNull('group_task_id')
             ->whereBetween('due_date', [$start->toDateString(), $end->toDateString()])
             ->where(function ($q) {
                 $q->where('is_completed', false)->orWhereNull('completed_at');
@@ -67,7 +66,7 @@ class ReportEloquentRepository implements ReportRepositoryInterface
     public function getGroupIncompleteCountsByDueDate(int $userId, Carbon $start, Carbon $end): array
     {
         $rows = Task::where('user_id', $userId)
-            ->where('requires_approval', true)
+            ->whereNotNull('group_task_id')
             ->whereBetween('due_date', [$start->toDateString(), $end->toDateString()])
             ->whereNull('approved_at')
             ->selectRaw('DATE(due_date) as date, COUNT(*) as count')
@@ -84,7 +83,7 @@ class ReportEloquentRepository implements ReportRepositoryInterface
     public function getGroupRewardByDate(int $userId, Carbon $start, Carbon $end): array
     {
         $rows = Task::where('user_id', $userId)
-            ->where('requires_approval', true)
+            ->whereNotNull('group_task_id')
             ->whereNotNull('approved_at')
             ->whereBetween('approved_at', [$start, $end])
             ->selectRaw('DATE(approved_at) as date, SUM(reward) as total')

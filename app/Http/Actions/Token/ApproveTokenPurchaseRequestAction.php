@@ -24,23 +24,13 @@ class ApproveTokenPurchaseRequestAction
         $parent = $request->user();
         
         try {
-            // リクエストを承認
-            $approvedRequest = $this->approvalService->approveRequest($purchaseRequest, $parent);
-            
-            // 承認後、実際にトークンを購入処理
-            // TODO: 実際の決済処理（Stripe等）
-            
-            // トークンを子どもに付与
-            $this->tokenService->consumeTokens(
-                $approvedRequest->user,
-                $approvedRequest->package->token_amount,
-                'purchase',
-                $approvedRequest
-            );
-            
+            // リクエスト承認処理　&& トークン購入処理
+            $this->approvalService->approveRequest($purchaseRequest, $parent);
+
             return redirect()
                 ->back()
-                ->with('success', '購入を承認しました。');
+                ->with('success', '購入を承認しました。')
+                ->with('avatar_event', config('const.avatar_events.token_purchased'));
             
         } catch (\Exception $e) {
             Log::error('[ApproveTokenPurchaseRequestAction] Approval failed', [

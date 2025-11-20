@@ -44,6 +44,8 @@ use App\Services\AI\AICostServiceInterface;
 use App\Services\AI\AICostService;
 use App\Services\AI\StableDiffusionServiceInterface;
 use App\Services\AI\StableDiffusionService;
+use App\Services\Approval\ApprovalMergeServiceInterface;
+use App\Services\Approval\ApprovalMergeService;
 use App\Services\Auth\ValidationServiceInterface;
 use App\Services\Auth\ValidationService;
 use App\Services\Avatar\TeacherAvatarServiceInterface;
@@ -140,6 +142,9 @@ class AppServiceProvider extends ServiceProvider
 
         // --- AI Cost ---
         $this->app->bind(AICostServiceInterface::class, AICostService::class);
+
+        // --- Approval ---
+        $this->app->bind(ApprovalMergeServiceInterface::class, ApprovalMergeService::class);
 
         // --- Auth ---
         $this->app->bind(ValidationServiceInterface::class, ValidationService::class);

@@ -55,22 +55,22 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         // アバター作成
         $avatar = $this->repository->create($user, $data);
 
-        // トークン消費
-        $consumed = $this->tokenService->consumeTokens(
-            $user,
-            $avatar->estimated_token_usage,
-            'アバター作成',
-            $avatar
-        );
+        // // トークン消費
+        // $consumed = $this->tokenService->consumeTokens(
+        //     $user,
+        //     $avatar->estimated_token_usage,
+        //     'アバター作成(事前消費)',
+        //     $avatar
+        // );
 
-        if (!$consumed) {
-            logger()->error('Failed to consume tokens for avatar creation', [
-                'user_id' => $user->id,
-                'avatar_id' => $avatar->id,
-            ]);
-            $avatar->delete();
-            throw new RedirectException('トークンが不足しています。');
-        }
+        // if (!$consumed) {
+        //     logger()->error('Failed to consume tokens for avatar creation', [
+        //         'user_id' => $user->id,
+        //         'avatar_id' => $avatar->id,
+        //     ]);
+        //     $avatar->delete();
+        //     throw new RedirectException('トークンが不足しています。');
+        // }
 
         // 画像生成ジョブをディスパッチ
         GenerateAvatarImagesJob::dispatch($avatar->id);
@@ -100,17 +100,6 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         if ($avatar->estimated_token_usage > $avatar->user->getOrCreateTokenBalance()->balance) {
             throw new RedirectException('トークンが不足しています。画像再生成には' . number_format($avatar->estimated_token_usage) . 'トークンが必要です。');
 
-        }
-        // トークン消費
-        $consumed = $this->tokenService->consumeTokens(
-            $avatar->user,
-            $avatar->estimated_token_usage,
-            'アバター画像再生成',
-            $avatar
-        );
-
-        if (!$consumed) {
-            throw new \RuntimeException('トークンが不足しています。画像再生成には' . number_format($avatar->estimated_token_usage) . 'トークンが必要です。');
         }
 
         // 既存画像削除

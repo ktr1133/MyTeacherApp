@@ -15,17 +15,20 @@
             window.performanceData = {
                 tab: @json($tab),
                 period: @json($period),
-                currentData: @json($currentData)
+                currentData: @json($currentData),
+                // アバター用データ追加
+                normalData: @json($normalData),
+                groupData: @json($groupData)
             };
             
             // 累積データの確認ログ（デバッグ用）
             console.log('[Performance] Current data:', window.performanceData.currentData);
             
             @if($tab === 'normal')
-                console.log('[Performance] Normal task cumulative:', window.performanceData.currentData.nCumulative);
+                console.log('[Performance] Normal task cumulative:', window.performanceData.currentData.nCum);
             @else
-                console.log('[Performance] Group task cumulative:', window.performanceData.currentData.gCumulative);
-                console.log('[Performance] Reward cumulative:', window.performanceData.currentData.gRewardCumulative);
+                console.log('[Performance] Group task cumulative:', window.performanceData.currentData.gCum);
+                console.log('[Performance] Reward cumulative:', window.performanceData.currentData.gRewardCum);
             @endif
         </script>
     @endpush

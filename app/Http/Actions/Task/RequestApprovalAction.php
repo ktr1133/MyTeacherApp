@@ -42,9 +42,14 @@ class RequestApprovalAction
                 if ($request->hasFile('images')) {
                     $this->uploadImages($request, $task);
                 }
-
-                // 完了申請する
-                $task = $this->taskApprovalService->requestApproval($task, $request->user());
+                // 承認が必要な場合
+                if ($task->requires_approval) {
+                    // 完了申請する
+                    $task = $this->taskApprovalService->requestApproval($task, $request->user());
+                // 承認が不要な場合
+                } else {
+                    $task = $this->taskApprovalService->completeWithoutApproval($task, $request->user());
+                }
             });
 
             return redirect()

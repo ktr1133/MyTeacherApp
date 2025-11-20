@@ -297,7 +297,7 @@ class NotificationService implements NotificationServiceInterface
             'priority' => 'normal',
             'title' => $title,
             'message' => $message,
-            'action_url' => route('tokens.pending-approvals'),
+            'action_url' => route('tasks.pending-approvals'),
             'action_text' => $isChildTheme ? '見る' : '承認画面へ',
             'target_type' => 'users',
             'target_ids' => [$parent->id],
@@ -325,12 +325,12 @@ class NotificationService implements NotificationServiceInterface
         $isChildTheme = $child->theme === 'child';
         
         $title = $isChildTheme 
-            ? "やった！コインを買ってもらえるよ！"
-            : "トークン購入が承認されました";
+            ? "やった！コインを買ってもらえたよ！"
+            : "トークンが購入されあなたに付与されました。";
         
         $message = $isChildTheme
-            ? "{$parent->username}が「いいよ」って言ってくれたよ！{$package->name}を買えるよ！"
-            : "{$parent->username}さんが{$package->name}の購入を承認しました。";
+            ? "{$parent->username}が{$package->name}を買ってくれたよ！"
+            : "{$parent->username}さんが{$package->name}を購入しトークンをあなたに付与しました。";
         
         $templateData = [
             'sender_id' => $parent->id,
@@ -339,8 +339,8 @@ class NotificationService implements NotificationServiceInterface
             'priority' => 'normal',
             'title' => $title,
             'message' => $message,
-            'action_url' => route('tokens.purchase'),
-            'action_text' => $isChildTheme ? '買いに行く' : '購入ページへ',
+            'action_url' => route('dashboard'),
+            'action_text' => $isChildTheme ? '見に行く' : 'トップページへ',
             'target_type' => 'users',
             'target_ids' => [$child->id],
             'publish_at' => now(),
