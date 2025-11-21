@@ -4,6 +4,7 @@ namespace App\Services\Token;
 
 use App\Models\TokenPurchaseRequest;
 use App\Models\User;
+use App\Repositories\Payment\PaymentHistoryRepositoryInterface;
 use App\Repositories\Token\TokenPurchaseRequestRepositoryInterface;
 use App\Services\Notification\NotificationService;
 use App\Services\Token\TokenServiceInterface;
@@ -88,24 +89,14 @@ class TokenPurchaseApprovalService implements TokenPurchaseApprovalServiceInterf
             // 承認後、実際にトークンを購入処理
             // TODO: 実際の決済処理（Stripe等）
 
-            logger()->info('トークン処理開始');
-            $oldbalance = $approvedRequest->user->getOrCreateTokenBalance();
-            logger()->info('購入前残高', [
-                '購入者' => $approvedRequest->user->id,
-                '残高' => $oldbalance,
-            ]);
-            // トークンを子どもに付与
-            $this->tokenService->grantTokens(
+            // トークンを子どもに付与 + PaymentHistory作成（1トランザクション）
+            $this->tokenService->purchaseTokens(
                 $approvedRequest->user,
-                $approvedRequest->package->token_amount,
-                'トークン購入',
+                $approvedRequest->package,
+                'manual_approval',
+                'manual_approval_' . $approvedRequest->id,
                 $approvedRequest
             );
-            $newbalance = $approvedRequest->user->getOrCreateTokenBalance();;
-            logger()->info('トークン処理終了', [
-                '購入者' => $approvedRequest->user->id,
-                '残高' => $newbalance,
-            ]);
 
             // 子どもに承認通知を送信
             $this->sendApprovalNotificationToChild($approvedRequest);

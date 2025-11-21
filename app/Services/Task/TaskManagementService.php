@@ -63,7 +63,7 @@ class TaskManagementService implements TaskManagementServiceInterface
     /**
      * @inheritDoc
      */
-    public function createTask(User $user, array $data, bool $groupFlg): Task
+    public function createTask(User $user, array $data, bool $groupFlg): ?Task
     {
         // タスク登録用データの作成
         $taskData = $this->makeTaskBaseData($data);
@@ -85,7 +85,7 @@ class TaskManagementService implements TaskManagementServiceInterface
                     $users = $this->profileUserRepository->getMembersWithoutEditPermission($user->id);
                     foreach ($users as $user) {
                         $taskData['user_id'] = $user->id;
-                        $task = $this->taskRepository->createTask($user->id, $taskData);
+                        $task = $this->taskRepository->create($taskData);
 
                         // タグを関連付け（タグ名の配列）
                         if (isset($data['tags']) && is_array($data['tags'])) {
@@ -102,7 +102,7 @@ class TaskManagementService implements TaskManagementServiceInterface
                 // 担当者が設定されている場合は担当者分のみタスクを作成
                 } else {
                     $taskData['user_id'] = $data['assigned_user_id'];
-                    $task = $this->taskRepository->createTask($user->id, $taskData);
+                    $task = $this->taskRepository->create($taskData);
                     // タグを関連付け（タグ名の配列）
                     if (isset($data['tags']) && is_array($data['tags'])) {
                         $this->taskRepository->syncTagsByName($task, $data['tags']);
@@ -119,7 +119,7 @@ class TaskManagementService implements TaskManagementServiceInterface
                 }
             // 通常タスク登録の場合
             } else {
-                $task = $this->taskRepository->createTask($user->id, $taskData);
+                $task = $this->taskRepository->create($taskData);
                 // タグを関連付け（タグ名の配列）
                 if (isset($data['tags']) && is_array($data['tags'])) {
                     $tagNames = $this->tagRepository->findByIds($data['tags'])->pluck('name')->toArray();
@@ -128,7 +128,7 @@ class TaskManagementService implements TaskManagementServiceInterface
             }
         });
     
-        return $task->fresh(['tags']);
+        return $task?->fresh(['tags']);
     }
 
     /**

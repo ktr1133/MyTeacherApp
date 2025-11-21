@@ -1469,6 +1469,95 @@
     margin: 0;
 }
 
+/* ===================================
+   トークン履歴画面 統計カード（子ども向け）
+   =================================== */
+
+/* 残高カード（amber系） */
+.child-theme .token-stat-card-balance .token-stat-title {
+    color: rgb(146 64 14) !important; /* amber-800 */
+}
+
+.dark .child-theme .token-stat-card-balance .token-stat-title {
+    color: rgb(251 191 36) !important; /* amber-400 */
+}
+
+.child-theme .token-stat-card-balance .token-stat-value {
+    color: rgb(146 64 14) !important; /* amber-800 */
+}
+
+.dark .child-theme .token-stat-card-balance .token-stat-value {
+    color: rgb(251 191 36) !important; /* amber-400 */
+}
+
+.child-theme .token-stat-card-balance .token-stat-unit {
+    color: rgb(180 83 9) !important; /* amber-700 */
+}
+
+.dark .child-theme .token-stat-card-balance .token-stat-unit {
+    color: rgb(245 158 11) !important; /* amber-500 */
+}
+
+/* 購入カード（green系） */
+.child-theme .token-stat-card-purchase .token-stat-title {
+    color: rgb(22 101 52) !important; /* green-800 */
+}
+
+.dark .child-theme .token-stat-card-purchase .token-stat-title {
+    color: rgb(74 222 128) !important; /* green-400 */
+}
+
+.child-theme .token-stat-card-purchase .token-stat-value {
+    color: rgb(22 101 52) !important; /* green-800 */
+}
+
+.dark .child-theme .token-stat-card-purchase .token-stat-value {
+    color: rgb(74 222 128) !important; /* green-400 */
+}
+
+.child-theme .token-stat-card-purchase .token-stat-unit {
+    color: rgb(21 128 61) !important; /* green-700 */
+}
+
+.dark .child-theme .token-stat-card-purchase .token-stat-unit {
+    color: rgb(34 197 94) !important; /* green-500 */
+}
+
+/* 使用カード（blue系） */
+.child-theme .token-stat-card-usage .token-stat-title {
+    color: rgb(30 64 175) !important; /* blue-800 */
+}
+
+.dark .child-theme .token-stat-card-usage .token-stat-title {
+    color: rgb(96 165 250) !important; /* blue-400 */
+}
+
+.child-theme .token-stat-card-usage .token-stat-value {
+    color: rgb(30 64 175) !important; /* blue-800 */
+}
+
+.dark .child-theme .token-stat-card-usage .token-stat-value {
+    color: rgb(96 165 250) !important; /* blue-400 */
+}
+
+.child-theme .token-stat-card-usage .token-stat-unit {
+    color: rgb(29 78 216) !important; /* blue-700 */
+}
+
+.dark .child-theme .token-stat-card-usage .token-stat-unit {
+    color: rgb(59 130 246) !important; /* blue-500 */
+}
+
+/* 統計カードのtoken-amountクラスはグラデーションを無効化して単色表示 */
+.child-theme .token-stat-card-balance .token-amount,
+.child-theme .token-stat-card-purchase .token-amount,
+.child-theme .token-stat-card-usage .token-amount {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+    background-clip: unset !important;
+}
+
 /* 表情スライダーコンテナ */
 .child-theme .avatar-card > div > div[x-data*="expressionSlider"] {
     display: flex;

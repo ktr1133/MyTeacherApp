@@ -67,6 +67,25 @@
                                     @endif
                                 </p>
                             </div>
+                            {{-- 子どもの場合：承認が必要な旨の注意アイコン --}}
+                            @if (Auth::user()->requiresPurchaseApproval())
+                                <div>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                                        @if($isChildTheme)
+                                            おうちの人の「いいよ」が必要だよ！
+                                        @else
+                                            親の承認が必要です
+                                        @endif
+                                    </p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                                        @if($isChildTheme)
+                                            自分でコインを買うことはできません。
+                                        @else
+                                            トークンを購入する際は、親ユーザーの承認が必要です。購入リクエストを送信すると、親に通知が届きます。
+                                        @endif
+                                    </p>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -81,7 +100,7 @@
                                 @if(!$isChildTheme)
                                     履歴を見る
                                 @else
-                                    れきし
+                                    りれき
                                 @endif
                             </span>
                         </a>
@@ -92,33 +111,6 @@
             {{-- メインコンテンツ --}}
             <main class="flex-1 overflow-y-auto custom-scrollbar">
                 <div class="max-w-7xl mx-auto px-4 lg:px-6 py-4 lg:py-6">
-                    {{-- 子どもの場合：承認が必要な旨の注意事項 --}}
-                    @if(Auth::user()->requiresPurchaseApproval())
-                        <div class="approval-notice mb-6">
-                            <div class="flex items-start gap-3">
-                                <svg class="w-6 h-6 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                </svg>
-                                <div class="flex-1">
-                                    <p class="font-semibold text-amber-900 dark:text-amber-100 mb-1">
-                                        @if($isChildTheme)
-                                            おうちの人の「いいよ」が必要だよ！
-                                        @else
-                                            親の承認が必要です
-                                        @endif
-                                    </p>
-                                    <p class="text-sm text-amber-800 dark:text-amber-200">
-                                        @if($isChildTheme)
-                                            コインを買うときは、おうちの人に「買ってもいい？」ってお願いしてね。「いいよ」って言われたら買えるよ！
-                                        @else
-                                            トークンを購入する際は、親ユーザーの承認が必要です。購入リクエストを送信すると、親に通知が届きます。
-                                        @endif
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
                     {{-- タブ切り替え（子どもの場合のみ） --}}
                     @if(Auth::user()->isChild())
                         <div class="tab-container mb-6">
@@ -161,10 +153,10 @@
                             {{-- タブコンテンツ: パッケージ一覧 --}}
                             <div x-show="activeTab === 'packages'" x-transition class="tab-content">
                                 @include('tokens.partials.package-list', [
-                                    'packages' => $packages, 
-                                    'balance' => $balance, 
+                                    'packages'     => $packages, 
+                                    'balance'      => $balance, 
                                     'isChildTheme' => $isChildTheme,
-                                    'user' => Auth::user()
+                                    'user'         => Auth::user()
                                 ])
                             </div>
 

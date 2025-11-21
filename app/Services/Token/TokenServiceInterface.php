@@ -125,4 +125,25 @@ interface TokenServiceInterface
      * @return bool
      */
     public function grantTokens(User $user, int $amount, string $reason, $related = null): bool;
+
+    /**
+     * トークン購入処理（1トランザクションで全処理）
+     * 
+     * TokenBalance更新、TokenTransaction作成、PaymentHistory作成を行います。
+     *
+     * @param User $user 購入ユーザー
+     * @param TokenPackage $package 購入パッケージ
+     * @param string $paymentMethodType 支払い方法種別
+     * @param string|null $stripePaymentIntentId Stripe決済ID（nullの場合は自動生成）
+     * @param mixed $related 関連モデル（TokenPurchaseRequest等）
+     * @return bool 成功の可否
+     * @throws \Exception 処理失敗時
+     */
+    public function purchaseTokens(
+        User $user,
+        TokenPackage $package,
+        string $paymentMethodType = 'manual_approval',
+        ?string $stripePaymentIntentId = null,
+        $related = null
+    ): bool;
 }

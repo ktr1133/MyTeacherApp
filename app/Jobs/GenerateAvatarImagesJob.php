@@ -357,13 +357,13 @@ class GenerateAvatarImagesJob implements ShouldQueue
             // トークンコスト記録
             // ===================================
             
-            $tokenService->recordAICost(
-                $avatar->user,
-                $totalTokenCost,
-                'アバター生成コスト',
-                $avatar,
-                $aiUsageDetails
-            );
+            // $tokenService->recordAICost(
+            //     $avatar->user,
+            //     $totalTokenCost,
+            //     'アバター生成コスト',
+            //     $avatar,
+            //     $aiUsageDetails
+            // );
 
             // // 事前見積もり精算
             // $estimatedCost = $avatar->estimated_token_usage ?? 0;
@@ -388,6 +388,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 'generation_status' => 'completed',
                 'last_generated_at' => now(),
             ]);
+
             // 生成結果
             $result = true;
         } catch (\Exception $e) {

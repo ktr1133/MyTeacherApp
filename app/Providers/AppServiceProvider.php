@@ -17,6 +17,8 @@ use App\Repositories\Batch\ScheduledTaskRepositoryInterface;
 use App\Repositories\Batch\ScheduledTaskRepository;
 use App\Repositories\Notification\NotificationRepositoryInterface;
 use App\Repositories\Notification\NotificationRepository;
+use App\Repositories\Payment\PaymentHistoryRepositoryInterface;
+use App\Repositories\Payment\PaymentHistoryEloquentRepository;
 use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use App\Repositories\Profile\ProfileUserEloquentRepository;
 use App\Repositories\Profile\GroupRepositoryInterface;
@@ -117,6 +119,9 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Notification ---
         $this->app->bind(NotificationRepositoryInterface::class, NotificationRepository::class);
+
+        // --- Payment ---
+        $this->app->bind(PaymentHistoryRepositoryInterface::class, PaymentHistoryEloquentRepository::class);
 
         // --- Profile ---
         $this->app->bind(ProfileUserRepositoryInterface::class, ProfileUserEloquentRepository::class);

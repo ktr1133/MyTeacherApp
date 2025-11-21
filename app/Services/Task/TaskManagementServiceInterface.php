@@ -25,9 +25,9 @@ interface TaskManagementServiceInterface
      * @param User $user タスクを作成するユーザー
      * @param array $data タスクデータ（title, description, due_date, priority, tagsなど）
      * @param bool $groupFlg グループタスクフラグ
-     * @return Task 保存されたタスクモデル
+     * @return Task|null 保存されたタスクモデル
      */
-    public function createTask(User $user, array $data, bool $groupFlg): Task;
+    public function createTask(User $user, array $data, bool $groupFlg): ?Task;
 
     /**
      * タスク登録用の基本データを作成するヘルパーメソッド
