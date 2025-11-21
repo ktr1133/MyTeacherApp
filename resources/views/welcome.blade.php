@@ -31,6 +31,16 @@
 
         <!-- Styles -->
         @vite(['resources/css/app.css', 'resources/css/welcome.css'])
+
+        <!-- Dark Mode Script -->
+        <script>
+            // ダークモードの初期化（フリッカー防止のためhead内で実行）
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
     </head>
     <body class="antialiased bg-gradient-to-br from-[#F3F3F2] via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <!-- Header (Fixed) -->

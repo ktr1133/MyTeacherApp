@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/admin/common.css',
                 'resources/css/auth.css',
+                'resources/css/guest.css',
                 'resources/css/auth/register-validation.css',
                 'resources/css/avatar/avatar.css',
                 'resources/css/avatar/avatar-wizard-child.css',

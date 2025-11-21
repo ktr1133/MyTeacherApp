@@ -73,11 +73,7 @@
                             </div>
                             <div>
                                 <h1 class="performance-header-title text-base lg:text-lg font-bold">
-                                    @if(!$isChildTheme)
-                                        実績ダッシュボード
-                                    @else
-                                        実績
-                                    @endif
+                                    実績
                                 </h1>
                                 @if(!$isChildTheme)
                                     <p class="performance-header-subtitle hidden sm:block text-xs text-gray-600 dark:text-gray-400">タスクの進捗状況を可視化</p>
