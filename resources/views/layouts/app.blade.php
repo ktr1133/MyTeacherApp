@@ -43,6 +43,8 @@
         {{-- 認証済みユーザーのみ通知ポーリング読み込み --}}
         @auth
             @vite(['resources/js/common/notification-polling.js'])
+            {{-- グループタスク詳細モーダル制御（全ページ共通） --}}
+            @vite(['resources/js/dashboard/group-task-detail.js'])
         @endauth
         
         {{-- 花火エフェクト用 CDN（子ども向けのみ） --}}

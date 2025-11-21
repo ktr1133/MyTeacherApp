@@ -4,8 +4,6 @@
  */
 class SidebarController {
     constructor() {
-        console.log('[Sidebar] Constructor called');
-        
         // DOM要素の取得（より正確なセレクター）
         this.desktopSidebar = document.querySelector('aside[x-data*="sidebar"]');
         this.mobileSidebar = document.querySelector('.lg\\:hidden aside');
@@ -43,8 +41,6 @@ class SidebarController {
      * 初期化
      */
     init() {
-        console.log('[Sidebar] Initializing...');
-        
         // Alpine.jsのストアをエミュレート（互換性のため）
         this.setupAlpineCompatibility();
         
@@ -55,11 +51,6 @@ class SidebarController {
         
         // イベントリスナーを設定
         this.setupEventListeners();
-        
-        console.log('[Sidebar] Initialized successfully', {
-            isCollapsed: this.isCollapsed,
-            initialState: this.isCollapsed ? 'collapsed' : 'expanded',
-        });
     }
     
     /**
@@ -68,7 +59,6 @@ class SidebarController {
     loadState() {
         try {
             const saved = localStorage.getItem('sidebar-collapsed');
-            console.log('[Sidebar] Loaded state from localStorage:', saved);
             return saved === 'true';
         } catch (error) {
             console.warn('[Sidebar] Failed to load state from localStorage:', error);
@@ -82,7 +72,6 @@ class SidebarController {
     saveState() {
         try {
             localStorage.setItem('sidebar-collapsed', this.isCollapsed.toString());
-            console.log('[Sidebar] State saved to localStorage:', this.isCollapsed);
         } catch (error) {
             console.warn('[Sidebar] Failed to save state to localStorage:', error);
         }
@@ -134,8 +123,6 @@ class SidebarController {
                 this.isCollapsed ? 'サイドバーを展開' : 'サイドバーを最小化'
             );
         }
-        
-        console.log('[Sidebar] Desktop state applied:', this.isCollapsed ? 'collapsed' : 'expanded');
     }
     
     /**
@@ -150,8 +137,6 @@ class SidebarController {
         if (window.Alpine?.stores?.sidebar) {
             window.Alpine.stores.sidebar.isCollapsed = this.isCollapsed;
         }
-        
-        console.log('[Sidebar] Desktop toggled:', this.isCollapsed ? 'collapsed' : 'expanded');
     }
     
     /**
@@ -162,9 +147,7 @@ class SidebarController {
             console.warn('[Sidebar] Mobile sidebar or overlay not found');
             return;
         }
-        
-        console.log('[Sidebar] Opening mobile sidebar...');
-        
+
         this.isMobileOpen = true;
         
         // オーバーレイを表示
@@ -184,8 +167,6 @@ class SidebarController {
         
         // スクロールを無効化
         document.body.style.overflow = 'hidden';
-        
-        console.log('[Sidebar] Mobile sidebar opened');
     }
     
     /**
@@ -224,8 +205,6 @@ class SidebarController {
      * イベントリスナーを設定
      */
     setupEventListeners() {
-        console.log('[Sidebar] Setting up event listeners...');
-        
         // デスクトップ: トグルボタン
         if (this.desktopToggleBtn) {
             this.desktopToggleBtn.addEventListener('click', (e) => {
@@ -233,7 +212,6 @@ class SidebarController {
                 e.stopPropagation();
                 this.toggleDesktop();
             });
-            console.log('[Sidebar] Desktop toggle button listener added');
         } else {
             console.warn('[Sidebar] Desktop toggle button not found');
         }
@@ -253,8 +231,6 @@ class SidebarController {
                 e.stopPropagation();
                 this.closeMobile();
             }, { passive: false });
-            
-            console.log('[Sidebar] Mobile overlay listeners added (click + touch)');
         } else {
             console.warn('[Sidebar] Mobile overlay not found');
         }
@@ -273,8 +249,6 @@ class SidebarController {
                 e.stopPropagation();
                 this.closeMobile();
             }, { passive: false });
-            
-            console.log('[Sidebar] Mobile close button listeners added');
         } else {
             console.warn('[Sidebar] Mobile close button not found');
         }
@@ -309,28 +283,21 @@ class SidebarController {
                 e.stopPropagation();
                 this.openMobile();
             }, { passive: false });
-            
-            console.log('[Sidebar] Hamburger button listeners added');
         } else {
             console.warn('[Sidebar] Hamburger button not found');
         }
-        
-        console.log('[Sidebar] Event listeners setup complete');
     }
     
     /**
      * Alpine.jsのストアとの互換性を提供
      */
     setupAlpineCompatibility() {
-        console.log('[Sidebar] Setting up Alpine.js compatibility...');
-        
         // Alpine.jsが読み込まれる前の場合
         if (typeof window.Alpine === 'undefined') {
             window.Alpine = {
                 stores: {},
                 store: (name, data) => {
                     window.Alpine.stores[name] = data;
-                    console.log(`[Sidebar] Alpine.store('${name}') registered (polyfill)`);
                 }
             };
         }
@@ -377,15 +344,10 @@ class SidebarController {
                 return true;
             }
         });
-        
-        console.log('[Sidebar] Alpine.js compatibility layer added', window.Alpine.stores.sidebar);
-        
         // Alpine.jsが初期化されたときにストアを再登録（確実に認識させるため）
         document.addEventListener('alpine:init', () => {
-            console.log('[Sidebar] Alpine.js initialized, re-registering store...');
             if (window.Alpine && window.Alpine.store) {
                 window.Alpine.store('sidebar', sidebarStore);
-                console.log('[Sidebar] Store re-registered successfully');
             }
         });
     }
@@ -397,11 +359,9 @@ window.SidebarController = SidebarController;
 // DOM読み込み完了後に初期化
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('[Sidebar] DOM loaded, initializing...');
         window.sidebarController = new SidebarController();
     });
 } else {
-    console.log('[Sidebar] Document already loaded, initializing immediately...');
     window.sidebarController = new SidebarController();
 }
 

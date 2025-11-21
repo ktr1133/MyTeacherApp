@@ -84,7 +84,11 @@
      data-tags="{{ $tagNames }}"
      data-due-date="{{ $task->due_date }}"
      data-is-quest="{{ $isQuest ? 'true' : 'false' }}"
-     @click="$dispatch('open-task-modal-{{ $task->id }}')">
+     @if($task->canEdit())
+         @click="$dispatch('open-task-modal-{{ $task->id }}')">
+     @else
+         onclick="window.openGroupTaskDetailModal({{ $task->id }})">
+     @endif
     
     {{-- 期限アラートバナー --}}
     @if($dueStatus === 'overdue')

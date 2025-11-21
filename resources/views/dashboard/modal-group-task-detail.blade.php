@@ -1,106 +1,16 @@
-<div
-    id="group-task-detail-modal-{{ $task->id }}"
-    x-data="{ 
-        showModal: false,
-        title: {{ Js::from($task->title) }},
-        description: {{ Js::from($task->description ?? '') }},
-        span: {{ $task->span ?? config('const.task_spans.mid') }},
-        due_date: {{ Js::from($task->due_date ?? '') }},
-        selectedTags: {{ Js::from($task->tags->pluck('id')->toArray()) }},
-        previewImages: [], // プレビュー画像の配列
-        selectedFiles: [], // 選択されたファイルオブジェクト
-        
-        open() {
-            this.showModal = true;
-            document.body.classList.add('overflow-hidden');
-        },
-        close() {
-            this.showModal = false;
-            document.body.classList.remove('overflow-hidden');
-            // プレビューをクリア
-            this.previewImages = [];
-            this.selectedFiles = [];
-        },
-        submit() {
-            document.getElementById('edit-task-form-{{ $task->id }}').submit();
-        },
-        
-        // 画像選択時の処理
-        handleImageSelect(event) {
-            const files = Array.from(event.target.files);
-            const existingCount = {{ $task->images()->count() }};
-            const maxFiles = 3 - existingCount;
-            
-            // 枚数制限チェック
-            if (files.length > maxFiles) {
-                alert(`画像は最大${maxFiles}枚までアップロードできます。`);
-                event.target.value = '';
-                return;
-            }
-            
-            // ファイルオブジェクトを保存
-            this.selectedFiles = files;
-            
-            // プレビュー画像を生成
-            this.previewImages = [];
-            files.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.previewImages.push({
-                        url: e.target.result,
-                        name: file.name,
-                        size: (file.size / 1024).toFixed(2) + ' KB',
-                        index: index
-                    });
-                };
-                reader.readAsDataURL(file);
-            });
-        },
-        
-        // プレビュー画像を削除
-        removePreviewImage(index) {
-            this.previewImages = this.previewImages.filter((_, i) => i !== index);
-            this.selectedFiles = this.selectedFiles.filter((_, i) => i !== index);
-            
-            // input要素をリセット（単純なクリアでは不十分）
-            const input = document.getElementById('approval-images-{{ $task->id }}');
-            if (input) {
-                input.value = '';
-            }
-        }
-    }"
-    @open-task-modal-{{ $task->id }}.window="open()"
-    @keydown.escape.window="showModal && close()"
->
-
-    <div
-        x-show="showModal"
-        x-transition.opacity
-        @click="close()"
-        class="fixed inset-0 z-50 bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4"
-        style="display: none;"
-    >
-        {{-- コンテンツ --}}
-        <div
-            @click.stop
-            x-show="showModal"
-            x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="ease-in duration-200"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="modal-content modal-panel bg-white dark:bg-gray-900 w-full max-w-2xl shadow-2xl rounded-2xl"
-        >
+<div id="group-task-detail-modal-{{ $task->id }}" class="fixed inset-0 z-50 hidden">
+    {{-- オーバーレイ --}}
+    <div class="modal-overlay fixed inset-0 bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        {{-- モーダルコンテンツ --}}
+        <div class="modal-content bg-white dark:bg-gray-900 w-full max-w-2xl shadow-2xl rounded-2xl opacity-0 scale-95 transform transition-all duration-300 flex flex-col max-h-[90vh]">
             {{-- ヘッダー --}}
-            <div class="px-6 py-4 border-b flex justify-between items-center bg-purple-600/10">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-purple-600/10 shrink-0">
                 <div>
                     <h3 class="text-xl font-semibold text-gray-800">グループタスク詳細</h3>
                     <p class="text-sm text-gray-600 mt-1">編集はできません</p>
                 </div>
                 <button 
-                    @click="close()"
-                    class="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
+                    class="modal-close-btn p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
                     aria-label="閉じる">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -109,7 +19,7 @@
             </div>
 
             {{-- スクロール可能なコンテンツエリア --}}
-            <div class="flex-1 overflow-y-auto px-6 py-6 modal-body custom-scrollbar">
+            <div class="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
                 {{-- タスク情報 --}}
                 <div class="mb-6">
                     <h4 class="text-lg font-semibold text-gray-800 mb-3">{{ $task->title }}</h4>
@@ -120,22 +30,24 @@
                     
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
+                            <span class="text-gray-600">期間:</span>
+                            <span class="font-medium">{{ $task->getSpanLabel() }}</span>
+                        </div>
+                        <div>
                             <span class="text-gray-600">期限:</span>
                             <span class="font-medium">{{ $task->due_date ? $task->due_date->format('Y/m/d') : '未設定' }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-600">報酬:</span>
-                            <span class="font-medium text-purple-600">{{ number_format($task->reward) }}円</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">ステータス:</span>
-                            @if($task->isPendingApproval())
-                                <span class="font-medium text-yellow-600">承認待ち</span>
-                            @elseif($task->isApproved())
-                                <span class="font-medium text-green-600">承認済み</span>
-                            @else
-                                <span class="font-medium text-gray-600">未完了</span>
-                            @endif
+                            <span class="text-gray-600">承認:</span>
+                            <span class="font-medium">
+                                @if($task->isPendingApproval())
+                                    <span class="text-yellow-600">承認待ち</span>
+                                @elseif($task->isApproved())
+                                    <span class="text-green-600">承認済み</span>
+                                @else
+                                    <span class="text-gray-500">未申請</span>
+                                @endif
+                            </span>
                         </div>
                         @if($task->requires_image)
                             <div>
@@ -150,38 +62,25 @@
                 @if($task->images->count() > 0)
                     <div class="mb-6">
                         <h5 class="text-sm font-medium text-gray-700 mb-2">
-                            添付済み画像（{{ $task->images->count() }}枚）
+                            アップロード済み画像 
+                            <span class="text-xs text-gray-500">({{ $task->images->count() }}/3枚)</span>
                         </h5>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             @foreach($task->images as $image)
                                 <div class="relative group">
-                                    <img src="{{ Storage::url($image->file_path) }}" 
-                                         class="w-full h-32 object-cover rounded-lg border cursor-pointer"
-                                         onclick="window.open('{{ Storage::url($image->file_path) }}', '_blank')"
-                                         alt="タスク画像">
-                                    
-                                    {{-- 未完了の場合のみ削除ボタンを表示 --}}
-                                    @if(!$task->isPendingApproval() && !$task->isApproved())
-                                        <button type="button"
-                                                onclick="if(confirm('この画像を削除しますか？')) { document.getElementById('delete-image-form-{{ $image->id }}').submit(); }"
-                                                class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </button>
-                                    @endif
+                                    <img src="{{ Storage::disk('s3')->url($image->file_path) }}" 
+                                         alt="Task Image" 
+                                         class="w-full h-48 sm:h-40 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-purple-500 hover:shadow-lg transition-all duration-200"
+                                         onclick="openImageModal('{{ Storage::disk('s3')->url($image->file_path) }}')">
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition rounded-lg pointer-events-none"></div>
+                                    <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+                                        <svg class="w-3 h-3 inline" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                        クリックで拡大
+                                    </div>
                                 </div>
-                                
-                                {{-- 画像削除フォーム --}}
-                                @if(!$task->isPendingApproval() && !$task->isApproved())
-                                    <form id="delete-image-form-{{ $image->id }}" 
-                                          method="POST" 
-                                          action="{{ route('tasks.delete-image', $image) }}" 
-                                          class="hidden">
-                                        @csrf
-                                        @method('DELETE')
-                                    </form>
-                                @endif
                             @endforeach
                         </div>
                     </div>
@@ -208,7 +107,8 @@
                                 name="images[]" 
                                 accept="image/*" 
                                 multiple
-                                @change="handleImageSelect($event)"
+                                form="approval-form-{{ $task->id }}"
+                                data-existing-count="{{ $task->images()->count() }}"
                                 class="hidden"
                                 @if($task->requires_image && $task->images()->count() === 0) required @endif
                             >
@@ -227,28 +127,9 @@
                         </div>
 
                         {{-- プレビュー --}}
-                        <div x-show="previewImages.length > 0" x-transition class="mt-4">
+                        <div class="mt-4 hidden">
                             <h6 class="text-sm font-medium text-gray-700 mb-2">プレビュー</h6>
-                            <div class="grid grid-cols-3 gap-2">
-                                <template x-for="(preview, index) in previewImages" :key="index">
-                                    <div class="relative group">
-                                        <img :src="preview.url" 
-                                             class="w-full h-32 object-cover rounded-lg border"
-                                             :alt="preview.name">
-                                        <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 rounded-b-lg">
-                                            <p class="truncate" x-text="preview.name"></p>
-                                            <p x-text="preview.size"></p>
-                                        </div>
-                                        <button type="button"
-                                                @click="removePreviewImage(index)"
-                                                class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </template>
-                            </div>
+                            <div id="preview-container-{{ $task->id }}" class="grid grid-cols-3 gap-2"></div>
                         </div>
                     </div>
                 @endif
@@ -272,42 +153,22 @@
             <div class="px-6 py-3 border-t bg-white shrink-0">
                 @if(!$task->isPendingApproval() && !$task->isApproved())
                     <form method="POST" 
+                          id="approval-form-{{ $task->id }}"
                           action="{{ route('tasks.request-approval', $task) }}"
                           enctype="multipart/form-data"
                           onsubmit="return confirm('このタスクの完了を申請しますか？')">
                         @csrf
                         
-                        {{-- 選択された画像を送信 --}}
-                        <input type="file" 
-                               name="images[]" 
-                               multiple 
-                               accept="image/*"
-                               x-ref="hiddenFileInput"
-                               class="hidden"
-                               @change="handleImageSelect($event)">
-                        
                         <button type="submit"
-                                class="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                :disabled="!canSubmit()"
-                                x-init="
-                                    canSubmit = () => {
-                                        const requiresImage = {{ $task->requires_image ? 'true' : 'false' }};
-                                        const existingImages = {{ $task->images()->count() }};
-                                        const newImages = previewImages.length;
-                                        
-                                        if (requiresImage && existingImages === 0 && newImages === 0) {
-                                            return false;
-                                        }
-                                        
-                                        return true;
-                                    }
-                                ">
+                                class="submit-approval-btn w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                data-requires-image="{{ $task->requires_image ? 'true' : 'false' }}"
+                                data-existing-images="{{ $task->images()->count() }}">
                             完了申請する
                         </button>
                         
                         {{-- バリデーションエラー表示 --}}
                         @if($task->requires_image && $task->images()->count() === 0)
-                            <p class="text-xs text-red-500 mt-2 text-center" x-show="previewImages.length === 0">
+                            <p class="text-xs text-red-500 mt-2 text-center image-required-warning">
                                 ⚠️ 画像のアップロードが必要です
                             </p>
                         @endif
@@ -317,3 +178,33 @@
         </div>
     </div>
 </div>
+
+{{-- 画像拡大表示モーダル --}}
+<div id="image-modal-{{ $task->id }}" class="fixed inset-0 z-[60] hidden bg-black/90 backdrop-blur-sm" onclick="closeImageModal({{ $task->id }})">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <button class="absolute top-4 right-4 text-white hover:text-gray-300 transition p-2 rounded-full hover:bg-white/10" aria-label="閉じる">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+        <img id="image-modal-img-{{ $task->id }}" src="" alt="拡大画像" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" onclick="event.stopPropagation()">
+    </div>
+</div>
+
+<script>
+    function openImageModal(imageUrl) {
+        const taskId = {{ $task->id }};
+        const modal = document.getElementById(`image-modal-${taskId}`);
+        const img = document.getElementById(`image-modal-img-${taskId}`);
+        
+        img.src = imageUrl;
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+    
+    function closeImageModal(taskId) {
+        const modal = document.getElementById(`image-modal-${taskId}`);
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+</script>

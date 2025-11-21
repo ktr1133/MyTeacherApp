@@ -102,7 +102,7 @@
                                 @if($approval['type'] === 'task')
                                     {{-- タスクカード --}}
                                     <div class="bento-card approval-card-task bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 task-card-enter hover:shadow-xl transition-all duration-300 cursor-pointer"
-                                         @click="$dispatch('open-task-modal-{{ $approval['model']->id }}')">
+                                         onclick="window.openGroupTaskDetailModal({{ $approval['model']->id }})">
                                         <div class="flex items-start justify-between mb-4">
                                             <div class="flex-1">
                                                 {{-- タイプバッジ --}}
@@ -159,7 +159,7 @@
 
                                         {{-- 承認/却下ボタン --}}
                                         <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
-                                             @click.stop>
+                                             onclick="event.stopPropagation()">
                                             <form method="POST" action="{{ route('tasks.approve', $approval['model']) }}" class="flex-1">
                                                 @csrf
                                                 <button type="submit" 
@@ -173,9 +173,8 @@
                                             </form>
                                             
                                             <button type="button"
-                                                    onclick="openRejectModal('task', {{ $approval['model']->id }}, '{{ $approval['title'] }}')"
-                                                    class="btn-reject flex-1"
-                                                    @click.stop>
+                                                    onclick="event.stopPropagation(); openRejectModal('task', {{ $approval['model']->id }}, '{{ $approval['title'] }}')"
+                                                    class="btn-reject flex-1">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                 </svg>

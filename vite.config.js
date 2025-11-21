@@ -35,6 +35,7 @@ export default defineConfig({
                 'resources/js/dashboard/dashboard.js',
                 'resources/js/dashboard/task-search.js',
                 'resources/js/dashboard/group-task.js',
+                'resources/js/dashboard/group-task-detail.js',
                 'resources/js/notifications/notifications.js',
                 'resources/js/notifications/admin-notifications.js',
                 'resources/js/notifications/notification-search.js',
