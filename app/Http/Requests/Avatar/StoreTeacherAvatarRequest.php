@@ -87,6 +87,10 @@ class StoreTeacherAvatarRequest extends FormRequest
                 'sometimes',
                 'string',
             ],
+            'is_chibi' => [
+                'sometimes',
+                'string',
+            ],
         ];
     }
 

@@ -37,6 +37,8 @@ function initExpressionSlider() {
     }
     
     const expressionsData = sliderContainer.dataset.expressions;
+    const isChibi = sliderContainer.dataset.isChibi === 'true';
+    
     if (!expressionsData) {
         console.error('[Expression Slider] No expressions data found');
         return;
@@ -50,7 +52,7 @@ function initExpressionSlider() {
         return;
     }
     
-    console.log('[Expression Slider] Loaded expressions:', expressions.length);
+    console.log('[Expression Slider] Loaded expressions:', expressions.length, 'isChibi:', isChibi);
     
     const state = {
         currentIndex: 0,

@@ -1,13 +1,46 @@
 @if($avatar && $avatar->is_visible)
+    @php
+        // ちびキャラの場合は全身画像、通常キャラの場合はバストアップ画像を使用
+        $isChibi = $avatar->is_chibi ?? false;
+        $imageType = $isChibi ? 'full_body' : 'bust';
+        
+        // 各表情の画像を取得
+        $defaultImage = $avatar->images()
+            ->where('image_type', $imageType)
+            ->where('expression_type', config('const.avatar_expressions.normal'))
+            ->first();
+        $happyImage = $avatar->images()
+            ->where('image_type', $imageType)
+            ->where('expression_type', config('const.avatar_expressions.happy'))
+            ->first();
+        $surprisedImage = $avatar->images()
+            ->where('image_type', $imageType)
+            ->where('expression_type', config('const.avatar_expressions.surprised'))
+            ->first();
+        $angryImage = $avatar->images()
+            ->where('image_type', $imageType)
+            ->where('expression_type', config('const.avatar_expressions.angry'))
+            ->first();
+        $sadImage = $avatar->images()
+            ->where('image_type', $imageType)
+            ->where('expression_type', config('const.avatar_expressions.sad'))
+            ->first();
+            
+        $defaultUrl = $defaultImage?->public_url ?? asset('images/avatar-placeholder.png');
+        $happyUrl = $happyImage?->public_url ?? $defaultUrl;
+        $surprisedUrl = $surprisedImage?->public_url ?? $defaultUrl;
+        $angryUrl = $angryImage?->public_url ?? $defaultUrl;
+        $sadUrl = $sadImage?->public_url ?? $defaultUrl;
+    @endphp
     <div 
         id="avatar-widget"
         class="avatar-widget hidden opacity-0 translate-y-4"
         style="left: 0px; top: 0px;"
-        data-default-image="{{ $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
-        data-happy-image="{{ $avatar->bustImageHappy?->public_url ?? $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
-        data-surprised-image="{{ $avatar->bustImageSurprised?->public_url ?? $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
-        data-angry-image="{{ $avatar->bustImageAngry?->public_url ?? $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
-        data-sad-image="{{ $avatar->bustImageSad?->public_url ?? $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}"
+        data-default-image="{{ $defaultUrl }}"
+        data-happy-image="{{ $happyUrl }}"
+        data-surprised-image="{{ $surprisedUrl }}"
+        data-angry-image="{{ $angryUrl }}"
+        data-sad-image="{{ $sadUrl }}"
     >
         <div class="avatar-container">
             {{-- 吹き出し --}}
@@ -18,7 +51,7 @@
 
             {{-- アバター画像 --}}
             <img 
-                src="{{ $avatar->bustImage?->public_url ?? asset('images/avatar-placeholder.png') }}" 
+                src="{{ $defaultUrl }}" 
                 alt="Teacher Avatar"
                 class="avatar-image avatar-idle"
             />

@@ -188,6 +188,18 @@
                             </p>
                         </div>
 
+                        {{-- ちびキャラフラグ --}}
+                        <div class="mb-8">
+                            <label class="avatar-form-label flex items-center gap-2">
+                                <input type="checkbox" name="is_chibi" class="avatar-form-checkbox">
+                                ちびキャラにする
+                            </label>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                デフォルメされた可愛らしいちびキャラクターを生成します。<br>
+                                ちびキャラの場合、バストアップ画像は生成されず、すべて全身の画像になります。
+                            </p>
+                        </div>
+
                         {{-- モデル情報ヒント --}}
                         <div class="mt-4 p-4 model-info-card rounded-lg">
                             <div class="flex items-start gap-3">

@@ -148,7 +148,7 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         }
 
         // イベントタイプに応じた画像・表情・アニメーションを決定
-        $imageType = $this->determineImageType($eventType);
+        $imageType = $this->determineImageType($avatar, $eventType);
         $expressionType = $this->determineExpressionType($eventType);
         $animation = $this->determineAnimation($eventType);
         // 該当する画像を取得
@@ -166,9 +166,18 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
 
     /**
      * イベントタイプに応じた画像タイプを決定
+     * 
+     * @param TeacherAvatar $avatar アバターモデル
+     * @param string $eventType イベントタイプ
+     * @return string 画像タイプ（bust または full_body）
      */
-    private function determineImageType(string $eventType): string
+    private function determineImageType(TeacherAvatar $avatar, string $eventType): string
     {
+        // ちびキャラの場合は常に全身画像を使用（バストアップ画像が存在しないため）
+        if ($avatar->is_chibi) {
+            return 'full_body';
+        }
+
         // 実績閲覧のみ全身、それ以外はバストアップ
         return in_array($eventType, [
             config('const.avatar_events.performance_personal_viewed'),

@@ -90,6 +90,7 @@
                                     <div 
                                         id="expression-slider"
                                         data-expressions='{{ json_encode($expressionImages) }}'
+                                        data-is-chibi="{{ $avatar->is_chibi ? 'true' : 'false' }}"
                                     >
                                         {{-- メイン画像表示エリア（動的背景） --}}
                                         <div 
@@ -186,61 +187,118 @@
                                             <svg class="w-5 h-5 lg:w-6 lg:h-6 text-[#59B9C6]" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                                             </svg>
-                                            外見の設定
+                                            @if (!$isChildTheme)
+                                                外見の設定
+                                            @else
+                                                見た目
+                                            @endif
                                         </h2>
                                         
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="avatar-form-grid">
                                             <div class="avatar-form-group">
-                                                <label class="avatar-form-label">性別</label>
+                                                <label class="avatar-form-label">
+                                                    @if (!$isChildTheme)
+                                                        性別
+                                                    @else
+                                                        アバターのタイプ
+                                                    @endif
+                                                </label>
                                                 <select name="sex" class="avatar-form-input" required>
-                                                    @foreach (config('services.sex') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->sex === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.sex') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->sex === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.sex') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->sex === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
+
+                                            @if ($isChildTheme)
+                                                <div class="avatar-form-group">
+                                                    <label class="avatar-form-label">髪型</label>
+                                                    <select name="hair_style" class="avatar-form-input" required>
+                                                        @foreach (config('avatar-options.hair_style') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->hair_style === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            @endif
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">髪の色</label>
                                                 <select name="hair_color" class="avatar-form-input" required>
-                                                    @foreach (config('services.hair_color') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->hair_color === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.hair_color') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->hair_color === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.hair_color') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->hair_color === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">目の色</label>
                                                 <select name="eye_color" class="avatar-form-input" required>
-                                                    @foreach (config('services.eye_color') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->eye_color === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.eye_color') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->eye_color === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.eye_color') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->eye_color === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">服装</label>
                                                 <select name="clothing" class="avatar-form-input" required>
-                                                    @foreach (config('services.clothing') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->clothing === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.clothing') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->clothing === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.clothing') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->clothing === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">アクセサリー</label>
                                                 <select name="accessory" class="avatar-form-input">
-                                                    @foreach (config('services.accessory') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->accessory === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.accessory') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->accessory === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.accessory') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->accessory === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">体型</label>
                                                 <select name="body_type" class="avatar-form-input" required>
-                                                    @foreach (config('services.body_type') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->body_type === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.body_type') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->body_type === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.body_type') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->body_type === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
                                         </div>
@@ -252,43 +310,77 @@
                                             <svg class="w-5 h-5 lg:w-6 lg:h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
                                             </svg>
-                                            性格の設定
+                                            @if (!$isChildTheme)
+                                                性格の設定
+                                            @else
+                                                性格
+                                            @endif
                                         </h2>
                                         
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="avatar-form-grid">
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">口調</label>
                                                 <select name="tone" class="avatar-form-input" required>
-                                                    @foreach (config('services.tone') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->tone === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.tone') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->tone === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.tone') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->tone === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">熱意</label>
                                                 <select name="enthusiasm" class="avatar-form-input" required>
-                                                    @foreach (config('services.enthusiasm') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->enthusiasm === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.enthusiasm') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->enthusiasm === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.enthusiasm') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->enthusiasm === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
-                                                <label class="avatar-form-label">丁寧さ</label>
+                                                <label class="avatar-form-label">
+                                                    @if (!$isChildTheme)
+                                                        丁寧さ
+                                                    @else
+                                                        ていねいさ
+                                                    @endif
+                                                </label>
                                                 <select name="formality" class="avatar-form-input" required>
-                                                    @foreach (config('services.formality') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->formality === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.formality') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->formality === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.formality') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->formality === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
 
                                             <div class="avatar-form-group">
                                                 <label class="avatar-form-label">ユーモア</label>
                                                 <select name="humor" class="avatar-form-input" required>
-                                                    @foreach (config('services.humor') as $key => $label)
-                                                        <option value="{{ $key }}" {{ $avatar->humor === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                                    @endforeach
+                                                    @if (!$isChildTheme)
+                                                        @foreach (config('services.humor') as $key => $label)
+                                                            <option value="{{ $key }}" {{ $avatar->humor === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach (config('avatar-options.humor') as $key => $option)
+                                                            <option value="{{ $key }}" {{ $avatar->humor === $key ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
                                         </div>
@@ -302,7 +394,11 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                                 </svg>
                                             </div>
-                                            描画モデルの選択
+                                            @if (!$isChildTheme)
+                                                描画モデルの選択
+                                            @else
+                                                画風
+                                            @endif
                                         </h2>
                                         
                                         <div class="avatar-form-group">
@@ -310,21 +406,33 @@
                                                 <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                                                 </svg>
-                                                イラストスタイル
+                                                @if (!$isChildTheme)
+                                                    イラストスタイル
+                                                @else
+                                                    画風のタイプ
+                                                @endif
                                             </label>
                                             <select name="draw_model_version" class="avatar-form-input model-select" required>
-                                                @foreach (config('services.draw_model_versions') as $key => $value)
-                                                    <option value="{{ $key }}" {{ $avatar->draw_model_version === $key ? 'selected' : '' }}>
-                                                        {{ $key }} - 
-                                                        @if($key === 'anything-v4.0')
-                                                            -- {{ !$isChildTheme ? '推定トークン使用量' : '推定コイン使用量' }}: {{ number_format(config('services.estimated_token_usages')['anything-v4.0']) }}
-                                                        @elseif($key === 'animagine-xl-3.1')
-                                                            -- {{ !$isChildTheme ? '推定トークン使用量' : '推定コイン使用量' }}: {{ number_format(config('services.estimated_token_usages')['animagine-xl-3.1']) }}
-                                                        @elseif($key === 'stable-diffusion-3.5-medium')
-                                                            -- {{ !$isChildTheme ? '推定トークン使用量' : '推定コイン使用量' }}: {{ number_format(config('services.estimated_token_usages')['stable-diffusion-3.5-medium']) }}
-                                                        @endif
-                                                    </option>
-                                                @endforeach
+                                                @if (!$isChildTheme)
+                                                    @foreach (config('services.draw_model_versions') as $key => $value)
+                                                        <option value="{{ $key }}" {{ $avatar->draw_model_version === $key ? 'selected' : '' }}>
+                                                            {{ $key }} - 
+                                                            @if($key === 'anything-v4.0')
+                                                                線の細いタッチで描画 -- 推定トークン使用量: {{ number_format(config('services.estimated_token_usages')['anything-v4.0']) }}
+                                                            @elseif($key === 'animagine-xl-3.1')
+                                                                豊かな色彩のイラスト -- 推定トークン使用量: {{ number_format(config('services.estimated_token_usages')['animagine-xl-3.1']) }}
+                                                            @elseif($key === 'stable-diffusion-3.5-medium')
+                                                                25億のパラメータで高品質描画 -- 推定トークン使用量: {{ number_format(config('services.estimated_token_usages')['stable-diffusion-3.5-medium']) }}
+                                                            @endif
+                                                        </option>
+                                                    @endforeach
+                                                @else
+                                                    @foreach (config('avatar-options.draw_models') as $key => $model)
+                                                        <option value="{{ $key }}" {{ $avatar->draw_model_version === $key ? 'selected' : '' }}>
+                                                            {{ $model['label'] }} - {{ $model['description'] }} ({{ number_format($model['token_cost']) }}コイン)
+                                                        </option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                         </div>
 
@@ -335,9 +443,35 @@
                                                 背景を透過する
                                             </label>
                                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                アバター画像の背景を透明にします。<br>
-                                                一部のモデルでは背景透過がサポートされていない場合があります。<br>
-                                                背景透過には{{ !$isChildTheme ? 'トークン' : 'コイン' }}が使用されます。
+                                                @if (!$isChildTheme)
+                                                    アバター画像の背景を透明にします。<br>
+                                                    一部のモデルでは背景透過がサポートされていない場合があります。<br>
+                                                    背景透過にはトークンが使用されます。
+                                                @else
+                                                    画像の後ろを透明にするよ。<br>
+                                                    透明にするとコインを使うよ。
+                                                @endif
+                                            </p>
+                                        </div>
+
+                                        {{-- ちびキャラフラグ --}}
+                                        <div class="mb-8">
+                                            <label class="avatar-form-label flex items-center gap-2">
+                                                <input type="checkbox" name="is_chibi" class="avatar-form-checkbox" {{ $avatar->is_chibi ? 'checked' : '' }}>
+                                                @if (!$isChildTheme)
+                                                    ちびキャラにする
+                                                @else
+                                                    ちびキャラにする
+                                                @endif
+                                            </label>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                @if (!$isChildTheme)
+                                                    デフォルメされた可愛らしいちびキャラクターを生成します。<br>
+                                                    ちびキャラの場合、バストアップ画像は生成されず、すべて全身の画像になります。
+                                                @else
+                                                    かわいいちびキャラをつくるよ。<br>
+                                                    ちびキャラは全身の絵だけつくるよ。
+                                                @endif
                                             </p>
                                         </div>
                                         {{-- モデル情報ヒント --}}
@@ -349,12 +483,24 @@
                                                     </svg>
                                                 </div>
                                                 <div>
-                                                    <p class="text-sm font-semibold text-gray-900 dark:text-white mb-1">描画モデルについて</p>
+                                                    <p class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+                                                        @if (!$isChildTheme)
+                                                            描画モデルについて
+                                                        @else
+                                                            画風について
+                                                        @endif
+                                                    </p>
                                                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                                                        描画モデルによって、アバターのイラストタッチが変わります。<br>
-                                                        モデルによって消費する{{ !$isChildTheme ? 'トークン' : 'コイン' }}は異なります。<br>
-                                                        お好みのスタイルをお選びください。今後、新しいモデルが追加される予定です。
-                                                     </p>
+                                                        @if (!$isChildTheme)
+                                                            描画モデルによって、アバターのイラストタッチが変わります。<br>
+                                                            モデルによって消費するトークンは異なります。<br>
+                                                            お好みのスタイルをお選びください。今後、新しいモデルが追加される予定です。
+                                                        @else
+                                                            画風によって、絵のタッチが変わるよ。<br>
+                                                            使うコインの数も変わるよ。<br>
+                                                            好きなタイプを選んでね！
+                                                        @endif
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
