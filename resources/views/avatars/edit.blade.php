@@ -7,8 +7,7 @@
         @vite(['resources/js/avatar/avatar-edit.js', 'resources/js/avatar/avatar-form.js'])
     @endpush
 
-    <div x-data="avatarEdit()" 
-         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
+    <div id="avatar-edit-container"
          class="flex min-h-screen max-h-screen {{ $isChildTheme ? 'dashboard-gradient-bg child-theme' : 'auth-gradient-bg' }} relative overflow-hidden">
         
         {{-- 背景装飾（大人用のみ） --}}
@@ -31,8 +30,8 @@
                     <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <button
                             type="button"
+                            id="mobile-menu-toggle"
                             class="lg:hidden p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 shrink-0 transition"
-                            @click="toggleSidebar()"
                             aria-label="メニューを開く">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z" clip-rule="evenodd" />
@@ -89,100 +88,37 @@
                                 @if($avatar->generation_status === 'completed')
                                     {{-- 表情スライダー（サムネイル版） --}}
                                     <div 
-                                        x-data="expressionSlider({{ json_encode($expressionImages) }})"
+                                        id="expression-slider"
+                                        data-expressions='{{ json_encode($expressionImages) }}'
                                     >
                                         {{-- メイン画像表示エリア（動的背景） --}}
                                         <div 
+                                            id="slider-bg"
                                             class="relative overflow-hidden rounded-lg mb-3 avatar-slider-bg-container"
-                                            :style="currentImageUrl ? `background-image: url('${currentImageUrl}')` : ''"
                                         >
                                             {{-- 背景オーバーレイ --}}
                                             <div class="avatar-slider-bg-overlay"></div>
 
-                                            {{-- 画像スライダー --}}
+                                            {{-- 画像スライダー（JavaScriptで動的生成） --}}
                                             <div 
+                                                id="slider-images"
                                                 class="relative touch-pan-y z-10"
-                                                @touchstart="handleTouchStart($event)"
-                                                @touchmove="handleTouchMove($event)"
-                                                @touchend="handleTouchEnd($event)"
                                             >
-                                                <template x-for="(expr, index) in expressions" :key="expr.type">
-                                                    <div
-                                                        x-show="currentIndex === index"
-                                                        x-transition:enter="transition-transform duration-300 ease-out"
-                                                        x-transition:enter-start="transform translate-x-full"
-                                                        x-transition:enter-end="transform translate-x-0"
-                                                        x-transition:leave="transition-transform duration-300 ease-in"
-                                                        x-transition:leave-start="transform translate-x-0"
-                                                        x-transition:leave-end="transform -translate-x-full"
-                                                        class="relative"
-                                                    >
-                                                        {{-- 表情ラベル（オーバーレイ） --}}
-                                                        <div class="absolute top-3 left-3 z-20 {{ $isChildTheme ? 'avatar-expression-label-child' : 'avatar-expression-label' }}">
-                                                            <span x-text="expr.label" class="font-bold"></span>
-                                                        </div>
-
-                                                        {{-- 画像 --}}
-                                                        <template x-if="expr.image">
-                                                            <img 
-                                                                :src="expr.image.s3_url || expr.image.public_url" 
-                                                                :alt="expr.label"
-                                                                class="w-full h-auto rounded-lg relative z-10 {{ $isChildTheme ? 'avatar-image' : '' }}"
-                                                            />
-                                                        </template>
-
-                                                        {{-- 画像がない場合 --}}
-                                                        <template x-if="!expr.image">
-                                                            <div class="aspect-square flex flex-col items-center justify-center text-center p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 relative z-10">
-                                                                <svg class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                                </svg>
-                                                                <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">生成中...</p>
-                                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1" x-text="expr.label + '画像'"></p>
-                                                            </div>
-                                                        </template>
+                                                {{-- 初期表示時のプレースホルダー --}}
+                                                <div class="relative">
+                                                    <div class="aspect-square flex flex-col items-center justify-center text-center p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 relative z-10">
+                                                        <svg class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                        </svg>
+                                                        <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">読み込み中...</p>
                                                     </div>
-                                                </template>
+                                                </div>
                                             </div>
                                         </div>
 
                                         {{-- サムネイルリスト --}}
-                                        <div class="grid grid-cols-6 gap-2">
-                                            <template x-for="(expr, index) in expressions" :key="'thumb-' + expr.type">
-                                                <button
-                                                    type="button"
-                                                    @click="goToExpression(index)"
-                                                    :class="{
-                                                        'avatar-thumbnail-active': currentIndex === index,
-                                                        'avatar-thumbnail-inactive': currentIndex !== index
-                                                    }"
-                                                    class="{{ $isChildTheme ? 'avatar-thumbnail-child' : 'avatar-thumbnail' }}"
-                                                    :aria-label="expr.label"
-                                                >
-                                                    {{-- サムネイル画像 --}}
-                                                    <template x-if="expr.image">
-                                                        <img 
-                                                            :src="expr.image.s3_url || expr.image.public_url" 
-                                                            :alt="expr.label"
-                                                            class="w-full h-full object-cover"
-                                                        />
-                                                    </template>
-
-                                                    {{-- 画像がない場合 --}}
-                                                    <template x-if="!expr.image">
-                                                        <div class="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                            </svg>
-                                                        </div>
-                                                    </template>
-
-                                                    {{-- 表情ラベル（サムネイル下部） --}}
-                                                    <div class="absolute bottom-0 left-0 right-0 {{ $isChildTheme ? 'avatar-thumbnail-label-child' : 'avatar-thumbnail-label' }}">
-                                                        <span x-text="expr.label" class="text-xs font-semibold truncate block px-1"></span>
-                                                    </div>
-                                                </button>
-                                            </template>
+                                        <div id="thumbnail-list" class="grid grid-cols-6 gap-2">
+                                            {{-- Thumbnails will be generated by JavaScript --}}
                                         </div>
                                     </div>
 
@@ -236,10 +172,9 @@
                         <div>
                             <div class="avatar-card rounded-2xl p-4 lg:p-8 hero-fade-in-delay">
                                 <form 
+                                    id="avatar-form"
                                     method="POST" 
                                     action="{{ route('avatars.update', $avatar) }}"
-                                    x-data="avatarForm()"
-                                    @submit="submitForm($event)"
                                     class="avatar-card rounded-2xl p-4 lg:p-6 hero-fade-in"
                                 >
                                     @csrf

@@ -440,7 +440,7 @@
 </aside>
 
 {{-- モバイル: オフキャンバスサイドバー --}}
-<div class="lg:hidden">
+<div class="lg:hidden" x-data="{ showSidebar: false }">
     {{-- オーバーレイ --}}
     <div 
         x-show="showSidebar"

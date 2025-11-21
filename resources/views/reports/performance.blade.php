@@ -1,16 +1,17 @@
 
 <x-app-layout>
+    {{-- Alpine.js より前に performance.js を読み込む --}}
     @push('styles')
         @vite(['resources/css/reports/performance.css', 'resources/css/dashboard.css'])
+        @vite(['resources/js/reports/performance.js'])
     @endpush
 
     @php
         $currentData = $tab === 'normal' ? $normalData : $groupData;
     @endphp
 
-    {{-- Alpine起動前にperformance.jsを読み込む --}}
+    {{-- パフォーマンスデータをグローバルスコープに渡す --}}
     @push('scripts')
-        @vite(['resources/js/reports/performance.js'])
         <script>
             window.performanceData = {
                 tab: @json($tab),
@@ -34,7 +35,6 @@
     @endpush
 
     <div x-data="performanceReport(@js($tab), @js($period), @js($offset))" 
-         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
          class="flex min-h-screen max-h-screen performance-gradient-bg relative overflow-hidden">
         
         {{-- 背景装飾（大人用のみ） --}}

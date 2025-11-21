@@ -288,11 +288,14 @@ class SidebarController {
         });
         console.log(`[Sidebar] Mobile link listeners added: ${this.mobileLinks.length} links`);
         
-        // ヘッダーのハンバーガーメニューボタン（data属性で検索）
+        // ヘッダーのハンバーガーメニューボタン（複数のセレクタで検索）
         const hamburgerBtn = document.querySelector('[data-sidebar-toggle="mobile"]') 
-            || document.querySelector('button[\\@click*="showSidebar = true"]');
+            || document.querySelector('button[\\@click*="toggleSidebar"]')
+            || document.querySelector('button[\\@click*="showSidebar = true"]')
+            || document.querySelector('.lg\\:hidden button[aria-label*="メニュー"]');
         
         if (hamburgerBtn) {
+            // クリックイベント
             hamburgerBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -300,7 +303,7 @@ class SidebarController {
                 this.openMobile();
             });
             
-            // タッチイベント
+            // タッチイベント（iPad対応）
             hamburgerBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -376,6 +379,15 @@ class SidebarController {
         });
         
         console.log('[Sidebar] Alpine.js compatibility layer added', window.Alpine.stores.sidebar);
+        
+        // Alpine.jsが初期化されたときにストアを再登録（確実に認識させるため）
+        document.addEventListener('alpine:init', () => {
+            console.log('[Sidebar] Alpine.js initialized, re-registering store...');
+            if (window.Alpine && window.Alpine.store) {
+                window.Alpine.store('sidebar', sidebarStore);
+                console.log('[Sidebar] Store re-registered successfully');
+            }
+        });
     }
 }
 
