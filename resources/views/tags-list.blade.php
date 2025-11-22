@@ -36,8 +36,8 @@
                     <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <button
                             type="button"
+                            data-sidebar-toggle="mobile"
                             class="lg:hidden p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 shrink-0 transition"
-                            @click="showSidebar = true"
                             aria-label="メニューを開く">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z" clip-rule="evenodd" />
@@ -76,9 +76,9 @@
             </header>
 
             {{-- メインコンテンツ --}}
-            <main class="flex-1 custom-scrollbar">
-                <div class="max-w-[1920px] mx-auto px-4 lg:px-6 py-4 lg:py-6 space-y-6">
-                    
+            <main class="flex-1 overflow-y-auto custom-scrollbar">
+                <div class="max-w-[1920px] mx-auto px-4 lg:px-6 py-4 lg:py-6">
+                    <div class="space-y-6">
                     {{-- 新規タグ作成カード --}}
                     <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter">
                         <div class="tag-block-header px-6 py-4 border-b border-blue-500/20 dark:border-blue-500/30">
@@ -257,6 +257,7 @@
                                 </div>
                             @endif
                         </div>
+                    </div>
                     </div>
                 </div>
             </main>

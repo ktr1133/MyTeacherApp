@@ -66,15 +66,15 @@
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                     </svg>
-                                    ダッシュボード
+                                    タスクリスト
                                 </a>
                             @else
                                 <a href="{{ route('login') }}" class="link-underline text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] transition font-medium text-sm px-4 py-2">
-                                    ログイン
+                                    Login
                                 </a>
                                 @if (Route::has('register'))
                                     <a href="{{ route('register') }}" class="btn-primary inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] text-white rounded-lg hover:shadow-lg transition font-semibold text-sm">
-                                        無料で始める
+                                        Free Start
                                     </a>
                                 @endif
                             @endauth
@@ -102,12 +102,12 @@
                     </div>
 
                     <h1 class="hero-title text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
-                        AIが応援、アバターが励ます<br>
+                        AIアバターが応援<br>
                         <span class="gradient-text">家族で使えるタスク管理</span>
                     </h1>
                     
                     <p class="hero-subtitle text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-                        複雑なタスクはAIが分解。完了したら教師アバターが祝福。<br>
+                        複雑なタスクはAIが分解。<br>完了したらアバターが祝福。<br>
                         お小遣い管理から自己管理まで、楽しく続けられます。
                     </p>
                     
@@ -231,7 +231,10 @@
                             </svg>
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">グループタスク</h3>
-                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">家族やチームでタスクを共有。承認フローと報酬システム搭載。</p>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            家族やチームでタスクを共有。承認フローと報酬システム搭載。<br>
+                            定期的なタスクは自動作成。
+                        </p>
                     </div>
 
                     <!-- AIタスク分解 -->
@@ -253,7 +256,10 @@
                             </svg>
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">実績レポート</h3>
-                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">週間・月間・年間の実績をグラフで可視化。進捗を一目で確認。</p>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            週間・月間・年間の実績をグラフで可視化。進捗を一目で確認。<br>
+                            アバターが報告。
+                        </p>
                     </div>
 
                     <!-- 教師アバター -->
@@ -263,7 +269,7 @@
                                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">教師アバター</h3>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">アバター</h3>
                         <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Stable Diffusionが生成するあなた専用の先生。タスク完了時に励ましのコメント。</p>
                     </div>
                 </div>
@@ -275,9 +281,9 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-12">
                     <h2 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                        <span class="gradient-text">教師アバターが応援！</span>
+                        <span class="gradient-text">アバターが応援！</span>
                     </h2>
-                    <p class="text-lg text-gray-600 dark:text-gray-300">タスク完了時に祝福してくれる、あなた専用の先生</p>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">タスク完了時に祝福してくれる、あなた専用のアバター</p>
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
@@ -406,12 +412,11 @@
                         <div class="w-24 h-24 bg-gradient-to-br from-[#9333ea] to-[#ec4899] rounded-full flex items-center justify-center mx-auto mb-6 text-5xl shadow-lg">
                             👨‍👩‍👧‍👦
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">お小遣い管理をする家族</h3>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">お子様がいる家族</h3>
                         <ul class="text-left space-y-2 text-gray-600 dark:text-gray-300">
-                            <li>✅ 家事をタスク化してポイント付与</li>
+                            <li>✅ 定期的な家事を自動でタスク化してポイント付与</li>
                             <li>✅ お小遣いをデジタル管理</li>
                             <li>✅ 子どもの成長を可視化</li>
-                            <li>✅ 親子でコミュニケーション</li>
                         </ul>
                     </div>
 
@@ -422,7 +427,6 @@
                         </div>
                         <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">課題や試験勉強を管理する学生</h3>
                         <ul class="text-left space-y-2 text-gray-600 dark:text-gray-300">
-                            <li>✅ レポートをAIが分解</li>
                             <li>✅ 試験勉強をスケジュール化</li>
                             <li>✅ タグで科目別に整理</li>
                             <li>✅ アバターが励ましてくれる</li>
@@ -432,14 +436,13 @@
                     <!-- チーム -->
                     <div class="glass-card p-8 rounded-2xl border border-orange-500/30 text-center group hover:shadow-2xl transition">
                         <div class="w-24 h-24 bg-gradient-to-br from-[#f59e0b] to-[#f97316] rounded-full flex items-center justify-center mx-auto mb-6 text-5xl shadow-lg">
-                            💼
+                            👩‍💼
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">プロジェクトを管理するチーム</h3>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">タスク管理を楽しくしたい方</h3>
                         <ul class="text-left space-y-2 text-gray-600 dark:text-gray-300">
-                            <li>✅ タスクをメンバーに割り当て</li>
-                            <li>✅ 進捗を可視化</li>
+                            <li>✅ 気分によってアバターを切り替え</li>
+                            <li>✅ アバターが実績を報告</li>
                             <li>✅ タグでプロジェクト別に管理</li>
-                            <li>✅ 承認フローで品質担保</li>
                         </ul>
                     </div>
                 </div>
@@ -477,8 +480,8 @@
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
                 <h2 class="text-4xl sm:text-5xl font-bold text-white mb-6">今すぐ始めよう</h2>
                 <p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-                    アカウント作成は無料。クレジットカード不要。<br>
-                    今日からAI教師アバターと一緒に学習を始めましょう。
+                    アカウント作成は無料。<br>
+                    今日からアバターと一緒に成長しましょう。
                 </p>
                 @if (Route::has('register'))
                     <a href="{{ route('register') }}" class="btn-primary group inline-flex items-center px-10 py-5 bg-white text-[#59B9C6] rounded-xl hover:bg-gray-50 transition font-bold text-lg shadow-2xl">

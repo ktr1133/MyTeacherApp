@@ -39,6 +39,15 @@ use App\Repositories\Token\TokenEloquentRepository;
 use App\Repositories\Token\TokenRepositoryInterface;
 use App\Repositories\Token\TokenPackageRepositoryInterface;
 use App\Repositories\Token\TokenPackageEloquentRepository;
+// Portal
+use App\Repositories\Portal\MaintenanceRepositoryInterface;
+use App\Repositories\Portal\EloquentMaintenanceRepository;
+use App\Repositories\Portal\ContactSubmissionRepositoryInterface;
+use App\Repositories\Portal\EloquentContactSubmissionRepository;
+use App\Repositories\Portal\FaqRepositoryInterface;
+use App\Repositories\Portal\EloquentFaqRepository;
+use App\Repositories\Portal\AppUpdateRepositoryInterface;
+use App\Repositories\Portal\EloquentAppUpdateRepository;
 // サービスのインポート
 use App\Services\Admin\UserServiceInterface;
 use App\Services\Admin\UserService;
@@ -82,6 +91,15 @@ use App\Services\Token\TokenServiceInterface;
 use App\Services\Token\TokenService;
 use App\Services\Token\TokenPackageServiceInterface;
 use App\Services\Token\TokenPackageService;
+// Portal
+use App\Services\Portal\MaintenanceServiceInterface;
+use App\Services\Portal\MaintenanceService;
+use App\Services\Portal\ContactServiceInterface;
+use App\Services\Portal\ContactService;
+use App\Services\Portal\FaqServiceInterface;
+use App\Services\Portal\FaqService;
+use App\Services\Portal\AppUpdateServiceInterface;
+use App\Services\Portal\AppUpdateService;
 
 // 外部APIサービスのインポート
 use App\Services\AI\OpenAIService;
@@ -138,6 +156,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TokenRepositoryInterface::class, TokenEloquentRepository::class);
         $this->app->bind(TokenPackageRepositoryInterface::class, TokenPackageEloquentRepository::class);
 
+        // --- Portal ---
+        $this->app->bind(MaintenanceRepositoryInterface::class, EloquentMaintenanceRepository::class);
+        $this->app->bind(ContactSubmissionRepositoryInterface::class, EloquentContactSubmissionRepository::class);
+        $this->app->bind(FaqRepositoryInterface::class, EloquentFaqRepository::class);
+        $this->app->bind(AppUpdateRepositoryInterface::class, EloquentAppUpdateRepository::class);
+
         // ========================================
         // 2. サービスのバインド
         // ========================================
@@ -189,6 +213,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TokenPurchaseApprovalServiceInterface::class, TokenPurchaseApprovalService::class);
         $this->app->bind(TokenServiceInterface::class, TokenService::class);
         $this->app->bind(TokenPackageServiceInterface::class, TokenPackageService::class);
+
+        // --- Portal ---
+        $this->app->bind(MaintenanceServiceInterface::class, MaintenanceService::class);
+        $this->app->bind(ContactServiceInterface::class, ContactService::class);
+        $this->app->bind(FaqServiceInterface::class, FaqService::class);
+        $this->app->bind(AppUpdateServiceInterface::class, AppUpdateService::class);
 
         // --- AI ---
         $this->app->bind(StableDiffusionServiceInterface::class, StableDiffusionService::class);

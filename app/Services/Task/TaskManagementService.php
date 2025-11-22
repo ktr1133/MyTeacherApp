@@ -119,6 +119,8 @@ class TaskManagementService implements TaskManagementServiceInterface
                 }
             // 通常タスク登録の場合
             } else {
+                // 通常タスクはログインユーザーが所有者
+                $taskData['user_id'] = $user->id;
                 $task = $this->taskRepository->create($taskData);
                 // タグを関連付け（タグ名の配列）
                 if (isset($data['tags']) && is_array($data['tags'])) {

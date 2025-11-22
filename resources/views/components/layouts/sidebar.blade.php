@@ -20,25 +20,21 @@
 
 {{-- デスクトップ: 左固定サイドバー --}}
 <aside 
-    x-data="{ collapsed: $store.sidebar?.isCollapsed || false }"
-    x-init="$watch('$store.sidebar.isCollapsed', value => collapsed = value)"
-    :class="collapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2'"
     data-sidebar="desktop"
-    class="hidden lg:flex lg:flex-col shrink-0 bg-white/80 dark:bg-gray-900/80 border-r border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm z-10 transition-all duration-300 overflow-hidden">
+    class="hidden lg:flex lg:flex-col shrink-0 gap-3 px-3 py-2 bg-white/80 dark:bg-gray-900/80 border-r border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm z-10 transition-all duration-300 overflow-hidden">
     
     <nav class="flex flex-col h-full">
         {{-- ロゴ + トグルボタン --}}
         <div class="px-2 py-2 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
             {{-- トグルボタン（左側に配置） --}}
             <button 
-                @click="$store.sidebar.toggle()"
                 data-sidebar-action="toggle-desktop"
-                :aria-label="collapsed ? 'サイドバーを展開' : 'サイドバーを最小化'"
-                :aria-expanded="!collapsed"
+                aria-label="サイドバーを最小化"
+                aria-expanded="true"
                 class="mr-4 group relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#59B9C6]/10 to-purple-600/10 hover:from-[#59B9C6]/20 hover:to-purple-600/20 border border-[#59B9C6]/20 hover:border-[#59B9C6]/30 transition-all duration-200 shrink-0"
             >
                 {{-- 展開時: 左向き二重矢印 --}}
-                <svg x-show="!collapsed" 
+                <svg data-icon="collapse"
                      class="w-5 h-5 text-[#59B9C6] group-hover:text-[#4A9AA5] transition-colors" 
                      fill="none" 
                      stroke="currentColor" 
@@ -46,7 +42,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
                 </svg>
                 {{-- 最小化時: 右向き二重矢印 --}}
-                <svg x-show="collapsed" 
+                <svg data-icon="expand"
+                     style="display: none;"
                      class="w-5 h-5 text-[#59B9C6] group-hover:text-[#4A9AA5] transition-colors" 
                      fill="none" 
                      stroke="currentColor" 
@@ -57,36 +54,51 @@
             
             {{-- ロゴ（展開時のみ表示） --}}
             <a href="{{ route('dashboard') }}" 
-               x-show="!collapsed" 
-               x-transition:enter="transition ease-out duration-300 delay-100"
-               x-transition:enter-start="opacity-0 -translate-x-4"
-               x-transition:enter-end="opacity-100 translate-x-0"
-               x-transition:leave="transition ease-in duration-200"
-               x-transition:leave-start="opacity-100 translate-x-0"
-               x-transition:leave-end="opacity-0 -translate-x-4"
-               class="flex-1">
+               data-show-when="expanded"
+               class="flex-1 transition-opacity duration-300">
                 <x-application-logo />
             </a>
         </div>
 
         {{-- ナビゲーションリンク --}}
         <div class="flex flex-col space-y-2 px-3 mt-6 flex-1 overflow-y-auto">
+            
+            {{-- 管理者用: 一般メニュー表示切替ボタン --}}
+            @if($u->isAdmin())
+                <div class="mb-4 flex items-center justify-between px-2">
+                    <span data-show-when="expanded"
+                          class="text-xs font-semibold text-gray-500 dark:text-gray-400 transition-opacity duration-200">
+                        一般メニュー
+                    </span>
+                    <button 
+                        data-action="toggle-general-menu"
+                        aria-label="一般メニューを非表示"
+                        class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                        <svg data-icon="general-show" class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <svg data-icon="general-hide" style="display: none;" class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                        </svg>
+                    </button>
+                </div>
+            @endif
+
+            {{-- 一般ユーザーメニュー（管理者の場合は表示切替可能） --}}
+            <div data-general-menu class="space-y-2 transition-all duration-200">
+            
             {{-- タスクリスト --}}
             <x-nav-link 
                 :href="route('dashboard')" 
                 :active="request()->routeIs('dashboard')" 
-                class="sidebar-nav-link flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-[#59B9C6]/10 hover:to-purple-500/5 transition-all duration-200 group relative {{ request()->routeIs('dashboard') ? 'active bg-gradient-to-r from-[#59B9C6]/10 to-purple-500/5 text-[#59B9C6]' : '' }}"
+                class="sidebar-nav-link flex items-center gap-3 px-2.5 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-[#59B9C6]/10 hover:to-purple-500/5 transition-all duration-200 group relative {{ request()->routeIs('dashboard') ? 'active bg-gradient-to-r from-[#59B9C6]/10 to-purple-500/5 text-[#59B9C6]' : '' }}"
             >
                 <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                <span x-show="!collapsed" 
-                      x-transition:enter="transition ease-out duration-200"
-                      x-transition:enter-start="opacity-0"
-                      x-transition:enter-end="opacity-100"
-                      x-transition:leave="transition ease-in duration-150"
-                      x-transition:leave-start="opacity-100"
-                      x-transition:leave-end="opacity-0"
+                <span data-show-when="expanded" 
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                     @if(!$isChildTheme)
                         タスクリスト
@@ -95,13 +107,7 @@
                     @endif
 
                 </span>
-                <span x-show="!collapsed" 
-                      x-transition:enter="transition ease-out duration-200"
-                      x-transition:enter-start="opacity-0"
-                      x-transition:enter-end="opacity-100"
-                      x-transition:leave="transition ease-in duration-150"
-                      x-transition:leave-start="opacity-100"
-                      x-transition:leave-end="opacity-0"
+                <span data-show-when="expanded" 
                       class="badge-gradient inline-flex items-center justify-center min-w-[1.75rem] h-6 px-2 rounded-full text-white text-xs font-bold shadow-sm">
                     {{ $sidebarTaskTotal }}
                 </span>
@@ -117,24 +123,12 @@
                     <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span x-show="!collapsed" 
-                          x-transition:enter="transition ease-out duration-200"
-                          x-transition:enter-start="opacity-0"
-                          x-transition:enter-end="opacity-100"
-                          x-transition:leave="transition ease-in duration-150"
-                          x-transition:leave-start="opacity-100"
-                          x-transition:leave-end="opacity-0"
+                    <span data-show-when="expanded" 
                           class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                         承認待ち
                     </span>
                     @if($sidebarPendingTotal > 0)
-                        <span x-show="!collapsed" 
-                              x-transition:enter="transition ease-out duration-200"
-                              x-transition:enter-start="opacity-0"
-                              x-transition:enter-end="opacity-100"
-                              x-transition:leave="transition ease-in duration-150"
-                              x-transition:leave-start="opacity-100"
-                              x-transition:leave-end="opacity-0"
+                        <span data-show-when="expanded" 
                               class="badge-warning inline-flex items-center justify-center min-w-[1.75rem] h-6 px-2 rounded-full text-white text-xs font-bold shadow-sm animate-pulse">
                             {{ $sidebarPendingTotal }}
                         </span>
@@ -151,13 +145,7 @@
                 <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                 </svg>
-                <span x-show="!collapsed" 
-                      x-transition:enter="transition ease-out duration-200"
-                      x-transition:enter-start="opacity-0"
-                      x-transition:enter-end="opacity-100"
-                      x-transition:leave="transition ease-in duration-150"
-                      x-transition:leave-start="opacity-100"
-                      x-transition:leave-end="opacity-0"
+                <span data-show-when="expanded" 
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                     @if(!$isChildTheme)
                         タグ管理
@@ -176,13 +164,7 @@
                 <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                 </svg>
-                <span x-show="!collapsed" 
-                      x-transition:enter="transition ease-out duration-200"
-                      x-transition:enter-start="opacity-0"
-                      x-transition:enter-end="opacity-100"
-                      x-transition:leave="transition ease-in duration-150"
-                      x-transition:leave-start="opacity-100"
-                      x-transition:leave-end="opacity-0"
+                <span data-show-when="expanded" 
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                     @if(!$isChildTheme)
                         教師アバター
@@ -201,13 +183,7 @@
                 <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
-                <span x-show="!collapsed" 
-                      x-transition:enter="transition ease-out duration-200"
-                      x-transition:enter-start="opacity-0"
-                      x-transition:enter-end="opacity-100"
-                      x-transition:leave="transition ease-in duration-150"
-                      x-transition:leave-start="opacity-100"
-                      x-transition:leave-end="opacity-0"
+                <span data-show-when="expanded" 
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                     実績
                 </span>                
@@ -222,13 +198,7 @@
                 <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span x-show="!collapsed" 
-                      x-transition:enter="transition ease-out duration-200"
-                      x-transition:enter-start="opacity-0"
-                      x-transition:enter-end="opacity-100"
-                      x-transition:leave="transition ease-in duration-150"
-                      x-transition:leave-start="opacity-100"
-                      x-transition:leave-end="opacity-0"
+                <span data-show-when="expanded" 
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                     @if(!$isChildTheme)
                         トークン
@@ -237,36 +207,26 @@
                     @endif
                 </span>
                 @if($isLowBalance)
-                    <span x-show="!collapsed" 
-                          x-transition:enter="transition ease-out duration-200"
-                          x-transition:enter-start="opacity-0"
-                          x-transition:enter-end="opacity-100"
-                          x-transition:leave="transition ease-in duration-150"
-                          x-transition:leave-start="opacity-100"
-                          x-transition:leave-end="opacity-0"
+                    <span data-show-when="expanded" 
                           class="inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full animate-pulse">
                     </span>
                 @endif
             </x-nav-link>
+            
+            </div>{{-- 一般ユーザーメニュー終了 --}}
 
 
             {{-- 管理者メニュー --}}
             @if($u->isAdmin())
                 <div class="pt-4 pb-2 px-4">
-                    <div x-show="!collapsed" 
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0"
-                         x-transition:enter-end="opacity-100"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100"
-                         x-transition:leave-end="opacity-0"
+                    <div data-show-when="expanded" 
                          class="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                         </svg>
                         管理者メニュー
                     </div>
-                    <div x-show="collapsed" class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+                    <div data-show-when="collapsed" class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
                 </div>
 
                 {{-- ユーザー管理 --}}
@@ -278,13 +238,7 @@
                     <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
                     </svg>
-                    <span x-show="!collapsed" 
-                          x-transition:enter="transition ease-out duration-200"
-                          x-transition:enter-start="opacity-0"
-                          x-transition:enter-end="opacity-100"
-                          x-transition:leave="transition ease-in duration-150"
-                          x-transition:leave-start="opacity-100"
-                          x-transition:leave-end="opacity-0"
+                    <span data-show-when="expanded" 
                           class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                         ユーザー管理
                     </span>
@@ -300,13 +254,7 @@
                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
                     </svg>
-                    <span x-show="!collapsed" 
-                          x-transition:enter="transition ease-out duration-200"
-                          x-transition:enter-start="opacity-0"
-                          x-transition:enter-end="opacity-100"
-                          x-transition:leave="transition ease-in duration-150"
-                          x-transition:leave-start="opacity-100"
-                          x-transition:leave-end="opacity-0"
+                    <span data-show-when="expanded" 
                           class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                         パッケージ設定
                     </span>
@@ -321,13 +269,7 @@
                     <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
-                    <span x-show="!collapsed" 
-                          x-transition:enter="transition ease-out duration-200"
-                          x-transition:enter-start="opacity-0"
-                          x-transition:enter-end="opacity-100"
-                          x-transition:leave="transition ease-in duration-150"
-                          x-transition:leave-start="opacity-100"
-                          x-transition:leave-end="opacity-0"
+                    <span data-show-when="expanded" 
                           class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                         トークン統計
                     </span>
@@ -342,17 +284,88 @@
                     <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                     </svg>
-                    <span x-show="!collapsed" 
-                          x-transition:enter="transition ease-out duration-200"
-                          x-transition:enter-start="opacity-0"
-                          x-transition:enter-end="opacity-100"
-                          x-transition:leave="transition ease-in duration-150"
-                          x-transition:leave-start="opacity-100"
-                          x-transition:leave-end="opacity-0"
-                          class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
+                    <span data-show-when="expanded" class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                         課金履歴
                     </span>
                 </x-nav-link>
+
+                {{-- ポータルサイト管理（親メニュー） --}}
+                <div class="space-y-1">
+                    {{-- 親メニュー --}}
+                    <button 
+                        data-action="toggle-portal"
+                        class="sidebar-nav-link w-full flex items-center gap-3 px-2.5 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/5 transition-all duration-200 group {{ request()->routeIs('admin.portal.*') ? 'bg-gradient-to-r from-cyan-500/10 to-blue-500/5 text-cyan-600' : '' }}"
+                    >
+                        <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                        </svg>
+                        <span data-show-when="expanded" 
+                              class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1 text-left">
+                            ポータルサイト
+                        </span>
+                        <svg data-show-when="expanded" 
+                             data-portal-icon
+                             class="w-4 h-4 transition-transform duration-200 shrink-0" 
+                             fill="none" 
+                             stroke="currentColor" 
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    {{-- サブメニュー --}}
+                    <div data-portal-submenu style="display: none;"
+                         class="ml-8 space-y-1 transition-all duration-200">
+                        
+                        {{-- メンテナンス情報 --}}
+                        <x-nav-link 
+                            :href="route('admin.portal.maintenances.index')" 
+                            :active="request()->routeIs('admin.portal.maintenances.*')"
+                            class="flex items-center gap-2 px-2 py-1.5 text-xs rounded-lg {{ request()->routeIs('admin.portal.maintenances.*') ? 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            メンテナンス情報
+                        </x-nav-link>
+
+                        {{-- お問い合わせ --}}
+                        <x-nav-link 
+                            :href="route('admin.portal.contacts.index')" 
+                            :active="request()->routeIs('admin.portal.contacts.*')"
+                            class="flex items-center gap-2 px-2 py-1.5 text-xs rounded-lg {{ request()->routeIs('admin.portal.contacts.*') ? 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            お問い合わせ
+                        </x-nav-link>
+
+                        {{-- FAQ管理 --}}
+                        <x-nav-link 
+                            :href="route('admin.portal.faqs.index')" 
+                            :active="request()->routeIs('admin.portal.faqs.*')"
+                            class="flex items-center gap-2 px-2 py-1.5 text-xs rounded-lg {{ request()->routeIs('admin.portal.faqs.*') ? 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            FAQ管理
+                        </x-nav-link>
+
+                        {{-- アプリ更新履歴 --}}
+                        <x-nav-link 
+                            :href="route('admin.portal.updates.index')" 
+                            :active="request()->routeIs('admin.portal.updates.*')"
+                            class="flex items-center gap-2 px-2 py-1.5 text-xs rounded-lg {{ request()->routeIs('admin.portal.updates.*') ? 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            アプリ更新履歴
+                        </x-nav-link>
+                    </div>
+                </div>
             @endif
 
             {{-- 設定(アカウント管理) --}}
@@ -366,13 +379,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                <span x-show="!collapsed" 
-                      x-transition:enter="transition ease-out duration-200"
-                      x-transition:enter-start="opacity-0"
-                      x-transition:enter-end="opacity-100"
-                      x-transition:leave="transition ease-in duration-150"
-                      x-transition:leave-start="opacity-100"
-                      x-transition:leave-end="opacity-0"
+                <span data-show-when="expanded" 
                       class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
                     設定
                 </span>
@@ -382,13 +389,7 @@
         {{-- トークン残高表示 --}}
         <div class="px-3 pb-6 shrink-0">
             {{-- 展開時 --}}
-            <div x-show="!collapsed" 
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
+            <div data-show-when="expanded" 
                  class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-700/30">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
@@ -416,13 +417,7 @@
             </div>
             
             {{-- 最小化時 --}}
-            <div x-show="collapsed" 
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
+            <div data-show-when="collapsed" 
                  class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-2 border border-amber-200 dark:border-amber-700/30 text-center">
                 <svg class="w-6 h-6 mx-auto text-amber-600 dark:text-amber-400 mb-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
@@ -440,33 +435,23 @@
 </aside>
 
 {{-- モバイル: オフキャンバスサイドバー --}}
-<div class="lg:hidden" x-data="{ showSidebar: false }">
+<div class="lg:hidden">
     {{-- オーバーレイ --}}
     <div 
-        x-show="showSidebar"
-        x-transition.opacity
         data-sidebar-overlay="mobile"
-        class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-        @click.stop="showSidebar = false"
-        @touchstart.stop="showSidebar = false">
+        class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-200"
+        style="display: none;">
     </div>
 
     {{-- サイドバー本体 --}}
     <aside
-        x-show="showSidebar"
-        x-transition:enter="transform transition ease-out duration-300"
-        x-transition:enter-start="-translate-x-full"
-        x-transition:enter-end="translate-x-0"
-        x-transition:leave="transform transition ease-in duration-200"
-        x-transition:leave-start="translate-x-0"
-        x-transition:leave-end="-translate-x-full"
         data-sidebar="mobile"
-        class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto"
-        @click.stop>
+        class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto -translate-x-full transition-transform duration-300"
+        style="display: none;">
         
         <div class="flex items-center justify-between px-6 py-6 border-b border-gray-200 dark:border-gray-700">
             <x-application-logo />
-            <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition" @click="showSidebar = false">
+            <button data-action="close-mobile" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -474,11 +459,37 @@
         </div>
 
         <nav class="flex flex-col space-y-2 px-3 mt-6 pb-6">
+            
+            {{-- 管理者用: 一般メニュー表示切替ボタン（モバイル） --}}
+            @if($u->isAdmin())
+                <div class="mb-4 flex items-center justify-between px-2">
+                    <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                        一般メニュー
+                    </span>
+                    <button 
+                        data-action="toggle-general-menu-mobile"
+                        class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        :aria-label="showGeneralMenu ? '一般メニューを非表示' : '一般メニューを表示'"
+                    >
+                        <svg data-icon="general-show-mobile" class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <svg data-icon="general-hide-mobile" class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                        </svg>
+                    </button>
+                </div>
+            @endif
+
+            {{-- 一般ユーザーメニュー（管理者の場合は表示切替可能） --}}
+            <div data-general-menu-mobile class="space-y-2 transition-all duration-200">
+            
             {{-- タスクリスト --}}
             <x-nav-link 
                 :href="route('dashboard')" 
                 :active="request()->routeIs('dashboard')" 
-                @click="showSidebar = false"
+                data-close-on-click
                 class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-[#59B9C6]/10 hover:to-purple-500/5 transition-all duration-200 {{ request()->routeIs('dashboard') ? 'active bg-gradient-to-r from-[#59B9C6]/10 to-purple-500/5 text-[#59B9C6]' : '' }}"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -499,7 +510,7 @@
                 <x-nav-link 
                     :href="route('tasks.pending-approvals')" 
                     :active="request()->routeIs('tasks.pending-approvals')" 
-                    @click="showSidebar = false"
+                    data-close-on-click
                     class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-yellow-500/10 hover:to-orange-500/5 transition-all duration-200 {{ request()->routeIs('tasks.pending-approvals') ? 'active bg-gradient-to-r from-yellow-500/10 to-orange-500/5 text-yellow-600' : '' }}"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -518,7 +529,7 @@
             <x-nav-link 
                 :href="route('tags.list')" 
                 :active="request()->routeIs('tags.list')" 
-                @click="showSidebar = false"
+                data-close-on-click
                 class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/5 transition-all duration-200 {{ request()->routeIs('tags.list') ? 'active bg-gradient-to-r from-blue-500/10 to-purple-500/5 text-blue-600' : '' }}"
             >
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -551,7 +562,7 @@
             <x-nav-link 
                 :href="route('reports.performance')"
                 :active="request()->routeIs('reports.performance')"
-                @click="showSidebar = false"
+                data-close-on-click
                 class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-green-500/10 hover:to-emerald-500/5 transition-all duration-200 {{ request()->routeIs('reports.performance') ? 'active bg-gradient-to-r from-green-500/10 to-emerald-500/5 text-green-600' : '' }}"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -564,7 +575,7 @@
             <x-nav-link 
                 :href="route('tokens.purchase')" 
                 :active="request()->routeIs('tokens.purchase', 'tokens.history')"
-                @click="showSidebar = false"
+                data-close-on-click
                 class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-amber-500/10 hover:to-yellow-500/5 transition-all duration-200 {{ request()->routeIs('tokens.purchase', 'tokens.history') ? 'active bg-gradient-to-r from-amber-500/10 to-yellow-500/5 text-amber-600' : '' }}"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -579,6 +590,8 @@
                     <span class="inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 @endif
             </x-nav-link>
+
+            </div>{{-- 一般ユーザーメニュー終了（モバイル） --}}
 
             {{-- 管理者メニュー --}}
             @if($u->isAdmin())
@@ -640,13 +653,93 @@
                     </svg>
                     <span class="text-sm font-medium">課金履歴</span>
                 </x-nav-link>
+
+                {{-- ポータルサイト管理（親メニュー） --}}
+                <div class="space-y-1">
+                    {{-- 親メニュー --}}
+                    <button 
+                        data-action="toggle-portal-mobile"
+                        class="sidebar-nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/5 transition-all duration-200 group {{ request()->routeIs('admin.portal.*') ? 'bg-gradient-to-r from-cyan-500/10 to-blue-500/5 text-cyan-600' : '' }}"
+                    >
+                        <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                        </svg>
+                        <span class="text-sm font-medium flex-1 text-left">
+                            ポータルサイト
+                        </span>
+                        <svg data-portal-icon-mobile
+                             class="w-4 h-4 transition-transform duration-200 shrink-0" 
+                             fill="none" 
+                             stroke="currentColor" 
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    {{-- サブメニュー --}}
+                    <div data-portal-submenu-mobile style="display: none;"
+                         class="ml-12 space-y-1 transition-all duration-200">
+                        
+                        {{-- メンテナンス情報 --}}
+                        <x-nav-link 
+                            :href="route('admin.portal.maintenances.index')" 
+                            :active="request()->routeIs('admin.portal.maintenances.*')"
+                            data-close-on-click
+                            class="flex items-center gap-2 px-2 py-2 text-xs rounded-lg {{ request()->routeIs('admin.portal.maintenances.*') ? 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            メンテナンス情報
+                        </x-nav-link>
+
+                        {{-- お問い合わせ --}}
+                        <x-nav-link 
+                            :href="route('admin.portal.contacts.index')" 
+                            :active="request()->routeIs('admin.portal.contacts.*')"
+                            data-close-on-click
+                            class="flex items-center gap-2 px-2 py-2 text-xs rounded-lg {{ request()->routeIs('admin.portal.contacts.*') ? 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            お問い合わせ
+                        </x-nav-link>
+
+                        {{-- FAQ管理 --}}
+                        <x-nav-link 
+                            :href="route('admin.portal.faqs.index')" 
+                            :active="request()->routeIs('admin.portal.faqs.*')"
+                            data-close-on-click
+                            class="flex items-center gap-2 px-2 py-2 text-xs rounded-lg {{ request()->routeIs('admin.portal.faqs.*') ? 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            FAQ管理
+                        </x-nav-link>
+
+                        {{-- アプリ更新履歴 --}}
+                        <x-nav-link 
+                            :href="route('admin.portal.updates.index')" 
+                            :active="request()->routeIs('admin.portal.updates.*')"
+                            data-close-on-click
+                            class="flex items-center gap-2 px-2 py-2 text-xs rounded-lg {{ request()->routeIs('admin.portal.updates.*') ? 'text-cyan-600 bg-cyan-50 dark:bg-cyan-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            アプリ更新履歴
+                        </x-nav-link>
+                    </div>
+                </div>
             @endif
 
             {{-- 設定(アカウント管理) --}}
             <x-nav-link 
                 :href="route('profile.edit')" 
                 :active="request()->routeIs('profile.edit')"
-                @click="showSidebar = false"
+                data-close-on-click
                 class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-500/10 hover:to-gray-400/5 transition-all duration-200 {{ request()->routeIs('profile.edit') ? 'active bg-gradient-to-r from-gray-500/10 to-gray-400/5' : '' }}"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -675,7 +768,7 @@
                 </div>
                 @if($isLowBalance)
                     <div class="mt-3 pt-3 border-t border-amber-200 dark:border-amber-700/30">
-                        <a href="{{ route('tokens.purchase') }}" @click="showSidebar = false" class="text-xs text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 font-medium flex items-center gap-1 group">
+                        <a href="{{ route('tokens.purchase') }}" data-close-on-click class="text-xs text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 font-medium flex items-center gap-1 group">
                             <svg class="w-3 h-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>

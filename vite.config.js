@@ -16,6 +16,7 @@ export default defineConfig({
                 'resources/css/child-theme.css',
                 'resources/css/dashboard.css',
                 'resources/css/notifications.css',
+                'resources/css/sidebar.css',
                 'resources/css/tags.css',
                 'resources/css/reports/performance.css',
                 'resources/css/tasks/pending-approvals.css',

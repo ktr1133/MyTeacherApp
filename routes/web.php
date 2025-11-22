@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
+
 // 管理者用
 use App\Http\Actions\Admin\Notification\IndexAdminNotificationAction;
 use App\Http\Actions\Admin\Notification\CreateAdminNotificationAction;
@@ -7,6 +10,29 @@ use App\Http\Actions\Admin\Notification\StoreAdminNotificationAction;
 use App\Http\Actions\Admin\Notification\EditAdminNotificationAction;
 use App\Http\Actions\Admin\Notification\UpdateAdminNotificationAction;
 use App\Http\Actions\Admin\Notification\DeleteAdminNotificationAction;
+use App\Http\Actions\Admin\Portal\IndexMaintenanceAction;
+use App\Http\Actions\Admin\Portal\CreateMaintenanceAction;
+use App\Http\Actions\Admin\Portal\StoreMaintenanceAction;
+use App\Http\Actions\Admin\Portal\EditMaintenanceAction;
+use App\Http\Actions\Admin\Portal\UpdateMaintenanceAction;
+use App\Http\Actions\Admin\Portal\DeleteMaintenanceAction;
+use App\Http\Actions\Admin\Portal\UpdateMaintenanceStatusAction;
+use App\Http\Actions\Admin\Portal\IndexContactAction;
+use App\Http\Actions\Admin\Portal\ShowContactAction;
+use App\Http\Actions\Admin\Portal\UpdateContactStatusAction;
+use App\Http\Actions\Admin\Portal\IndexFaqAction;
+use App\Http\Actions\Admin\Portal\CreateFaqAction;
+use App\Http\Actions\Admin\Portal\StoreFaqAction;
+use App\Http\Actions\Admin\Portal\EditFaqAction;
+use App\Http\Actions\Admin\Portal\UpdateFaqAction;
+use App\Http\Actions\Admin\Portal\DeleteFaqAction;
+use App\Http\Actions\Admin\Portal\ToggleFaqPublishedAction;
+use App\Http\Actions\Admin\Portal\IndexAppUpdateAction;
+use App\Http\Actions\Admin\Portal\CreateAppUpdateAction;
+use App\Http\Actions\Admin\Portal\StoreAppUpdateAction;
+use App\Http\Actions\Admin\Portal\EditAppUpdateAction;
+use App\Http\Actions\Admin\Portal\UpdateAppUpdateAction;
+use App\Http\Actions\Admin\Portal\DeleteAppUpdateAction;
 use App\Http\Actions\Admin\IndexUserAction;
 use App\Http\Actions\Admin\EditUserAction;
 use App\Http\Actions\Admin\UpdateUserAction;
@@ -93,7 +119,42 @@ use App\Http\Actions\Token\ProcessTokenPurchaseAction;
 use App\Http\Actions\Token\RejectTokenPurchaseRequestAction;
 use App\Http\Actions\Validation\ValidateGroupNameAction;
 
-use Illuminate\Support\Facades\Route;
+// ========================================
+// ヘルスチェックエンドポイント（冗長構成対応）
+// ========================================
+Route::get('/health', function () {
+    try {
+        // データベース接続確認
+        DB::connection()->getPdo();
+        
+        // Redis接続確認
+        \Illuminate\Support\Facades\Redis::ping();
+        
+        // ストレージ確認（S3/MinIO）
+        \Illuminate\Support\Facades\Storage::disk('s3')->exists('health-check');
+        
+        return response()->json([
+            'status' => 'healthy',
+            'timestamp' => now()->toIso8601String(),
+            'services' => [
+                'database' => 'ok',
+                'redis' => 'ok',
+                'storage' => 'ok',
+            ]
+        ], 200);
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Health check failed', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+        
+        return response()->json([
+            'status' => 'unhealthy',
+            'timestamp' => now()->toIso8601String(),
+            'error' => $e->getMessage(),
+        ], 503);
+    }
+})->name('health');
 
 /*
 |--------------------------------------------------------------------------
@@ -303,6 +364,48 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{notification}', UpdateAdminNotificationAction::class)->name('update');
         Route::delete('/{notification}', DeleteAdminNotificationAction::class)->name('destroy');
     });
+
+    // ポータルサイト管理
+    Route::prefix('portal')->name('portal.')->group(function () {
+        // メンテナンス情報管理
+        Route::prefix('maintenances')->name('maintenances.')->group(function () {
+            Route::get('/', IndexMaintenanceAction::class)->name('index');
+            Route::get('/create', CreateMaintenanceAction::class)->name('create');
+            Route::post('/', StoreMaintenanceAction::class)->name('store');
+            Route::get('/{maintenance}/edit', EditMaintenanceAction::class)->name('edit');
+            Route::put('/{maintenance}', UpdateMaintenanceAction::class)->name('update');
+            Route::delete('/{maintenance}', DeleteMaintenanceAction::class)->name('destroy');
+            Route::patch('/{maintenance}/status', UpdateMaintenanceStatusAction::class)->name('status.update');
+        });
+
+        // お問い合わせ管理
+        Route::prefix('contacts')->name('contacts.')->group(function () {
+            Route::get('/', IndexContactAction::class)->name('index');
+            Route::get('/{contact}', ShowContactAction::class)->name('show');
+            Route::patch('/{contact}/status', UpdateContactStatusAction::class)->name('update-status');
+        });
+
+        // FAQ管理
+        Route::prefix('faqs')->name('faqs.')->group(function () {
+            Route::get('/', IndexFaqAction::class)->name('index');
+            Route::get('/create', CreateFaqAction::class)->name('create');
+            Route::post('/', StoreFaqAction::class)->name('store');
+            Route::get('/{faq}/edit', EditFaqAction::class)->name('edit');
+            Route::put('/{faq}', UpdateFaqAction::class)->name('update');
+            Route::delete('/{faq}', DeleteFaqAction::class)->name('destroy');
+            Route::patch('/{faq}/toggle-published', ToggleFaqPublishedAction::class)->name('toggle-published');
+        });
+
+        // アプリ更新履歴管理
+        Route::prefix('updates')->name('updates.')->group(function () {
+            Route::get('/', IndexAppUpdateAction::class)->name('index');
+            Route::get('/create', CreateAppUpdateAction::class)->name('create');
+            Route::post('/', StoreAppUpdateAction::class)->name('store');
+            Route::get('/{update}/edit', EditAppUpdateAction::class)->name('edit');
+            Route::put('/{update}', UpdateAppUpdateAction::class)->name('update');
+            Route::delete('/{update}', DeleteAppUpdateAction::class)->name('destroy');
+        });
+    });
 });
 
 // ========================================
@@ -312,6 +415,32 @@ Route::post(
     '/stripe/webhook',
     \App\Http\Actions\Token\HandleStripeWebhookAction::class
 )->name('stripe.webhook');
+
+// ========================================
+// ポータルサイト（全ユーザーアクセス可能）
+// ========================================
+Route::prefix('portal')->name('portal.')->group(function () {
+    // ポータルトップ
+    Route::get('/', \App\Http\Actions\Portal\ShowPortalHomeAction::class)->name('home');
+    
+    // メンテナンス情報
+    Route::get('/maintenance', \App\Http\Actions\Portal\ShowMaintenanceAction::class)->name('maintenance');
+    
+    // お問い合わせ
+    Route::get('/contact', \App\Http\Actions\Portal\ShowContactAction::class)->name('contact');
+    Route::post('/contact', \App\Http\Actions\Portal\StoreContactAction::class)->name('contact.store')->middleware('throttle:10,1');
+    
+    // FAQ
+    Route::get('/faq', \App\Http\Actions\Portal\ShowFaqAction::class)->name('faq');
+    
+    // 更新履歴
+    Route::get('/updates', \App\Http\Actions\Portal\ShowUpdatesAction::class)->name('updates');
+    
+    // 使い方ガイド
+    Route::prefix('guide')->name('guide.')->group(function () {
+        Route::get('/', \App\Http\Actions\Portal\Guide\ShowGuideIndexAction::class)->name('index');
+    });
+});
 
 // =========================================================================
 // 認証関連ルート (Breeze)

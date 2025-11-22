@@ -32,6 +32,7 @@ class Kernel extends ConsoleKernel
             $schedule->command('batch:execute-scheduled-tasks')
                 ->everyMinute()
                 ->withoutOverlapping(5)
+                ->onOneServer() // 冗長構成対応
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/scheduled-tasks.log'));
         } 
@@ -40,6 +41,7 @@ class Kernel extends ConsoleKernel
             $schedule->command('batch:execute-scheduled-tasks')
                 ->hourly()
                 ->withoutOverlapping(10)
+                ->onOneServer() // 冗長構成対応
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/scheduled-tasks.log'))
                 ->onSuccess(function () {
@@ -91,6 +93,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('notifications:delete-expired')
             ->dailyAt('03:00')
             ->withoutOverlapping()
+            ->onOneServer() // 冗長構成対応
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/notifications-cleanup.log'));
     }

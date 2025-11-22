@@ -40,7 +40,7 @@
         @stack('styles')
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/app.css', 'resources/css/sidebar.css', 'resources/js/app.js'])
         
         {{-- サイドバー制御（Alpine.jsの代わり） --}}
         @vite(['resources/js/common/sidebar.js'])
