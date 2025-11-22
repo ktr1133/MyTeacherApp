@@ -241,13 +241,25 @@ foreach ($tasks as $task) {
 $tasks = Task::with(['user', 'images', 'tags'])->where('user_id', $userId)->get();
 ```
 
-## 4. 主要ファイル
+## 4. 主要ファイル・ディレクトリ
 
-- **ルート**: `routes/web.php` (Actionを直接参照)
-- **DIバインディング**: `app/Providers/AppServiceProvider.php`
-- **スケジューラー**: `app/Console/Kernel.php`
-- **設定**: `config/const.php` (アバターイベント、トークン), `config/filesystems.php` (S3), `config/avatar-options.php`
-- **Docker**: `docker-compose.yml` (DB:5432, App:8080, MinIO:9100/9101)
+| パス | 説明 |
+|------|------|
+| `routes/web.php` | ルート定義（Actionを直接参照、use文必須） |
+| `app/Providers/AppServiceProvider.php` | DIバインディング（Interface ⇔ Implementation） |
+| `app/Console/Kernel.php` | スケジューラー設定（`schedule()` メソッド） |
+| `app/Http/Actions/{ドメイン}/` | Invokableアクション（`__invoke()` 必須） |
+| `app/Services/{ドメイン}/` | ビジネスロジック（必ずInterface付き） |
+| `app/Repositories/{ドメイン}/` | データアクセス（必ずInterface付き） |
+| `app/Http/Responders/{ドメイン}/` | レスポンス整形（新規コードで使用） |
+| `app/Http/Requests/{ドメイン}/` | FormRequest（バリデーション定義） |
+| `app/Jobs/` | 非同期ジョブ（`GenerateAvatarImagesJob` など） |
+| `config/const.php` | 定数定義（イベント、トークン種別、ステータス） |
+| `config/filesystems.php` | S3/MinIO設定 |
+| `config/avatar-options.php` | アバター生成オプション |
+| `database/migrations/` | マイグレーションファイル（命名: `YYYY_MM_DD_*`) |
+| `definitions/*.md` | 機能要件定義書 |
+| `docker-compose.yml` | DB:5432, App:8080, MinIO:9100/9101 |
 
 ## 5. 要件定義管理
 
@@ -280,6 +292,76 @@ public function __invoke(StoreTaskRequest $request) {
 }
 ```
 
+## 6. 環境変数・設定
+
+### 必須環境変数
+```bash
+# AI統合
+OPENAI_API_KEY=sk-...          # OpenAI API (タスク分解, DALL-E)
+REPLICATE_API_TOKEN=r8_...     # Replicate (Stable Diffusion)
+
+# MinIO/S3
+AWS_ACCESS_KEY_ID=minio        # docker-compose.ymlと同期
+AWS_SECRET_ACCESS_KEY=minio123
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=myteacher
+AWS_ENDPOINT=http://s3:9100    # Docker内部通信
+AWS_URL=http://localhost:9100  # 外部アクセス
+AWS_USE_PATH_STYLE_ENDPOINT=true
+
+# Stripe (決済)
+STRIPE_KEY=pk_test_...
+STRIPE_SECRET=sk_test_...
+STRIPE_TEST_MODE=true
+
+# トークン設定
+TOKEN_FREE_MONTHLY=1000000     # 月次無料枠
+TOKEN_LOW_THRESHOLD=200000     # 警告閾値
+```
+
+### 環境依存の注意点
+- **Docker**: コンテナ内では `/var/www/html/`、ホストでは `/home/ktr/mtdev/laravel/`
+- **S3エンドポイント**: コンテナ間通信は `http://s3:9100`、ブラウザは `http://localhost:9100`
+- **DB接続**: 本番はPostgreSQL、テストはSQLiteインメモリ (`phpunit.xml` で自動切替)
+
+## 7. デバッグ・トラブルシューティング
+
+### ログ確認
+```bash
+# リアルタイムログ監視（Pail）
+composer dev  # 自動でpail起動
+
+# 個別確認
+tail -f storage/logs/laravel.log                 # アプリケーション
+tail -f /var/log/laravel-scheduler.log           # スケジューラー（要root）
+tail -f storage/logs/scheduled-tasks.log         # バッチ実行
+
+# キューログ
+php artisan queue:failed                         # 失敗ジョブ一覧
+php artisan queue:retry {job-id}                 # ジョブ再実行
+```
+
+### よくあるエラー
+| エラー | 原因 | 対処 |
+|--------|------|------|
+| `Class Interface not found` | DIバインディング漏れ | `AppServiceProvider::register()` に追加 |
+| `SQLSTATE[23503]` (外部キー) | 関連データ削除忘れ | `onDelete('cascade')` 追加 or 手動削除 |
+| `Target class [XxxAction] does not exist` | routes/web.php のuse文漏れ | `use App\Http\Actions\...` 追加 |
+| `Call to undefined method` | Eager Loading不足 | `with(['relation'])` 追加 |
+| S3エラー | エンドポイント設定ミス | `.env` の `AWS_ENDPOINT` 確認 |
+
+### キューが動かない場合
+```bash
+# キューワーカー起動確認
+ps aux | grep queue:work
+
+# 手動起動
+php artisan queue:work --tries=3
+
+# ジョブテーブルクリア（開発環境）
+php artisan queue:flush
+```
+
 ## コミュニケーションスタイル
 
 - 要件が不明確な場合は推測せず質問する
@@ -287,3 +369,4 @@ public function __invoke(StoreTaskRequest $request) {
 - 修正前にクラス全体のコンテキストを参照
 - 依存関係はワークスペース検索で確認してから実装
 - 新規Service/Repositoryは必ずインターフェースから作成
+- FormRequestクラスでバリデーションを実装（Actionには書かない）

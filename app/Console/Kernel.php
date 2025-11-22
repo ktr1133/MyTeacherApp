@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         Commands\ExecuteScheduledTasks::class,
         Commands\ExecuteScheduledTaskById::class,
         Commands\ListScheduledTasks::class,
+        Commands\MonitorRedisHealth::class,
     ];
 
     /**
@@ -96,6 +97,26 @@ class Kernel extends ConsoleKernel
             ->onOneServer() // 冗長構成対応
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/notifications-cleanup.log'));
+
+        // ========================================
+        // Redis健全性監視（5分ごと）
+        // ========================================
+        $schedule->command('redis:monitor')
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->onOneServer() // 冗長構成対応
+            ->runInBackground();
+
+        // ========================================
+        // 古いキャッシュクリア（毎日深夜3時）
+        // ========================================
+        $schedule->call(function () {
+            \Illuminate\Support\Facades\Cache::tags(['dashboard'])->flush();
+            \Illuminate\Support\Facades\Log::info('Old dashboard cache cleared');
+        })
+        ->dailyAt('03:00')
+        ->name('clear-old-cache')
+        ->onOneServer();
     }
 
     /**

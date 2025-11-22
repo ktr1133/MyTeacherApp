@@ -6,6 +6,8 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\User;
 use App\Repositories\Tag\TagRepositoryInterface;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class TagService implements TagServiceInterface
 {
@@ -33,38 +35,75 @@ class TagService implements TagServiceInterface
      */
     public function findOrCreate(User $user, string $name): Tag
     {
-        return Tag::firstOrCreate([
+        $tag = Tag::firstOrCreate([
             'user_id' => $user->id,
             'name' => $name,
         ]);
+        
+        // キャッシュクリア
+        Cache::forget("user:{$user->id}:tags");
+        
+        return $tag;
     }
 
     /**
-     * @inheritDoc
+     * ユーザーIDでタグを取得（キャッシュ付き）
+     *
+     * @param int $userId ユーザーID
+     * @return array タグの配列
      */
     public function getByUserId(int $userId): array
     {
-        return Tag::where('user_id', $userId)->get()->all();
+        try {
+            return Cache::remember(
+                "user:{$userId}:tags",
+                now()->addHours(6),
+                fn() => Tag::where('user_id', $userId)->get()->all()
+            );
+        } catch (\Exception $e) {
+            Log::warning('Cache unavailable for tags, using database', [
+                'user_id' => $userId,
+                'error' => $e->getMessage()
+            ]);
+            return Tag::where('user_id', $userId)->get()->all();
+        }
     }
 
     /**
-     * @inheritDoc
+     * タグを作成
+     *
+     * @param User $user ユーザー
+     * @param array $data タグデータ
+     * @return Tag 作成されたタグ
      */
     public function createTag(User $user, array $data): Tag
     {
-        return $this->tags->createTag($user, $data);
+        $tag = $this->tags->createTag($user, $data);
+        Cache::forget("user:{$user->id}:tags");
+
+        return $tag;
     }
 
     /**
-     * @inheritDoc
+     * タグを更新
+     *
+     * @param User $user ユーザー
+     * @param array $data タグデータ
+     * @return Tag 更新されたタグ
      */
     public function updateTag(User $user, array $data): Tag
     {
-        return $this->tags->updateTag($user, $data);
+        $tag = $this->tags->updateTag($user, $data);
+        Cache::forget("user:{$user->id}:tags");
+
+        return $tag;
     }
 
     /**
-     * @inheritDoc
+     * タグを削除
+     *
+     * @param int $id タグID
+     * @return bool 削除成功の場合true
      */
     public function deleteTag(int $id): bool
     {
@@ -73,7 +112,14 @@ class TagService implements TagServiceInterface
         if ($tag && $tag->tasks()->count() > 0) {
             return false;
         }
-        return $this->tags->deleteTag($id);
+        
+        $result = $this->tags->deleteTag($id);
+        
+        if ($result && $tag) {
+            Cache::forget("user:{$tag->user_id}:tags");
+        }
+        
+        return $result;
     }
 
     /**

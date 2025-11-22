@@ -9,6 +9,8 @@ use App\Jobs\GenerateAvatarImagesJob;
 use App\Services\Token\TokenServiceInterface;
 use App\Exceptions\RedirectException;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 /**
  * 教師アバターサービス
@@ -62,7 +64,13 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         // 推定使用トークン量設定
         $data['estimated_token_usage'] = config('services.estimated_token_usages')[$data['draw_model_version']] ?? 0;
 
-        return $this->repository->update($avatar, $data);
+        $result = $this->repository->update($avatar, $data);
+
+        if ($result) {
+            $this->clearAvatarCache($avatar->user_id);
+        }
+
+        return $result;
     }
 
     /**
@@ -88,6 +96,9 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         // ステータス更新
         $avatar->update(['generation_status' => 'pending']);
 
+        // キャッシュクリア
+        $this->clearAvatarCache($avatar->user_id);
+
         // 再生成ジョブをディスパッチ
         GenerateAvatarImagesJob::dispatch($avatar->id);
     }
@@ -101,13 +112,40 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
             return false;
         }
 
-        return $this->repository->toggleVisibility($avatar);
+        $result = $this->repository->toggleVisibility($avatar);
+
+        if ($result) {
+            $this->clearAvatarCache($avatar->user_id);
+        }
+
+        return $result;
     }
 
     /**
      * 指定イベントタイプのコメントを取得
      */
     public function getCommentForEvent(User $user, string $eventType): ?array
+    {
+        try {
+            return Cache::tags(['avatar', "user:{$user->id}"])->remember(
+                "user:{$user->id}:avatar:comment:{$eventType}",
+                now()->addHours(6),
+                fn() => $this->fetchCommentFromDatabase($user, $eventType)
+            );
+        } catch (\Exception $e) {
+            Log::warning('[TeacherAvatarService] Cache unavailable, falling back to database', [
+                'user_id' => $user->id,
+                'event_type' => $eventType,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->fetchCommentFromDatabase($user, $eventType);
+        }
+    }
+
+    /**
+     * データベースからコメントを取得（キャッシュのフォールバック用）
+     */
+    private function fetchCommentFromDatabase(User $user, string $eventType): ?array
     {
         $avatar = $this->getUserAvatar($user);
 
@@ -136,6 +174,22 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
             'imageUrl' => $image?->s3_url,
             'animation' => $animation,
         ];
+    }
+
+    /**
+     * ユーザーのアバターキャッシュをクリア
+     */
+    private function clearAvatarCache(int $userId): void
+    {
+        try {
+            Cache::tags(['avatar', "user:{$userId}"])->flush();
+            Log::info('[TeacherAvatarService] Avatar cache cleared', ['user_id' => $userId]);
+        } catch (\Exception $e) {
+            Log::error('[TeacherAvatarService] Failed to clear avatar cache', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

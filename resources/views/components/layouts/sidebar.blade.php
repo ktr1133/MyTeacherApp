@@ -61,7 +61,7 @@
         </div>
 
         {{-- ナビゲーションリンク --}}
-        <div class="flex flex-col space-y-2 px-3 mt-6 flex-1 overflow-y-auto">
+        <div class="flex flex-col space-y-2 px-3 mt-6 flex-1 overflow-hidden">
             
             {{-- 管理者用: 一般メニュー表示切替ボタン --}}
             @if($u->isAdmin())
@@ -390,7 +390,7 @@
         <div class="px-3 pb-6 shrink-0">
             {{-- 展開時 --}}
             <div data-show-when="expanded" 
-                 class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-700/30">
+                 data-token-balance-expanded>
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
@@ -418,7 +418,7 @@
             
             {{-- 最小化時 --}}
             <div data-show-when="collapsed" 
-                 class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-2 border border-amber-200 dark:border-amber-700/30 text-center">
+                 data-token-balance-collapsed>
                 <svg class="w-6 h-6 mx-auto text-amber-600 dark:text-amber-400 mb-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
@@ -439,15 +439,13 @@
     {{-- オーバーレイ --}}
     <div 
         data-sidebar-overlay="mobile"
-        class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-200"
-        style="display: none;">
+        class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300">
     </div>
 
     {{-- サイドバー本体 --}}
     <aside
         data-sidebar="mobile"
-        class="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto -translate-x-full transition-transform duration-300"
-        style="display: none;">
+        class="hidden fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto -translate-x-full transition-transform duration-300">
         
         <div class="flex items-center justify-between px-6 py-6 border-b border-gray-200 dark:border-gray-700">
             <x-application-logo />
@@ -752,7 +750,7 @@
 
         {{-- トークン残高表示（モバイル） --}}
         <div class="px-3 pb-6">
-            <div class="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-700/30">
+            <div data-token-balance-mobile>
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>

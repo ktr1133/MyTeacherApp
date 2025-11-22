@@ -227,25 +227,23 @@ class SidebarController {
 
         this.isMobileOpen = true;
         
-        // オーバーレイとサイドバーを表示（初期状態は非表示）
-        this.mobileOverlay.style.display = 'block';
-        this.mobileSidebar.style.display = 'block';
+        // オーバーレイとサイドバーを表示
+        this.mobileOverlay.classList.remove('hidden');
+        this.mobileSidebar.classList.remove('hidden');
         
-        // 初期状態を確実に設定
+        // 初期状態を確実に設定（透明＆画面外）
         this.mobileOverlay.classList.remove('opacity-100');
         this.mobileOverlay.classList.add('opacity-0');
         this.mobileSidebar.classList.add('-translate-x-full');
         this.mobileSidebar.classList.remove('translate-x-0');
         
-        // 2フレーム遅延してアニメーション開始（確実にブラウザに初期状態を認識させる）
+        // 次フレームでアニメーション開始（ブラウザに初期状態を認識させる）
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                this.mobileOverlay.classList.remove('opacity-0');
-                this.mobileOverlay.classList.add('opacity-100');
-                
-                this.mobileSidebar.classList.remove('-translate-x-full');
-                this.mobileSidebar.classList.add('translate-x-0');
-            });
+            this.mobileOverlay.classList.remove('opacity-0');
+            this.mobileOverlay.classList.add('opacity-100');
+            
+            this.mobileSidebar.classList.remove('-translate-x-full');
+            this.mobileSidebar.classList.add('translate-x-0');
         });
         
         // スクロールを無効化
@@ -265,18 +263,18 @@ class SidebarController {
         
         this.isMobileOpen = false;
         
-        // アニメーション開始
+        // アニメーション開始（透明化＆画面外へ移動）
         this.mobileOverlay.classList.remove('opacity-100');
         this.mobileOverlay.classList.add('opacity-0');
         
         this.mobileSidebar.classList.add('-translate-x-full');
         this.mobileSidebar.classList.remove('translate-x-0');
         
-        // アニメーション終了後に非表示
+        // アニメーション終了後にhiddenクラスを追加（300msはtransition-durationと同期）
         setTimeout(() => {
-            this.mobileOverlay.style.display = 'none';
-            this.mobileSidebar.style.display = 'none';
-        }, 200);
+            this.mobileOverlay.classList.add('hidden');
+            this.mobileSidebar.classList.add('hidden');
+        }, 300);
         
         // スクロールを有効化
         document.body.style.overflow = '';

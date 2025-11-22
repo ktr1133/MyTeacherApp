@@ -9,10 +9,12 @@
 aside[data-sidebar="desktop"] {
     width: 260px; /* 展開時の幅 */
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-x: hidden; /* 横スクロールを防止 */
 }
 
 aside[data-sidebar="desktop"].collapsed {
     width: 72px; /* 最小化時の幅 */
+    overflow-x: hidden; /* 横スクロールを完全に非表示 */
 }
 
 /* 展開時のみ表示する要素 */
@@ -133,6 +135,60 @@ aside[data-sidebar="desktop"].collapsed .sidebar-nav-link.active svg {
 }
 
 /* ========================================
+   トークン残高表示
+   ======================================== */
+
+/* 展開時のトークン残高表示 */
+[data-token-balance-expanded] {
+    background: linear-gradient(to bottom right, #fffbeb, #fef3c7);
+    border: 1px solid #fcd34d;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.dark [data-token-balance-expanded] {
+    background: linear-gradient(to bottom right, rgba(120, 53, 15, 0.2), rgba(161, 98, 7, 0.2));
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* 最小化時のトークン残高表示 */
+[data-token-balance-collapsed] {
+    background: linear-gradient(to bottom right, #fffbeb, #fef3c7);
+    border: 1px solid #fcd34d;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.dark [data-token-balance-collapsed] {
+    background: linear-gradient(to bottom right, rgba(120, 53, 15, 0.2), rgba(161, 98, 7, 0.2));
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* サイドバー最小化時: トークン残高の背景・境界線を透明化 */
+aside[data-sidebar="desktop"].collapsed [data-token-balance-expanded],
+aside[data-sidebar="desktop"].collapsed [data-token-balance-collapsed] {
+    background: transparent !important;
+    border: none !important;
+    padding: 0.5rem !important;
+}
+
+/* モバイル版トークン残高表示 */
+[data-token-balance-mobile] {
+    background: linear-gradient(to bottom right, #fffbeb, #fef3c7);
+    border: 1px solid #fcd34d;
+    border-radius: 0.75rem;
+    padding: 1rem;
+}
+
+.dark [data-token-balance-mobile] {
+    background: linear-gradient(to bottom right, rgba(120, 53, 15, 0.2), rgba(161, 98, 7, 0.2));
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* ========================================
    バッジスタイル
    ======================================== */
 
@@ -246,23 +302,22 @@ body:has([data-general-menu][style*="display: none"]) button[data-action="toggle
 
 /* モバイルサイドバー本体 */
 aside[data-sidebar="mobile"] {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-aside[data-sidebar="mobile"]:not([style*="display: none"]) {
-    transform: translateX(0);
+/* hiddenクラスがない場合のみpointer-eventsを有効化 */
+aside[data-sidebar="mobile"]:not(.hidden) {
+    pointer-events: auto;
 }
 
 /* モバイルオーバーレイ */
 [data-sidebar-overlay="mobile"] {
-    opacity: 0;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
-    transition: opacity 0.3s ease;
 }
 
-[data-sidebar-overlay="mobile"]:not([style*="display: none"]) {
-    opacity: 1;
+/* オーバーレイが表示されている（hiddenクラスがない）かつopacity-100の場合 */
+[data-sidebar-overlay="mobile"]:not(.hidden).opacity-100 {
     pointer-events: auto;
 }
 
