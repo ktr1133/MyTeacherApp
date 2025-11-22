@@ -94,6 +94,7 @@ use App\Http\Actions\Tags\AttachTaskToTagAction;
 use App\Http\Actions\Tags\DetachTaskFromTagAction;
 use App\Http\Actions\Task\AdoptProposalAction;
 use App\Http\Actions\Task\ApproveTaskAction;
+use App\Http\Actions\Task\BulkCompleteTasksAction;
 use App\Http\Actions\Task\CreateTaskAction;
 use App\Http\Actions\Task\DeleteTaskImageAction;
 use App\Http\Actions\Task\DestroyTaskAction;
@@ -204,6 +205,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tasks/search', SearchTasksAction::class)->name('tasks.search');
     Route::get('/tasks/search/results', TaskSearchResultsAction::class)->name('tasks.search.results');
     Route::patch('/tasks/{task}/toggle', ToggleTaskCompletionAction::class)->name('tasks.toggle');
+    Route::post('/tasks/bulk-complete', BulkCompleteTasksAction::class)->name('tasks.bulk-complete');
 
     // タスク承認関連
     Route::post('/tasks/{task}/request-approval', RequestApprovalAction::class)->name('tasks.request-approval');

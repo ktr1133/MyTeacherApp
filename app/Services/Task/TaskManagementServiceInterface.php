@@ -115,4 +115,14 @@ interface TaskManagementServiceInterface
      * @return Collection タスクのコレクション
      */
     public function searchTasks(User $user, string $searchType, array $searchTerms, string $operator): Collection;
+
+    /**
+     * ユーザーのタスクキャッシュをクリア
+     * 
+     * タスクの完了状態変更など、外部から直接タスクを更新した際に使用。
+     *
+     * @param int $userId ユーザーID
+     * @return void
+     */
+    public function clearUserTaskCache(int $userId): void;
 }

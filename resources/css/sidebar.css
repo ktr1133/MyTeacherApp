@@ -205,7 +205,7 @@ aside[data-sidebar="desktop"].collapsed [data-token-balance-collapsed] {
 
 .badge-warning {
     background: linear-gradient(135deg, #f59e0b, #f97316);
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     min-width: 1.5rem;

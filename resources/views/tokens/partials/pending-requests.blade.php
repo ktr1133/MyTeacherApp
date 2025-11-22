@@ -59,7 +59,7 @@
                 <button 
                     type="submit" 
                     class="btn-cancel {{ $isChildTheme ? 'child-theme' : '' }}"
-                    onclick="return confirm('@if($isChildTheme)ほんとうに やめる？@elseリクエストを取り下げますか？@endif')">
+                    onclick="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('@if($isChildTheme)ほんとうに やめる？@elseリクエストを取り下げますか？@endif', () => { event.target.closest('form').submit(); }); } else { if (confirm('@if($isChildTheme)ほんとうに やめる？@elseリクエストを取り下げますか？@endif')) { event.target.closest('form').submit(); } }">
                     @if($isChildTheme)
                         <span class="emoji">❌</span>
                         <span>やめる</span>

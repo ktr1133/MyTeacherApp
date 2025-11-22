@@ -191,7 +191,7 @@
 
                                                     {{-- 削除ボタン --}}
                                                     <form method="POST" action="{{ route('tags.destroy', $tag->id) }}"
-                                                          onsubmit="return confirm('タグ「{{ $tag->name }}」を削除しますか？この操作は取り消せません。');">
+                                                          onsubmit="event.preventDefault(); if(window.showConfirmDialog) { window.showConfirmDialog('タグ「{{ $tag->name }}」を削除しますか？この操作は取り消せません。', () => { event.target.submit(); }); } else { if(confirm('タグ「{{ $tag->name }}」を削除しますか？この操作は取り消せません。')) { event.target.submit(); } }">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" 

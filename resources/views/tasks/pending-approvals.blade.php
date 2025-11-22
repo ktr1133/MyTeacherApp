@@ -163,7 +163,7 @@
                                             <form method="POST" action="{{ route('tasks.approve', $approval['model']) }}" class="flex-1">
                                                 @csrf
                                                 <button type="submit" 
-                                                        onclick="return confirm('このタスクを承認しますか？')"
+                                                        onclick="event.preventDefault(); if(window.showConfirmDialog) { window.showConfirmDialog('このタスクを承認しますか？', () => { event.target.closest('form').submit(); }); } else { if(confirm('このタスクを承認しますか？')) { event.target.closest('form').submit(); } }"
                                                         class="btn-approve w-full">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -242,7 +242,7 @@
                                             <form method="POST" action="{{ route('tokens.requests.approve', $approval['model']) }}" class="flex-1">
                                                 @csrf
                                                 <button type="submit" 
-                                                        onclick="return confirm('このトークン購入を承認しますか？')"
+                                                        onclick="event.preventDefault(); if(window.showConfirmDialog) { window.showConfirmDialog('このトークン購入を承認しますか？', () => { event.target.closest('form').submit(); }); } else { if(confirm('このトークン購入を承認しますか？')) { event.target.closest('form').submit(); } }"
                                                         class="btn-approve w-full">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

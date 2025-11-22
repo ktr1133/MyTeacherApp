@@ -1,6 +1,5 @@
 <header class="sticky top-0 z-20 border-b border-gray-200/50 dark:border-gray-700/50 dashboard-header-blur shadow-sm {{ $isChildTheme ? 'child-theme' : '' }}"
-        x-data="{ searchFocused: false, notificationCount: {{ $notificationCount ?? 0 }} }"
-        @search-focused.window="searchFocused = $event.detail.focused">
+        data-notification-count="{{ $notificationCount ?? 0 }}">
     <div class="px-4 lg:px-6 h-14 lg:h-16 flex items-center justify-between gap-3">
         <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <button
@@ -14,14 +13,7 @@
             </button>
 
             {{-- デスクトップ用タイトル（検索フォーカス時に非表示） --}}
-            <div class="hidden lg:flex items-center gap-3"
-                x-show="!searchFocused"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 -translate-x-4"
-                x-transition:enter-end="opacity-100 translate-x-0"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100 translate-x-0"
-                x-transition:leave-end="opacity-0 -translate-x-4">
+            <div class="hidden lg:flex items-center gap-3" data-header-desktop-title>
                 <div class="dashboard-header-icon w-10 h-10 rounded-xl flex items-center justify-center shadow-lg">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -42,14 +34,7 @@
             </div>
 
             {{-- モバイル用タイトル（lg未満で表示） --}}
-            <div class="flex lg:hidden items-center"
-                x-show="!searchFocused"
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0">
+            <div class="flex lg:hidden items-center" data-header-mobile-title>
                 <div class="dashboard-header-icon w-10 h-10 rounded-xl flex items-center justify-center shadow-lg">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -69,22 +54,21 @@
                 </div>
             </div>
             
-            {{-- 検索欄（lg以上で表示、フォーカス時に幅拡大） --}}
-            <div class="hidden lg:flex flex-1 min-w-0"
-                :class="searchFocused ? '' : 'max-w-md'">
-                <x-task-filter />
-            </div>
+            {{-- 検索ボタン（lg以上で表示） --}}
+            <button 
+                type="button"
+                data-open-search-modal
+                class="hidden lg:flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                aria-label="検索">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <span class="text-sm text-gray-500 dark:text-gray-400">タスクを検索...</span>
+            </button>
         </div>
 
-        {{-- ボタン群（検索フォーカス時に非表示） --}}
-        <div class="flex items-center gap-2"
-            x-show="!searchFocused"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95 translate-x-4"
-            x-transition:enter-end="opacity-100 scale-100 translate-x-0"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100 scale-100 translate-x-0"
-            x-transition:leave-end="opacity-0 scale-95 translate-x-4">
+        {{-- ボタン群 --}}
+        <div class="flex items-center gap-2">
 
             {{-- タスク登録ボタン --}}
             <button 
@@ -132,23 +116,15 @@
                 </svg>
                 
                 {{-- 未読バッジ（0件なら非表示） --}}
-                <span x-show="notificationCount > 0"
-                    x-transition
-                    class="notification-badge absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg ring-2 ring-white dark:ring-gray-900"
-                    x-text="notificationCount > 99 ? '99+' : notificationCount">
+                <span class="notification-badge absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg ring-2 ring-white dark:ring-gray-900"
+                    style="display: {{ ($notificationCount ?? 0) > 0 ? '' : 'none' }}">
+                    {{ ($notificationCount ?? 0) > 99 ? '99+' : ($notificationCount ?? 0) }}
                 </span>
             </a>
         </div>
 
         {{-- ユーザードロップダウン（検索フォーカス時に非表示） --}}
-        <div class="hidden sm:flex sm:items-center sm:ms-6"
-            x-show="!searchFocused"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-x-4"
-            x-transition:enter-end="opacity-100 translate-x-0"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100 translate-x-0"
-            x-transition:leave-end="opacity-0 translate-x-4">
+        <div class="hidden sm:flex sm:items-center sm:ms-6" data-header-user-dropdown>
             <x-dropdown align="right" width="48">
                 <x-slot name="trigger">
                     <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-white/80 dark:hover:bg-gray-800/80 focus:outline-none transition backdrop-blur-sm">
@@ -177,17 +153,16 @@
         </div>
     </div>
 
-    {{-- モバイルフィルタ --}}
-    <div class="lg:hidden px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+    {{-- モバイルフィルタ（blur効果を削除） --}}
+    <div class="lg:hidden px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
         <x-task-filter />
     </div>
 
     {{-- タブナビゲーション --}}
     <div class="flex gap-2 border-t border-gray-200 dark:border-gray-700 px-4 lg:px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
         <button 
-            @click="activeTab = 'todo'"
-            :class="activeTab === 'todo' ? 'border-[#59B9C6] text-[#59B9C6] dashboard-tab active' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 dashboard-tab'"
-            class="px-4 py-3 border-b-2 font-semibold text-sm transition">
+            data-tab="todo"
+            class="px-4 py-3 border-b-2 font-semibold text-sm transition border-[#59B9C6] text-[#59B9C6] dashboard-tab active">
             @if (!$isChildTheme)
                 未完了
             @else
@@ -195,9 +170,8 @@
             @endif
         </button>
         <button 
-            @click="activeTab = 'completed'"
-            :class="activeTab === 'completed' ? 'border-[#59B9C6] text-[#59B9C6] dashboard-tab active' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 dashboard-tab'"
-            class="px-4 py-3 border-b-2 font-semibold text-sm transition">
+            data-tab="completed"
+            class="px-4 py-3 border-b-2 font-semibold text-sm transition border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 dashboard-tab">
             @if (!$isChildTheme)
                 完了済
             @else
@@ -206,3 +180,8 @@
         </button>
     </div>
 </header>
+
+{{-- 検索モーダル --}}
+<x-search-modal :isChildTheme="$isChildTheme" />
+
+@vite(['resources/js/dashboard/header.js'])

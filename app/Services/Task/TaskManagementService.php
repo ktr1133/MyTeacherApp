@@ -54,7 +54,7 @@ class TaskManagementService implements TaskManagementServiceInterface
     }
 
     /**
-     * ユーザーのキャッシュをクリア
+     * ユーザーのキャッシュをクリア（内部用）
      *
      * @param int $userId ユーザーID
      * @return void
@@ -69,6 +69,19 @@ class TaskManagementService implements TaskManagementServiceInterface
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * ユーザーのタスクキャッシュをクリア（公開API）
+     * 
+     * タスクの完了状態変更など、外部から直接タスクを更新した際に使用。
+     *
+     * @param int $userId ユーザーID
+     * @return void
+     */
+    public function clearUserTaskCache(int $userId): void
+    {
+        $this->clearUserCache($userId);
     }
 
     /**
@@ -302,6 +315,9 @@ class TaskManagementService implements TaskManagementServiceInterface
                 $proposalId,
                 array_map(fn($t) => $t->id, $createdTasks)
             );
+
+            // ユーザーのキャッシュをクリア（一括作成後に最新データを反映）
+            $this->clearUserCache($user->id);
 
             return $createdTasks;
         });

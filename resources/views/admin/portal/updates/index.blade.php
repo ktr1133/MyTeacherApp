@@ -120,7 +120,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                     <a href="{{ route('admin.portal.updates.edit', $update) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">編集</a>
 
-                                    <form method="POST" action="{{ route('admin.portal.updates.destroy', $update) }}" class="inline" onsubmit="return confirm('本当に削除しますか?');">
+                                    <form method="POST" action="{{ route('admin.portal.updates.destroy', $update) }}" class="inline" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('本当に削除しますか?', () => { event.target.submit(); }); } else { if (confirm('本当に削除しますか?')) { event.target.submit(); } }">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">削除</button>

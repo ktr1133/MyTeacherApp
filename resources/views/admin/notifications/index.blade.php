@@ -233,7 +233,7 @@
                                                         <a href="{{ route('admin.notifications.edit', $notification->id) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition" title="編集">
                                                             <i class="fas fa-edit text-lg"></i>
                                                         </a>
-                                                        <form method="POST" action="{{ route('admin.notifications.destroy', $notification->id) }}" class="inline" onsubmit="return confirm('本当に削除しますか？配信済みの通知も非表示になります。');">
+                                                        <form method="POST" action="{{ route('admin.notifications.destroy', $notification->id) }}" class="inline" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('本当に削除しますか？配信済みの通知も非表示になります。', () => { event.target.submit(); }); } else { if (confirm('本当に削除しますか？配信済みの通知も非表示になります。')) { event.target.submit(); } }">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition" title="削除">

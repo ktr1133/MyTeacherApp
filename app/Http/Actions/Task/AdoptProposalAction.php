@@ -3,15 +3,20 @@
 namespace App\Http\Actions\Task;
 
 use App\Services\Task\TaskManagementServiceInterface;
+use App\Services\Task\TaskListServiceInterface;
+use App\Services\Tag\TagServiceInterface;
 use App\Services\Avatar\TeacherAvatarServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 final class AdoptProposalAction
 {
     public function __construct(
         private TaskManagementServiceInterface $taskService,
+        private TaskListServiceInterface $taskListService,
+        private TagServiceInterface $tagService,
         private readonly TeacherAvatarServiceInterface $avatarService,
     ) {}
 
@@ -57,17 +62,29 @@ final class AdoptProposalAction
         }, $validated['tasks']);
         logger()->info('AdoptProposalAction', ['tasks' => $tasks, 'validated' => $validated, 'request' => $request->all()]);
         try {
+            $user = $request->user();
+            
             // タスクを一括作成
             $created = $this->taskService->adoptProposal(
-                $request->user(),
+                $user,
                 $proposalId,
                 $tasks
             );
 
+            // タスクとタグを再取得してBlade形式でバケット化
+            $allTasks = $this->taskListService->getTasksForUser($user->id, []);
+            $allTags = $this->tagService->getByUserId($user->id);
+            
+            // Bladeテンプレートでバケットレイアウトをレンダリング
+            $html = view('dashboard.partials.task-bento', [
+                'tasks' => $allTasks,
+                'tags' => $allTags,
+            ])->render();
+
             // アバターコメントを取得
             $avatarEventType = config('const.avatar_events.task_breakdown');
             $avatarComment = $this->avatarService->getCommentForEvent(
-                $request->user(),
+                $user,
                 $avatarEventType
             );
 
@@ -75,6 +92,7 @@ final class AdoptProposalAction
                 'success' => true,
                 'message' => count($created) . '件のタスクを作成しました',
                 'tasks' => $created,
+                'html' => $html,
                 'avatar_comment' => $avatarComment,
             ]);
         } catch (\Throwable $e) {

@@ -93,7 +93,7 @@
                                         <a href="{{ route('admin.token-packages-edit', $package) }}" class="btn-purchase px-4 py-2 rounded-lg text-white font-bold shadow">
                                             編集
                                         </a>
-                                        <form action="{{ route('admin.token-packages-delete', $package) }}" method="POST" onsubmit="return confirm('削除しますか？');">
+                                        <form action="{{ route('admin.token-packages-delete', $package) }}" method="POST" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('削除しますか？', () => { event.target.submit(); }); } else { if (confirm('削除しますか？')) { event.target.submit(); } }">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-purchase px-4 py-2 rounded-lg text-white font-bold shadow bg-red-600 hover:bg-red-700">

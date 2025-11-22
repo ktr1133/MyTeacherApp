@@ -546,7 +546,7 @@
                                         </div>
                                     @endif
 
-                                    <form method="POST" action="{{ route('avatars.regenerate') }}" onsubmit="return confirm('画像を再生成しますか?トークンが消費されます。')">
+                                    <form method="POST" action="{{ route('avatars.regenerate') }}" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('画像を再生成しますか?トークンが消費されます。', () => { event.target.submit(); }); } else { if (confirm('画像を再生成しますか?トークンが消費されます。')) { event.target.submit(); } }">
                                         @csrf
                                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                             <button type="submit" class="{{ $isChildTheme ? 'avatar-btn-regenerate' : 'avatar-btn-secondary px-4 py-2 text-sm' }} w-full sm:w-auto shrink-0">

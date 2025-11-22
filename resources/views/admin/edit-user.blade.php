@@ -180,7 +180,7 @@
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                                     このユーザーを削除すると、関連するすべてのデータが削除されます。この操作は取り消せません。
                                 </p>
-                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('本当にこのユーザーを削除しますか？');">
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('本当にこのユーザーを削除しますか？', () => { event.target.submit(); }); } else { if (confirm('本当にこのユーザーを削除しますか？')) { event.target.submit(); } }">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="admin-btn admin-btn-danger">

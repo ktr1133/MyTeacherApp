@@ -127,7 +127,7 @@
                                         </button>
                                     </form>
 
-                                    <form method="POST" action="{{ route('admin.portal.faqs.destroy', $faq) }}" class="inline" onsubmit="return confirm('本当に削除しますか?');">
+                                    <form method="POST" action="{{ route('admin.portal.faqs.destroy', $faq) }}" class="inline" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('本当に削除しますか?', () => { event.target.submit(); }); } else { if (confirm('本当に削除しますか?')) { event.target.submit(); } }">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">削除</button>

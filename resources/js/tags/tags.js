@@ -369,7 +369,11 @@
             openModal();
         } catch (err) {
             console.error('Failed to fetch tasks:', err);
-            alert('タスクの取得に失敗しました。');
+            if (window.showAlertDialog) {
+                window.showAlertDialog('タスクの取得に失敗しました。', 'エラー');
+            } else {
+                alert('タスクの取得に失敗しました。');
+            }
         }
     });
 
@@ -396,7 +400,11 @@
             renderAvailableTasks(data.available || []);
         } catch (err) {
             console.error(err);
-            alert('タスクの解除に失敗しました。');
+            if (window.showAlertDialog) {
+                window.showAlertDialog('タスクの解除に失敗しました。', 'エラー');
+            } else {
+                alert('タスクの解除に失敗しました。');
+            }
         }
     });
 
@@ -418,7 +426,11 @@
             renderAvailableTasks(data.available || []);
         } catch (err) {
             console.error(err);
-            alert('タスクの追加に失敗しました。');
+            if (window.showAlertDialog) {
+                window.showAlertDialog('タスクの追加に失敗しました。', 'エラー');
+            } else {
+                alert('タスクの追加に失敗しました。');
+            }
         }
     });
 

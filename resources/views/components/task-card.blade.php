@@ -1,4 +1,4 @@
-@props(['task', 'tags', 'isCompleted' => false])
+@props(['task', 'tags', 'isCompleted' => false, 'isChildTheme' => false])
 
 @php
     use Carbon\Carbon;
@@ -7,7 +7,11 @@
     $dueStatus = 'none';
     $dueMessage = '';
     
-    if ($task->due_date && $task->span === config('const.task_spans.short')) {
+    // 完了済みタスクの場合は期限チェックをスキップ
+    if ($task->completed_at) {
+        $dueStatus = 'completed';
+        $dueMessage = $isChildTheme ? 'おわったよ！' : '完了済';
+    } elseif ($task->due_date && $task->span === config('const.task_spans.short')) {
         $dueDate = Carbon::parse($task->due_date);
         $today = Carbon::today();
         $daysUntilDue = $today->diffInDays($dueDate, false);
@@ -91,7 +95,14 @@
      @endif
     
     {{-- 期限アラートバナー --}}
-    @if($dueStatus === 'overdue')
+    @if($dueStatus === 'completed')
+        <div class="absolute top-0 right-0 bg-gradient-to-l from-green-500 to-green-600 text-white px-3 py-1 rounded-bl-lg text-xs font-bold shadow-lg flex items-center gap-1.5 z-10">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>{{ $dueMessage }}</span>
+        </div>
+    @elseif($dueStatus === 'overdue')
         <div class="absolute top-0 right-0 bg-gradient-to-l from-red-500 to-red-600 text-white px-3 py-1 rounded-bl-lg text-xs font-bold shadow-lg flex items-center gap-1.5 z-10">
             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
@@ -192,12 +203,16 @@
                 </div>
             @endif
             
-            {{-- 登録日と経過日数 --}}
+            {{-- 登録日と経過日数 / 完了済みラベル --}}
             <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <svg class="w-4 h-4 {{ $colors['icon'] }} shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
                 </svg>
-                <span class="truncate">登録: {{ $created->format('Y/m/d') }} ({{ $elapsedDays }}日経過)</span>
+                @if($task->completed_at)
+                    <span class="truncate font-semibold text-green-600 dark:text-green-400">{{ $isChildTheme ? 'おわったよ！' : '完了済' }}</span>
+                @else
+                    <span class="truncate">登録: {{ $created->format('Y/m/d') }} ({{ $elapsedDays }}日経過)</span>
+                @endif
             </div>
 
             {{-- タグ --}}

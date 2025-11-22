@@ -160,7 +160,8 @@
                                         <x-task-card 
                                             :task="$task" 
                                             :tags="[]" 
-                                            :isCompleted="$task->is_completed" 
+                                            :isCompleted="$task->is_completed"
+                                            :isChildTheme="$isChildTheme"
                                         />
                                     </div>
                                 </div>

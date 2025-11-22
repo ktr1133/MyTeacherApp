@@ -87,7 +87,7 @@
                 @endif
 
                 {{-- 画像選択・プレビュー（未完了の場合のみ） --}}
-                @if(!$task->isPendingApproval() && !$task->isApproved())
+                @if(!$task->isPendingApproval() && !$task->isApproved() && !$task->completed_at)
                     <div class="mb-6">
                         <h5 class="text-sm font-medium text-gray-700 mb-2">
                             画像を追加 
@@ -151,12 +151,12 @@
 
             {{-- 完了申請ボタン --}}
             <div class="px-6 py-3 border-t bg-white shrink-0">
-                @if(!$task->isPendingApproval() && !$task->isApproved())
+                @if(!$task->isPendingApproval() && !$task->isApproved() && !$task->completed_at)
                     <form method="POST" 
                           id="approval-form-{{ $task->id }}"
                           action="{{ route('tasks.request-approval', $task) }}"
                           enctype="multipart/form-data"
-                          onsubmit="return confirm('このタスクの完了を申請しますか？')">
+                          onsubmit="event.preventDefault(); if(window.showConfirmDialog) { window.showConfirmDialog('このタスクの完了を申請しますか？', () => { event.target.submit(); }); } else { if(confirm('このタスクの完了を申請しますか？')) { event.target.submit(); } }">
                         @csrf
                         
                         <button type="submit"
@@ -173,6 +173,18 @@
                             </p>
                         @endif
                     </form>
+                @elseif($task->completed_at)
+                    <div class="text-center py-3">
+                        <p class="text-sm text-gray-600">
+                            <svg class="w-5 h-5 inline text-green-600 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            このタスクは完了済みです
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            グループタスクは一度完了すると未完了に戻せません
+                        </p>
+                    </div>
                 @endif
             </div>
         </div>

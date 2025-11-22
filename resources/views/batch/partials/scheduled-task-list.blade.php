@@ -229,7 +229,7 @@
                                 <button type="submit"
                                         class="action-btn warning"
                                         title="一時停止"
-                                        onclick="return confirm('このスケジュールタスクを一時停止しますか？')">
+                                        onclick="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('このスケジュールタスクを一時停止しますか？', () => { event.target.closest('form').submit(); }); } else { if (confirm('このスケジュールタスクを一時停止しますか？')) { event.target.closest('form').submit(); } }">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                     </svg>
@@ -256,7 +256,7 @@
                             <button type="submit"
                                     class="action-btn danger"
                                     title="削除"
-                                    onclick="return confirm('このスケジュールタスクを削除してもよろしいですか？\n作成済みのタスクは削除されません。')">
+                                    onclick="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('このスケジュールタスクを削除してもよろしいですか？\n作成済みのタスクは削除されません。', () => { event.target.closest('form').submit(); }); } else { if (confirm('このスケジュールタスクを削除してもよろしいですか？\n作成済みのタスクは削除されません。')) { event.target.closest('form').submit(); } }">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>

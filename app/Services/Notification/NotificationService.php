@@ -10,6 +10,8 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 /**
@@ -57,17 +59,24 @@ class NotificationService implements NotificationServiceInterface
 
     /**
      * 通知を既読にする
+     * 
+     * 既読後、該当ユーザーのキャッシュをクリア。
      *
      * @param int $userNotificationId ユーザー通知ID
      * @return void
      */
     public function markAsRead(int $userNotificationId): void
     {
+        // ユーザーIDを取得してからキャッシュクリア
+        $userNotification = \App\Models\UserNotification::findOrFail($userNotificationId);
         $this->notificationRepository->markAsRead($userNotificationId);
+        $this->clearUserNotificationCache($userNotification->user_id);
     }
 
     /**
      * 全通知を既読にする
+     * 
+     * 既読後、該当ユーザーのキャッシュをクリア。
      *
      * @param int $userId ユーザーID
      * @return void
@@ -75,6 +84,7 @@ class NotificationService implements NotificationServiceInterface
     public function markAllAsRead(int $userId): void
     {
         $this->notificationRepository->markAllAsRead($userId);
+        $this->clearUserNotificationCache($userId);
     }
 
     /**
@@ -160,12 +170,16 @@ class NotificationService implements NotificationServiceInterface
             'updated_by'  => $senderId,
         ];
         
-        DB::transaction(function () use ($data) {
+        $template = DB::transaction(function () use ($data) {
             // 通知テンプレートを作成
             $template = $this->notificationRepository->createTemplate($data);
             // ユーザに通知を送信
             $this->notificationRepository->distributeNotification($template);
+            return $template;
         });
+
+        // 配信対象ユーザーのキャッシュをクリア
+        $this->clearNotificationCacheForTarget($template);
     }
 
     /**
@@ -197,27 +211,66 @@ class NotificationService implements NotificationServiceInterface
             'updated_by'  => $user->id,
         ];
         
-        DB::transaction(function () use ($data) {
+        $template = DB::transaction(function () use ($data) {
             // 通知テンプレートを作成
             $template = $this->notificationRepository->createTemplate($data);
             // ユーザに通知を送信
             $this->notificationRepository->distributeNotification($template);
+            return $template;
         });
+
+        // 配信対象ユーザーのキャッシュをクリア
+        $this->clearNotificationCacheForTarget($template);
     }
 
     /**
-     * 未読件数と新規通知を取得（API用）
+     * 未読件数と新規通知を取得(API用)
+     * 
+     * キャッシュ戦略:
+     * - 10秒ごとのポーリングに対応するため30秒TTLでキャッシュ
+     * - lastCheckedAtがある場合はキャッシュバイパス（新規通知確認のため）
+     * - フォールバック付き（Redis障害時もサービス継続）
      *
      * @param int $userId ユーザーID
-     * @param string|null $lastCheckedAt 最後のチェック日時（ISO8601形式）
+     * @param string|null $lastCheckedAt 最後のチェック日時(ISO8601形式)
      * @return array ['unread_count' => int, 'new_notifications' => array, 'timestamp' => string]
      */
     public function getUnreadCountWithNew(int $userId, ?string $lastCheckedAt = null): array
     {
+        try {
+            // lastCheckedAtがある場合はキャッシュをバイパス（新規通知確認のため）
+            if ($lastCheckedAt) {
+                return $this->fetchUnreadDataFromDatabase($userId, $lastCheckedAt);
+            }
+
+            // 未読件数のみの取得はキャッシュ（30秒TTL）
+            return Cache::tags(['notifications', "user:{$userId}"])->remember(
+                "notifications:user:{$userId}:unread",
+                now()->addSeconds(30),
+                fn() => $this->fetchUnreadDataFromDatabase($userId, null)
+            );
+        } catch (\Exception $e) {
+            Log::warning('Notification cache unavailable, falling back to database', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->fetchUnreadDataFromDatabase($userId, $lastCheckedAt);
+        }
+    }
+
+    /**
+     * DBから未読データを取得（キャッシュヘルパー）
+     *
+     * @param int $userId ユーザーID
+     * @param string|null $lastCheckedAt 最後のチェック日時
+     * @return array
+     */
+    private function fetchUnreadDataFromDatabase(int $userId, ?string $lastCheckedAt = null): array
+    {
         // 未読件数
         $unreadCount = $this->notificationRepository->getUnreadCount($userId);
 
-        // 最後のチェック以降の新規通知（最大5件）
+        // 最後のチェック以降の新規通知(最大5件)
         $newNotifications = collect();
         if ($lastCheckedAt) {
             $notifications = $this->notificationRepository->getNewNotificationsSince($userId, $lastCheckedAt, 5);
@@ -304,7 +357,10 @@ class NotificationService implements NotificationServiceInterface
             'publish_at' => now(),
         ];
         
-        return $this->notificationRepository->createAndDistributeToUser($templateData, $parent->id);
+        $template = $this->notificationRepository->createAndDistributeToUser($templateData, $parent->id);
+        $this->clearUserNotificationCache($parent->id);
+        
+        return $template;
     }
 
     /**
@@ -346,7 +402,10 @@ class NotificationService implements NotificationServiceInterface
             'publish_at' => now(),
         ];
         
-        return $this->notificationRepository->createAndDistributeToUser($templateData, $child->id);
+        $template = $this->notificationRepository->createAndDistributeToUser($templateData, $child->id);
+        $this->clearUserNotificationCache($child->id);
+        
+        return $template;
     }
 
     /**
@@ -394,7 +453,10 @@ class NotificationService implements NotificationServiceInterface
             'publish_at' => now(),
         ];
         
-        return $this->notificationRepository->createAndDistributeToUser($templateData, $child->id);
+        $template = $this->notificationRepository->createAndDistributeToUser($templateData, $child->id);
+        $this->clearUserNotificationCache($child->id);
+        
+        return $template;
     }
 
     /**
@@ -435,6 +497,83 @@ class NotificationService implements NotificationServiceInterface
             'publish_at' => now(),
         ];
         
-        return $this->notificationRepository->createAndDistributeToUser($templateData, $parent->id);
+        $template = $this->notificationRepository->createAndDistributeToUser($templateData, $parent->id);
+        $this->clearUserNotificationCache($parent->id);
+        
+        return $template;
+    }
+
+    /**
+     * ユーザーの通知キャッシュをクリア
+     *
+     * @param int $userId ユーザーID
+     * @return void
+     */
+    private function clearUserNotificationCache(int $userId): void
+    {
+        try {
+            Cache::tags(['notifications', "user:{$userId}"])->flush();
+            Log::info('Notification cache cleared', ['user_id' => $userId]);
+        } catch (\Exception $e) {
+            Log::error('Failed to clear notification cache', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * 配信対象ユーザーの通知キャッシュをクリア
+     * 
+     * NotificationTemplateの配信対象に基づいてキャッシュクリア。
+     *
+     * @param NotificationTemplate $template 通知テンプレート
+     * @return void
+     */
+    private function clearNotificationCacheForTarget(NotificationTemplate $template): void
+    {
+        try {
+            // target_idsはJSON文字列なので適切にデコード
+            $targetIdsJson = $template->target_ids ?? '[]';
+            $targetIdsArray = is_string($targetIdsJson) ? json_decode($targetIdsJson, true) : [];
+            $targetIdsArray = is_array($targetIdsArray) ? $targetIdsArray : [];
+
+            $targetUserIds = match($template->target_type) {
+                'all' => \App\Models\User::pluck('id')->toArray(),
+                'users' => $targetIdsArray,
+                'groups' => $this->getUserIdsFromGroups($targetIdsArray),
+                default => [],
+            };
+
+            foreach ($targetUserIds as $userId) {
+                $this->clearUserNotificationCache($userId);
+            }
+
+            Log::info('Notification cache cleared for targets', [
+                'template_id' => $template->id,
+                'target_type' => $template->target_type,
+                'user_count' => count($targetUserIds),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to clear notification cache for targets', [
+                'template_id' => $template->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * グループIDからユーザーIDを取得（キャッシュクリア用）
+     *
+     * @param array $groupUserIds グループに所属するユーザーIDの配列
+     * @return array ユーザーIDの配列
+     */
+    private function getUserIdsFromGroups(array $groupUserIds): array
+    {
+        return DB::table('users')
+            ->whereIn('id', $groupUserIds)
+            ->pluck('id')
+            ->unique()
+            ->toArray();
     }
 }
