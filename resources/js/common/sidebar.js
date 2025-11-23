@@ -43,10 +43,10 @@ class SidebarController {
         // デスクトップサイドバーの初期状態を適用
         if (this.desktopSidebar) {
             this.applyDesktopState();
-            this.applyGeneralMenuState();
         }
         
-        // ポータルメニューの初期状態を適用
+        // 一般メニューとポータルメニューの初期状態を適用
+        this.applyGeneralMenuState();
         this.applyPortalState();
         
         // イベントリスナーを設定
@@ -127,25 +127,48 @@ class SidebarController {
      * 一般メニューの表示状態を適用
      */
     applyGeneralMenuState() {
-        if (!this.desktopSidebar) return;
-        
-        const generalMenuContainer = this.desktopSidebar.querySelector('[data-general-menu]');
-        if (generalMenuContainer) {
-            generalMenuContainer.style.display = this.showGeneralMenu ? '' : 'none';
+        // デスクトップ版
+        if (this.desktopSidebar) {
+            const generalMenuContainer = this.desktopSidebar.querySelector('[data-general-menu]');
+            if (generalMenuContainer) {
+                generalMenuContainer.style.display = this.showGeneralMenu ? '' : 'none';
+            }
+            
+            // トグルボタンのアイコン切り替え
+            const showIcon = this.desktopSidebar.querySelector('[data-icon="general-show"]');
+            const hideIcon = this.desktopSidebar.querySelector('[data-icon="general-hide"]');
+            if (showIcon) showIcon.style.display = this.showGeneralMenu ? '' : 'none';
+            if (hideIcon) hideIcon.style.display = this.showGeneralMenu ? 'none' : '';
+            
+            // aria属性の更新
+            const toggleBtn = this.desktopSidebar.querySelector('[data-action="toggle-general-menu"]');
+            if (toggleBtn) {
+                toggleBtn.setAttribute('aria-label', 
+                    this.showGeneralMenu ? '一般メニューを非表示' : '一般メニューを表示'
+                );
+            }
         }
         
-        // トグルボタンのアイコン切り替え
-        const showIcon = this.desktopSidebar.querySelector('[data-icon="general-show"]');
-        const hideIcon = this.desktopSidebar.querySelector('[data-icon="general-hide"]');
-        if (showIcon) showIcon.style.display = this.showGeneralMenu ? '' : 'none';
-        if (hideIcon) hideIcon.style.display = this.showGeneralMenu ? 'none' : '';
-        
-        // aria属性の更新
-        const toggleBtn = this.desktopSidebar.querySelector('[data-action="toggle-general-menu"]');
-        if (toggleBtn) {
-            toggleBtn.setAttribute('aria-label', 
-                this.showGeneralMenu ? '一般メニューを非表示' : '一般メニューを表示'
-            );
+        // モバイル版
+        if (this.mobileSidebar) {
+            const generalMenuContainerMobile = this.mobileSidebar.querySelector('[data-general-menu-mobile]');
+            if (generalMenuContainerMobile) {
+                generalMenuContainerMobile.style.display = this.showGeneralMenu ? '' : 'none';
+            }
+            
+            // トグルボタンのアイコン切り替え
+            const showIconMobile = this.mobileSidebar.querySelector('[data-icon="general-show-mobile"]');
+            const hideIconMobile = this.mobileSidebar.querySelector('[data-icon="general-hide-mobile"]');
+            if (showIconMobile) showIconMobile.style.display = this.showGeneralMenu ? '' : 'none';
+            if (hideIconMobile) hideIconMobile.style.display = this.showGeneralMenu ? 'none' : '';
+            
+            // aria属性の更新
+            const toggleBtnMobile = this.mobileSidebar.querySelector('[data-action="toggle-general-menu-mobile"]');
+            if (toggleBtnMobile) {
+                toggleBtnMobile.setAttribute('aria-label', 
+                    this.showGeneralMenu ? '一般メニューを非表示' : '一般メニューを表示'
+                );
+            }
         }
     }
     
@@ -244,6 +267,10 @@ class SidebarController {
             
             this.mobileSidebar.classList.remove('-translate-x-full');
             this.mobileSidebar.classList.add('translate-x-0');
+            
+            // モバイルサイドバーが表示されたタイミングで状態を再適用
+            this.applyGeneralMenuState();
+            this.applyPortalState();
         });
         
         // スクロールを無効化

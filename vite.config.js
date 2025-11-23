@@ -54,6 +54,7 @@ export default defineConfig({
                 'resources/js/tasks/search-tasks.js',
                 'resources/js/tokens/history.js',
                 'resources/js/tokens/purchase.js',
+                'resources/js/welcome-chart.js',
             ],
             refresh: true,
         }),
