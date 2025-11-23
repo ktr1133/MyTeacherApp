@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('faqs', function (Blueprint $table) {
             $table->id();
             $table->string('category', 50);
-            $table->string('app_name', 50);
+            $table->string('app_name', 20);
             $table->text('question');
             $table->text('answer');
             $table->integer('display_order')->default(0);
@@ -27,9 +27,6 @@ return new class extends Migration
             $table->index('is_published');
             $table->index('display_order');
         });
-        
-        DB::statement("ALTER TABLE faqs ADD CONSTRAINT check_category CHECK (category IN ('getting_started', 'tasks', 'group_tasks', 'ai_features', 'avatars', 'tokens', 'account', 'troubleshooting', 'other'))");
-        DB::statement("ALTER TABLE faqs ADD CONSTRAINT check_app_name CHECK (app_name IN ('myteacher', 'app2', 'app3'))");
     }
 
     /**

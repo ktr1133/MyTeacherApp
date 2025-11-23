@@ -1,11 +1,68 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('FAQ編集') }}
-        </h2>
-    </x-slot>
+    @push('styles')
+        @vite(['resources/css/admin/common.css'])
+    @endpush
 
-    <div class="py-6 px-4 sm:px-6 lg:px-8">
+    @push('scripts')
+        @vite(['resources/js/admin/common.js'])
+    @endpush
+
+    <div x-data="adminPage()" 
+         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
+         class="flex min-h-screen admin-gradient-bg relative overflow-hidden">
+        
+        {{-- 背景装飾 --}}
+        <div class="absolute inset-0 pointer-events-none z-0">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl admin-floating-decoration"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl admin-floating-decoration" style="animation-delay: -10s;"></div>
+        </div>
+
+        {{-- サイドバー --}}
+        <x-layouts.sidebar />
+
+        {{-- メインコンテンツ --}}
+        <div class="flex-1 flex flex-col overflow-hidden relative z-10">
+            
+            {{-- ヘッダー --}}
+            <header class="admin-header shrink-0 shadow-sm">
+                <div class="px-4 lg:px-6 h-14 lg:h-16 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        <button
+                            type="button"
+                            class="lg:hidden p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 shrink-0 transition"
+                            data-sidebar-toggle="mobile"
+                            aria-label="メニューを開く">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-base lg:text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                    FAQ編集
+                                </h1>
+                                <p class="hidden sm:block text-xs text-gray-600 dark:text-gray-400">FAQの編集</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="hidden sm:inline-block px-3 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs font-bold rounded-full">
+                            管理者
+                        </span>
+                    </div>
+                </div>
+            </header>
+
+            {{-- コンテンツエリア --}}
+            <main class="flex-1 overflow-y-auto">
+                <div class="p-4 lg:p-6">
         @if ($errors->any())
             <div class="mb-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-200 rounded">
                 <ul>
@@ -95,6 +152,10 @@
                     </a>
                 </div>
             </form>
+        </div>
+
+                </div>
+            </main>
         </div>
     </div>
 </x-app-layout>

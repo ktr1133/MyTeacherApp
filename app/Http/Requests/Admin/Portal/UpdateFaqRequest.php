@@ -28,9 +28,12 @@ final class UpdateFaqRequest extends FormRequest
      */
     public function rules(): array
     {
+        $appNames = implode(',', array_values(config('const.app_names')));
+        $categories = implode(',', array_keys(config('const.faq_categories')));
+        
         return [
-            'app_name' => ['required', 'string', 'in:MyTeacher,KeepItSimple'],
-            'category' => ['required', 'string', 'max:50'],
+            'app_name' => ['required', 'string', 'max:20', 'in:' . $appNames],
+            'category' => ['required', 'string', 'max:50', 'in:' . $categories],
             'question' => ['required', 'string', 'max:255'],
             'answer' => ['required', 'string'],
             'display_order' => ['required', 'integer', 'min:0'],

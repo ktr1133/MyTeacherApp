@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>@yield('title', 'ポータルサイト') - MyTeacher</title>
+        <title>@yield('title', 'ポータルサイト') - Famico</title>
 
         <!-- Favicons -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
@@ -17,14 +17,14 @@
         <meta name="theme-color" content="#59B9C6">
 
         <!-- SEO Meta Tags -->
-        <meta name="description" content="@yield('meta_description', 'MyTeacherポータル - AIタスク管理アプリケーションの使い方ガイド、メンテナンス情報、お問い合わせ')">
+        <meta name="description" content="@yield('meta_description', 'Famicoポータル - AIタスク管理アプリケーションの使い方ガイド、メンテナンス情報、お問い合わせ')">
         <meta name="keywords" content="@yield('meta_keywords', 'タスク管理,AI,教育,学習サポート,ガイド,FAQ')">
         
         <!-- OGP Meta Tags -->
-        <meta property="og:title" content="@yield('og_title', 'MyTeacher ポータルサイト')">
-        <meta property="og:description" content="@yield('og_description', 'MyTeacherおよび関連アプリの総合情報サイト')">
+        <meta property="og:title" content="@yield('og_title', 'Famico ポータルサイト')">
+        <meta property="og:description" content="@yield('og_description', 'Famicoおよび関連アプリの総合情報サイト')">
         <meta property="og:type" content="website">
-        <meta property="og:image" content="{{ asset('apple-touch-icon.png') }}">
+        <meta property="og:image" content="{{ asset('images/famico-logo-20251123041515.png') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -51,12 +51,12 @@
                     <!-- Logo -->
                     <a href="{{ route('portal.home') }}" class="flex items-center gap-2 group">
                         <div class="relative">
-                            <svg class="w-8 h-8 text-[#59B9C6] transition-transform group-hover:rotate-12" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
-                            </svg>
+                            <img src="{{ asset('images/famico-logo-20251123041515.png') }}" 
+                                 alt="Famico Logo" 
+                                 class="w-10 h-10 object-contain transition-transform group-hover:scale-110 duration-200">
                             <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-600 rounded-full animate-ping"></div>
                         </div>
-                        <span class="text-xl font-bold gradient-text">MyTeacher Portal</span>
+                        <span class="text-xl font-bold gradient-text">Famico Portal</span>
                     </a>
                     
                     <!-- Desktop Navigation -->
@@ -93,7 +93,7 @@
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                 </svg>
-                                ダッシュボード
+                                タスクリスト
                             </a>
                         @else
                             <a href="{{ route('login') }}" class="btn-primary inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] text-white rounded-lg hover:shadow-lg transition font-semibold text-sm">
@@ -180,10 +180,10 @@
                     <!-- About -->
                     <div>
                         <div class="flex items-center gap-2 mb-4">
-                            <svg class="w-6 h-6 text-[#59B9C6]" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
-                            </svg>
-                            <span class="text-lg font-bold gradient-text">MyTeacher</span>
+                            <img src="{{ asset('images/famico-logo-20251123041515.png') }}" 
+                                 alt="Famico Logo" 
+                                 class="w-8 h-8 object-contain">
+                            <span class="text-lg font-bold gradient-text">Famico</span>
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-400">GPT-4o-mini & Stable Diffusion搭載のAIタスク管理プラットフォーム</p>
                     </div>
@@ -229,7 +229,7 @@
                 </div>
 
                 <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-                    <p>&copy; {{ date('Y') }} MyTeacher. All rights reserved.</p>
+                    <p>&copy; {{ date('Y') }} Famico. All rights reserved.</p>
                     <p class="mt-1">Powered by OpenAI GPT-4o-mini & Stable Diffusion</p>
                 </div>
             </div>

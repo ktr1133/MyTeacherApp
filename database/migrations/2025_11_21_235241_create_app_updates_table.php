@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('app_updates', function (Blueprint $table) {
             $table->id();
-            $table->string('app_name', 50);
+            $table->string('app_name', 20);
             $table->string('version', 50);
             $table->string('title');
             $table->text('description');
@@ -27,8 +27,6 @@ return new class extends Migration
             $table->index('app_name');
             $table->index('released_at');
         });
-        
-        DB::statement("ALTER TABLE app_updates ADD CONSTRAINT check_app_name CHECK (app_name IN ('myteacher', 'app2', 'app3'))");
     }
 
     /**

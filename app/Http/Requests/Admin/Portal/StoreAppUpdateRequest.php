@@ -28,8 +28,10 @@ final class StoreAppUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $appNames = implode(',', array_values(config('const.app_names')));
+        
         return [
-            'app_name' => ['required', 'string', 'in:MyTeacher,KeepItSimple'],
+            'app_name' => ['required', 'string', 'max:20', 'in:' . $appNames],
             'version' => ['required', 'string', 'max:20'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
