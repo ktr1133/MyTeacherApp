@@ -27,6 +27,7 @@
 {{-- デスクトップ: 左固定サイドバー --}}
 <aside 
     data-sidebar="desktop"
+    data-is-admin="{{ $u->isAdmin() ? 'true' : 'false' }}"
     class="hidden lg:flex lg:flex-col shrink-0 gap-3 px-3 py-2 bg-white/80 dark:bg-gray-900/80 border-r border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm z-10 transition-all duration-300 overflow-hidden">
     
     <nav class="flex flex-col h-full">
@@ -466,6 +467,7 @@
     {{-- サイドバー本体 --}}
     <aside
         data-sidebar="mobile"
+        data-is-admin="{{ $u->isAdmin() ? 'true' : 'false' }}"
         class="hidden fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto -translate-x-full transition-transform duration-300">
         
         <div class="flex items-center justify-between px-6 py-6 border-b border-gray-200 dark:border-gray-700">
@@ -785,6 +787,7 @@
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button 
+                    id="sidebar-logout-btn"
                     type="submit"
                     class="sidebar-nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-red-400/5 transition-all duration-200"
                 >
