@@ -187,7 +187,7 @@
                                                 @endphp
                                                 <span class="font-mono text-sm">{{ number_format($balance->balance) }}</span>
                                             </td>
-                                            <td class="text-sm text-gray-500">{{ $user->created_at->format('Y/m/d') }}</td>
+                                            <td class="text-sm text-gray-500"><x-user-local-time :datetime="$user->created_at" format="Y/m/d" /></td>
                                             <td>
                                                 <div class="flex items-center justify-center gap-2">
                                                     <a href="{{ route('admin.users.edit', $user) }}" class="admin-btn admin-btn-secondary text-xs px-3 py-1.5">

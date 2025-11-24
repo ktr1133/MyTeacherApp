@@ -15,6 +15,7 @@ export default defineConfig({
                 'resources/css/batch.css',
                 'resources/css/child-theme.css',
                 'resources/css/dashboard.css',
+                'resources/css/profile/timezone.css',
                 'resources/css/notifications.css',
                 'resources/css/sidebar.css',
                 'resources/css/tags.css',

@@ -61,4 +61,40 @@ class TeacherAvatarResponder
             ->route('avatars.edit')
             ->with('success', $message);
     }
+
+    /**
+     * 成功時のリダイレクト
+     *
+     * @param array $data ['message' => string, 'route' => string]
+     * @return RedirectResponse
+     */
+    public function successRedirect(array $data): RedirectResponse
+    {
+        $route = $data['route'] ?? 'dashboard';
+        $message = $data['message'] ?? 'アバターを作成しました';
+
+        return redirect()
+            ->route($route)
+            ->with('success', $message);
+    }
+
+    /**
+     * エラー時のリダイレクト
+     *
+     * @param array $data ['message' => string, 'withInput' => bool]
+     * @return RedirectResponse
+     */
+    public function errorRedirect(array $data): RedirectResponse
+    {
+        $message = $data['message'] ?? 'エラーが発生しました';
+        $withInput = $data['withInput'] ?? true;
+
+        $redirect = redirect()->back()->with('error', $message);
+
+        if ($withInput) {
+            $redirect = $redirect->withInput();
+        }
+
+        return $redirect;
+    }
 }

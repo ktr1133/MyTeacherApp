@@ -31,9 +31,9 @@
                     </p>
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
                         @if($isChildTheme)
-                            お願いした日：{{ $request->created_at->format('Y年m月d日 H:i') }}
+                            お願いした日：<x-user-local-time :datetime="$request->created_at" format="Y年m月d日 H:i" />
                         @else
-                            リクエスト日時：{{ $request->created_at->format('Y-m-d H:i') }}
+                            リクエスト日時：<x-user-local-time :datetime="$request->created_at" format="Y-m-d H:i" />
                         @endif
                     </p>
                 </div>

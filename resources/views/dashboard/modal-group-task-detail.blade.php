@@ -35,7 +35,11 @@
                         </div>
                         <div>
                             <span class="text-gray-600">期限:</span>
-                            <span class="font-medium">{{ $task->due_date ? $task->due_date->format('Y/m/d') : '未設定' }}</span>
+                            @if($task->due_date)
+                                <span class="font-medium"><x-user-local-time :datetime="$task->due_date" format="Y/m/d" /></span>
+                            @else
+                                <span class="font-medium">未設定</span>
+                            @endif
                         </div>
                         <div>
                             <span class="text-gray-600">承認:</span>

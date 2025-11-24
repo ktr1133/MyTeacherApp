@@ -6,6 +6,7 @@ use App\Responders\Profile\ProfileResponder;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 
 class UpdateProfileAction
 {
@@ -48,19 +49,13 @@ class UpdateProfileAction
             $user->avatar_path = $validated['avatar_path'];
         }
         // bio を users で管理している場合のみ有効化
-        if (array_key_exists('bio', $validated) && \Schema::hasColumn('users', 'bio')) {
+        if (array_key_exists('bio', $validated) && Schema::hasColumn('users', 'bio')) {
             $user->bio = $validated['bio'];
         }
 
         $user->save();
 
-        // Responder を通してリダイレクト（Responder に依存しない標準の戻りでもOK）
-        if (method_exists($this->responder, 'updated')) {
-            return $this->responder->updated($user)->with('success', 'プロフィールを更新しました。');
-        }
-
-        return redirect()
-            ->back()
-            ->with('success', 'プロフィールを更新しました。');
+        // Responder を通してリダイレクト
+        return $this->responder->respondUpdateSuccess();
     }
 }

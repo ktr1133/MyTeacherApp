@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('subscription_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('subscription_id');
-            $table->string('stripe_id')->unique();
-            $table->string('stripe_product');
-            $table->string('stripe_price');
-            $table->integer('quantity')->nullable();
+            $table->foreignId('subscription_id')->comment('サブスクリプションID');
+            $table->string('stripe_id')->unique()->comment('StripeサブスクリプションアイテムID');
+            $table->string('stripe_product')->comment('Stripe商品ID');
+            $table->string('stripe_price')->comment('Stripe価格ID');
+            $table->string('meter_id')->nullable()->comment('メーターID');
+            $table->string('meter_event_name')->nullable()->comment('メーターイベント名');
+            $table->integer('quantity')->nullable()->comment('数量');
             $table->timestamps();
 
             $table->index(['subscription_id', 'stripe_price']);

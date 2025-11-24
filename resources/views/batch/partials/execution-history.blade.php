@@ -85,7 +85,7 @@
                             <td>
                                 @if ($execution->task && $execution->task->completed_at)
                                     <span class="text-green-600 dark:text-green-400">
-                                        {{ $execution->task->completed_at->format('Y/m/d H:i') }}
+                                        <x-user-local-time :datetime="$execution->task->completed_at" format="Y/m/d H:i" />
                                     </span>
                                 @elseif ($execution->task)
                                     <span class="text-gray-400">未完了</span>

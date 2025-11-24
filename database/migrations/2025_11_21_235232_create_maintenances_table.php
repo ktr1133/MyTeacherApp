@@ -14,14 +14,14 @@ return new class extends Migration
     {
         Schema::create('maintenances', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->text('description');
-            $table->timestamp('scheduled_at');
-            $table->timestamp('started_at')->nullable();
-            $table->timestamp('completed_at')->nullable();
-            $table->string('status', 50)->default('scheduled');
-            $table->json('affected_apps');
-            $table->unsignedBigInteger('created_by');
+            $table->string('title')->comment('メンテナンスタイトル');
+            $table->text('description')->comment('メンテナンス内容');
+            $table->timestamp('scheduled_at')->comment('予定日時');
+            $table->timestamp('started_at')->nullable()->comment('開始日時');
+            $table->timestamp('completed_at')->nullable()->comment('完了日時');
+            $table->string('status', 50)->default('scheduled')->comment('ステータス: scheduled, in_progress, completed, cancelled');
+            $table->json('affected_apps')->comment('影響を受けるアプリのリスト');
+            $table->unsignedBigInteger('created_by')->comment('作成者のユーザーID');
             $table->timestamps();
             
             $table->index('scheduled_at');

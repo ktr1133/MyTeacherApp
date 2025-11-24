@@ -76,6 +76,8 @@ use App\Http\Actions\Notification\SearchResultsNotificationAction;
 use App\Http\Actions\Profile\EditProfileAction;
 use App\Http\Actions\Profile\UpdateProfileAction;
 use App\Http\Actions\Profile\DeleteProfileAction;
+use App\Http\Actions\Profile\ShowTimezoneSettingAction;
+use App\Http\Actions\Profile\UpdateTimezoneAction;
 use App\Http\Actions\Profile\Group\EditGroupAction;
 use App\Http\Actions\Profile\Group\UpdateGroupAction;
 use App\Http\Actions\Profile\Group\AddMemberAction;
@@ -239,6 +241,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/edit', EditProfileAction::class)->name('profile.edit');
         Route::patch('/update', UpdateProfileAction::class)->name('profile.update');
         Route::delete('/delete', DeleteProfileAction::class)->name('profile.destroy');
+        
+        // タイムゾーン設定
+        Route::get('/timezone', ShowTimezoneSettingAction::class)->name('profile.timezone');
+        Route::put('/timezone', UpdateTimezoneAction::class)->name('profile.timezone.update');
+        
         // --- グループ管理 ---
         Route::get('/group', EditGroupAction::class)->name('group.edit');
         Route::patch('/group', UpdateGroupAction::class)->name('group.update');

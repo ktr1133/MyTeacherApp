@@ -121,7 +121,7 @@
                                 @forelse ($contacts as $contact)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                         <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                                            {{ $contact->created_at->format('Y-m-d H:i') }}
+                                            <x-user-local-time :datetime="$contact->created_at" format="Y-m-d H:i" />
                                         </td>
                                         <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                                             {{ $contact->name }}

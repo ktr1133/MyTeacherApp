@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('teacher_avatars', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade')->unique();
+            
             // 生成用シード値
             $table->bigInteger('seed')->comment('アバター生成シード値');
             
@@ -32,6 +33,7 @@ return new class extends Migration
             // 描画モデル
             $table->string('draw_model_version', 100)->nullable()->comment('描画モデルバージョン');
             $table->boolean('is_transparent')->default(false)->comment('背景透過');
+            $table->boolean('is_chibi')->default(false)->comment('ちびキャラ');
             $table->integer('estimated_token_usage')->default(0)->comment('推定使用トークン量');
 
             // 生成ステータス

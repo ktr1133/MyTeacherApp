@@ -65,6 +65,7 @@
                 <input type="hidden" name="humor" x-model="formData.humor">
                 <input type="hidden" name="draw_model_version" x-model="formData.draw_model_version">
                 <input type="hidden" name="is_transparent" x-model="formData.is_transparent ? '1' : '0'">
+                <input type="hidden" name="is_chibi" x-model="formData.is_chibi ? '1' : '0'">
 
                 {{-- ステップ1: 性別 --}}
                 <div x-show="currentStep === 1" x-transition class="wizard-step-child">
@@ -341,6 +342,27 @@
                                 </button>
                             </label>
                         </div>
+
+                        {{-- ちびキャラトグル --}}
+                        <div class="mt-8 p-6 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 rounded-2xl border-3 border-amber-300">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">✨</span>
+                                    <div>
+                                        <p class="text-lg font-bold text-amber-900 dark:text-amber-100">ちびキャラにする</p>
+                                        <p class="text-sm text-amber-700 dark:text-amber-300">アバターが小さくかわいくなるよ</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    type="button"
+                                    @click="formData.is_chibi = !formData.is_chibi"
+                                    class="toggle-switch-child"
+                                    :class="{ 'toggle-active': formData.is_chibi }"
+                                >
+                                    <span class="toggle-slider-child"></span>
+                                </button>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -401,6 +423,10 @@
                             <div class="confirmation-item-child">
                                 <p class="confirmation-label-child">背景透過</p>
                                 <p class="confirmation-value-child" x-text="formData.is_transparent ? 'する' : 'しない'"></p>
+                            </div>
+                            <div class="confirmation-item-child">
+                                <p class="confirmation-label-child">ちびキャラ</p>
+                                <p class="confirmation-value-child" x-text="formData.is_chibi ? 'する' : 'しない'"></p>
                             </div>
                         </div>
 
@@ -482,6 +508,7 @@
                         humor: 'normal',
                         draw_model_version: 'anything-v4.0',
                         is_transparent: true,
+                        is_chibi: false,
                     },
                     
                     // 設定オプション

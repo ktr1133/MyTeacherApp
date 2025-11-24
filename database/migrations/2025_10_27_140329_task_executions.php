@@ -13,15 +13,14 @@ return new class extends Migration
     {
         Schema::create('task_executions', function (Blueprint $table) {
             $table->id();
-            // タスクが論理削除されても実績は残すため、cascadeOnDeleteは不要（論理削除はDBレベルで追跡しない）
-            $table->foreignId('task_id')->constrained('tasks'); 
-            $table->foreignId('proposal_id')->constrained('task_proposals')->cascadeOnDelete();
+            $table->foreignId('task_id')->constrained('tasks')->comment('タスクID');
+            $table->foreignId('proposal_id')->constrained('task_proposals')->cascadeOnDelete()->comment('タスク提案ID');
 
-            $table->integer('estimated_effort_minutes')->nullable();
-            $table->integer('actual_effort_minutes')->nullable();
+            $table->integer('estimated_effort_minutes')->nullable()->comment('予想所要時間（分）');
+            $table->integer('actual_effort_minutes')->nullable()->comment('実際の所要時間（分）');
             
-            $table->string('completion_status')->default('pending'); // completed, abandoned, partial
-            $table->boolean('is_high_quality')->nullable();
+            $table->string('completion_status')->default('pending')->comment('完了ステータス'); // pending, completed, abandoned, partial
+            $table->boolean('is_high_quality')->nullable()->comment('高品質フラグ');
 
             $table->timestamps();
         });

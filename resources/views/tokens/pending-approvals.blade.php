@@ -29,7 +29,7 @@
                                     {{ $request->user->username }}さん
                                 </p>
                                 <p class="text-xs text-gray-500 dark:text-gray-500">
-                                    {{ $request->created_at->format('Y-m-d H:i') }}
+                                    <x-user-local-time :datetime="$request->created_at" format="Y-m-d H:i" />
                                 </p>
                             </div>
                         </div>

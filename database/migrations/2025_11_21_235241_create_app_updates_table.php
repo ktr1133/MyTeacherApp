@@ -14,13 +14,13 @@ return new class extends Migration
     {
         Schema::create('app_updates', function (Blueprint $table) {
             $table->id();
-            $table->string('app_name', 20);
-            $table->string('version', 50);
-            $table->string('title');
-            $table->text('description');
-            $table->json('changes')->nullable();
-            $table->timestamp('released_at');
-            $table->boolean('is_major')->default(false);
+            $table->string('app_name', 20)->comment('アプリ名');
+            $table->string('version', 50)->comment('バージョン番号');
+            $table->string('title')->comment('更新タイトル');
+            $table->text('description')->comment('更新内容の説明');
+            $table->json('changes')->nullable()->comment('変更内容のリスト');
+            $table->timestamp('released_at')->comment('リリース日時');
+            $table->boolean('is_major')->default(false)->comment('メジャーアップデートかどうか');
             $table->timestamps();
             
             $table->unique(['app_name', 'version']);

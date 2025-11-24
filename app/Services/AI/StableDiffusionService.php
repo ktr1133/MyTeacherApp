@@ -57,7 +57,7 @@ class StableDiffusionService implements StableDiffusionServiceInterface
             $guidanceScale = 7.5;    // デフォルト
             
             if ($isStableDiffusion35 && $isSurprised) {
-                $numInferenceSteps = 70;  // 驚き表情のぼやけ防止（推論ステップ増加）
+                $numInferenceSteps = 90;  // 驚き表情のぼやけ防止（推論ステップ増加）
                 $guidanceScale = 8.5;      // ガイダンス強化で明瞭に
             }
             

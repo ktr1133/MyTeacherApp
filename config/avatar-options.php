@@ -157,6 +157,11 @@ return [
             'emoji' => '👔',
             'image' => '/images/avatars/accessory/tie.svg',
         ],
+        'cheer' => [
+            'label' => '応援メガホン',
+            'emoji' => '📣',
+            'image' => '/images/avatars/accessory/cheer.svg',
+        ],
     ],
 
     /**
@@ -312,5 +317,6 @@ return [
         'humor' => 'normal',
         'draw_model_version' => 'anything-v4.0',
         'is_transparent' => true,
+        'is_chibi' => false,
     ],
 ];

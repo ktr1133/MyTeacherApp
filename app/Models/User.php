@@ -35,6 +35,7 @@ class User extends Authenticatable
         'is_admin',
         'last_login_at',
         'theme',
+        'timezone',
     ];
     
     /**
@@ -332,5 +333,51 @@ class User extends Authenticatable
             $query->where('group_id', $this->group_id)
                   ->where('id', '!=', $this->id);
         })->pending()->with(['user', 'package'])->get();
+    }
+
+    /**
+     * ユーザーのタイムゾーンで現在時刻を取得
+     *
+     * @return \Illuminate\Support\Carbon
+     */
+    public function nowInUserTimezone()
+    {
+        return now()->timezone($this->timezone ?? 'Asia/Tokyo');
+    }
+
+    /**
+     * UTC時刻をユーザーのタイムゾーンに変換
+     *
+     * @param \Illuminate\Support\Carbon|string $datetime
+     * @return \Illuminate\Support\Carbon
+     */
+    public function toUserTimezone($datetime)
+    {
+        if (is_string($datetime)) {
+            $datetime = \Carbon\Carbon::parse($datetime);
+        }
+        
+        return $datetime->timezone($this->timezone ?? 'Asia/Tokyo');
+    }
+
+    /**
+     * タイムゾーン名を取得（表示用）
+     *
+     * @return string
+     */
+    public function getTimezoneNameAttribute(): string
+    {
+        $timezones = [
+            'Asia/Tokyo' => '日本（東京）',
+            'America/New_York' => 'アメリカ東部（ニューヨーク）',
+            'America/Los_Angeles' => 'アメリカ西部（ロサンゼルス）',
+            'Europe/London' => 'イギリス（ロンドン）',
+            'Europe/Paris' => 'フランス（パリ）',
+            'Asia/Shanghai' => '中国（上海）',
+            'Asia/Singapore' => 'シンガポール',
+            'Australia/Sydney' => 'オーストラリア（シドニー）',
+        ];
+        
+        return $timezones[$this->timezone] ?? $this->timezone;
     }
 }

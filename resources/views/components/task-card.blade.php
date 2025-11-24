@@ -211,7 +211,7 @@
                 @if($task->completed_at)
                     <span class="truncate font-semibold text-green-600 dark:text-green-400">{{ $isChildTheme ? 'おわったよ！' : '完了済' }}</span>
                 @else
-                    <span class="truncate">登録: {{ $created->format('Y/m/d') }} ({{ $elapsedDays }}日経過)</span>
+                    <span class="truncate">登録: <x-user-local-time :datetime="$task->created_at" format="Y/m/d" /> ({{ $elapsedDays }}日経過)</span>
                 @endif
             </div>
 

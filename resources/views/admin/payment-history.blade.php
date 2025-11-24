@@ -62,7 +62,7 @@
                                 <tbody>
                                     @forelse($histories as $history)
                                         <tr>
-                                            <td>{{ $history->created_at->format('Y/m/d H:i') }}</td>
+                                            <td><x-user-local-time :datetime="$history->created_at" format="Y/m/d H:i" /></td>
                                             <td>{{ $history->user?->username ?? '不明' }}</td>
                                             <td class="font-mono text-right">¥{{ number_format($history->amount) }}</td>
                                             <td>
