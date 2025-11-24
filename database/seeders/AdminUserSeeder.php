@@ -13,21 +13,26 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // 管理者ユーザーを作成
-        User::create([
-            'username' => 'admin',
-            'password' => Hash::make('password'), // 本番環境では強力なパスワードに変更
-            'group_id' => null,
-            'group_edit_flg' => false,
-            'is_admin' => true,
-        ]);
-        // テストユーザーを作成
-        User::create([
-            'username' => 'testuser',
-            'password' => Hash::make('password'), // 本番環境では強力なパスワードに変更
-            'group_id' => null,
-            'group_edit_flg' => false,
-            'is_admin' => false,
-        ]);
+        // 管理者ユーザーを作成（既に存在する場合はスキップ）
+        User::firstOrCreate(
+            ['username' => 'admin'],
+            [
+                'password' => Hash::make('password'), // 本番環境では強力なパスワードに変更
+                'group_id' => null,
+                'group_edit_flg' => false,
+                'is_admin' => true,
+            ]
+        );
+
+        // テストユーザーを作成（既に存在する場合はスキップ）
+        User::firstOrCreate(
+            ['username' => 'testuser'],
+            [
+                'password' => Hash::make('password'), // 本番環境では強力なパスワードに変更
+                'group_id' => null,
+                'group_edit_flg' => false,
+                'is_admin' => false,
+            ]
+        );
     }
 }

@@ -142,10 +142,10 @@
                                 <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">通知情報</h3>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                                     <p>作成者: <span class="font-medium">{{ $notification->sender->username }}</span></p>
-                                    <p>作成日時: <span class="font-medium">{{ $notification->created_at->format('Y/m/d H:i') }}</span></p>
+                                    <p>作成日時: <span class="font-medium"><x-user-local-time :datetime="$notification->created_at" format="Y/m/d H:i" /></span></p>
                                     @if($notification->updated_by)
                                         <p>最終更新者: <span class="font-medium">{{ $notification->updatedBy->username }}</span></p>
-                                        <p>最終更新日時: <span class="font-medium">{{ $notification->updated_at->format('Y/m/d H:i') }}</span></p>
+                                        <p>最終更新日時: <span class="font-medium"><x-user-local-time :datetime="$notification->updated_at" format="Y/m/d H:i" /></span></p>
                                     @endif
                                     <p>配信件数: <span class="font-medium">{{ number_format($notification->userNotifications()->count()) }} 件</span></p>
                                 </div>

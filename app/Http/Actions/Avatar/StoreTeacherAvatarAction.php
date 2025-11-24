@@ -25,15 +25,16 @@ class StoreTeacherAvatarAction
         try {
             $this->teacherAvatarService->createAvatar($request->user(), $validated);
 
-            return redirect()
-                ->route('dashboard')
-                ->with('success', '教師アバターの生成を開始しました。完成まで1〜2分お待ちください。');
+            return $this->responder->successRedirect([
+                'route' => 'dashboard',
+                'message' => '教師アバターの生成を開始しました。完成まで1〜2分お待ちください。',
+            ]);
                 
         } catch (\RuntimeException $e) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', $e->getMessage());
+            return $this->responder->errorRedirect([
+                'message' => $e->getMessage(),
+                'withInput' => true,
+            ]);
                 
         } catch (\Exception $e) {
             Log::error('Avatar creation failed', [
@@ -42,10 +43,10 @@ class StoreTeacherAvatarAction
                 'trace' => $e->getTraceAsString(),
             ]);
             
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'アバター作成に失敗しました。しばらく時間をおいて再度お試しください。');
+            return $this->responder->errorRedirect([
+                'message' => 'アバター作成に失敗しました。しばらく時間をおいて再度お試しください。',
+                'withInput' => true,
+            ]);
         }
     }
 }

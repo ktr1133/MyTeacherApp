@@ -294,4 +294,137 @@ return [
         'troubleshooting'   => 'トラブルシューティング',
         'other'             => 'その他',
     ],
+
+    // ========================================
+    // タイムゾーン設定（グローバル対応）
+    // ========================================
+    'timezones' => [
+        // アジア・太平洋
+        'Asia/Tokyo' => [
+            'name' => '日本（東京）',
+            'offset' => '+09:00',
+            'region' => 'アジア・太平洋',
+        ],
+        'Asia/Shanghai' => [
+            'name' => '中国（上海）',
+            'offset' => '+08:00',
+            'region' => 'アジア・太平洋',
+        ],
+        'Asia/Singapore' => [
+            'name' => 'シンガポール',
+            'offset' => '+08:00',
+            'region' => 'アジア・太平洋',
+        ],
+        'Asia/Hong_Kong' => [
+            'name' => '香港',
+            'offset' => '+08:00',
+            'region' => 'アジア・太平洋',
+        ],
+        'Asia/Seoul' => [
+            'name' => '韓国（ソウル）',
+            'offset' => '+09:00',
+            'region' => 'アジア・太平洋',
+        ],
+        'Asia/Taipei' => [
+            'name' => '台湾（台北）',
+            'offset' => '+08:00',
+            'region' => 'アジア・太平洋',
+        ],
+        'Asia/Bangkok' => [
+            'name' => 'タイ（バンコク）',
+            'offset' => '+07:00',
+            'region' => 'アジア・太平洋',
+        ],
+        'Asia/Manila' => [
+            'name' => 'フィリピン（マニラ）',
+            'offset' => '+08:00',
+            'region' => 'アジア・太平洋',
+        ],
+        'Australia/Sydney' => [
+            'name' => 'オーストラリア（シドニー）',
+            'offset' => '+11:00',
+            'region' => 'アジア・太平洋',
+        ],
+
+        // アメリカ
+        'America/New_York' => [
+            'name' => 'アメリカ東部（ニューヨーク）',
+            'offset' => '-05:00',
+            'region' => '南北アメリカ',
+        ],
+        'America/Chicago' => [
+            'name' => 'アメリカ中部（シカゴ）',
+            'offset' => '-06:00',
+            'region' => '南北アメリカ',
+        ],
+        'America/Denver' => [
+            'name' => 'アメリカ山岳部（デンバー）',
+            'offset' => '-07:00',
+            'region' => '南北アメリカ',
+        ],
+        'America/Los_Angeles' => [
+            'name' => 'アメリカ西部（ロサンゼルス）',
+            'offset' => '-08:00',
+            'region' => '南北アメリカ',
+        ],
+        'America/Toronto' => [
+            'name' => 'カナダ（トロント）',
+            'offset' => '-05:00',
+            'region' => '南北アメリカ',
+        ],
+        'America/Sao_Paulo' => [
+            'name' => 'ブラジル（サンパウロ）',
+            'offset' => '-03:00',
+            'region' => '南北アメリカ',
+        ],
+
+        // ヨーロッパ
+        'Europe/London' => [
+            'name' => 'イギリス（ロンドン）',
+            'offset' => '+00:00',
+            'region' => 'ヨーロッパ',
+        ],
+        'Europe/Paris' => [
+            'name' => 'フランス（パリ）',
+            'offset' => '+01:00',
+            'region' => 'ヨーロッパ',
+        ],
+        'Europe/Berlin' => [
+            'name' => 'ドイツ（ベルリン）',
+            'offset' => '+01:00',
+            'region' => 'ヨーロッパ',
+        ],
+        'Europe/Madrid' => [
+            'name' => 'スペイン（マドリード）',
+            'offset' => '+01:00',
+            'region' => 'ヨーロッパ',
+        ],
+        'Europe/Rome' => [
+            'name' => 'イタリア（ローマ）',
+            'offset' => '+01:00',
+            'region' => 'ヨーロッパ',
+        ],
+        'Europe/Moscow' => [
+            'name' => 'ロシア（モスクワ）',
+            'offset' => '+03:00',
+            'region' => 'ヨーロッパ',
+        ],
+
+        // 中東・アフリカ
+        'Asia/Dubai' => [
+            'name' => 'アラブ首長国連邦（ドバイ）',
+            'offset' => '+04:00',
+            'region' => '中東・アフリカ',
+        ],
+        'Africa/Cairo' => [
+            'name' => 'エジプト（カイロ）',
+            'offset' => '+02:00',
+            'region' => '中東・アフリカ',
+        ],
+        'Africa/Johannesburg' => [
+            'name' => '南アフリカ（ヨハネスブルグ）',
+            'offset' => '+02:00',
+            'region' => '中東・アフリカ',
+        ],
+    ],
 ];

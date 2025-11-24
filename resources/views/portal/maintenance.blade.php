@@ -146,7 +146,7 @@
                             <div>
                                 <span class="font-semibold">完了:</span>
                                 <br>
-                                {{ $maintenance->completed_at->format('Y年m月d日 H:i') }}
+                                <x-user-local-time :datetime="$maintenance->completed_at" format="Y年m月d日 H:i" />
                             </div>
                         </div>
                         @endif

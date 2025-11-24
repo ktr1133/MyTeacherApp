@@ -218,7 +218,7 @@
                                     @forelse($transactions as $transaction)
                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                                                {{ $transaction->created_at->format('Y/m/d H:i') }}
+                                                <x-user-local-time :datetime="$transaction->created_at" format="Y/m/d H:i" />
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 @if($transaction->type === 'purchase')

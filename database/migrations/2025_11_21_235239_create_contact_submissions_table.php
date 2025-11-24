@@ -14,14 +14,14 @@ return new class extends Migration
     {
         Schema::create('contact_submissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email');
-            $table->string('subject');
-            $table->text('message');
-            $table->string('app_name', 50);
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->string('status', 50)->default('pending');
-            $table->text('admin_note')->nullable();
+            $table->string('name')->comment('送信者名');
+            $table->string('email')->comment('送信者メールアドレス');
+            $table->string('subject')->comment('件名');
+            $table->text('message')->comment('問い合わせ内容');
+            $table->string('app_name', 50)->comment('対象アプリ名');
+            $table->unsignedBigInteger('user_id')->nullable()->comment('ログインユーザーID（任意）');
+            $table->string('status', 50)->default('pending')->comment('対応状況: pending, in_progress, resolved');
+            $table->text('admin_note')->nullable()->comment('管理者メモ');
             $table->timestamps();
             
             $table->index('status');

@@ -14,12 +14,12 @@ return new class extends Migration
     {
         Schema::create('faqs', function (Blueprint $table) {
             $table->id();
-            $table->string('category', 50);
-            $table->string('app_name', 20);
-            $table->text('question');
-            $table->text('answer');
-            $table->integer('display_order')->default(0);
-            $table->boolean('is_published')->default(true);
+            $table->string('category', 50)->comment('FAQカテゴリ');
+            $table->string('app_name', 20)->comment('対象アプリ名');
+            $table->text('question')->comment('質問');
+            $table->text('answer')->comment('回答');
+            $table->integer('display_order')->default(0)->comment('表示順序');
+            $table->boolean('is_published')->default(true)->comment('公開フラグ');
             $table->timestamps();
             
             $table->index('category');

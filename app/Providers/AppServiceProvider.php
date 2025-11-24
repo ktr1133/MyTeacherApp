@@ -91,6 +91,8 @@ use App\Services\Token\TokenServiceInterface;
 use App\Services\Token\TokenService;
 use App\Services\Token\TokenPackageServiceInterface;
 use App\Services\Token\TokenPackageService;
+use App\Services\Timezone\TimezoneServiceInterface;
+use App\Services\Timezone\TimezoneService;
 // Portal
 use App\Services\Portal\MaintenanceServiceInterface;
 use App\Services\Portal\MaintenanceService;
@@ -213,6 +215,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TokenPurchaseApprovalServiceInterface::class, TokenPurchaseApprovalService::class);
         $this->app->bind(TokenServiceInterface::class, TokenService::class);
         $this->app->bind(TokenPackageServiceInterface::class, TokenPackageService::class);
+
+        // --- Timezone ---
+        $this->app->bind(TimezoneServiceInterface::class, TimezoneService::class);
 
         // --- Portal ---
         $this->app->bind(MaintenanceServiceInterface::class, MaintenanceService::class);

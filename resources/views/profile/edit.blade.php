@@ -149,8 +149,38 @@
                         </div>
                     @endif
 
-                    {{-- パスワード更新 --}}
+                    {{-- タイムゾーン設定 --}}
                     <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.2s;">
+                        <div class="px-6 py-4 border-b border-teal-500/20 dark:border-teal-500/30 bg-gradient-to-r from-teal-500/5 to-cyan-50/50 dark:from-teal-500/10 dark:to-cyan-900/10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-600 to-cyan-600 flex items-center justify-center shadow">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <h2 class="text-sm font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                                    タイムゾーン設定
+                                </h2>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="max-w-xl">
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                                    お住まいの地域に合わせてタイムゾーンを設定できます。すべての日時表示が選択したタイムゾーンに変換されます。
+                                </p>
+                                <a href="{{ route('profile.timezone') }}" 
+                                   class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition font-semibold text-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                    </svg>
+                                    タイムゾーンを設定
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- パスワード更新 --}}
+                    <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.3s;">
                         <div class="px-6 py-4 border-b border-orange-500/20 dark:border-orange-500/30 bg-gradient-to-r from-orange-500/5 to-yellow-50/50 dark:from-orange-500/10 dark:to-yellow-900/10">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-600 to-yellow-600 flex items-center justify-center shadow">
@@ -171,7 +201,7 @@
                     </div>
 
                     {{-- アカウント削除 --}}
-                    <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.3s;">
+                    <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.4s;">
                         <div class="px-6 py-4 border-b border-red-500/20 dark:border-red-500/30 bg-gradient-to-r from-red-500/5 to-pink-50/50 dark:from-red-500/10 dark:to-pink-900/10">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-pink-600 flex items-center justify-center shadow">

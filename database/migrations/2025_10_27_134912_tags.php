@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
-            // ユニークは (user_id, name)
+            
+            // ユーザーごとにタグ名はユニーク
             $table->unique(['user_id', 'name']);
         });
     }

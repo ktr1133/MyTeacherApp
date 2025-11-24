@@ -13,11 +13,10 @@ return new class extends Migration
     {
         Schema::create('scheduled_task_tags', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('scheduled_task_id')->constrained('scheduled_group_tasks')->onDelete('cascade');
-            $table->string('tag_name');
+            $table->foreignId('scheduled_task_id')->constrained('scheduled_group_tasks')->onDelete('cascade')->comment('スケジュールタスクID');
+            $table->string('tag_name')->comment('タグ名');
             $table->timestamps();
             
-            // 重複防止
             $table->unique(['scheduled_task_id', 'tag_name']);
             $table->index('scheduled_task_id');
         });

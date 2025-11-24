@@ -171,7 +171,7 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                    {{ $faq->created_at->format('Y-m-d') }}
+                                    <x-user-local-time :datetime="$faq->created_at" format="Y-m-d" />
                                 </td>
                                 <td class="px-4 py-4 text-sm font-medium">
                                     <div class="flex flex-col sm:flex-row gap-2">

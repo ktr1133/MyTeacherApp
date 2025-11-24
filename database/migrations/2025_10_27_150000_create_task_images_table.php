@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('task_images', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('task_id'); // タスクID
-            $table->string('file_path'); // 画像ファイルパス
-            $table->timestamp('approved_at')->nullable(); // 承認日時
-            $table->timestamp('delete_at')->nullable(); // 削除予定日時（承認後3日）
+            $table->unsignedBigInteger('task_id')->comment('タスクID');
+            $table->string('file_path')->comment('画像ファイルパス');
+            $table->timestamp('approved_at')->nullable()->comment('承認日時');
+            $table->timestamp('delete_at')->nullable()->comment('削除予定日時（承認後3日）');
             $table->timestamps();
             
             $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');

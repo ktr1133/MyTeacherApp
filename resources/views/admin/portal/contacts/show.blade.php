@@ -43,7 +43,7 @@
                         <div class="space-y-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">受信日時</label>
-                                <p class="text-gray-900 dark:text-gray-100">{{ $contact->created_at->format('Y-m-d H:i:s') }}</p>
+                                <p class="text-gray-900 dark:text-gray-100"><x-user-local-time :datetime="$contact->created_at" format="Y-m-d H:i:s" /></p>
                             </div>
 
                             <div>

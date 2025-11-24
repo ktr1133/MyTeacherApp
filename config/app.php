@@ -63,9 +63,12 @@ return [
     | will be used by the PHP date and date-time functions. The timezone
     | is set to "UTC" by default as it is suitable for most use cases.
     |
+    | ⚠️ グローバル展開のため、サーバー・DBは常にUTCで統一
+    | ユーザー表示時に各自のタイムゾーンに変換する設計
+    |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'UTC'),
 
     /*
     |--------------------------------------------------------------------------

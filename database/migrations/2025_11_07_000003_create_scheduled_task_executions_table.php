@@ -11,19 +11,18 @@ return new class extends Migration
         Schema::create('scheduled_task_executions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('scheduled_task_id')
-                ->constrained('scheduled_group_tasks') // テーブル名を明示的に指定
-                ->onDelete('cascade');
+                ->constrained('scheduled_group_tasks')
+                ->onDelete('cascade')
+                ->comment('スケジュールタスクID');
             
-            $table->timestamp('executed_at');
-            $table->enum('status', array_keys(config('const.schedule_task_execution_statuses')))->default('success')->comment('実行ステータス');
+            $table->timestamp('executed_at')->comment('実行日時');
+            $table->enum('status', array_keys(config('const.schedule_task_execution_statuses')))->default('success')->comment('実行ステータス'); // success, failed, skipped
 
-            // 作成されたタスク情報
-            $table->foreignId('task_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('assigned_user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('task_id')->nullable()->constrained()->onDelete('set null')->comment('作成されたタスクID');
+            $table->foreignId('assigned_user_id')->nullable()->constrained('users')->onDelete('set null')->comment('割り当てられたユーザーID');
             
-            // エラー・スキップ情報
-            $table->text('error_message')->nullable();
-            $table->text('skip_reason')->nullable();
+            $table->text('error_message')->nullable()->comment('エラーメッセージ');
+            $table->text('skip_reason')->nullable()->comment('スキップ理由');
             
             $table->timestamps();
             

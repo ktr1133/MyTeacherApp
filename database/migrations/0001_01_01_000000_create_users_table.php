@@ -14,20 +14,42 @@ return new class extends Migration
         // groups テーブルを先に作成
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique()->comment('グループ名'); // グループ名
-            $table->unsignedBigInteger('master_user_id')->nullable()->comment('マスターのユーザーID'); // グループマスターのユーザーID
+            $table->string('name')->unique()->comment('グループ名');
+            $table->unsignedBigInteger('master_user_id')->nullable()->comment('マスターのユーザーID');
+            
+            // Stripe関連フィールド (Laravel Cashier - グループ課金用)
+            $table->string('stripe_id')->nullable()->index()->comment('Stripe顧客ID');
+            $table->string('pm_type')->nullable()->comment('支払い方法タイプ');
+            $table->string('pm_last_four', 4)->nullable()->comment('支払い方法の下4桁');
+            $table->timestamp('trial_ends_at')->nullable()->comment('トライアル終了日時');
+            
             $table->timestamps();
         });
 
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('username')->unique()->comment('ユーザー名'); // ログインIDとして使用
-            $table->unsignedBigInteger('group_id')->nullable()->comment('グループID'); // グループID
-            $table->boolean('group_edit_flg')->default(false)->comment('グループ編集フラグ'); // グループ編集フラグ
+            $table->string('username')->unique()->comment('ユーザー名（ログインID）');
+            $table->timestamp('last_login_at')->nullable()->comment('最終ログイン日時');
+            $table->unsignedBigInteger('group_id')->nullable()->comment('グループID');
+            $table->boolean('group_edit_flg')->default(false)->comment('グループ編集フラグ');
+            $table->boolean('is_admin')->default(false)->comment('管理者フラグ');
             $table->enum('theme', ['adult', 'child'])->default('adult')->comment('デザインテーマ');
+            $table->string('timezone', 50)->default('Asia/Tokyo')->comment('ユーザーのタイムゾーン（IANA形式）');
             $table->string('password')->comment('パスワード');
             $table->boolean('requires_purchase_approval')->default(true)->comment('トークン購入承認');
             $table->rememberToken();
+            
+            // Stripe関連フィールド (Laravel Cashier)
+            $table->string('stripe_id')->nullable()->index()->comment('Stripe顧客ID');
+            $table->string('pm_type')->nullable()->comment('支払い方法タイプ');
+            $table->string('pm_last_four', 4)->nullable()->comment('支払い方法の下4桁');
+            $table->timestamp('trial_ends_at')->nullable()->comment('トライアル終了日時');
+            
+            // トークン管理モード
+            $table->enum('token_mode', ['individual', 'group'])
+                ->default('individual')
+                ->comment('individual: 個人課金, group: グループ課金');
+            
             $table->timestamps();
             
             // 外部キー制約
