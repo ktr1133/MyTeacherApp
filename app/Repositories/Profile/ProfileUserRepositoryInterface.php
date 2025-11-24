@@ -9,6 +9,14 @@ use Illuminate\Database\Eloquent\Collection;
 interface ProfileUserRepositoryInterface
 {
     /**
+     * 新規ユーザーを作成する。
+     *
+     * @param array<string, mixed> $data
+     * @return User
+     */
+    public function create(array $data): User;
+
+    /**
      * IDに基づいてユーザーを取得する。
      *
      * @param int $id

@@ -32,7 +32,7 @@
         <!-- 登録フォーム -->
         <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md auth-fade-in-delay">
             <div class="auth-card rounded-2xl px-8 py-10 shadow-xl">
-                <form method="POST" action="{{ route('register') }}" class="space-y-6">
+                <form id="register-form" method="POST" action="{{ route('register') }}" class="space-y-6">
                     @csrf
 
                     <!-- ユーザー名 -->
@@ -151,7 +151,7 @@
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
                             </div>
                             <input 
@@ -160,7 +160,7 @@
                                 name="password_confirmation" 
                                 required 
                                 autocomplete="new-password"
-                                class="input-glow block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200"
+                                class="input-glow block w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200"
                                 placeholder="パスワードを再入力"
                             />
                         </div>
@@ -176,7 +176,7 @@
                         @enderror
 
                         <!-- 非同期バリデーションエラー -->
-                        <div id="password-confirmation-error" class="validation-message validation-error hidden">
+                        <div id="password_confirmation-error" class="validation-message validation-error hidden">
                             <svg class="validation-icon" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                             </svg>
@@ -184,7 +184,7 @@
                         </div>
 
                         <!-- 非同期バリデーション成功 -->
-                        <div id="password-confirmation-success" class="validation-message validation-success hidden">
+                        <div id="password_confirmation-success" class="validation-message validation-success hidden">
                             <svg class="validation-icon" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
@@ -192,11 +192,62 @@
                         </div>
                     </div>
 
+                    <!-- タイムゾーン -->
+                    <div>
+                        <label for="timezone" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            タイムゾーン
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <select 
+                                id="timezone" 
+                                name="timezone"
+                                class="input-glow block w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200"
+                            >
+                                @php
+                                    $timezones = config('const.timezones');
+                                    $oldTimezone = old('timezone', 'Asia/Tokyo');
+                                    $groupedTimezones = collect($timezones)->groupBy('region');
+                                @endphp
+                                
+                                @foreach($groupedTimezones as $region => $tzList)
+                                    <optgroup label="{{ $region }}">
+                                        @foreach($tzList as $tz => $info)
+                                            <option value="{{ $tz }}" {{ $oldTimezone === $tz ? 'selected' : '' }}>
+                                                {{ $info['name'] }} ({{ $info['offset'] }})
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- サーバーサイドエラー -->
+                        @error('timezone')
+                            <div class="validation-message validation-error validation-error-slide-in">
+                                <svg class="validation-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            あなたの地域のタイムゾーンを選択してください。タスクの期限などが選択したタイムゾーンで表示されます。
+                        </p>
+                    </div>
+
                     <!-- 登録ボタン -->
                     <div>
                         <button 
+                            id="register-button"
                             type="submit" 
-                            class="auth-button w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4AA0AB] hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#59B9C6] transition-all duration-200"
+                            disabled
+                            class="auth-button w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4AA0AB] hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#59B9C6] transition-all duration-200 opacity-50 cursor-not-allowed"
                         >
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
