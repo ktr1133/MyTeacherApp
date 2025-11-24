@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         Commands\ExecuteScheduledTasks::class,
         Commands\ExecuteScheduledTaskById::class,
         Commands\ListScheduledTasks::class,
+        Commands\MonitorRedisHealth::class,
     ];
 
     /**
@@ -32,6 +33,7 @@ class Kernel extends ConsoleKernel
             $schedule->command('batch:execute-scheduled-tasks')
                 ->everyMinute()
                 ->withoutOverlapping(5)
+                ->onOneServer() // 冗長構成対応
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/scheduled-tasks.log'));
         } 
@@ -40,6 +42,7 @@ class Kernel extends ConsoleKernel
             $schedule->command('batch:execute-scheduled-tasks')
                 ->hourly()
                 ->withoutOverlapping(10)
+                ->onOneServer() // 冗長構成対応
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/scheduled-tasks.log'))
                 ->onSuccess(function () {
@@ -91,8 +94,29 @@ class Kernel extends ConsoleKernel
         $schedule->command('notifications:delete-expired')
             ->dailyAt('03:00')
             ->withoutOverlapping()
+            ->onOneServer() // 冗長構成対応
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/notifications-cleanup.log'));
+
+        // ========================================
+        // Redis健全性監視（5分ごと）
+        // ========================================
+        $schedule->command('redis:monitor')
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->onOneServer() // 冗長構成対応
+            ->runInBackground();
+
+        // ========================================
+        // 古いキャッシュクリア（毎日深夜3時）
+        // ========================================
+        $schedule->call(function () {
+            \Illuminate\Support\Facades\Cache::tags(['dashboard'])->flush();
+            \Illuminate\Support\Facades\Log::info('Old dashboard cache cleared');
+        })
+        ->dailyAt('03:00')
+        ->name('clear-old-cache')
+        ->onOneServer();
     }
 
     /**

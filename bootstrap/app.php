@@ -18,7 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         // ★ Web ミドルウェアグループに追加
         $middleware->web(append: [
-            \App\Http\Middleware\SetUserTheme::class,
+            \App\Http\Middleware\AddRequestIdToLogs::class, // 冗長構成対応: リクエストトレーシング
+            \App\Http\Middleware\SetUserTheme::class, // 子供むけ画面対応
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

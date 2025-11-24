@@ -113,8 +113,6 @@ window.AvatarManager = {
             return;
         }
 
-        console.log('[AvatarManager] Handling event:', eventData);
-
         // 強制非表示フラグをクリア（新しいイベントで再表示を許可）
         this.isForcedHidden = false;
         this.widget.classList.remove('avatar-force-hidden');
@@ -163,13 +161,6 @@ window.AvatarManager = {
             const animationClass = data.animation || 'avatar-idle';
             this.avatarImage.className = `avatar-image ${animationClass}`;
         }
-
-        console.log('[AvatarManager] Content updated:', {
-            comment: data.comment,
-            imageUrl: data.imageUrl,
-            expression: data.expression,
-            animation: data.animation
-        });
     },
 
     /**
@@ -180,8 +171,6 @@ window.AvatarManager = {
             console.log('[AvatarManager] Widget is force hidden, ignoring show()');
             return;
         }
-
-        console.log('[AvatarManager] Showing widget');
         
         this.widget.classList.remove('hidden', 'opacity-0', 'translate-y-4');
         this.widget.classList.add('opacity-100', 'translate-y-0');
@@ -210,8 +199,6 @@ window.AvatarManager = {
      * アバターを強制非表示（閉じるボタン押下時）
      */
     forceHide() {
-        console.log('[AvatarManager] Force hiding widget');
-        
         this.hide();
         this.isForcedHidden = true;
         this.widget.classList.add('avatar-force-hidden');
@@ -224,7 +211,6 @@ window.AvatarManager = {
         this.clearTimer();
         
         this.displayTimer = setTimeout(() => {
-            console.log('[AvatarManager] Auto-hide timer expired');
             this.forceHide();
         }, 20000);
     },
@@ -291,8 +277,6 @@ window.AvatarManager = {
             return;
         }
 
-        console.log('[AvatarManager] Drag started');
-
         this.isDragging = true;
 
         const clientX = event.clientX || event.pageX;
@@ -316,7 +300,6 @@ window.AvatarManager = {
 
         // ドラッグ終了ハンドラー
         const handleEnd = () => {
-            console.log('[AvatarManager] Drag ended');
             this.isDragging = false;
 
             document.removeEventListener('mousemove', handleMove);
@@ -340,8 +323,6 @@ window.AvatarManager = {
 window.dispatchAvatarEvent = function(eventType) {
     const startTime = performance.now();
 
-    console.log('[dispatchAvatarEvent] Fetching comment for:', eventType);
-
     fetch(`/avatars/comment/${eventType}`)
         .then(response => {
             const fetchTime = performance.now() - startTime;
@@ -359,14 +340,10 @@ window.dispatchAvatarEvent = function(eventType) {
                 throw new Error(`Expected JSON, got ${contentType}`);
             }
 
-            console.log(`[dispatchAvatarEvent] Fetch completed in ${fetchTime.toFixed(2)}ms`);
-
             return response.json();
         })
         .then(data => {
             const totalTime = performance.now() - startTime;
-
-            console.log(`[dispatchAvatarEvent] Total time: ${totalTime.toFixed(2)}ms`);
 
             if (data.comment) {
                 // カスタムイベントを発火
@@ -406,8 +383,6 @@ window.showAvatarComment = function(commentData) {
         return;
     }
 
-    console.log('[showAvatarComment] Showing comment directly:', commentData);
-
     // AvatarManagerが初期化されているか確認
     if (!window.AvatarManager || !window.AvatarManager.widget) {
         console.error('[showAvatarComment] AvatarManager not initialized');
@@ -422,8 +397,6 @@ window.showAvatarComment = function(commentData) {
 
 // DOM読み込み完了後に初期化
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('[Avatar] DOM loaded, initializing AvatarManager...');
-    
     // 初期化を少し遅延（DOM が完全にレンダリングされるまで待つ）
     setTimeout(() => {
         if (window.AvatarManager) {

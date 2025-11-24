@@ -195,7 +195,7 @@
                                             <img src="{{ Storage::url($image->file_path) }}" 
                                                  class="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-700">
                                             <button type="button"
-                                                    onclick="if(confirm('この画像を削除しますか？')) { document.getElementById('delete-image-form-{{ $image->id }}').submit(); }"
+                                                    onclick="event.preventDefault(); if(window.showConfirmDialog) { window.showConfirmDialog('この画像を削除しますか？', () => { document.getElementById('delete-image-form-{{ $image->id }}').submit(); }); } else { if(confirm('この画像を削除しますか？')) { document.getElementById('delete-image-form-{{ $image->id }}').submit(); } }"
                                                     class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition shadow-lg">
                                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -261,7 +261,7 @@
                 {{-- 削除ボタン（左側） --}}
                 <button 
                     type="button"
-                    onclick="if(confirm('このタスクを削除しますか？')) { document.getElementById('delete-task-form-{{ $task->id }}').submit(); }"
+                    onclick="event.preventDefault(); if(window.showConfirmDialog) { window.showConfirmDialog('このタスクを削除しますか？', () => { document.getElementById('delete-task-form-{{ $task->id }}').submit(); }); } else { if(confirm('このタスクを削除しますか？')) { document.getElementById('delete-task-form-{{ $task->id }}').submit(); } }"
                     class="inline-flex items-center px-4 py-2 text-sm font-semibold text-red-600 hover:text-white hover:bg-red-600 rounded-lg border-2 border-red-600 transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>

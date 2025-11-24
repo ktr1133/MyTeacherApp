@@ -25,9 +25,9 @@ interface TaskManagementServiceInterface
      * @param User $user タスクを作成するユーザー
      * @param array $data タスクデータ（title, description, due_date, priority, tagsなど）
      * @param bool $groupFlg グループタスクフラグ
-     * @return Task 保存されたタスクモデル
+     * @return Task|null 保存されたタスクモデル
      */
-    public function createTask(User $user, array $data, bool $groupFlg): Task;
+    public function createTask(User $user, array $data, bool $groupFlg): ?Task;
 
     /**
      * タスク登録用の基本データを作成するヘルパーメソッド
@@ -115,4 +115,14 @@ interface TaskManagementServiceInterface
      * @return Collection タスクのコレクション
      */
     public function searchTasks(User $user, string $searchType, array $searchTerms, string $operator): Collection;
+
+    /**
+     * ユーザーのタスクキャッシュをクリア
+     * 
+     * タスクの完了状態変更など、外部から直接タスクを更新した際に使用。
+     *
+     * @param int $userId ユーザーID
+     * @return void
+     */
+    public function clearUserTaskCache(int $userId): void;
 }

@@ -1,6 +1,7 @@
 {{-- 現在の残高表示 --}}
 <div class="balance-card mb-6">
-    <div class="flex items-center justify-between flex-wrap gap-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {{-- 合計残高 --}}
         <div class="flex items-center gap-3">
             @if($isChildTheme)
                 <div class="coin-icon-large">
@@ -14,49 +15,39 @@
                 </div>
             @endif
             <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
+                <p class="text-sm {{ $isChildTheme ? 'sm:text-base' : '' }} text-gray-600 dark:text-gray-400">
                     @if($isChildTheme)
                         いまのコイン
                     @else
                         現在の残高
                     @endif
                 </p>
-                <p class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                <p class="{{ $isChildTheme ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl' }} font-bold text-gray-900 dark:text-gray-100">
                     {{ number_format($balance->balance) }}
                     @if($isChildTheme)
-                        <span class="text-lg text-amber-600">コイン</span>
+                        <span class="text-xl sm:text-2xl text-amber-600">コイン</span>
                     @else
                         <span class="text-lg text-gray-600 dark:text-gray-400">トークン</span>
                     @endif
                 </p>
             </div>
         </div>
-        
-        <a href="{{ route('tokens.history') }}" class="btn-history">
-            @if($isChildTheme)
-                りれき
-            @else
-                履歴を見る
-            @endif
-        </a>
-    </div>
 
-    {{-- 無料枠/有料枠の内訳 --}}
-    <div class="mt-4 pt-4 border-t border-amber-200 dark:border-amber-700/30">
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <p class="text-xs text-amber-700 dark:text-amber-300">
+        {{-- 無料枠/有料枠の内訳 --}}
+        <div class="flex gap-6 sm:gap-8 w-full sm:w-auto">
+            <div class="flex-1 sm:flex-initial">
+                <p class="{{ $isChildTheme ? 'text-sm sm:text-base' : 'text-xs' }} text-amber-700 dark:text-amber-300 mb-1">
                     無料枠
                 </p>
-                <p class="text-3xl font-bold text-amber-900 dark:text-amber-100">
+                <p class="{{ $isChildTheme ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl' }} font-bold text-amber-900 dark:text-amber-100">
                     {{ number_format($balance->free_balance) }}
                 </p>
             </div>
-            <div>
-                <p class="text-xs text-amber-700 dark:text-amber-300">
+            <div class="flex-1 sm:flex-initial">
+                <p class="{{ $isChildTheme ? 'text-sm sm:text-base' : 'text-xs' }} text-amber-700 dark:text-amber-300 mb-1">
                     有料
                 </p>
-                <p class="text-3xl font-bold text-amber-900 dark:text-amber-100">
+                <p class="{{ $isChildTheme ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl' }} font-bold text-amber-900 dark:text-amber-100">
                     {{ number_format($balance->paid_balance) }}
                 </p>
             </div>

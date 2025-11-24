@@ -55,7 +55,7 @@
                         <button
                             type="button"
                             class="lg:hidden p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 shrink-0 transition"
-                            @click="showSidebar = true"
+                            data-sidebar-toggle="mobile"
                             aria-label="メニューを開く">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z" clip-rule="evenodd" />
@@ -233,7 +233,7 @@
                                                         <a href="{{ route('admin.notifications.edit', $notification->id) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition" title="編集">
                                                             <i class="fas fa-edit text-lg"></i>
                                                         </a>
-                                                        <form method="POST" action="{{ route('admin.notifications.destroy', $notification->id) }}" class="inline" onsubmit="return confirm('本当に削除しますか？配信済みの通知も非表示になります。');">
+                                                        <form method="POST" action="{{ route('admin.notifications.destroy', $notification->id) }}" class="inline" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('本当に削除しますか？配信済みの通知も非表示になります。', () => { event.target.submit(); }); } else { if (confirm('本当に削除しますか？配信済みの通知も非表示になります。')) { event.target.submit(); } }">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition" title="削除">

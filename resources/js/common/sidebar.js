@@ -1,35 +1,21 @@
 /**
- * サイドバー制御クラス（Alpine.js代替）
- * iPadを含むすべてのデバイスで動作する純粋なJavaScript実装
+ * サイドバー制御クラス（純粋JavaScript実装 - Alpine.js不使用）
+ * デスクトップサイドバーの開閉、モバイルサイドバーの表示/非表示、
+ * 管理者用の一般メニュー表示切替、ポータルメニュー展開機能を提供
  */
 class SidebarController {
     constructor() {
-        console.log('[Sidebar] Constructor called');
-        
-        // DOM要素の取得（より正確なセレクター）
-        this.desktopSidebar = document.querySelector('aside[x-data*="sidebar"]');
-        this.mobileSidebar = document.querySelector('.lg\\:hidden aside');
-        this.mobileOverlay = document.querySelector('.lg\\:hidden > div[x-show*="showSidebar"]');
-        
-        // ボタン要素
-        this.desktopToggleBtn = document.querySelector('button[\\@click*="sidebar.toggle"]');
-        this.mobileCloseBtn = document.querySelector('.lg\\:hidden button[\\@click*="showSidebar = false"]');
-        
-        // モバイルのナビゲーションリンク
-        this.mobileLinks = document.querySelectorAll('.lg\\:hidden x-nav-link[\\@click*="showSidebar = false"]');
-        
         // 状態管理
-        this.isCollapsed = this.loadState();
+        this.isCollapsed = this.loadState('sidebar-collapsed', false);
         this.isMobileOpen = false;
+        this.showGeneralMenu = this.loadState('sidebar-general-menu', true);
+        this.portalExpanded = this.loadState('sidebar-portal-expanded', false);
+        this.portalExpandedMobile = this.loadState('sidebar-portal-expanded-mobile', false);
         
-        console.log('[Sidebar] DOM elements found:', {
-            desktopSidebar: !!this.desktopSidebar,
-            mobileSidebar: !!this.mobileSidebar,
-            mobileOverlay: !!this.mobileOverlay,
-            desktopToggleBtn: !!this.desktopToggleBtn,
-            mobileCloseBtn: !!this.mobileCloseBtn,
-            mobileLinksCount: this.mobileLinks.length,
-        });
+        // DOM要素は初期化時に取得
+        this.desktopSidebar = null;
+        this.mobileSidebar = null;
+        this.mobileOverlay = null;
         
         // 初期化の遅延実行（DOMが完全に構築されるまで待つ）
         if (document.readyState === 'loading') {
@@ -43,48 +29,51 @@ class SidebarController {
      * 初期化
      */
     init() {
-        console.log('[Sidebar] Initializing...');
+        // DOM要素を取得
+        this.desktopSidebar = document.querySelector('[data-sidebar="desktop"]');
+        this.mobileSidebar = document.querySelector('[data-sidebar="mobile"]');
+        this.mobileOverlay = document.querySelector('[data-sidebar-overlay="mobile"]');
         
-        // Alpine.jsのストアをエミュレート（互換性のため）
-        this.setupAlpineCompatibility();
+        console.log('[Sidebar] DOM elements found:', {
+            desktopSidebar: !!this.desktopSidebar,
+            mobileSidebar: !!this.mobileSidebar,
+            mobileOverlay: !!this.mobileOverlay,
+        });
         
         // デスクトップサイドバーの初期状態を適用
         if (this.desktopSidebar) {
             this.applyDesktopState();
         }
         
+        // 一般メニューとポータルメニューの初期状態を適用
+        this.applyGeneralMenuState();
+        this.applyPortalState();
+        
         // イベントリスナーを設定
         this.setupEventListeners();
-        
-        console.log('[Sidebar] Initialized successfully', {
-            isCollapsed: this.isCollapsed,
-            initialState: this.isCollapsed ? 'collapsed' : 'expanded',
-        });
     }
     
     /**
      * ローカルストレージから状態を読み込み
      */
-    loadState() {
+    loadState(key, defaultValue) {
         try {
-            const saved = localStorage.getItem('sidebar-collapsed');
-            console.log('[Sidebar] Loaded state from localStorage:', saved);
-            return saved === 'true';
+            const saved = localStorage.getItem(key);
+            return saved === null ? defaultValue : saved === 'true';
         } catch (error) {
-            console.warn('[Sidebar] Failed to load state from localStorage:', error);
-            return false; // デフォルトは展開
+            console.warn(`[Sidebar] Failed to load state from localStorage (${key}):`, error);
+            return defaultValue;
         }
     }
     
     /**
      * ローカルストレージに状態を保存
      */
-    saveState() {
+    saveState(key, value) {
         try {
-            localStorage.setItem('sidebar-collapsed', this.isCollapsed.toString());
-            console.log('[Sidebar] State saved to localStorage:', this.isCollapsed);
+            localStorage.setItem(key, value.toString());
         } catch (error) {
-            console.warn('[Sidebar] Failed to save state to localStorage:', error);
+            console.warn(`[Sidebar] Failed to save state to localStorage (${key}):`, error);
         }
     }
     
@@ -92,50 +81,126 @@ class SidebarController {
      * デスクトップサイドバーの状態を適用
      */
     applyDesktopState() {
-        if (!this.desktopSidebar) {
-            console.warn('[Sidebar] Desktop sidebar element not found');
-            return;
-        }
+        if (!this.desktopSidebar) return;
         
-        // Alpine.jsの :class バインディングをJSで再現
+        // サイドバー全体のクラス制御（collapsedクラスでアニメーション）
         if (this.isCollapsed) {
+            this.desktopSidebar.classList.add('collapsed');
             this.desktopSidebar.classList.remove('gap-3', 'px-3', 'py-2');
             this.desktopSidebar.classList.add('justify-center', 'p-3');
         } else {
+            this.desktopSidebar.classList.remove('collapsed');
             this.desktopSidebar.classList.add('gap-3', 'px-3', 'py-2');
             this.desktopSidebar.classList.remove('justify-center', 'p-3');
         }
         
-        // x-show ディレクティブの要素を手動で表示/非表示
-        const showWhenExpanded = this.desktopSidebar.querySelectorAll('[x-show*="!collapsed"]');
-        const showWhenCollapsed = this.desktopSidebar.querySelectorAll('[x-show*="collapsed"]:not([x-show*="!collapsed"])');
-        
+        // 展開時のみ表示する要素
+        const showWhenExpanded = this.desktopSidebar.querySelectorAll('[data-show-when="expanded"]');
         showWhenExpanded.forEach(el => {
-            if (this.isCollapsed) {
-                el.style.display = 'none';
-            } else {
-                el.style.display = '';
-            }
+            el.style.display = this.isCollapsed ? 'none' : '';
         });
         
+        // 最小化時のみ表示する要素
+        const showWhenCollapsed = this.desktopSidebar.querySelectorAll('[data-show-when="collapsed"]');
         showWhenCollapsed.forEach(el => {
-            if (this.isCollapsed) {
-                el.style.display = '';
-            } else {
-                el.style.display = 'none';
-            }
+            el.style.display = this.isCollapsed ? '' : 'none';
         });
         
-        // トグルボタンのaria属性を更新
-        if (this.desktopToggleBtn) {
-            this.desktopToggleBtn.setAttribute('aria-expanded', (!this.isCollapsed).toString());
-            this.desktopToggleBtn.setAttribute(
+        // トグルボタンのアイコン切り替え
+        const expandIcon = this.desktopSidebar.querySelector('[data-icon="expand"]');
+        const collapseIcon = this.desktopSidebar.querySelector('[data-icon="collapse"]');
+        if (expandIcon) expandIcon.style.display = this.isCollapsed ? '' : 'none';
+        if (collapseIcon) collapseIcon.style.display = this.isCollapsed ? 'none' : '';
+        
+        // aria属性の更新
+        const toggleBtn = this.desktopSidebar.querySelector('[data-sidebar-action="toggle-desktop"]');
+        if (toggleBtn) {
+            toggleBtn.setAttribute('aria-expanded', (!this.isCollapsed).toString());
+            toggleBtn.setAttribute(
                 'aria-label', 
                 this.isCollapsed ? 'サイドバーを展開' : 'サイドバーを最小化'
             );
         }
+    }
+    
+    /**
+     * 一般メニューの表示状態を適用
+     */
+    applyGeneralMenuState() {
+        // デスクトップ版
+        if (this.desktopSidebar) {
+            const generalMenuContainer = this.desktopSidebar.querySelector('[data-general-menu]');
+            if (generalMenuContainer) {
+                generalMenuContainer.style.display = this.showGeneralMenu ? '' : 'none';
+            }
+            
+            // トグルボタンのアイコン切り替え
+            const showIcon = this.desktopSidebar.querySelector('[data-icon="general-show"]');
+            const hideIcon = this.desktopSidebar.querySelector('[data-icon="general-hide"]');
+            if (showIcon) showIcon.style.display = this.showGeneralMenu ? '' : 'none';
+            if (hideIcon) hideIcon.style.display = this.showGeneralMenu ? 'none' : '';
+            
+            // aria属性の更新
+            const toggleBtn = this.desktopSidebar.querySelector('[data-action="toggle-general-menu"]');
+            if (toggleBtn) {
+                toggleBtn.setAttribute('aria-label', 
+                    this.showGeneralMenu ? '一般メニューを非表示' : '一般メニューを表示'
+                );
+            }
+        }
         
-        console.log('[Sidebar] Desktop state applied:', this.isCollapsed ? 'collapsed' : 'expanded');
+        // モバイル版
+        if (this.mobileSidebar) {
+            const generalMenuContainerMobile = this.mobileSidebar.querySelector('[data-general-menu-mobile]');
+            if (generalMenuContainerMobile) {
+                generalMenuContainerMobile.style.display = this.showGeneralMenu ? '' : 'none';
+            }
+            
+            // トグルボタンのアイコン切り替え
+            const showIconMobile = this.mobileSidebar.querySelector('[data-icon="general-show-mobile"]');
+            const hideIconMobile = this.mobileSidebar.querySelector('[data-icon="general-hide-mobile"]');
+            if (showIconMobile) showIconMobile.style.display = this.showGeneralMenu ? '' : 'none';
+            if (hideIconMobile) hideIconMobile.style.display = this.showGeneralMenu ? 'none' : '';
+            
+            // aria属性の更新
+            const toggleBtnMobile = this.mobileSidebar.querySelector('[data-action="toggle-general-menu-mobile"]');
+            if (toggleBtnMobile) {
+                toggleBtnMobile.setAttribute('aria-label', 
+                    this.showGeneralMenu ? '一般メニューを非表示' : '一般メニューを表示'
+                );
+            }
+        }
+    }
+    
+    /**
+     * ポータルメニューの展開状態を適用
+     */
+    applyPortalState() {
+        // デスクトップ
+        if (this.desktopSidebar) {
+            const portalSubmenu = this.desktopSidebar.querySelector('[data-portal-submenu]');
+            if (portalSubmenu) {
+                portalSubmenu.style.display = this.portalExpanded ? '' : 'none';
+            }
+            
+            const portalIcon = this.desktopSidebar.querySelector('[data-portal-icon]');
+            if (portalIcon) {
+                portalIcon.classList.toggle('rotate-180', this.portalExpanded);
+            }
+        }
+        
+        // モバイル
+        if (this.mobileSidebar) {
+            const portalSubmenuMobile = this.mobileSidebar.querySelector('[data-portal-submenu-mobile]');
+            if (portalSubmenuMobile) {
+                portalSubmenuMobile.style.display = this.portalExpandedMobile ? '' : 'none';
+            }
+            
+            const portalIconMobile = this.mobileSidebar.querySelector('[data-portal-icon-mobile]');
+            if (portalIconMobile) {
+                portalIconMobile.classList.toggle('rotate-180', this.portalExpandedMobile);
+            }
+        }
     }
     
     /**
@@ -143,15 +208,35 @@ class SidebarController {
      */
     toggleDesktop() {
         this.isCollapsed = !this.isCollapsed;
-        this.saveState();
+        this.saveState('sidebar-collapsed', this.isCollapsed);
         this.applyDesktopState();
-        
-        // Alpine.jsのストアも更新（互換性のため）
-        if (window.Alpine?.stores?.sidebar) {
-            window.Alpine.stores.sidebar.isCollapsed = this.isCollapsed;
-        }
-        
-        console.log('[Sidebar] Desktop toggled:', this.isCollapsed ? 'collapsed' : 'expanded');
+    }
+    
+    /**
+     * 一般メニューの表示切替
+     */
+    toggleGeneralMenu() {
+        this.showGeneralMenu = !this.showGeneralMenu;
+        this.saveState('sidebar-general-menu', this.showGeneralMenu);
+        this.applyGeneralMenuState();
+    }
+    
+    /**
+     * ポータルメニューの展開切替（デスクトップ）
+     */
+    togglePortal() {
+        this.portalExpanded = !this.portalExpanded;
+        this.saveState('sidebar-portal-expanded', this.portalExpanded);
+        this.applyPortalState();
+    }
+    
+    /**
+     * ポータルメニューの展開切替（モバイル）
+     */
+    togglePortalMobile() {
+        this.portalExpandedMobile = !this.portalExpandedMobile;
+        this.saveState('sidebar-portal-expanded-mobile', this.portalExpandedMobile);
+        this.applyPortalState();
     }
     
     /**
@@ -162,24 +247,30 @@ class SidebarController {
             console.warn('[Sidebar] Mobile sidebar or overlay not found');
             return;
         }
-        
-        console.log('[Sidebar] Opening mobile sidebar...');
-        
+
         this.isMobileOpen = true;
         
-        // オーバーレイを表示
-        this.mobileOverlay.style.display = 'block';
+        // オーバーレイとサイドバーを表示
+        this.mobileOverlay.classList.remove('hidden');
+        this.mobileSidebar.classList.remove('hidden');
         
-        // サイドバーを表示（x-showの代替）
-        this.mobileSidebar.style.display = 'block';
+        // 初期状態を確実に設定（透明＆画面外）
+        this.mobileOverlay.classList.remove('opacity-100');
+        this.mobileOverlay.classList.add('opacity-0');
+        this.mobileSidebar.classList.add('-translate-x-full');
+        this.mobileSidebar.classList.remove('translate-x-0');
         
-        // アニメーション用のクラスを追加（Alpine.jsのx-transitionの代替）
+        // 次フレームでアニメーション開始（ブラウザに初期状態を認識させる）
         requestAnimationFrame(() => {
-            this.mobileOverlay.classList.add('opacity-100');
             this.mobileOverlay.classList.remove('opacity-0');
+            this.mobileOverlay.classList.add('opacity-100');
             
             this.mobileSidebar.classList.remove('-translate-x-full');
             this.mobileSidebar.classList.add('translate-x-0');
+            
+            // モバイルサイドバーが表示されたタイミングで状態を再適用
+            this.applyGeneralMenuState();
+            this.applyPortalState();
         });
         
         // スクロールを無効化
@@ -197,22 +288,20 @@ class SidebarController {
             return;
         }
         
-        console.log('[Sidebar] Closing mobile sidebar...');
-        
         this.isMobileOpen = false;
         
-        // アニメーション開始
+        // アニメーション開始（透明化＆画面外へ移動）
         this.mobileOverlay.classList.remove('opacity-100');
         this.mobileOverlay.classList.add('opacity-0');
         
         this.mobileSidebar.classList.add('-translate-x-full');
         this.mobileSidebar.classList.remove('translate-x-0');
         
-        // アニメーション終了後に非表示
+        // アニメーション終了後にhiddenクラスを追加（300msはtransition-durationと同期）
         setTimeout(() => {
-            this.mobileOverlay.style.display = 'none';
-            this.mobileSidebar.style.display = 'none';
-        }, 200);
+            this.mobileOverlay.classList.add('hidden');
+            this.mobileSidebar.classList.add('hidden');
+        }, 300);
         
         // スクロールを有効化
         document.body.style.overflow = '';
@@ -224,23 +313,58 @@ class SidebarController {
      * イベントリスナーを設定
      */
     setupEventListeners() {
-        console.log('[Sidebar] Setting up event listeners...');
-        
         // デスクトップ: トグルボタン
-        if (this.desktopToggleBtn) {
-            this.desktopToggleBtn.addEventListener('click', (e) => {
+        const desktopToggleBtn = this.desktopSidebar?.querySelector('[data-sidebar-action="toggle-desktop"]');
+        if (desktopToggleBtn) {
+            desktopToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.toggleDesktop();
             });
-            console.log('[Sidebar] Desktop toggle button listener added');
-        } else {
-            console.warn('[Sidebar] Desktop toggle button not found');
+        }
+        
+        // デスクトップ: 一般メニュー表示切替ボタン
+        const generalMenuToggleBtn = this.desktopSidebar?.querySelector('[data-action="toggle-general-menu"]');
+        if (generalMenuToggleBtn) {
+            generalMenuToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleGeneralMenu();
+            });
+        }
+        
+        // デスクトップ: ポータルメニュー展開ボタン
+        const portalToggleBtn = this.desktopSidebar?.querySelector('[data-action="toggle-portal"]');
+        if (portalToggleBtn) {
+            portalToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.togglePortal();
+            });
+        }
+        
+        // モバイル: 一般メニュー表示切替ボタン
+        const generalMenuToggleBtnMobile = this.mobileSidebar?.querySelector('[data-action="toggle-general-menu-mobile"]');
+        if (generalMenuToggleBtnMobile) {
+            generalMenuToggleBtnMobile.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleGeneralMenu(); // デスクトップと状態を共有
+            });
+        }
+        
+        // モバイル: ポータルメニュー展開ボタン
+        const portalToggleBtnMobile = this.mobileSidebar?.querySelector('[data-action="toggle-portal-mobile"]');
+        if (portalToggleBtnMobile) {
+            portalToggleBtnMobile.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.togglePortalMobile();
+            });
         }
         
         // モバイル: オーバーレイクリックで閉じる
         if (this.mobileOverlay) {
-            // クリックイベント
             this.mobileOverlay.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -253,141 +377,58 @@ class SidebarController {
                 e.stopPropagation();
                 this.closeMobile();
             }, { passive: false });
-            
-            console.log('[Sidebar] Mobile overlay listeners added (click + touch)');
-        } else {
-            console.warn('[Sidebar] Mobile overlay not found');
         }
         
         // モバイル: 閉じるボタン
-        if (this.mobileCloseBtn) {
-            this.mobileCloseBtn.addEventListener('click', (e) => {
+        const mobileCloseBtn = this.mobileSidebar?.querySelector('[data-action="close-mobile"]');
+        if (mobileCloseBtn) {
+            mobileCloseBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.closeMobile();
             });
             
             // タッチイベント
-            this.mobileCloseBtn.addEventListener('touchstart', (e) => {
+            mobileCloseBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.closeMobile();
             }, { passive: false });
-            
-            console.log('[Sidebar] Mobile close button listeners added');
-        } else {
-            console.warn('[Sidebar] Mobile close button not found');
         }
         
         // モバイル: リンククリックで閉じる
-        this.mobileLinks.forEach((link, index) => {
-            link.addEventListener('click', () => {
-                console.log(`[Sidebar] Mobile link ${index} clicked, closing sidebar`);
-                setTimeout(() => this.closeMobile(), 100);
+        const mobileLinks = this.mobileSidebar?.querySelectorAll('[data-close-on-click]');
+        if (mobileLinks) {
+            mobileLinks.forEach((link) => {
+                link.addEventListener('click', () => {
+                    setTimeout(() => this.closeMobile(), 100);
+                });
             });
-        });
-        console.log(`[Sidebar] Mobile link listeners added: ${this.mobileLinks.length} links`);
+            console.log(`[Sidebar] Mobile link listeners added: ${mobileLinks.length} links`);
+        }
         
-        // ヘッダーのハンバーガーメニューボタン（複数のセレクタで検索）
-        const hamburgerBtn = document.querySelector('[data-sidebar-toggle="mobile"]') 
-            || document.querySelector('button[\\@click*="toggleSidebar"]')
-            || document.querySelector('button[\\@click*="showSidebar = true"]')
-            || document.querySelector('.lg\\:hidden button[aria-label*="メニュー"]');
-        
-        if (hamburgerBtn) {
-            // クリックイベント
-            hamburgerBtn.addEventListener('click', (e) => {
+        // ハンバーガーメニューボタン（イベント委譲で処理）
+        document.addEventListener('click', (e) => {
+            const hamburgerBtn = e.target.closest('[data-sidebar-toggle="mobile"]');
+            if (hamburgerBtn) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('[Sidebar] Hamburger button clicked');
                 this.openMobile();
-            });
-            
-            // タッチイベント（iPad対応）
-            hamburgerBtn.addEventListener('touchstart', (e) => {
+            }
+        });
+        
+        // タッチイベント（iPad対応）
+        document.addEventListener('touchstart', (e) => {
+            const hamburgerBtn = e.target.closest('[data-sidebar-toggle="mobile"]');
+            if (hamburgerBtn) {
                 e.preventDefault();
                 e.stopPropagation();
                 this.openMobile();
-            }, { passive: false });
-            
-            console.log('[Sidebar] Hamburger button listeners added');
-        } else {
-            console.warn('[Sidebar] Hamburger button not found');
-        }
-        
-        console.log('[Sidebar] Event listeners setup complete');
-    }
-    
-    /**
-     * Alpine.jsのストアとの互換性を提供
-     */
-    setupAlpineCompatibility() {
-        console.log('[Sidebar] Setting up Alpine.js compatibility...');
-        
-        // Alpine.jsが読み込まれる前の場合
-        if (typeof window.Alpine === 'undefined') {
-            window.Alpine = {
-                stores: {},
-                store: (name, data) => {
-                    window.Alpine.stores[name] = data;
-                    console.log(`[Sidebar] Alpine.store('${name}') registered (polyfill)`);
-                }
-            };
-        }
-        
-        // Alpine.storesが存在しない場合
-        if (!window.Alpine.stores) {
-            window.Alpine.stores = {};
-        }
-        
-        // sidebarストアを作成（既存のsidebar-store.jsと互換性を保つ）
-        const sidebarStore = {
-            isCollapsed: this.isCollapsed,
-            toggle: () => {
-                console.log('[Sidebar] Alpine store toggle() called');
-                this.toggleDesktop();
-            },
-            expand: () => {
-                console.log('[Sidebar] Alpine store expand() called');
-                if (this.isCollapsed) {
-                    this.toggleDesktop();
-                }
-            },
-            collapse: () => {
-                console.log('[Sidebar] Alpine store collapse() called');
-                if (!this.isCollapsed) {
-                    this.toggleDesktop();
-                }
             }
-        };
+        }, { passive: false });
         
-        // Proxy で isCollapsed の変更を監視
-        window.Alpine.stores.sidebar = new Proxy(sidebarStore, {
-            set: (target, prop, value) => {
-                console.log(`[Sidebar] Alpine store.${prop} set to:`, value);
-                target[prop] = value;
-                
-                // isCollapsed が変更されたら状態を同期
-                if (prop === 'isCollapsed' && value !== this.isCollapsed) {
-                    this.isCollapsed = value;
-                    this.saveState();
-                    this.applyDesktopState();
-                }
-                
-                return true;
-            }
-        });
-        
-        console.log('[Sidebar] Alpine.js compatibility layer added', window.Alpine.stores.sidebar);
-        
-        // Alpine.jsが初期化されたときにストアを再登録（確実に認識させるため）
-        document.addEventListener('alpine:init', () => {
-            console.log('[Sidebar] Alpine.js initialized, re-registering store...');
-            if (window.Alpine && window.Alpine.store) {
-                window.Alpine.store('sidebar', sidebarStore);
-                console.log('[Sidebar] Store re-registered successfully');
-            }
-        });
+        console.log('[Sidebar] Event listeners setup completed');
     }
 }
 
@@ -397,11 +438,9 @@ window.SidebarController = SidebarController;
 // DOM読み込み完了後に初期化
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('[Sidebar] DOM loaded, initializing...');
         window.sidebarController = new SidebarController();
     });
 } else {
-    console.log('[Sidebar] Document already loaded, initializing immediately...');
     window.sidebarController = new SidebarController();
 }
 

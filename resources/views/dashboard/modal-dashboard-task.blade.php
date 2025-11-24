@@ -1,6 +1,5 @@
 <div
      id="task-modal-wrapper"
-     x-data="{ modalForceRerender: 0 }"
      class="modal fixed inset-0 z-50 flex items-center justify-center p-4 {{ $isChildTheme ? 'modal-child-theme' : '' }} modal-overlay bg-gray-900/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
      data-modal-state="closed">
 
@@ -192,8 +191,7 @@
                         再提案の観点
                     </label>
                     <textarea 
-                        id="refinementPoints" 
-                        x-model="$store.dashboard.refinementPoints"
+                        id="refinementPoints"
                         rows="4"
                         placeholder="改善してほしい点や追加してほしい観点を入力してください"
                         class="w-full px-4 py-2.5 border {{ $isChildTheme ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500' : 'border-[#59B9C6]/30 dark:border-[#59B9C6]/40 focus:ring-[#59B9C6] focus:border-transparent' }} rounded-lg bg-white dark:bg-gray-800 focus:ring-2 transition text-sm placeholder-gray-400 resize-none custom-scrollbar"></textarea>
@@ -247,7 +245,8 @@
                         class="inline-flex justify-center items-center px-5 py-2 border-2 {{ $isChildTheme ? 'border-amber-300 text-amber-800 bg-white hover:bg-amber-50' : 'border-[#59B9C6]/30 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-[#59B9C6]/10 dark:hover:bg-[#59B9C6]/20' }} text-sm font-semibold rounded-lg transition">
                     キャンセル
                 </button>
-                <button type="button" id="submit-refine-btn" :disabled="!$store.dashboard.refinementPoints"
+                <button type="button" id="submit-refine-btn"
+                        disabled
                         class="inline-flex justify-center items-center px-5 py-2 border border-transparent text-sm font-semibold rounded-lg text-white {{ $isChildTheme ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 focus:ring-green-500' : 'bg-gradient-to-r from-[#59B9C6] to-blue-600 hover:from-[#4AA0AB] hover:to-blue-700 focus:ring-[#59B9C6]' }} shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -264,7 +263,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <p class="{{ $isChildTheme ? 'text-amber-900' : 'text-gray-700 dark:text-gray-300' }} font-medium">
+                <p id="modal-loading-text" class="{{ $isChildTheme ? 'text-amber-900' : 'text-gray-700 dark:text-gray-300' }} font-medium">
                     {{ $isChildTheme ? 'クエストを分解しています...' : 'AIでタスクを分解しています...' }}
                 </p>
                 <p class="text-sm {{ $isChildTheme ? 'text-amber-700' : 'text-gray-500 dark:text-gray-400' }} mt-2">しばらくお待ちください</p>

@@ -26,11 +26,21 @@
             <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         @endif
 
+        <!-- Dark Mode Script -->
+        <script>
+            // ダークモードの初期化（フリッカー防止のためhead内で実行）
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
+
         <!-- Page Styles -->
         @stack('styles')
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/app.css', 'resources/css/sidebar.css', 'resources/js/app.js'])
         
         {{-- サイドバー制御（Alpine.jsの代わり） --}}
         @vite(['resources/js/common/sidebar.js'])
@@ -43,6 +53,8 @@
         {{-- 認証済みユーザーのみ通知ポーリング読み込み --}}
         @auth
             @vite(['resources/js/common/notification-polling.js'])
+            {{-- グループタスク詳細モーダル制御（全ページ共通） --}}
+            @vite(['resources/js/dashboard/group-task-detail.js'])
         @endauth
         
         {{-- 花火エフェクト用 CDN（子ども向けのみ） --}}
@@ -72,6 +84,10 @@
 
         {{-- フラッシュメッセージコンポーネントを追加 --}}
         <x-flash-message />
+        
+        {{-- 汎用ダイアログコンポーネント（全ページ共通） --}}
+        <x-alert-dialog />
+        <x-confirm-dialog />
 
         {{-- アバターウィジェット（全ページ共通） --}}
         @auth

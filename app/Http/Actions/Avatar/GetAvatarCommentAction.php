@@ -29,16 +29,7 @@ class GetAvatarCommentAction
         ]);
         
         $data = $this->teacherAvatarService->getCommentForEvent($request->user(), $eventType);
-        
-        $fetchTime = microtime(true) - $startTime;
-        
-        logger()->info('[GetAvatarCommentAction] Service returned', [
-            'event_type' => $eventType,
-            'data' => $data,
-            'fetch_time' => round($fetchTime * 1000, 2) . 'ms',
-            'timestamp' => microtime(true),
-        ]);
-        
+
         if (!$data) {
             logger()->warning('[GetAvatarCommentAction] No data returned', [
                 'event_type' => $eventType,

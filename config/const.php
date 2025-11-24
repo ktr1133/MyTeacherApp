@@ -266,4 +266,32 @@ return [
         'width' => '512',
         'height' => '512',
     ],
+
+    // ========================================
+    // ポータルサイト設定
+    // ========================================
+    
+    /**
+     * アプリ名定義
+     */
+    'app_names' => [
+        'myteacher' => 'MyTeacher',
+        'app2'      => 'App2 (準備中)',
+        'app3'      => 'App3 (準備中)',
+    ],
+
+    /**
+     * FAQカテゴリ定義
+     */
+    'faq_categories' => [
+        'getting_started'   => 'はじめに',
+        'tasks'             => 'タスク管理',
+        'group_tasks'       => 'グループタスク',
+        'ai_features'       => 'AI機能',
+        'avatars'           => '教師アバター',
+        'tokens'            => 'トークン',
+        'account'           => 'アカウント',
+        'troubleshooting'   => 'トラブルシューティング',
+        'other'             => 'その他',
+    ],
 ];

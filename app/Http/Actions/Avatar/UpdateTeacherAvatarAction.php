@@ -4,7 +4,6 @@ namespace App\Http\Actions\Avatar;
 
 use App\Http\Requests\Avatar\StoreTeacherAvatarRequest as Request;
 use App\Services\Avatar\TeacherAvatarServiceInterface;
-use Illuminate\Http\RedirectResponse;
 
 /**
  * 教師アバター更新アクション

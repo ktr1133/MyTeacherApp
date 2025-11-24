@@ -95,10 +95,14 @@
             
             // プレビュー数はXLサイズ基準（最大の画面サイズを想定）
             $preview = $bucket['tasks']->take($xlPreview);
+            
+            // グループタスクが含まれているか判定
+            $hasGroupTask = $bucket['tasks']->contains(fn($task) => !is_null($task->group_task_id));
         @endphp
 
         <div class="bento-card group relative rounded-2xl shadow-lg hover:shadow-2xl p-4 lg:p-6 cursor-pointer transition-all duration-300 {{ $sizeClass }}"
-             @click="$dispatch('open-tag-modal-{{ $prefix }}-{{ $bucket['id'] }}')">
+             data-tag-modal-id="{{ $prefix }}-{{ $bucket['id'] }}"
+             onclick="window.openTagModal && window.openTagModal('{{ $prefix }}-{{ $bucket['id'] }}');">
             
             {{-- ヘッダー --}}
             <div class="flex items-start justify-between mb-3 lg:mb-4">
@@ -110,9 +114,34 @@
                     </span>
                     <h3 class="text-base lg:text-lg font-bold text-gray-900 dark:text-white truncate">{{ $bucket['name'] }}</h3>
                 </div>
-                <span class="tag-badge-gradient inline-flex items-center justify-center min-w-[2rem] lg:min-w-[2.5rem] h-6 lg:h-7 px-2 lg:px-3 rounded-full text-xs font-bold shadow-md flex-shrink-0 ml-2">
-                    {{ $count }}
-                </span>
+                <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                    <span class="tag-badge-gradient inline-flex items-center justify-center min-w-[2rem] lg:min-w-[2.5rem] h-6 lg:h-7 px-2 lg:px-3 rounded-full text-xs font-bold shadow-md">
+                        {{ $count }}
+                    </span>
+                    @if($count > 0 && $prefix === 'todo')
+                        <button type="button"
+                                class="bulk-complete-btn inline-flex items-center justify-center h-6 lg:h-7 px-2 lg:px-3 rounded-lg text-xs font-semibold text-white transition shadow-md {{ $hasGroupTask ? 'bg-gray-400 cursor-not-allowed opacity-60' : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 hover:shadow-lg' }}"
+                                data-bucket-tasks="{{ $bucket['tasks']->pluck('id')->implode(',') }}"
+                                data-bucket-name="{{ $bucket['name'] }}"
+                                data-is-completed="true"
+                                data-has-group-task="{{ $hasGroupTask ? 'true' : 'false' }}"
+                                onclick="event.stopPropagation();"
+                                title="{{ $hasGroupTask ? 'グループタスクが含まれているため一括操作できません' : 'このタグのタスクをすべて完了' }}">
+                            全完
+                        </button>
+                    @elseif($count > 0 && $prefix === 'completed')
+                        <button type="button"
+                                class="bulk-complete-btn inline-flex items-center justify-center h-6 lg:h-7 px-2 lg:px-3 rounded-lg text-xs font-semibold text-white transition shadow-md {{ $hasGroupTask ? 'bg-gray-400 cursor-not-allowed opacity-60' : 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 hover:shadow-lg' }}"
+                                data-bucket-tasks="{{ $bucket['tasks']->pluck('id')->implode(',') }}"
+                                data-bucket-name="{{ $bucket['name'] }}"
+                                data-is-completed="false"
+                                data-has-group-task="{{ $hasGroupTask ? 'true' : 'false' }}"
+                                onclick="event.stopPropagation();"
+                                title="{{ $hasGroupTask ? 'グループタスクが含まれているため一括操作できません' : 'このタグのタスクをすべて未完了に戻す' }}">
+                            全戻
+                        </button>
+                    @endif
+                </div>
             </div>
 
             {{-- タスクプレビュー --}}
@@ -142,6 +171,7 @@
             'tagName' => $bucket['name'],
             'tasksOfTag' => $bucket['tasks'],
             'allTags' => $tags,
+            'isChildTheme' => $isChildTheme,
         ])
     @endforeach
 </div>

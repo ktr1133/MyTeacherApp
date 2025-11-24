@@ -495,8 +495,14 @@ class TaskSearchController {
     }
 }
 
+// クラスをグローバルに公開（search-modal.jsから利用可能に）
+window.TaskSearchController = TaskSearchController;
+
+// グローバルインスタンスとして公開（search-modal.jsから再初期化可能に）
+window.taskSearchController = null;
+
 // 初期化
 document.addEventListener('DOMContentLoaded', () => {
-    const searchController = new TaskSearchController();
-    searchController.init();
+    window.taskSearchController = new TaskSearchController();
+    window.taskSearchController.init();
 });

@@ -5,6 +5,7 @@ namespace App\Http\Responders\Task;
 use App\Repositories\Task\TaskRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * タスク検索結果のレスポンダー
@@ -29,6 +30,9 @@ class TaskSearchResultsResponder
     {
         // 全タグを取得（モーダルで使用）
         $allTags = $this->taskRepository->getAllTags();
+        
+        // 子どもテーマ判定
+        $isChildTheme = Auth::user()->theme === 'child';
 
         return response()->view('tasks.search-results', [
             'tasks' => $tasks,
@@ -37,6 +41,7 @@ class TaskSearchResultsResponder
             'operator' => $searchParams['operator'] ?? 'or',
             'totalCount' => $tasks->count(),
             'allTags' => $allTags,
+            'isChildTheme' => $isChildTheme,
         ]);
     }
 }

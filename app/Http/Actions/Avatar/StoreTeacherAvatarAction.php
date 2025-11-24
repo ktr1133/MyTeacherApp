@@ -6,6 +6,7 @@ use App\Http\Requests\Avatar\StoreTeacherAvatarRequest as Request;
 use App\Services\Avatar\TeacherAvatarServiceInterface;
 use App\Responders\Avatar\TeacherAvatarResponder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 
 /**
  * 教師アバター保存アクション
@@ -35,7 +36,7 @@ class StoreTeacherAvatarAction
                 ->with('error', $e->getMessage());
                 
         } catch (\Exception $e) {
-            \Log::error('Avatar creation failed', [
+            Log::error('Avatar creation failed', [
                 'user_id' => $request->user()->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

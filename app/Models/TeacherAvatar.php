@@ -30,6 +30,7 @@ class TeacherAvatar extends Model
         'draw_model_version',
         'estimated_token_usage',
         'is_transparent',
+        'is_chibi',
         'generation_status',
         'last_generated_at',
         'is_visible',
@@ -38,6 +39,8 @@ class TeacherAvatar extends Model
     protected $casts = [
         'last_generated_at' => 'datetime',
         'is_visible' => 'boolean',
+        'is_transparent' => 'boolean',
+        'is_chibi' => 'boolean',
     ];
 
     /**

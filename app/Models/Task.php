@@ -173,6 +173,19 @@ class Task extends Model
     }
 
     /**
+     * スパンのラベルを取得
+     */
+    public function getSpanLabel(): string
+    {
+        return match($this->span) {
+            config('const.task_spans.short') => '短期',
+            config('const.task_spans.mid') => '中期',
+            config('const.task_spans.long') => '長期',
+            default => '不明',
+        };
+    }
+
+    /**
      * 担当者が見る場合の表示タブ判定
      * - 未完了: false, null
      * - 申請中: true, null (完了済みだが未承認)

@@ -36,7 +36,7 @@
 @endphp
 
 {{-- 未完了タブ --}}
-<div x-show="activeTab === 'todo'" x-transition class="task-card-enter">
+<div data-tab-content="todo" class="task-card-enter" style="display: block;">
     @if($todoBuckets->isEmpty())
         <div class="empty-state text-center py-16 bento-card rounded-2xl shadow-lg">
             <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -46,12 +46,12 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">新しいタスクを登録してみましょう</p>
         </div>
     @else
-        @include('dashboard.partials.task-bento-layout', ['buckets' => $todoBuckets, 'tags' => $tags, 'prefix' => 'todo'])
+        @include('dashboard.partials.task-bento-layout', ['buckets' => $todoBuckets, 'tags' => $tags, 'prefix' => 'todo', 'isChildTheme' => $isChildTheme])
     @endif
 </div>
 
 {{-- 完了済タブ --}}
-<div x-show="activeTab === 'completed'" x-transition class="task-card-enter">
+<div data-tab-content="completed" class="task-card-enter" style="display: none;">
     @if($completedBuckets->isEmpty())
         <div class="empty-state text-center py-16 bento-card rounded-2xl shadow-lg">
             <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,6 +61,6 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">タスクを完了するとここに表示されます</p>
         </div>
     @else
-        @include('dashboard.partials.task-bento-layout', ['buckets' => $completedBuckets, 'tags' => $tags, 'prefix' => 'completed'])
+        @include('dashboard.partials.task-bento-layout', ['buckets' => $completedBuckets, 'tags' => $tags, 'prefix' => 'completed', 'isChildTheme' => $isChildTheme])
     @endif
 </div>

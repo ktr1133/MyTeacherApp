@@ -30,18 +30,18 @@ function formatTokenAmount(amount) {
     // 1,000以上 1,000,000未満 → k (キロ)
     if (num < 1000000) {
         const value = num / 1000;
-        return value.toFixed(2) + 'k';
+        return value.toFixed(1) + 'k';
     }
     
     // 1,000,000以上 1,000,000,000未満 → M (メガ)
     if (num < 1000000000) {
         const value = num / 1000000;
-        return value.toFixed(2) + 'M';
+        return value.toFixed(1) + 'M';
     }
     
     // 1,000,000,000以上 → B (ビリオン)
     const value = num / 1000000000;
-    return value.toFixed(2) + 'B';
+    return value.toFixed(1) + 'B';
 }
 
 /**

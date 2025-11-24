@@ -201,6 +201,12 @@ class ModalController {
         
         // ボタンを無効化
         this.updateButtonStates();
+        
+        // 再提案ボタンを無効化
+        const submitRefineBtn = document.getElementById('submit-refine-btn');
+        if (submitRefineBtn) {
+            submitRefineBtn.disabled = true;
+        }
 
         // モーダルを表示
         this.wrapper.classList.remove('hidden');
@@ -420,6 +426,18 @@ class ModalController {
                             // DOM に直接タスクリストをレンダリング
                             this.renderProposedTasks(store?.proposedTasks || [], store?.generatedTag || '');
                         });
+                    }
+                    
+                    // 再提案画面に遷移したときの初期化
+                    if (name === 'refine') {
+                        const refinementInput = document.getElementById('refinementPoints');
+                        if (refinementInput) {
+                            refinementInput.value = '';
+                        }
+                        const submitRefineBtn = document.getElementById('submit-refine-btn');
+                        if (submitRefineBtn) {
+                            submitRefineBtn.disabled = true;
+                        }
                     }
                 } else {
                     element.style.display = 'none';
@@ -720,12 +738,36 @@ class ModalController {
     }
 
     /**
+     * ローディング表示（メッセージ指定可能）
+     * @param {string} message - 表示するメッセージ（省略時はデフォルト）
+     */
+    showLoadingWithMessage(message) {
+        if (this.loadingOverlay) {
+            // メッセージを更新
+            const loadingText = document.getElementById('modal-loading-text');
+            if (loadingText && message) {
+                loadingText.textContent = message;
+            }
+            
+            this.loadingOverlay.classList.remove('hidden');
+            this.loadingOverlay.classList.add('flex');
+        }
+    }
+
+    /**
      * ローディング非表示
      */
     hideLoading() {
         if (this.loadingOverlay) {
             this.loadingOverlay.classList.remove('flex');
             this.loadingOverlay.classList.add('hidden');
+            
+            // メッセージをデフォルトに戻す
+            const loadingText = document.getElementById('modal-loading-text');
+            if (loadingText) {
+                const isChildTheme = this.isChildTheme;
+                loadingText.textContent = isChildTheme ? 'クエストを分解しています...' : 'AIでタスクを分解しています...';
+            }
         }
     }
 
@@ -921,17 +963,25 @@ class DashboardController {
         }
 
         if (!title || title === '') {
-            alert('タスク名を入力してください。');
-            if (titleInput) {
-                titleInput.focus();
+            if (window.showAlertDialog) {
+                window.showAlertDialog('タスク名を入力してください。', 'エラー', () => {
+                    if (titleInput) titleInput.focus();
+                });
+            } else {
+                alert('タスク名を入力してください。');
+                if (titleInput) titleInput.focus();
             }
             return;
         }
 
         if (isRefinement && (!context || context === '')) {
-            alert('再提案の観点を入力してください。');
-            if (refinementInput) {
-                refinementInput.focus();
+            if (window.showAlertDialog) {
+                window.showAlertDialog('再提案の観点を入力してください。', 'エラー', () => {
+                    if (refinementInput) refinementInput.focus();
+                });
+            } else {
+                alert('再提案の観点を入力してください。');
+                if (refinementInput) refinementInput.focus();
             }
             return;
         }
@@ -974,7 +1024,11 @@ class DashboardController {
             }).filter(task => task.title.trim() !== '');
 
             if (proposedTasks.length === 0) {
-                alert('タスクの分解に失敗しました。提案されたタスクがありません。');
+                if (window.showAlertDialog) {
+                    window.showAlertDialog('タスクの分解に失敗しました。提案されたタスクがありません。', 'エラー');
+                } else {
+                    alert('タスクの分解に失敗しました。提案されたタスクがありません。');
+                }
                 this.modal.hideLoading();
                 this.updateState({ isProposing: false });
                 return;
@@ -1004,7 +1058,12 @@ class DashboardController {
             this.modal.switchView('decomposition');
             
         } catch (error) {
-            alert('タスクの分解中にエラーが発生しました。\n' + (error.message || ''));
+            const errorMsg = 'タスクの分解中にエラーが発生しました。\n' + (error.message || '');
+            if (window.showAlertDialog) {
+                window.showAlertDialog(errorMsg, 'エラー');
+            } else {
+                alert(errorMsg);
+            }
             this.modal.hideLoading();
             this.updateState({ isProposing: false });
         }
@@ -1055,11 +1114,19 @@ class DashboardController {
         // スパンが未選択のタスクをチェック
         const hasUnselectedSpan = proposedTasks.some((_, index) => !selectedTaskSpans[index]);
         if (hasUnselectedSpan) {
-            alert('すべてのタスクにスパンを選択してください。');
+            if (window.showAlertDialog) {
+                window.showAlertDialog('すべてのタスクにスパンを選択してください。', 'エラー');
+            } else {
+                alert('すべてのタスクにスパンを選択してください。');
+            }
             return;
         }
 
         try {
+            // ローディング表示（メッセージを変更）
+            this.modal.showLoadingWithMessage(
+                this.modal.isChildTheme ? 'クエストを作成しています...' : 'タスクを作成しています...'
+            );
             this.updateState({ isProposing: true });
 
             // タスクにスパンとタグを付与して登録
@@ -1100,8 +1167,10 @@ class DashboardController {
                 this.modal.close();
                 this.modal.hideLoading();
 
-                // タスクリストを部分更新
-                this.updateTaskList(response.tasks, store.generatedTag);
+                // サーバーから返されたHTMLで画面を更新
+                if (response.html) {
+                    this.updateTaskListWithHTML(response.html);
+                }
             } else {
                 throw new Error(response.message || 'タスクの作成に失敗しました。');
             }
@@ -1235,7 +1304,32 @@ class DashboardController {
     }
 
     /**
-     * タスクリストを部分更新（新規タスクを追加）
+     * サーバーから返されたHTMLで画面を更新
+     * @param {string} html - サーバーサイドレンダリングされたHTML
+     */
+    updateTaskListWithHTML(html) {
+        // タスク一覧のコンテナを取得（dashboard.blade.phpの構造に基づく）
+        const taskListContainer = document.querySelector('#task-list-container');
+        
+        if (!taskListContainer) {
+            console.error('[updateTaskListWithHTML] Task list container not found');
+            return;
+        }
+
+        // HTMLを更新（Bladeの全タブ構造を置き換え）
+        taskListContainer.innerHTML = html;
+
+        // Alpine.jsの再初期化（モーダルイベントリスナーなどを復元）
+        if (window.Alpine) {
+            Alpine.initTree(taskListContainer);
+        }
+
+        console.log('[updateTaskListWithHTML] Task list updated with server-rendered HTML');
+    }
+
+    /**
+     * タスクリストを部分更新（レガシーメソッド - 非推奨）
+     * @deprecated サーバーサイドHTML生成方式に移行済み
      * @param {Array} tasks - 作成されたタスクの配列
      * @param {string} tagName - タグ名
      */
@@ -1535,6 +1629,9 @@ class DashboardEventHandler {
                     store.refinementPoints = e.target.value;
                 }
                 this.dashboard.state.refinementPoints = e.target.value;
+                
+                // 再提案ボタンの有効/無効を更新
+                this.updateRefineButtonState();
             };
             refinementInput.addEventListener('input', refinementInputHandler);
             this.boundHandlers.set('refinementPoints-input', refinementInputHandler);
@@ -1605,6 +1702,19 @@ class DashboardEventHandler {
         
         element.addEventListener('click', boundHandler, { once: false });
         this.boundHandlers.set(id, boundHandler);
+    }
+
+    /**
+     * 再提案ボタンの有効/無効を更新
+     */
+    updateRefineButtonState() {
+        const submitRefineBtn = document.getElementById('submit-refine-btn');
+        if (!submitRefineBtn) return;
+        
+        const refinementInput = document.getElementById('refinementPoints');
+        const hasInput = refinementInput?.value.trim().length > 0;
+        
+        submitRefineBtn.disabled = !hasInput;
     }
 
     destroy() {

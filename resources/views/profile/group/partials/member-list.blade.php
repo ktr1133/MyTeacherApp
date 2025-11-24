@@ -32,18 +32,18 @@
                             <div class="flex items-center gap-2">
                                 {{-- 編集権限 --}}
                                 @if (!($member->group && $member->group->master_user_id === $member->id))
-                                    <form method="POST" action="{{ route('group.member.permission', $member) }}" class="inline-flex">
+                                    <form method="POST" action="{{ route('group.member.permission', $member) }}" class="inline-flex" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('{{ $member->group_edit_flg ? __('編集権限を外しますか？') : __('編集権限を付与しますか？') }}', () => { event.target.submit(); }); } else { if (confirm('{{ $member->group_edit_flg ? __('編集権限を外しますか？') : __('編集権限を付与しますか？') }}')) { event.target.submit(); } }">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="group_edit_flg" value="{{ $member->group_edit_flg ? 0 : 1 }}">
-                                        <x-secondary-button>{{ $member->group_edit_flg ? __('編集権限を外す') : __('編集権限を付与') }}</x-secondary-button>
+                                        <x-secondary-button type="submit">{{ $member->group_edit_flg ? __('編集権限を外す') : __('編集権限を付与') }}</x-secondary-button>
                                     </form>
                                 @endif
                                 {{-- マスター譲渡 --}}
                                 @if (Auth::user()->group && Auth::user()->group->master_user_id === Auth::id() && $member->id !== Auth::id())
-                                    <form method="POST" action="{{ route('group.master.transfer', $member) }}" class="inline-flex">
+                                    <form method="POST" action="{{ route('group.master.transfer', $member) }}" class="inline-flex" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('{{ __('マスター権限を譲渡しますか？この操作は取り消せません。') }}', () => { event.target.submit(); }); } else { if (confirm('{{ __('マスター権限を譲渡しますか？この操作は取り消せません。') }}')) { event.target.submit(); } }">
                                         @csrf
-                                        <x-secondary-button>{{ __('マスター譲渡') }}</x-secondary-button>
+                                        <x-secondary-button type="submit">{{ __('マスター譲渡') }}</x-secondary-button>
                                     </form>
                                 @endif
                                 {{-- 子ども用画面設定 --}}
@@ -78,7 +78,7 @@
                                 @endif
                                 {{-- メンバー削除 --}}
                                 @if ($member->id !== (Auth::user()->group->master_user_id ?? 0))
-                                    <form method="POST" action="{{ route('group.member.remove', $member) }}" class="inline-flex" onsubmit="return confirm('{{ __('このメンバーをグループから外しますか？') }}')">
+                                    <form method="POST" action="{{ route('group.member.remove', $member) }}" class="inline-flex" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('{{ __('このメンバーをグループから外しますか？') }}', () => { event.target.submit(); }); } else { if (confirm('{{ __('このメンバーをグループから外しますか？') }}')) { event.target.submit(); } }">
                                         @csrf
                                         @method('DELETE')
                                         <x-danger-button>{{ __('外す') }}</x-danger-button>

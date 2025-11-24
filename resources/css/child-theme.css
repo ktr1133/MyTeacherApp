@@ -1320,6 +1320,51 @@
     flex-shrink: 0;
 }
 
+/* フォームグループ（子ども向け） */
+.child-theme .avatar-form-group label {
+    font-size: var(--child-text-base);
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.child-theme .avatar-form-group select,
+.child-theme .avatar-form-group input {
+    font-size: var(--child-text-sm);
+}
+
+/* グリッドレイアウト調整（子ども向け） */
+.child-theme .avatar-form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .child-theme .avatar-form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .child-theme .avatar-form-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* モバイルでのフォント縮小 */
+@media (max-width: 767px) {
+    .child-theme .avatar-form-group label {
+        font-size: var(--child-text-sm);
+    }
+    
+    .child-theme .avatar-form-group select,
+    .child-theme .avatar-form-group input {
+        font-size: var(--child-text-xs);
+    }
+}
+
 /* スライダー（子供向け） */
 
 /* 表情ラベル（子ども向け） */
@@ -1422,6 +1467,95 @@
     flex-direction: column;
     gap: 0;
     margin: 0;
+}
+
+/* ===================================
+   トークン履歴画面 統計カード（子ども向け）
+   =================================== */
+
+/* 残高カード（amber系） */
+.child-theme .token-stat-card-balance .token-stat-title {
+    color: rgb(146 64 14) !important; /* amber-800 */
+}
+
+.dark .child-theme .token-stat-card-balance .token-stat-title {
+    color: rgb(251 191 36) !important; /* amber-400 */
+}
+
+.child-theme .token-stat-card-balance .token-stat-value {
+    color: rgb(146 64 14) !important; /* amber-800 */
+}
+
+.dark .child-theme .token-stat-card-balance .token-stat-value {
+    color: rgb(251 191 36) !important; /* amber-400 */
+}
+
+.child-theme .token-stat-card-balance .token-stat-unit {
+    color: rgb(180 83 9) !important; /* amber-700 */
+}
+
+.dark .child-theme .token-stat-card-balance .token-stat-unit {
+    color: rgb(245 158 11) !important; /* amber-500 */
+}
+
+/* 購入カード（green系） */
+.child-theme .token-stat-card-purchase .token-stat-title {
+    color: rgb(22 101 52) !important; /* green-800 */
+}
+
+.dark .child-theme .token-stat-card-purchase .token-stat-title {
+    color: rgb(74 222 128) !important; /* green-400 */
+}
+
+.child-theme .token-stat-card-purchase .token-stat-value {
+    color: rgb(22 101 52) !important; /* green-800 */
+}
+
+.dark .child-theme .token-stat-card-purchase .token-stat-value {
+    color: rgb(74 222 128) !important; /* green-400 */
+}
+
+.child-theme .token-stat-card-purchase .token-stat-unit {
+    color: rgb(21 128 61) !important; /* green-700 */
+}
+
+.dark .child-theme .token-stat-card-purchase .token-stat-unit {
+    color: rgb(34 197 94) !important; /* green-500 */
+}
+
+/* 使用カード（blue系） */
+.child-theme .token-stat-card-usage .token-stat-title {
+    color: rgb(30 64 175) !important; /* blue-800 */
+}
+
+.dark .child-theme .token-stat-card-usage .token-stat-title {
+    color: rgb(96 165 250) !important; /* blue-400 */
+}
+
+.child-theme .token-stat-card-usage .token-stat-value {
+    color: rgb(30 64 175) !important; /* blue-800 */
+}
+
+.dark .child-theme .token-stat-card-usage .token-stat-value {
+    color: rgb(96 165 250) !important; /* blue-400 */
+}
+
+.child-theme .token-stat-card-usage .token-stat-unit {
+    color: rgb(29 78 216) !important; /* blue-700 */
+}
+
+.dark .child-theme .token-stat-card-usage .token-stat-unit {
+    color: rgb(59 130 246) !important; /* blue-500 */
+}
+
+/* 統計カードのtoken-amountクラスはグラデーションを無効化して単色表示 */
+.child-theme .token-stat-card-balance .token-amount,
+.child-theme .token-stat-card-purchase .token-amount,
+.child-theme .token-stat-card-usage .token-amount {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+    background-clip: unset !important;
 }
 
 /* 表情スライダーコンテナ */
@@ -2896,5 +3030,149 @@
     
     .child-theme .floating-particle {
         font-size: 1.75rem !important;
+    }
+}
+/* ===================================
+   アバター編集画面用スタイル（子ども向け）
+   =================================== */
+
+/* セクションタイトルの調整 */
+.child-theme .avatar-form-group label {
+    font-size: var(--child-text-base);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* セレクトボックスのフォントサイズ調整 */
+.child-theme .avatar-form-input {
+    font-size: var(--child-text-sm);
+}
+
+/* グリッドレイアウトの調整（折り返し防止） */
+@media (min-width: 768px) {
+    .child-theme .avatar-card form > div > .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .child-theme .avatar-card form > div > .grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+    }
+}
+
+/* セクションヘッダーのマージン調整 */
+.child-theme .avatar-card form > div > h2 {
+    margin-bottom: 1rem;
+    font-size: var(--child-text-xl);
+}
+
+/* 画像再生成ボタン */
+.child-theme .avatar-btn-regenerate {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: var(--child-text-base);
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+    border-radius: 0.75rem;
+    border: none;
+    box-shadow: 0 4px 6px rgba(255, 107, 107, 0.3);
+    transition: all 0.3s var(--child-transition-bounce);
+    cursor: pointer;
+}
+
+.child-theme .avatar-btn-regenerate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(255, 107, 107, 0.4);
+}
+
+.child-theme .avatar-btn-regenerate:active {
+    transform: translateY(0);
+}
+
+/* 画像再生成警告カード */
+.child-theme .regenerate-warning-card {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 230, 109, 0.1) 100%);
+    border: 2px solid rgba(255, 107, 107, 0.3);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.dark .child-theme .regenerate-warning-card {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 230, 109, 0.2) 100%);
+    border-color: rgba(255, 107, 107, 0.4);
+}
+
+.child-theme .regenerate-warning-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.child-theme .regenerate-warning-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: white;
+}
+
+/* 戻るボタン（子ども向け） */
+.child-theme .avatar-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: var(--child-text-sm);
+    font-weight: 600;
+    color: #FF6B6B;
+    background: rgba(255, 107, 107, 0.1);
+    border: 2px solid rgba(255, 107, 107, 0.3);
+    border-radius: 0.75rem;
+    transition: all 0.3s var(--child-transition-bounce);
+}
+
+.child-theme .avatar-back-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+    transform: translateX(-3px);
+}
+
+.dark .child-theme .avatar-back-btn {
+    color: #FFE66D;
+    background: rgba(255, 230, 109, 0.1);
+    border-color: rgba(255, 230, 109, 0.3);
+}
+
+.dark .child-theme .avatar-back-btn:hover {
+    background: rgba(255, 230, 109, 0.2);
+}
+
+/* アバターヘッダーアイコン（子ども向け） */
+.child-theme .avatar-header-icon {
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+/* ===================================
+   レスポンシブ調整（アバター編集画面）
+   =================================== */
+@media (max-width: 767px) {
+    .child-theme .avatar-card form > div > h2 {
+        font-size: var(--child-text-lg);
+    }
+    
+    .child-theme .avatar-form-group label {
+        font-size: var(--child-text-sm);
+    }
+    
+    .child-theme .avatar-form-input {
+        font-size: var(--child-text-xs);
     }
 }

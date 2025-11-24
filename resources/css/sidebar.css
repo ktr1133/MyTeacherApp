@@ -1,0 +1,423 @@
+/* ========================================
+   サイドバー専用スタイル
+   ======================================== */
+
+/* ========================================
+   デスクトップサイドバー - 基本レイアウト
+   ======================================== */
+
+aside[data-sidebar="desktop"] {
+    width: 260px; /* 展開時の幅 */
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-x: hidden; /* 横スクロールを防止 */
+}
+
+aside[data-sidebar="desktop"].collapsed {
+    width: 72px; /* 最小化時の幅 */
+    overflow-x: hidden; /* 横スクロールを完全に非表示 */
+}
+
+/* 展開時のみ表示する要素 */
+aside[data-sidebar="desktop"] [data-show-when="expanded"] {
+    opacity: 1;
+    display: block;
+    transition: opacity 0.3s ease;
+}
+
+aside[data-sidebar="desktop"].collapsed [data-show-when="expanded"] {
+    opacity: 0;
+    display: none;
+}
+
+/* 最小化時のみ表示する要素 */
+aside[data-sidebar="desktop"] [data-show-when="collapsed"] {
+    opacity: 0;
+    display: none;
+}
+
+aside[data-sidebar="desktop"].collapsed [data-show-when="collapsed"] {
+    opacity: 1;
+    display: block;
+    transition: opacity 0.3s ease;
+}
+
+/* ========================================
+   サイドバーナビゲーション
+   ======================================== */
+
+/* メニューコンテナの縦配置を強制 */
+aside[data-sidebar="desktop"] nav > div:has([data-general-menu]),
+aside[data-sidebar="mobile"] nav {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+[data-general-menu],
+[data-general-menu-mobile] {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.sidebar-nav-link {
+    position: relative;
+    transition: all 0.3s ease;
+    display: flex !important;
+}
+
+.sidebar-nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    transform: scaleY(0);
+    transition: transform 0.3s ease, left 0.3s ease;
+}
+
+.sidebar-nav-link.active::before {
+    transform: scaleY(1);
+}
+
+.sidebar-nav-link:hover {
+    background: linear-gradient(90deg, rgba(89, 185, 198, 0.1), transparent);
+}
+
+/* サイドバー最小化時: 左側の縦線を強調表示 */
+aside[data-sidebar="desktop"].collapsed .sidebar-nav-link::before {
+    width: 4px; /* 通常時3px → 最小化時4pxに拡大 */
+    left: 0;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6) !important; /* グラデーション維持 */
+}
+
+aside[data-sidebar="desktop"].collapsed .sidebar-nav-link.active::before {
+    /* 選択時はさらに目立たせる */
+    width: 5px;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6) !important; /* グラデーション維持 */
+    box-shadow: 2px 0 8px rgba(89, 185, 198, 0.4); /* 選択時のみシャドー */
+}
+
+/* 最小化時は背景色とボックスシャドーを無効化 */
+aside[data-sidebar="desktop"].collapsed .sidebar-nav-link {
+    background: transparent !important;
+    border-bottom: none !important; /* x-nav-linkコンポーネントのborder-bを無効化 */
+}
+
+aside[data-sidebar="desktop"].collapsed .sidebar-nav-link:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
+}
+
+aside[data-sidebar="desktop"].collapsed .sidebar-nav-link.active {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-bottom: none !important; /* activeクラスのborder-b-2を無効化 */
+}
+
+aside[data-sidebar="desktop"].collapsed .sidebar-nav-link svg {
+    /* アイコンサイズは通常時と同じに保つ */
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+aside[data-sidebar="desktop"].collapsed .sidebar-nav-link:hover svg {
+    /* ホバー時は少し拡大 */
+    transform: scale(1.15);
+}
+
+aside[data-sidebar="desktop"].collapsed .sidebar-nav-link.active svg {
+    /* 選択時も少し拡大 */
+    transform: scale(1.1);
+}
+
+/* ========================================
+   トークン残高表示
+   ======================================== */
+
+/* 展開時のトークン残高表示 */
+[data-token-balance-expanded] {
+    background: linear-gradient(to bottom right, #fffbeb, #fef3c7);
+    border: 1px solid #fcd34d;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.dark [data-token-balance-expanded] {
+    background: linear-gradient(to bottom right, rgba(120, 53, 15, 0.2), rgba(161, 98, 7, 0.2));
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* 最小化時のトークン残高表示 */
+[data-token-balance-collapsed] {
+    background: linear-gradient(to bottom right, #fffbeb, #fef3c7);
+    border: 1px solid #fcd34d;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.dark [data-token-balance-collapsed] {
+    background: linear-gradient(to bottom right, rgba(120, 53, 15, 0.2), rgba(161, 98, 7, 0.2));
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* サイドバー最小化時: トークン残高の背景・境界線を透明化 */
+aside[data-sidebar="desktop"].collapsed [data-token-balance-expanded],
+aside[data-sidebar="desktop"].collapsed [data-token-balance-collapsed] {
+    background: transparent !important;
+    border: none !important;
+    padding: 0.5rem !important;
+}
+
+/* モバイル版トークン残高表示 */
+[data-token-balance-mobile] {
+    background: linear-gradient(to bottom right, #fffbeb, #fef3c7);
+    border: 1px solid #fcd34d;
+    border-radius: 0.75rem;
+    padding: 1rem;
+}
+
+.dark [data-token-balance-mobile] {
+    background: linear-gradient(to bottom right, rgba(120, 53, 15, 0.2), rgba(161, 98, 7, 0.2));
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* ========================================
+   バッジスタイル
+   ======================================== */
+
+.badge-gradient {
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.375rem;
+    line-height: 1 !important;
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.375rem;
+    line-height: 1 !important;
+}
+
+/* ========================================
+   ポータルメニュー - アコーディオン
+   ======================================== */
+
+/* ポータルメニュー展開ボタン */
+button[data-action="toggle-portal"] svg {
+    transition: transform 0.3s ease;
+}
+
+/* 展開時：アイコンを180度回転 */
+[data-portal-submenu]:not([style*="display: none"]) ~ button[data-action="toggle-portal"] svg,
+button[data-action="toggle-portal"].active svg {
+    transform: rotate(180deg);
+}
+
+/* ポータルサブメニューの表示・非表示 */
+[data-portal-submenu] {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+[data-portal-submenu]:not([style*="display: none"]) {
+    max-height: 500px; /* 十分な高さ */
+    opacity: 1;
+}
+
+/* モバイル用ポータルサブメニュー */
+[data-portal-submenu-mobile] {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+[data-portal-submenu-mobile]:not([style*="display: none"]) {
+    max-height: 500px;
+    opacity: 1;
+}
+
+/* ========================================
+   一般メニューの表示・非表示
+   ======================================== */
+
+[data-general-menu],
+[data-general-menu-mobile] {
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    max-height: 2000px; /* 十分な高さ */
+    opacity: 1;
+    overflow: visible;
+}
+
+[data-general-menu][style*="display: none"],
+[data-general-menu-mobile][style*="display: none"] {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 一般メニュー表示切替アイコン */
+button[data-action="toggle-general-menu"] svg[data-icon="general-show"] {
+    display: block;
+}
+
+button[data-action="toggle-general-menu"] svg[data-icon="general-hide"] {
+    display: none;
+}
+
+/* 非表示時はアイコンを切り替え */
+[data-general-menu][style*="display: none"] ~ * button[data-action="toggle-general-menu"] svg[data-icon="general-show"],
+body:has([data-general-menu][style*="display: none"]) button[data-action="toggle-general-menu"] svg[data-icon="general-show"] {
+    display: none;
+}
+
+[data-general-menu][style*="display: none"] ~ * button[data-action="toggle-general-menu"] svg[data-icon="general-hide"],
+body:has([data-general-menu][style*="display: none"]) button[data-action="toggle-general-menu"] svg[data-icon="general-hide"] {
+    display: block;
+}
+
+/* ========================================
+   モバイルサイドバー
+   ======================================== */
+
+/* モバイルサイドバー本体 */
+aside[data-sidebar="mobile"] {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* hiddenクラスがない場合のみpointer-eventsを有効化 */
+aside[data-sidebar="mobile"]:not(.hidden) {
+    pointer-events: auto;
+}
+
+/* モバイルオーバーレイ */
+[data-sidebar-overlay="mobile"] {
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+/* オーバーレイが表示されている（hiddenクラスがない）かつopacity-100の場合 */
+[data-sidebar-overlay="mobile"]:not(.hidden).opacity-100 {
+    pointer-events: auto;
+}
+
+/* サイドバーオーバーレイのイベント制御 */
+.sidebar-overlay-active {
+    pointer-events: auto !important;
+    touch-action: none;
+}
+
+/* サイドバー表示時、背景コンテンツのクリックを無効化 */
+body:has(.sidebar-overlay-active) {
+    overflow: hidden;
+}
+
+/* ========================================
+   トグルボタンアイコン切り替え
+   ======================================== */
+
+/* デスクトップ：展開時は「collapse」アイコンを表示 */
+aside[data-sidebar="desktop"] [data-icon="collapse"] {
+    display: block;
+}
+
+aside[data-sidebar="desktop"] [data-icon="expand"] {
+    display: none;
+}
+
+/* デスクトップ：最小化時は「expand」アイコンを表示 */
+aside[data-sidebar="desktop"].collapsed [data-icon="collapse"] {
+    display: none;
+}
+
+aside[data-sidebar="desktop"].collapsed [data-icon="expand"] {
+    display: block;
+}
+
+/* ========================================
+   スクロールバーのカスタマイズ
+   ======================================== */
+
+aside::-webkit-scrollbar {
+    width: 6px;
+}
+
+aside::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+aside::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+}
+
+aside::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.7);
+}
+
+.dark aside::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.5);
+}
+
+.dark aside::-webkit-scrollbar-thumb:hover {
+    background: rgba(75, 85, 99, 0.7);
+}
+
+/* ========================================
+   アクセシビリティ - アニメーション削減モード
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    aside,
+    aside *,
+    .sidebar-nav-link,
+    [data-portal-submenu],
+    [data-portal-submenu-mobile],
+    [data-general-menu],
+    [data-general-menu-mobile] {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   レスポンシブ調整
+   ======================================== */
+
+/* モバイル時のサイドバー幅調整 */
+@media (max-width: 640px) {
+    aside[data-sidebar="mobile"] {
+        width: 280px;
+    }
+}
+
+/* タブレット時の調整 */
+@media (min-width: 641px) and (max-width: 1023px) {
+    aside[data-sidebar="desktop"] {
+        width: 240px;
+    }
+    
+    aside[data-sidebar="desktop"].collapsed {
+        width: 64px;
+    }
+}

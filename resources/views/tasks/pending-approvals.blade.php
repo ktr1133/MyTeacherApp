@@ -27,8 +27,8 @@
                         {{-- モバイルメニューボタン --}}
                         <button
                             type="button"
+                            data-sidebar-toggle="mobile"
                             class="lg:hidden p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 shrink-0 transition"
-                            @click="showSidebar = true"
                             aria-label="メニューを開く">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z" clip-rule="evenodd" />
@@ -102,7 +102,7 @@
                                 @if($approval['type'] === 'task')
                                     {{-- タスクカード --}}
                                     <div class="bento-card approval-card-task bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 task-card-enter hover:shadow-xl transition-all duration-300 cursor-pointer"
-                                         @click="$dispatch('open-task-modal-{{ $approval['model']->id }}')">
+                                         onclick="window.openGroupTaskDetailModal({{ $approval['model']->id }})">
                                         <div class="flex items-start justify-between mb-4">
                                             <div class="flex-1">
                                                 {{-- タイプバッジ --}}
@@ -159,11 +159,11 @@
 
                                         {{-- 承認/却下ボタン --}}
                                         <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700"
-                                             @click.stop>
+                                             onclick="event.stopPropagation()">
                                             <form method="POST" action="{{ route('tasks.approve', $approval['model']) }}" class="flex-1">
                                                 @csrf
                                                 <button type="submit" 
-                                                        onclick="return confirm('このタスクを承認しますか？')"
+                                                        onclick="event.preventDefault(); if(window.showConfirmDialog) { window.showConfirmDialog('このタスクを承認しますか？', () => { event.target.closest('form').submit(); }); } else { if(confirm('このタスクを承認しますか？')) { event.target.closest('form').submit(); } }"
                                                         class="btn-approve w-full">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -173,9 +173,8 @@
                                             </form>
                                             
                                             <button type="button"
-                                                    onclick="openRejectModal('task', {{ $approval['model']->id }}, '{{ $approval['title'] }}')"
-                                                    class="btn-reject flex-1"
-                                                    @click.stop>
+                                                    onclick="event.stopPropagation(); openRejectModal('task', {{ $approval['model']->id }}, '{{ $approval['title'] }}')"
+                                                    class="btn-reject flex-1">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                 </svg>
@@ -243,7 +242,7 @@
                                             <form method="POST" action="{{ route('tokens.requests.approve', $approval['model']) }}" class="flex-1">
                                                 @csrf
                                                 <button type="submit" 
-                                                        onclick="return confirm('このトークン購入を承認しますか？')"
+                                                        onclick="event.preventDefault(); if(window.showConfirmDialog) { window.showConfirmDialog('このトークン購入を承認しますか？', () => { event.target.closest('form').submit(); }); } else { if(confirm('このトークン購入を承認しますか？')) { event.target.closest('form').submit(); } }"
                                                         class="btn-approve w-full">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

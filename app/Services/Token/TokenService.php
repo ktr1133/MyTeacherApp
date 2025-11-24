@@ -7,6 +7,7 @@ use App\Models\TokenBalance;
 use App\Models\TokenPackage;
 use App\Repositories\Token\TokenPackageRepositoryInterface;
 use App\Repositories\Token\TokenRepositoryInterface;
+use App\Repositories\Payment\PaymentHistoryRepositoryInterface;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,7 @@ class TokenService implements TokenServiceInterface
     public function __construct(
         private TokenRepositoryInterface $tokenRepository,
         private TokenPackageRepositoryInterface $tokenPackageRepository,
+        private PaymentHistoryRepositoryInterface $paymentHistoryRepository,
     ) {}
 
     /**
@@ -39,42 +41,45 @@ class TokenService implements TokenServiceInterface
                     'required' => $amount,
                     'balance' => $balance->balance,
                 ]);
+
                 return false;
             }
 
             // トークン消費の計算
             $consumptionData = $this->calculateConsumption($balance, $amount);
 
-            // 残高更新
-            $this->tokenRepository->updateTokenBalance($balance, $consumptionData['balanceUpdate']);
-
-            // related が文字列の場合は null に変換（防御的処理）
-            if (is_string($related)) {
-                Log::warning('Invalid related parameter (string given)', [
-                    'user_id' => $user->id,
-                    'reason' => $reason,
-                    'related' => $related,
+            return DB::transaction (function () use ($balance, $consumptionData, $related, $user, $reason, $amount) : bool {
+                // 残高更新
+                $this->tokenRepository->updateTokenBalance($balance, $consumptionData['balanceUpdate']);
+    
+                // related が文字列の場合は null に変換（防御的処理）
+                if (is_string($related)) {
+                    Log::warning('Invalid related parameter (string given)', [
+                        'user_id' => $user->id,
+                        'reason' => $reason,
+                        'related' => $related,
+                    ]);
+                    $related = null;
+                }
+    
+                // トランザクション記録
+                $this->tokenRepository->createTransaction([
+                    'tokenable_type' => $balance->tokenable_type,
+                    'tokenable_id'   => $balance->tokenable_id,
+                    'user_id'        => $user->id,
+                    'type'           => 'consume',
+                    'amount'         => -$amount,
+                    'balance_after'  => $consumptionData['balanceUpdate']['balance'],
+                    'reason'         => $reason,
+                    'related_type'   => ($related && is_object($related)) ? get_class($related) : null,
+                    'related_id' => ($related && is_object($related)) ? $related->id : null,
                 ]);
-                $related = null;
-            }
+    
+                // 残高チェックして通知
+                $this->checkAndNotifyLowBalance($user, $balance->fresh());
 
-            // トランザクション記録
-            $this->tokenRepository->createTransaction([
-                'tokenable_type' => $balance->tokenable_type,
-                'tokenable_id' => $balance->tokenable_id,
-                'user_id' => $user->id,
-                'type' => 'consume',
-                'amount' => -$amount,
-                'balance_after' => $consumptionData['balanceUpdate']['balance'],
-                'reason' => $reason,
-                'related_type' => ($related && is_object($related)) ? get_class($related) : null,
-                'related_id' => ($related && is_object($related)) ? $related->id : null,
-            ]);
-
-            // 残高チェックして通知
-            $this->checkAndNotifyLowBalance($user, $balance->fresh());
-
-            return true;
+                return true;
+            });
 
         } catch (\Exception $e) {
             Log::error('Token consumption failed', [
@@ -546,6 +551,89 @@ class TokenService implements TokenServiceInterface
             ]);
 
             return false;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function purchaseTokens(
+        User $user,
+        TokenPackage $package,
+        string $paymentMethodType = 'manual_approval',
+        ?string $stripePaymentIntentId = null,
+        $related = null
+    ): bool {
+        DB::beginTransaction();
+        
+        try {
+            $balance = $this->getBalanceForUser($user);
+            
+            // 1. TokenBalance更新（有料残高に付与）
+            $newBalance = $balance->balance + $package->token_amount;
+            $newPaidBalance = $balance->paid_balance + $package->token_amount;
+
+            $this->tokenRepository->updateTokenBalance($balance, [
+                'balance' => $newBalance,
+                'paid_balance' => $newPaidBalance,
+            ]);
+
+            // 2. TokenTransaction作成
+            $this->tokenRepository->createTransaction([
+                'tokenable_type' => $balance->tokenable_type,
+                'tokenable_id'   => $balance->tokenable_id,
+                'user_id'        => $user->id,
+                'type'           => config('const.token_transaction_types.purchase'),
+                'amount'         => $package->token_amount,
+                'balance_after'  => $newBalance,
+                'reason'         => 'トークン購入',
+                'related_type'   => $package ? get_class($package) : null,
+                'related_id'     => $package ? $package->id : null,
+                'stripe_payment_intent_id' => $stripePaymentIntentId,
+            ]);
+
+            // 3. PaymentHistory作成
+            // stripe_payment_intent_idが指定されていない場合は自動生成
+            if (!$stripePaymentIntentId) {
+                $stripePaymentIntentId = $paymentMethodType === 'manual_approval' 
+                    ? 'manual_approval_' . time() . '_' . $user->id
+                    : 'purchase_' . time() . '_' . $user->id;
+            }
+
+            $this->paymentHistoryRepository->create([
+                'payable_type' => get_class($user),
+                'payable_id' => $user->id,
+                'stripe_payment_intent_id' => $stripePaymentIntentId,
+                'token_package_id' => $package->id,
+                'amount' => $package->price,
+                'token_amount' => $package->token_amount,
+                'status' => 'succeeded',
+                'payment_method_type' => $paymentMethodType,
+            ]);
+
+            DB::commit();
+            
+            Log::info('トークン購入処理が完了しました。', [
+                'user_id' => $user->id,
+                'package_id' => $package->id,
+                'token_amount' => $package->token_amount,
+                'price' => $package->price,
+                'payment_method_type' => $paymentMethodType,
+            ]);
+
+            return true;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('トークン購入処理でエラーが発生しました。', [
+                'user_id' => $user->id,
+                'package_id' => $package->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
         }
     }
 }

@@ -6,36 +6,21 @@
 
     @push('scripts')
         @vite(['resources/js/dashboard/dashboard.js'])
+        @vite(['resources/js/dashboard/tab-switch.js'])
+        @vite(['resources/js/dashboard/bulk-complete.js'])
+        @vite(['resources/js/dashboard/tag-modal.js'])
         @if(Auth::user()->canEditGroup())
             @vite(['resources/js/dashboard/group-task.js'])
         @endif
     @endpush
     {{-- アバターイベント監視用 --}}
     <x-layouts.avatar-event-common />
+    {{-- 汎用確認ダイアログ --}}
+    <x-confirm-dialog />
+    {{-- 汎用アラートダイアログ --}}
+    <x-alert-dialog />
 
-    <div x-data="{ 
-        showTaskModal: false, 
-        showDecompositionModal: false, 
-        showRefineModal: false,
-        isProposing: false,
-        taskTitle: '',
-        taskSpan: 'mid', 
-        refinementPoints: '',
-        decompositionProposal: null,
-        showSidebar: false,
-        activeTab: 'todo',
-        
-        startDecomposition: function(isRefinement = false) {
-            if (typeof window.decomposeTask === 'function') {
-                window.decomposeTask.call(this, isRefinement);
-            }
-        },
-        confirmProposal: function() {
-            if (typeof window.acceptProposal === 'function') {
-                window.acceptProposal.call(this);
-            }
-        }
-    }" class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
+    <div class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
 
         {{-- 背景装飾（大人向けのみ） --}}
         @if(!$isChildTheme)
@@ -56,7 +41,9 @@
             {{-- メインコンテンツ --}}
             <main class="flex-1 overflow-y-auto custom-scrollbar">
                 <div class="max-w-[1920px] mx-auto px-4 lg:px-6 py-4 lg:py-6">
-                    @include('dashboard.partials.task-bento')
+                    <div id="task-list-container">
+                        @include('dashboard.partials.task-bento')
+                    </div>
                 </div>
             </main>
         </div>

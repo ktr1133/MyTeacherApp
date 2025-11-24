@@ -57,8 +57,8 @@
                     <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <button
                             type="button"
+                            data-sidebar-toggle="mobile"
                             class="lg:hidden p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 shrink-0 transition"
-                            @click="toggleSidebar()"
                             aria-label="メニューを開く">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z" clip-rule="evenodd" />
@@ -73,11 +73,7 @@
                             </div>
                             <div>
                                 <h1 class="performance-header-title text-base lg:text-lg font-bold">
-                                    @if(!$isChildTheme)
-                                        実績ダッシュボード
-                                    @else
-                                        実績
-                                    @endif
+                                    実績
                                 </h1>
                                 @if(!$isChildTheme)
                                     <p class="performance-header-subtitle hidden sm:block text-xs text-gray-600 dark:text-gray-400">タスクの進捗状況を可視化</p>

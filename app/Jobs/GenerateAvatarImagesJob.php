@@ -46,7 +46,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
         'full_body' => [
             'description' => 'full body standing pose, showing entire body from head to toe, centered composition, vertical orientation, simple pose',
             'enabled' => true,
-            'expressions' => ['normal'], // 全身は通常表情のみ
+            'expressions' => ['normal'], // 通常は全身は通常表情のみ（ちび時は全表情）
         ],
         'bust' => [
             'description' => 'upper body portrait from shoulders up, close-up view, face clearly visible, detailed facial features, centered',
@@ -142,10 +142,32 @@ class GenerateAvatarImagesJob implements ShouldQueue
             ]);
             
             // 有効なポーズのみ抽出
-            $enabledPoses = array_filter(
-                self::POSE_DEFINITIONS,
-                fn($pose) => $pose['enabled']
-            );
+            // ちびキャラの場合はバストアップをスキップ、全身の表情を拡張
+            $enabledPoses = [];
+            foreach (self::POSE_DEFINITIONS as $key => $pose) {
+                if (!$pose['enabled']) {
+                    continue;
+                }
+                
+                // ちびキャラの場合
+                if ($avatar->is_chibi) {
+                    if ($key === 'bust') {
+                        continue; // バストアップをスキップ
+                    }
+                    if ($key === 'full_body') {
+                        // 全身の表情を全て生成
+                        $pose['expressions'] = ['normal', 'happy', 'sad', 'angry', 'surprised'];
+                    }
+                }
+                
+                $enabledPoses[$key] = $pose;
+            }
+            
+            Log::info('[GenerateAvatarImages] Pose filtering', [
+                'is_chibi' => $avatar->is_chibi,
+                'enabled_poses' => array_keys($enabledPoses),
+                'full_body_expressions' => $enabledPoses['full_body']['expressions'] ?? [],
+            ]);
             
             // 各ポーズ × 各表情で画像生成
             foreach ($enabledPoses as $poseType => $poseConfig) {
@@ -335,13 +357,13 @@ class GenerateAvatarImagesJob implements ShouldQueue
             // トークンコスト記録
             // ===================================
             
-            $tokenService->recordAICost(
-                $avatar->user,
-                $totalTokenCost,
-                'アバター生成コスト',
-                $avatar,
-                $aiUsageDetails
-            );
+            // $tokenService->recordAICost(
+            //     $avatar->user,
+            //     $totalTokenCost,
+            //     'アバター生成コスト',
+            //     $avatar,
+            //     $aiUsageDetails
+            // );
 
             // // 事前見積もり精算
             // $estimatedCost = $avatar->estimated_token_usage ?? 0;
@@ -366,6 +388,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 'generation_status' => 'completed',
                 'last_generated_at' => now(),
             ]);
+
             // 生成結果
             $result = true;
         } catch (\Exception $e) {
@@ -422,6 +445,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 // オプション設定
                 $options = [
                     'draw_model_version' => $avatar->draw_model_version,
+                    'expression_type' => $expressionType, // 表情タイプを渡す
                 ];
                 $result = $sdService->generateImage($currentPrompt, $seed, $options);
                 
@@ -607,6 +631,13 @@ class GenerateAvatarImagesJob implements ShouldQueue
      */
     private function buildBasePrompt(TeacherAvatar $avatar): string
     {
+        // テーマ判定（adult = teacher / child = supporter）
+        $isChildTheme = $avatar->user->theme === 'child';
+        $role = $isChildTheme ? 'supporter' : 'teacher';
+        
+        // ちびキャラ判定
+        $isChibi = $avatar->is_chibi ?? false;
+        
         $appearanceMap = [
             'sex' => [
                 'male' => 'male',
@@ -663,11 +694,20 @@ class GenerateAvatarImagesJob implements ShouldQueue
         ];
 
         $parts = array_filter($parts);
+        
+        // 子ども向けテーマの場合は応援要素を追加
+        $additionalTraits = $isChildTheme ? ', bright sparkling eyes, cheerful energetic atmosphere, friendly encouraging smile' : '';
+        
+        // ちびキャラの場合はデフォルメ要素を追加
+        $chibiTraits = $isChibi ? ', chibi character, cute deformed proportions, super deformed style, kawaii small body, big head ratio 1:3, simplified features, adorable tiny hands and feet' : '';
 
         return sprintf(
-            '1person, solo character, anime style teacher character ID %d, clothing colors that harmonize with hair color, %s',
+            '1person, solo character, anime style %s character ID %d, clothing colors that harmonize with hair color, %s%s%s',
+            $role,
             $avatar->seed,
-            implode(', ', $parts)
+            implode(', ', $parts),
+            $additionalTraits,
+            $chibiTraits
         );
     }
 

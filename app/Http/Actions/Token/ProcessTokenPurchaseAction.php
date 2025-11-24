@@ -60,11 +60,12 @@ class ProcessTokenPurchaseAction
             // 実際の決済処理（Stripe等）
             // TODO: 決済処理の実装
             
-            // トークンを追加
-            $this->tokenService->grantTokens(
+            // トークンを追加 + PaymentHistory作成（1トランザクション）
+            $this->tokenService->purchaseTokens(
                 $user,
-                $package->token_amount,
-                'トークン購入',
+                $package,
+                'direct_purchase',
+                null,
                 $package
             );
             
