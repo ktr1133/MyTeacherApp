@@ -30,7 +30,7 @@
                         <button
                             type="button"
                             class="lg:hidden p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 shrink-0 transition"
-                            @click="toggleSidebar()"
+                            data-sidebar-toggle="mobile"
                             aria-label="メニューを開く">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z" clip-rule="evenodd" />
@@ -180,7 +180,7 @@
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                                     このユーザーを削除すると、関連するすべてのデータが削除されます。この操作は取り消せません。
                                 </p>
-                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('本当にこのユーザーを削除しますか？');">
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('本当にこのユーザーを削除しますか？', () => { event.target.submit(); }); } else { if (confirm('本当にこのユーザーを削除しますか？')) { event.target.submit(); } }">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="admin-btn admin-btn-danger">

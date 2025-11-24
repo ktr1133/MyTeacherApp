@@ -47,16 +47,13 @@ class DestroyTaskAction
             abort(403, 'このタスクを削除する権限がありません');
         }
 
-        logger()->info('Attempting to delete task', [
-            'task_id' => $task->id,
-            'user_id' => $request->user()->id,
-        ]);
         try {
             // Serviceに削除処理を委譲
             $this->taskManagementService->deleteTask($task);
 
             return redirect()->route('dashboard')
-                ->with('success', 'タスクを削除しました');
+                ->with('success', 'タスクを削除しました')
+                ->with('avatar_event', 'task_deleted');
 
         } catch (\Exception $e) {
             Log::error('Failed to delete task', [

@@ -3,6 +3,7 @@
 namespace App\Http\Actions\Task;
 
 use App\Models\Task;
+use App\Services\Task\TaskManagementServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,15 @@ class ToggleTaskCompletionAction
      * リダイレクト先
      */
     public const HOME = '/dashboard';
+
+    /**
+     * コンストラクタ
+     *
+     * @param TaskManagementServiceInterface $taskService タスク管理サービス
+     */
+    public function __construct(
+        private TaskManagementServiceInterface $taskService
+    ) {}
 
     /**
      * @param Task $task ルートモデルバインディングで注入される Task
@@ -36,6 +46,9 @@ class ToggleTaskCompletionAction
         $task->is_completed = (bool) ! $task->is_completed;
         $task->completed_at = $task->is_completed ? now() : null;
         $task->save();
+
+        // キャッシュをクリア（最新データを反映させるため）
+        $this->taskService->clearUserTaskCache($task->user_id);
 
         // JSON リクエストなら JSON を返す
         if ($request->wantsJson() || $request->ajax()) {

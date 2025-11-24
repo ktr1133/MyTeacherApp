@@ -112,7 +112,7 @@ class TokenEloquentRepository implements TokenRepositoryInterface
     {
         $startOfMonth = now()->startOfMonth();
 
-        return TokenTransaction::where('tokenable_type', $tokenableType)
+        return (int) TokenTransaction::where('tokenable_type', $tokenableType)
             ->where('tokenable_id', $tokenableId)
             ->where('type', 'purchase')
             ->where('created_at', '>=', $startOfMonth)
@@ -124,9 +124,14 @@ class TokenEloquentRepository implements TokenRepositoryInterface
      */
     public function getMonthlyUsage(string $tokenableType, int $tokenableId): int
     {
-        $balance = $this->findTokenBalance($tokenableType, $tokenableId);
-        
-        return $balance ? $balance->monthly_consumed : 0;
+        $startOfMonth = now()->startOfMonth();
+
+        // 今月の消費取引（consume, ai_usage）の合計を計算
+        return (int) TokenTransaction::where('tokenable_type', $tokenableType)
+            ->where('tokenable_id', $tokenableId)
+            ->whereIn('type', ['consume', 'ai_usage'])
+            ->where('created_at', '>=', $startOfMonth)
+            ->sum(DB::raw('ABS(amount)'));  // 消費は負の値なので絶対値を取る
     }
 
     /**

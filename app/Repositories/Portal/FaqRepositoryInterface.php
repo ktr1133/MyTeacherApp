@@ -1,0 +1,112 @@
+<?php
+
+namespace App\Repositories\Portal;
+
+use App\Models\Faq;
+use Illuminate\Database\Eloquent\Collection;
+
+/**
+ * FAQリポジトリインターフェース
+ */
+interface FaqRepositoryInterface
+{
+    /**
+     * 公開されているFAQを全て取得
+     *
+     * @return Collection
+     */
+    public function getAllPublished(): Collection;
+
+    /**
+     * IDでFAQを取得
+     *
+     * @param int $id
+     * @return Faq|null
+     */
+    public function findById(int $id): ?Faq;
+
+    /**
+     * カテゴリでフィルタリング
+     *
+     * @param string $category
+     * @param bool $publishedOnly
+     * @return Collection
+     */
+    public function getByCategory(string $category, bool $publishedOnly = true): Collection;
+
+    /**
+     * アプリでフィルタリング
+     *
+     * @param string $appName
+     * @param bool $publishedOnly
+     * @return Collection
+     */
+    public function getByApp(string $appName, bool $publishedOnly = true): Collection;
+
+    /**
+     * キーワード検索
+     *
+     * @param string $keyword
+     * @param bool $publishedOnly
+     * @return Collection
+     */
+    public function search(string $keyword, bool $publishedOnly = true): Collection;
+
+    /**
+     * FAQを作成
+     *
+     * @param array $data
+     * @return Faq
+     */
+    public function create(array $data): Faq;
+
+    /**
+     * FAQを更新
+     *
+     * @param Faq $faq
+     * @param array $data
+     * @return Faq
+     */
+    public function update(Faq $faq, array $data): Faq;
+
+    /**
+     * FAQを削除
+     *
+     * @param Faq $faq
+     * @return bool
+     */
+    public function delete(Faq $faq): bool;
+
+    /**
+     * 管理画面用：フィルター付きページネーション
+     *
+     * @param array $filters
+     * @param int $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function paginateWithFilters(array $filters = [], int $perPage = 15);
+
+    /**
+     * 表示順を更新
+     *
+     * @param Faq $faq
+     * @param int $displayOrder
+     * @return Faq
+     */
+    public function updateDisplayOrder(Faq $faq, int $displayOrder): Faq;
+
+    /**
+     * 公開状態を切り替え
+     *
+     * @param Faq $faq
+     * @return Faq
+     */
+    public function togglePublished(Faq $faq): Faq;
+
+    /**
+     * 全てのFAQを取得（管理画面用、非公開含む）
+     *
+     * @return Collection
+     */
+    public function getAll(): Collection;
+}

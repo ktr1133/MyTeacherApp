@@ -34,9 +34,6 @@ class IndexTokenPurchaseAction
         
         // パッケージ一覧を取得
         $packages = $this->tokenService->getAvailablePackages();
-
-        // 子ども向けテーマかどうか
-        $isChildTheme = $user->theme === 'child';
         
         // 承認待ちリクエストを取得（子どもの場合のみ）
         $pendingRequests = collect();
@@ -53,7 +50,6 @@ class IndexTokenPurchaseAction
         return view('tokens.purchase', compact(
             'balance',
             'packages',
-            'isChildTheme',
             'pendingRequests',
             'childrenRequests'
         ));

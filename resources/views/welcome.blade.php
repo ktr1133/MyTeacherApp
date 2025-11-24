@@ -30,7 +30,20 @@
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700&display=swap" rel="stylesheet" />
 
         <!-- Styles -->
-        @vite(['resources/css/app.css', 'resources/css/welcome.css'])
+        @vite(['resources/css/app.css', 'resources/css/welcome.css', 'resources/js/welcome-chart.js'])
+
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+        <!-- Dark Mode Script -->
+        <script>
+            // ダークモードの初期化（フリッカー防止のためhead内で実行）
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
     </head>
     <body class="antialiased bg-gradient-to-br from-[#F3F3F2] via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <!-- Header (Fixed) -->
@@ -56,15 +69,15 @@
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                     </svg>
-                                    ダッシュボード
+                                    タスクリスト
                                 </a>
                             @else
                                 <a href="{{ route('login') }}" class="link-underline text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] transition font-medium text-sm px-4 py-2">
-                                    ログイン
+                                    Login
                                 </a>
                                 @if (Route::has('register'))
                                     <a href="{{ route('register') }}" class="btn-primary inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] text-white rounded-lg hover:shadow-lg transition font-semibold text-sm">
-                                        無料で始める
+                                        Free Start
                                     </a>
                                 @endif
                             @endauth
@@ -92,12 +105,12 @@
                     </div>
 
                     <h1 class="hero-title text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
-                        AIが応援、アバターが励ます<br>
+                        AIアバターが応援<br>
                         <span class="gradient-text">家族で使えるタスク管理</span>
                     </h1>
                     
                     <p class="hero-subtitle text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-                        複雑なタスクはAIが分解。完了したら教師アバターが祝福。<br>
+                        複雑なタスクはAIが分解。<br>完了したらアバターが祝福。<br>
                         お小遣い管理から自己管理まで、楽しく続けられます。
                     </p>
                     
@@ -122,23 +135,17 @@
                     </div>
                 </div>
 
-                <!-- Dashboard Screenshot -->
-                <div class="hero-image mt-20 relative screenshot-glow">
-                    <div class="glass-card rounded-3xl shadow-2xl p-6 border">
-                        <div class="aspect-video bg-gradient-to-br from-[#59B9C6]/30 via-purple-500/20 to-pink-500/30 rounded-2xl flex items-center justify-center overflow-hidden relative">
-                            <div class="absolute inset-0 shimmer"></div>
-                            <div class="flex flex-col items-center gap-4 relative z-10">
-                                <div class="w-24 h-24 rounded-full bg-gradient-to-br from-[#59B9C6] to-[#8b5cf6] flex items-center justify-center shadow-2xl floating-icon">
-                                    <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
-                                <div class="text-center">
-                                    <div class="text-2xl font-bold text-gray-800 dark:text-white mb-2">教師アバターが手を振っている</div>
-                                    <div class="text-gray-600 dark:text-gray-400">Stable Diffusionが生成するオリジナルキャラクター</div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Hero Image: ちびキャラのユーザー＋アバター -->
+                <div class="hero-image mt-20 relative">
+                    <div class="max-w-3xl mx-auto">
+                        <img src="{{ asset('images/welcome-hero.png') }}" 
+                             alt="ちびキャラの子どもがタスクに取り組み、教師アバターが応援している様子" 
+                             class="w-full h-auto object-contain floating-icon drop-shadow-2xl">
+                    </div>
+                    <div class="mt-8 text-center">
+                        <p class="text-lg font-medium text-gray-600 dark:text-gray-300">
+                            教師アバターがあなたの成長を見守ります
+                        </p>
                     </div>
                 </div>
             </div>
@@ -221,7 +228,10 @@
                             </svg>
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">グループタスク</h3>
-                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">家族やチームでタスクを共有。承認フローと報酬システム搭載。</p>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            家族やチームでタスクを共有。承認フローと報酬システム搭載。<br>
+                            定期的なタスクは自動作成。
+                        </p>
                     </div>
 
                     <!-- AIタスク分解 -->
@@ -243,7 +253,10 @@
                             </svg>
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">実績レポート</h3>
-                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">週間・月間・年間の実績をグラフで可視化。進捗を一目で確認。</p>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            週間・月間・年間の実績をグラフで可視化。進捗を一目で確認。<br>
+                            アバターが報告。
+                        </p>
                     </div>
 
                     <!-- 教師アバター -->
@@ -253,7 +266,7 @@
                                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">教師アバター</h3>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">アバター</h3>
                         <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Stable Diffusionが生成するあなた専用の先生。タスク完了時に励ましのコメント。</p>
                     </div>
                 </div>
@@ -265,21 +278,18 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-12">
                     <h2 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                        <span class="gradient-text">教師アバターが応援！</span>
+                        <span class="gradient-text">アバターが応援！</span>
                     </h2>
-                    <p class="text-lg text-gray-600 dark:text-gray-300">タスク完了時に祝福してくれる、あなた専用の先生</p>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">タスク完了時に祝福してくれる、あなた専用のアバター</p>
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
                     <!-- アバター画像 + 吹き出し -->
                     <div class="relative">
-                        <div class="w-80 h-96 mx-auto bg-gradient-to-br from-[#59B9C6]/20 to-[#8b5cf6]/20 rounded-3xl flex items-center justify-center relative overflow-hidden">
-                            <div class="absolute inset-0 shimmer"></div>
-                            <div class="w-32 h-32 rounded-full bg-gradient-to-br from-[#59B9C6] to-[#8b5cf6] flex items-center justify-center shadow-2xl floating-icon">
-                                <svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
+                        <div class="w-80 h-96 mx-auto flex items-center justify-center relative">
+                            <img src="{{ asset('images/avatar-celebration.png') }}" 
+                                 alt="喜びの表情で両手を上げて祝福する教師アバター" 
+                                 class="w-full h-full object-contain floating-icon drop-shadow-2xl">
                         </div>
                         <!-- 吹き出し -->
                         <div class="mt-8 max-w-sm mx-auto glass-card p-6 rounded-2xl border relative">
@@ -396,12 +406,11 @@
                         <div class="w-24 h-24 bg-gradient-to-br from-[#9333ea] to-[#ec4899] rounded-full flex items-center justify-center mx-auto mb-6 text-5xl shadow-lg">
                             👨‍👩‍👧‍👦
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">お小遣い管理をする家族</h3>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">お子様がいる家族</h3>
                         <ul class="text-left space-y-2 text-gray-600 dark:text-gray-300">
-                            <li>✅ 家事をタスク化してポイント付与</li>
+                            <li>✅ 定期的な家事を自動でタスク化してポイント付与</li>
                             <li>✅ お小遣いをデジタル管理</li>
                             <li>✅ 子どもの成長を可視化</li>
-                            <li>✅ 親子でコミュニケーション</li>
                         </ul>
                     </div>
 
@@ -412,7 +421,6 @@
                         </div>
                         <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">課題や試験勉強を管理する学生</h3>
                         <ul class="text-left space-y-2 text-gray-600 dark:text-gray-300">
-                            <li>✅ レポートをAIが分解</li>
                             <li>✅ 試験勉強をスケジュール化</li>
                             <li>✅ タグで科目別に整理</li>
                             <li>✅ アバターが励ましてくれる</li>
@@ -422,14 +430,13 @@
                     <!-- チーム -->
                     <div class="glass-card p-8 rounded-2xl border border-orange-500/30 text-center group hover:shadow-2xl transition">
                         <div class="w-24 h-24 bg-gradient-to-br from-[#f59e0b] to-[#f97316] rounded-full flex items-center justify-center mx-auto mb-6 text-5xl shadow-lg">
-                            💼
+                            👩‍💼
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">プロジェクトを管理するチーム</h3>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">タスク管理を楽しくしたい方</h3>
                         <ul class="text-left space-y-2 text-gray-600 dark:text-gray-300">
-                            <li>✅ タスクをメンバーに割り当て</li>
-                            <li>✅ 進捗を可視化</li>
+                            <li>✅ 気分によってアバターを切り替え</li>
+                            <li>✅ アバターが実績を報告</li>
                             <li>✅ タグでプロジェクト別に管理</li>
-                            <li>✅ 承認フローで品質担保</li>
                         </ul>
                     </div>
                 </div>
@@ -444,18 +451,52 @@
                     <p class="text-lg text-gray-600 dark:text-gray-300">週間・月間・年間の進捗をグラフで確認</p>
                 </div>
 
-                <div class="glass-card p-8 rounded-3xl border max-w-4xl mx-auto">
-                    <div class="aspect-video bg-gradient-to-br from-[#59B9C6]/20 to-green-500/20 rounded-2xl flex items-center justify-center">
-                        <div class="text-center">
-                            <svg class="w-24 h-24 text-[#59B9C6] mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
-                            <p class="text-xl font-bold text-gray-700 dark:text-gray-300">実績グラフのモックアップ</p>
+                <div class="glass-card p-8 rounded-3xl border max-w-5xl mx-auto">
+                    <!-- グラフタブ -->
+                    <div class="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+                        <button onclick="showChart('weekly')" id="tab-weekly" class="chart-tab active px-6 py-3 font-semibold text-[#59B9C6] border-b-2 border-[#59B9C6] transition">
+                            週間
+                        </button>
+                        <button onclick="showChart('monthly')" id="tab-monthly" class="chart-tab px-6 py-3 font-semibold text-gray-500 dark:text-gray-400 hover:text-[#59B9C6] transition">
+                            月間
+                        </button>
+                        <button onclick="showChart('yearly')" id="tab-yearly" class="chart-tab px-6 py-3 font-semibold text-gray-500 dark:text-gray-400 hover:text-[#59B9C6] transition">
+                            年間
+                        </button>
+                    </div>
+
+                    <!-- グラフコンテナ -->
+                    <div class="relative" style="height: 400px;">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+
+                    <!-- 統計サマリー -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                        <div class="bg-gradient-to-br from-[#59B9C6]/10 to-transparent p-4 rounded-xl border border-[#59B9C6]/20">
+                            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">完了タスク</div>
+                            <div class="text-3xl font-bold text-gray-900 dark:text-white" id="stat-completed">42</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-500/10 to-transparent p-4 rounded-xl border border-purple-500/20">
+                            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">獲得ポイント</div>
+                            <div class="text-3xl font-bold text-gray-900 dark:text-white" id="stat-tokens">2,850</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-pink-500/10 to-transparent p-4 rounded-xl border border-pink-500/20">
+                            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">達成率</div>
+                            <div class="text-3xl font-bold text-gray-900 dark:text-white" id="stat-rate">87%</div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <script>
+            // ダークモードの初期化（フリッカー防止のためhead内で実行）
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
 
         <!-- CTA: 今すぐ始めよう -->
         <section class="py-24 cta-gradient relative overflow-hidden">
@@ -467,8 +508,8 @@
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
                 <h2 class="text-4xl sm:text-5xl font-bold text-white mb-6">今すぐ始めよう</h2>
                 <p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-                    アカウント作成は無料。クレジットカード不要。<br>
-                    今日からAI教師アバターと一緒に学習を始めましょう。
+                    アカウント作成は無料。<br>
+                    今日からアバターと一緒に成長しましょう。
                 </p>
                 @if (Route::has('register'))
                     <a href="{{ route('register') }}" class="btn-primary group inline-flex items-center px-10 py-5 bg-white text-[#59B9C6] rounded-xl hover:bg-gray-50 transition font-bold text-lg shadow-2xl">

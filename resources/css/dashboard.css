@@ -1020,69 +1020,6 @@
 
 
 /* ========================================
-   サイドバー関連スタイル
-   ======================================== */
-
-/* サイドバーナビゲーション */
-.sidebar-nav-link {
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.sidebar-nav-link::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
-    transform: scaleY(0);
-    transition: transform 0.3s ease;
-}
-
-.sidebar-nav-link.active::before {
-    transform: scaleY(1);
-}
-
-.sidebar-nav-link:hover {
-    background: linear-gradient(90deg, rgba(89, 185, 198, 0.1), transparent);
-}
-
-/* サイドバーオーバーレイのイベント制御 */
-.sidebar-overlay-active {
-    pointer-events: auto !important;
-    touch-action: none;
-}
-
-/* サイドバー表示時、背景コンテンツのクリックを無効化 */
-body:has(.sidebar-overlay-active) {
-    overflow: hidden;
-}
-
-/* サイドバー最小化機能 */
-/* アニメーション削減モード対応 */
-@media (prefers-reduced-motion: reduce) {
-    aside {
-        transition-duration: 0.01ms !important;
-    }
-    
-    aside * {
-        transition-duration: 0.01ms !important;
-    }
-}
-
-/* バッジのグラデーション */
-.badge-gradient {
-    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
-}
-
-.badge-warning {
-    background: linear-gradient(135deg, #f59e0b, #f97316);
-}
-
-
-/* ========================================
    お知らせ通知ボタン
    ======================================== */
 

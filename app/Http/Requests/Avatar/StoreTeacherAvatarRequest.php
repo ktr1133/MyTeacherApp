@@ -87,6 +87,10 @@ class StoreTeacherAvatarRequest extends FormRequest
                 'sometimes',
                 'string',
             ],
+            'is_chibi' => [
+                'sometimes',
+                'string',
+            ],
         ];
     }
 
@@ -167,6 +171,10 @@ class StoreTeacherAvatarRequest extends FormRequest
         if (!isset($validated['accessory']) || $validated['accessory'] === null) {
             $validated['accessory'] = 'nothing';
         }
+        // is_transparentの設定
+        $validated['is_transparent'] = isset($validated['is_transparent']) ? true : false;
+        // is_chibiの設定
+        $validated['is_chibi'] = isset($validated['is_chibi']) ? true : false;
 
         return $validated;
     }

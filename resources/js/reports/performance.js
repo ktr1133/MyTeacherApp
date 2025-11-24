@@ -36,9 +36,21 @@ window.performanceReport = function(initialTab, initialPeriod, initialOffset) {
 document.addEventListener('DOMContentLoaded', () => {
     initializePerformanceChart();
     
-    // アバター表示（実績画面のみ）
+    // アバター表示（実績画面のみ、他ページからの遷移時のみ）
     if (window.location.pathname === '/reports/performance') {
-        showPerformanceAvatarOnLoad();
+        const referrer = document.referrer;
+        
+        // リファラーが空（直接アクセス）または実績画面以外からの遷移
+        const isExternalTransition = !referrer || !referrer.includes('/reports/performance');
+        
+        if (isExternalTransition) {
+            console.log('[Performance Avatar] External transition detected, showing avatar');
+            console.log('[Performance Avatar] Referrer:', referrer || '(direct access)');
+            showPerformanceAvatarOnLoad();
+        } else {
+            console.log('[Performance Avatar] Internal navigation detected, skipping avatar');
+            console.log('[Performance Avatar] Referrer:', referrer);
+        }
     }
 });
 
@@ -373,10 +385,14 @@ function getGroupDatasets(data, isChildTheme) {
 
 /**
  * 実績画面アバター表示（画面遷移時）
+ * 
+ * 注意: コメント内容に「今週」「今月」という文言があるため、
+ * 常に固定期間（今週/今月）のデータを使用する。
+ * 表示中の期間（過去の週/月）のデータは使用しない。
  */
 function showPerformanceAvatarOnLoad() {
     const isChildTheme = document.documentElement.classList.contains('child-theme');
-    const { normalData, groupData, currentData } = window.performanceData || {};
+    const { normalData, groupData } = window.performanceData || {};
     
     if (!normalData || !groupData) {
         console.warn('[Performance Avatar] Data not available');
@@ -386,19 +402,23 @@ function showPerformanceAvatarOnLoad() {
     let comment, value;
     
     if (isChildTheme) {
-        // 子ども向け: 月間報酬累計（groupDataから直接取得）
+        // 子ども向け: 今月の報酬累計（groupData は常に month/offset=0 想定）
         // PHPのキー名は gRewardCum（Cumulative の略）
+        // コメントに「今月」という文言が入っているため、当月固定のデータを使用
         const rewardCumulative = groupData.gRewardCum || [];
         value = rewardCumulative[rewardCumulative.length - 1] || 0;
         comment = `今月は${value.toLocaleString()}コインゲット！<br>がんばったね！`;
+        console.log('[Performance Avatar] Child theme - Today month reward');
         console.log('[Performance Avatar] Child theme - groupData:', groupData);
         console.log('[Performance Avatar] Child theme - Reward cumulative array:', rewardCumulative);
         console.log('[Performance Avatar] Child theme - Final value:', value);
     } else {
-        // 大人向け: 週間完了件数
+        // 大人向け: 今週の完了件数（normalData は常に week/offset=0 想定）
+        // コメントに「今週」という文言が入っているため、今週固定のデータを使用
         const completedCount = (normalData.nDone || []).reduce((sum, n) => sum + n, 0);
         value = completedCount;
         comment = `今週は${value}件完了しました。<br>お疲れ様です。`;
+        console.log('[Performance Avatar] Adult theme - This week completed count');
         console.log('[Performance Avatar] Adult theme - Completed count:', completedCount);
     }
     

@@ -18,7 +18,7 @@
                     <button
                         type="button"
                         class="lg:hidden p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 shrink-0 transition"
-                        @click="toggleSidebar()"
+                        data-sidebar-toggle="mobile"
                         aria-label="メニューを開く">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2zm0 4h14a1 1 0 010 2H3a1 1 0 110-2z" clip-rule="evenodd" />
@@ -93,7 +93,7 @@
                                         <a href="{{ route('admin.token-packages-edit', $package) }}" class="btn-purchase px-4 py-2 rounded-lg text-white font-bold shadow">
                                             編集
                                         </a>
-                                        <form action="{{ route('admin.token-packages-delete', $package) }}" method="POST" onsubmit="return confirm('削除しますか？');">
+                                        <form action="{{ route('admin.token-packages-delete', $package) }}" method="POST" onsubmit="event.preventDefault(); if (window.showConfirmDialog) { window.showConfirmDialog('削除しますか？', () => { event.target.submit(); }); } else { if (confirm('削除しますか？')) { event.target.submit(); } }">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-purchase px-4 py-2 rounded-lg text-white font-bold shadow bg-red-600 hover:bg-red-700">

@@ -45,12 +45,34 @@
     margin-bottom: 1rem;
 }
 
+/* グリッドレイアウト（大人向け） */
+.avatar-form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .avatar-form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .avatar-form-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 .avatar-form-label {
     display: block;
     font-size: 0.875rem;
     font-weight: 600;
     color: #374151;
     margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dark .avatar-form-label {
@@ -385,10 +407,11 @@
 
 /* サムネイルのラベル */
 .avatar-thumbnail-label {
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6));
     color: white;
     padding: 0.25rem 0;
     text-align: center;
+    font-weight: 600;
 }
 
 /* ========================================

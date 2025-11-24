@@ -49,11 +49,26 @@ class StableDiffusionService implements StableDiffusionServiceInterface
             $drawModelVersionConst = config('services.draw_model_versions');
             $drawModelVersion = $drawModelVersionConst[$options['draw_model_version']] ?? $this->drawModelVersion;
 
+            // stable-diffusion-3.5-medium の surprised 表情でぼやけ防止
+            $isStableDiffusion35 = ($options['draw_model_version'] ?? '') === 'stable-diffusion-3.5-medium';
+            $isSurprised = ($options['expression_type'] ?? '') === 'surprised';
+            
+            $numInferenceSteps = 50; // デフォルト
+            $guidanceScale = 7.5;    // デフォルト
+            
+            if ($isStableDiffusion35 && $isSurprised) {
+                $numInferenceSteps = 70;  // 驚き表情のぼやけ防止（推論ステップ増加）
+                $guidanceScale = 8.5;      // ガイダンス強化で明瞭に
+            }
+            
             Log::info('[StableDiffusion] Generating image', [
                 'const' => $drawModelVersionConst,
                 'model_version' => $options['draw_model_version'] ?? 'default',
                 'model_id' => $drawModelVersion,
                 'seed' => $seed,
+                'expression_type' => $options['expression_type'] ?? 'unknown',
+                'num_inference_steps' => $numInferenceSteps,
+                'guidance_scale' => $guidanceScale,
                 'prompt' => $prompt,
             ]);
 
@@ -72,8 +87,8 @@ class StableDiffusionService implements StableDiffusionServiceInterface
                         'width' => 512,
                         'height' => 512,
                         'num_outputs' => 1,
-                        'guidance_scale' => 7.5,
-                        'num_inference_steps' => 50, // anything-v4.0 推奨値
+                        'guidance_scale' => $guidanceScale,
+                        'num_inference_steps' => $numInferenceSteps,
                         'negative_prompt' => implode(', ', [
                             // NSFW 対策を追加
                             'nsfw',

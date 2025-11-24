@@ -48,38 +48,96 @@ class EditTeacherAvatarAction
      */
     private function buildExpressionImages($avatar): array
     {
-        $expressions = [
-            [
-                'type' => 'full_body',
-                'label' => '全身',
-                'image' => $avatar->fullBodyImage,
-            ],
-            [
-                'type' => 'normal',
-                'label' => '通常',
-                'image' => $avatar->bustImage,
-            ],
-            [
-                'type' => 'happy',
-                'label' => '喜び',
-                'image' => $avatar->bustImageHappy,
-            ],
-            [
-                'type' => 'sad',
-                'label' => '悲しみ',
-                'image' => $avatar->bustImageSad,
-            ],
-            [
-                'type' => 'angry',
-                'label' => '怒り',
-                'image' => $avatar->bustImageAngry,
-            ],
-            [
-                'type' => 'surprised',
-                'label' => '驚き',
-                'image' => $avatar->bustImageSurprised,
-            ],
-        ];
+        // ちびキャラの場合は全身画像を使用
+        if ($avatar->is_chibi) {
+            $expressions = [
+                [
+                    'type' => 'full_body',
+                    'expression' => 'normal',
+                    'label' => '通常',
+                    'image' => $avatar->images()
+                        ->where('image_type', 'full_body')
+                        ->where('expression_type', 'normal')
+                        ->first(),
+                ],
+                [
+                    'type' => 'full_body',
+                    'expression' => 'happy',
+                    'label' => '喜び',
+                    'image' => $avatar->images()
+                        ->where('image_type', 'full_body')
+                        ->where('expression_type', 'happy')
+                        ->first(),
+                ],
+                [
+                    'type' => 'full_body',
+                    'expression' => 'sad',
+                    'label' => '悲しみ',
+                    'image' => $avatar->images()
+                        ->where('image_type', 'full_body')
+                        ->where('expression_type', 'sad')
+                        ->first(),
+                ],
+                [
+                    'type' => 'full_body',
+                    'expression' => 'angry',
+                    'label' => '怒り',
+                    'image' => $avatar->images()
+                        ->where('image_type', 'full_body')
+                        ->where('expression_type', 'angry')
+                        ->first(),
+                ],
+                [
+                    'type' => 'full_body',
+                    'expression' => 'surprised',
+                    'label' => '驚き',
+                    'image' => $avatar->images()
+                        ->where('image_type', 'full_body')
+                        ->where('expression_type', 'surprised')
+                        ->first(),
+                ],
+            ];
+        } else {
+            // 通常キャラの場合はバストアップ画像を使用
+            $expressions = [
+                [
+                    'type' => 'full_body',
+                    'expression' => 'normal',
+                    'label' => '全身',
+                    'image' => $avatar->fullBodyImage,
+                ],
+                [
+                    'type' => 'bust',
+                    'expression' => 'normal',
+                    'label' => '通常',
+                    'image' => $avatar->bustImage,
+                ],
+                [
+                    'type' => 'bust',
+                    'expression' => 'happy',
+                    'label' => '喜び',
+                    'image' => $avatar->bustImageHappy,
+                ],
+                [
+                    'type' => 'bust',
+                    'expression' => 'sad',
+                    'label' => '悲しみ',
+                    'image' => $avatar->bustImageSad,
+                ],
+                [
+                    'type' => 'bust',
+                    'expression' => 'angry',
+                    'label' => '怒り',
+                    'image' => $avatar->bustImageAngry,
+                ],
+                [
+                    'type' => 'bust',
+                    'expression' => 'surprised',
+                    'label' => '驚き',
+                    'image' => $avatar->bustImageSurprised,
+                ],
+            ];
+        }
 
         return $expressions;
     }

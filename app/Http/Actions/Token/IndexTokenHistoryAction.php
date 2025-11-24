@@ -48,7 +48,7 @@ class IndexTokenHistoryAction
             20
         );
 
-        // 統計データ取得（Serviceから）
+        // 統計データ取得(Serviceから)
         $stats = $this->tokenService->getHistoryStats($tokenableType, $tokenableId);
 
         return $this->responder->response([

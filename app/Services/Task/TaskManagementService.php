@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Carbon;
 
 
@@ -53,6 +54,37 @@ class TaskManagementService implements TaskManagementServiceInterface
     }
 
     /**
+     * ユーザーのキャッシュをクリア（内部用）
+     *
+     * @param int $userId ユーザーID
+     * @return void
+     */
+    private function clearUserCache(int $userId): void
+    {
+        try {
+            Cache::tags(['dashboard', "user:{$userId}", 'tasks'])->flush();
+        } catch (\Exception $e) {
+            Log::error('Failed to clear cache', [
+                'user_id' => $userId,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * ユーザーのタスクキャッシュをクリア（公開API）
+     * 
+     * タスクの完了状態変更など、外部から直接タスクを更新した際に使用。
+     *
+     * @param int $userId ユーザーID
+     * @return void
+     */
+    public function clearUserTaskCache(int $userId): void
+    {
+        $this->clearUserCache($userId);
+    }
+
+    /**
      * @inheritDoc
      */
     public function findById(int $id): ?Task
@@ -63,7 +95,7 @@ class TaskManagementService implements TaskManagementServiceInterface
     /**
      * @inheritDoc
      */
-    public function createTask(User $user, array $data, bool $groupFlg): Task
+    public function createTask(User $user, array $data, bool $groupFlg): ?Task
     {
         // タスク登録用データの作成
         $taskData = $this->makeTaskBaseData($data);
@@ -83,14 +115,17 @@ class TaskManagementService implements TaskManagementServiceInterface
                 if (!$is_charged) {
                     // グループメンバのうち、編集権限のないユーザを取得
                     $users = $this->profileUserRepository->getMembersWithoutEditPermission($user->id);
-                    foreach ($users as $user) {
-                        $taskData['user_id'] = $user->id;
-                        $task = $this->taskRepository->createTask($user->id, $taskData);
+                    foreach ($users as $member) {
+                        $taskData['user_id'] = $member->id;
+                        $task = $this->taskRepository->create($taskData);
 
                         // タグを関連付け（タグ名の配列）
                         if (isset($data['tags']) && is_array($data['tags'])) {
                             $this->taskRepository->syncTagsByName($task, $data['tags']);
                         }
+                        
+                        // メンバーのキャッシュをクリア
+                        $this->clearUserCache($member->id);
                     }
                     // 通知を送信
                     $this->notificationService->sendNotificationForGroup(
@@ -102,11 +137,14 @@ class TaskManagementService implements TaskManagementServiceInterface
                 // 担当者が設定されている場合は担当者分のみタスクを作成
                 } else {
                     $taskData['user_id'] = $data['assigned_user_id'];
-                    $task = $this->taskRepository->createTask($user->id, $taskData);
+                    $task = $this->taskRepository->create($taskData);
                     // タグを関連付け（タグ名の配列）
                     if (isset($data['tags']) && is_array($data['tags'])) {
                         $this->taskRepository->syncTagsByName($task, $data['tags']);
                     }
+                    // 担当者のキャッシュをクリア
+                    $this->clearUserCache($data['assigned_user_id']);
+                    
                     // 担当者に通知を送信
                     $this->notificationService->sendNotification(
                         Auth::user()->id,
@@ -119,16 +157,20 @@ class TaskManagementService implements TaskManagementServiceInterface
                 }
             // 通常タスク登録の場合
             } else {
-                $task = $this->taskRepository->createTask($user->id, $taskData);
+                // 通常タスクはログインユーザーが所有者
+                $taskData['user_id'] = $user->id;
+                $task = $this->taskRepository->create($taskData);
                 // タグを関連付け（タグ名の配列）
                 if (isset($data['tags']) && is_array($data['tags'])) {
                     $tagNames = $this->tagRepository->findByIds($data['tags'])->pluck('name')->toArray();
                     $this->taskRepository->syncTagsByName($task, $tagNames);
-                }            
+                }
+                // 作成者のキャッシュをクリア
+                $this->clearUserCache($user->id);
             }
         });
     
-        return $task->fresh(['tags']);
+        return $task?->fresh(['tags']);
     }
 
     /**
@@ -178,6 +220,9 @@ class TaskManagementService implements TaskManagementServiceInterface
                 }
             }
 
+            // キャッシュクリア
+            $this->clearUserCache($task->user_id);
+
             return $task->fresh(['tags']);
         });
     }
@@ -188,12 +233,17 @@ class TaskManagementService implements TaskManagementServiceInterface
     public function deleteTask(Task $task): bool
     {
         try {
+            $userId = $task->user_id;
+            
             // リポジトリを使用してタスクを削除
             $deleted = $this->taskRepository->deleteTask($task);
 
             if (!$deleted) {
                 Log::warning('Task deletion returned false', ['task_id' => $task->id]);
             }
+
+            // キャッシュクリア
+            $this->clearUserCache($userId);
 
             return $deleted;
         } catch (\Exception $e) {
@@ -265,6 +315,9 @@ class TaskManagementService implements TaskManagementServiceInterface
                 $proposalId,
                 array_map(fn($t) => $t->id, $createdTasks)
             );
+
+            // ユーザーのキャッシュをクリア（一括作成後に最新データを反映）
+            $this->clearUserCache($user->id);
 
             return $createdTasks;
         });

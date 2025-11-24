@@ -9,6 +9,8 @@ use App\Jobs\GenerateAvatarImagesJob;
 use App\Services\Token\TokenServiceInterface;
 use App\Exceptions\RedirectException;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 /**
  * 教師アバターサービス
@@ -36,13 +38,6 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         // シード値を生成してデータに追加
         $data['seed'] = random_int(1, 2147483647);
 
-        // 背景透過設定
-        if (isset($data['is_transparent']) && ($data['is_transparent'] == 'on' || $data['is_transparent'] == '1')) {
-            $data['is_transparent'] = true;
-        } else {
-            $data['is_transparent'] = false;
-        }
-
         // 推定使用トークン量設定
         $estimated_token_usage = config('services.estimated_token_usages')[$data['draw_model_version']] ?? 0;
 
@@ -55,23 +50,6 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         // アバター作成
         $avatar = $this->repository->create($user, $data);
 
-        // // トークン消費
-        // $consumed = $this->tokenService->consumeTokens(
-        //     $user,
-        //     $avatar->estimated_token_usage,
-        //     'アバター作成(事前消費)',
-        //     $avatar
-        // );
-
-        // if (!$consumed) {
-        //     logger()->error('Failed to consume tokens for avatar creation', [
-        //         'user_id' => $user->id,
-        //         'avatar_id' => $avatar->id,
-        //     ]);
-        //     $avatar->delete();
-        //     throw new RedirectException('トークンが不足しています。');
-        // }
-
         // 画像生成ジョブをディスパッチ
         GenerateAvatarImagesJob::dispatch($avatar->id);
 
@@ -83,12 +61,16 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
      */
     public function updateAvatar(TeacherAvatar $avatar, array $data): bool
     {
-        // 背景透過設定
-        $data['is_transparent'] = isset($data['is_transparent']) ? true : false;
         // 推定使用トークン量設定
         $data['estimated_token_usage'] = config('services.estimated_token_usages')[$data['draw_model_version']] ?? 0;
 
-        return $this->repository->update($avatar, $data);
+        $result = $this->repository->update($avatar, $data);
+
+        if ($result) {
+            $this->clearAvatarCache($avatar->user_id);
+        }
+
+        return $result;
     }
 
     /**
@@ -114,6 +96,9 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         // ステータス更新
         $avatar->update(['generation_status' => 'pending']);
 
+        // キャッシュクリア
+        $this->clearAvatarCache($avatar->user_id);
+
         // 再生成ジョブをディスパッチ
         GenerateAvatarImagesJob::dispatch($avatar->id);
     }
@@ -127,13 +112,40 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
             return false;
         }
 
-        return $this->repository->toggleVisibility($avatar);
+        $result = $this->repository->toggleVisibility($avatar);
+
+        if ($result) {
+            $this->clearAvatarCache($avatar->user_id);
+        }
+
+        return $result;
     }
 
     /**
      * 指定イベントタイプのコメントを取得
      */
     public function getCommentForEvent(User $user, string $eventType): ?array
+    {
+        try {
+            return Cache::tags(['avatar', "user:{$user->id}"])->remember(
+                "user:{$user->id}:avatar:comment:{$eventType}",
+                now()->addHours(6),
+                fn() => $this->fetchCommentFromDatabase($user, $eventType)
+            );
+        } catch (\Exception $e) {
+            Log::warning('[TeacherAvatarService] Cache unavailable, falling back to database', [
+                'user_id' => $user->id,
+                'event_type' => $eventType,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->fetchCommentFromDatabase($user, $eventType);
+        }
+    }
+
+    /**
+     * データベースからコメントを取得（キャッシュのフォールバック用）
+     */
+    private function fetchCommentFromDatabase(User $user, string $eventType): ?array
     {
         $avatar = $this->getUserAvatar($user);
 
@@ -148,7 +160,7 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
         }
 
         // イベントタイプに応じた画像・表情・アニメーションを決定
-        $imageType = $this->determineImageType($eventType);
+        $imageType = $this->determineImageType($avatar, $eventType);
         $expressionType = $this->determineExpressionType($eventType);
         $animation = $this->determineAnimation($eventType);
         // 該当する画像を取得
@@ -165,10 +177,35 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
     }
 
     /**
-     * イベントタイプに応じた画像タイプを決定
+     * ユーザーのアバターキャッシュをクリア
      */
-    private function determineImageType(string $eventType): string
+    private function clearAvatarCache(int $userId): void
     {
+        try {
+            Cache::tags(['avatar', "user:{$userId}"])->flush();
+            Log::info('[TeacherAvatarService] Avatar cache cleared', ['user_id' => $userId]);
+        } catch (\Exception $e) {
+            Log::error('[TeacherAvatarService] Failed to clear avatar cache', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * イベントタイプに応じた画像タイプを決定
+     * 
+     * @param TeacherAvatar $avatar アバターモデル
+     * @param string $eventType イベントタイプ
+     * @return string 画像タイプ（bust または full_body）
+     */
+    private function determineImageType(TeacherAvatar $avatar, string $eventType): string
+    {
+        // ちびキャラの場合は常に全身画像を使用（バストアップ画像が存在しないため）
+        if ($avatar->is_chibi) {
+            return 'full_body';
+        }
+
         // 実績閲覧のみ全身、それ以外はバストアップ
         return in_array($eventType, [
             config('const.avatar_events.performance_personal_viewed'),

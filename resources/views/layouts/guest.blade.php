@@ -19,7 +19,17 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/css/auth.css'])
+        @vite(['resources/css/app.css', 'resources/css/guest.css'])
+
+        <!-- Dark Mode Script -->
+        <script>
+            // ダークモードの初期化（フリッカー防止のためhead内で実行）
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
 
         <!-- Page Styles -->
         @stack('styles')
