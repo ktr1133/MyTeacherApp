@@ -26,11 +26,9 @@
             />
             
             {{-- スピナー（JSで制御） --}}
-            <div id="username-spinner" class="validation-spinner" style="display: none;">
-                <svg class="spinner" viewBox="0 0 50 50">
-                    <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-                </svg>
-                <span class="spinner-text">確認中...</span>
+            <div id="username-spinner" class="mt-2 flex items-center gap-2" style="display: none;">
+                <div class="validation-spinner"></div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">確認中...</span>
             </div>
             
             {{-- バリデーションメッセージ（JSで制御） --}}
@@ -52,11 +50,9 @@
             />
             
             {{-- スピナー（JSで制御） --}}
-            <div id="password-spinner" class="validation-spinner" style="display: none;">
-                <svg class="spinner" viewBox="0 0 50 50">
-                    <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-                </svg>
-                <span class="spinner-text">確認中...</span>
+            <div id="password-spinner" class="mt-2 flex items-center gap-2" style="display: none;">
+                <div class="validation-spinner"></div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">確認中...</span>
             </div>
             
             {{-- バリデーションメッセージ（JSで制御） --}}
