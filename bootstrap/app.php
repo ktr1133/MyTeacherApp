@@ -12,9 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // HTTPS強制（本番環境）
+        // プロキシ信頼設定: CloudFront/ALBからのX-Forwarded-Protoヘッダーを信頼
+        $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR | \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO);
+        
         $middleware->alias([
             'check.tokens' => \App\Http\Middleware\CheckTokenBalance::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'cognito' => \App\Http\Middleware\VerifyCognitoToken::class, // Phase 1: Cognito JWT検証
         ]);
         // ★ Web ミドルウェアグループに追加
         $middleware->web(append: [

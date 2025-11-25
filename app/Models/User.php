@@ -28,7 +28,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'username', 
+        'username',
+        'email',
+        'name',
         'password',
         'group_id',
         'group_edit_flg',
@@ -36,6 +38,8 @@ class User extends Authenticatable
         'last_login_at',
         'theme',
         'timezone',
+        'cognito_sub',
+        'auth_provider',
     ];
     
     /**
