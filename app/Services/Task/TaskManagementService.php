@@ -102,6 +102,7 @@ class TaskManagementService implements TaskManagementServiceInterface
         $taskData['priority'] = $data['priority'] ?? 3;
         $taskData['is_completed'] = false;
         $is_charged = isset($data['assigned_user_id']) ? true : false;
+        $task = null;
 
         DB::transaction(function () use ($user, $data, $taskData, $groupFlg, $is_charged, &$task) {
             // グループタスクの場合
@@ -115,18 +116,23 @@ class TaskManagementService implements TaskManagementServiceInterface
                 if (!$is_charged) {
                     // グループメンバのうち、編集権限のないユーザを取得
                     $users = $this->profileUserRepository->getMembersWithoutEditPermission($user->id);
+                    $createdTasks = [];
                     foreach ($users as $member) {
                         $taskData['user_id'] = $member->id;
-                        $task = $this->taskRepository->create($taskData);
+                        $createdTask = $this->taskRepository->create($taskData);
 
                         // タグを関連付け（タグ名の配列）
                         if (isset($data['tags']) && is_array($data['tags'])) {
-                            $this->taskRepository->syncTagsByName($task, $data['tags']);
+                            $this->taskRepository->syncTagsByName($createdTask, $data['tags']);
                         }
                         
                         // メンバーのキャッシュをクリア
                         $this->clearUserCache($member->id);
+                        
+                        $createdTasks[] = $createdTask;
                     }
+                    // 最初に作成されたタスクを返す（代表として）
+                    $task = $createdTasks[0] ?? null;
                     // 通知を送信
                     $this->notificationService->sendNotificationForGroup(
                         config('const.notification_types.group_task_created'),
@@ -137,13 +143,15 @@ class TaskManagementService implements TaskManagementServiceInterface
                 // 担当者が設定されている場合は担当者分のみタスクを作成
                 } else {
                     $taskData['user_id'] = $data['assigned_user_id'];
-                    $task = $this->taskRepository->create($taskData);
+                    $createdTask = $this->taskRepository->create($taskData);
                     // タグを関連付け（タグ名の配列）
                     if (isset($data['tags']) && is_array($data['tags'])) {
-                        $this->taskRepository->syncTagsByName($task, $data['tags']);
+                        $this->taskRepository->syncTagsByName($createdTask, $data['tags']);
                     }
                     // 担当者のキャッシュをクリア
                     $this->clearUserCache($data['assigned_user_id']);
+                    
+                    $task = $createdTask;
                     
                     // 担当者に通知を送信
                     $this->notificationService->sendNotification(
@@ -159,14 +167,16 @@ class TaskManagementService implements TaskManagementServiceInterface
             } else {
                 // 通常タスクはログインユーザーが所有者
                 $taskData['user_id'] = $user->id;
-                $task = $this->taskRepository->create($taskData);
+                $createdTask = $this->taskRepository->create($taskData);
                 // タグを関連付け（タグ名の配列）
                 if (isset($data['tags']) && is_array($data['tags'])) {
                     $tagNames = $this->tagRepository->findByIds($data['tags'])->pluck('name')->toArray();
-                    $this->taskRepository->syncTagsByName($task, $tagNames);
+                    $this->taskRepository->syncTagsByName($createdTask, $data['tags']);
                 }
                 // 作成者のキャッシュをクリア
                 $this->clearUserCache($user->id);
+                
+                $task = $createdTask;
             }
         });
     
