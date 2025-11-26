@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.tokens' => \App\Http\Middleware\CheckTokenBalance::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'cognito' => \App\Http\Middleware\VerifyCognitoToken::class, // Phase 1: Cognito JWT検証
+            'dual.auth' => \App\Http\Middleware\DualAuthMiddleware::class, // Phase 1.5: Breeze + Cognito並行運用
         ]);
         // ★ Web ミドルウェアグループに追加
         $middleware->web(append: [

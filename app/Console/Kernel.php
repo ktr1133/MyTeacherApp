@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
         Commands\ExecuteScheduledTaskById::class,
         Commands\ListScheduledTasks::class,
         Commands\MonitorRedisHealth::class,
+        Commands\MonitorDualAuthCommand::class, // Phase 1.5: 並行運用監視
     ];
 
     /**
@@ -117,6 +118,19 @@ class Kernel extends ConsoleKernel
         ->dailyAt('03:00')
         ->name('clear-old-cache')
         ->onOneServer();
+
+        // ========================================
+        // Phase 1.5: Breeze + Cognito並行運用監視（5分ごと）
+        // 並行運用期間のみ有効化（2025年12月1日〜12月14日）
+        // ========================================
+        if (now()->between('2025-12-01', '2025-12-14')) {
+            $schedule->command('auth:monitor-dual-auth --alert')
+                ->everyFiveMinutes()
+                ->withoutOverlapping()
+                ->onOneServer() // 冗長構成対応
+                ->runInBackground()
+                ->appendOutputTo(storage_path('logs/dual-auth-monitoring.log'));
+        }
     }
 
     /**
