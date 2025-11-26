@@ -52,6 +52,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
     public function executeScheduledTask(ScheduledGroupTask $scheduledTask, ?\DateTime $date = null): string
     {
         $date = $date ?? now();
+        $notificationData = null;
 
         try {
             DB::beginTransaction();
@@ -85,8 +86,10 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             // 前回の未完了タスクを処理
             $deletedTaskId = $this->handlePreviousIncompleteTask($scheduledTask);
 
-            // 新しいタスクを作成
-            $newTask = $this->createTaskFromSchedule($scheduledTask, $date);
+            // 新しいタスクを作成（通知データも取得）
+            $result = $this->createTaskFromSchedule($scheduledTask, $date);
+            $newTask = $result['task'];
+            $notificationData = $result['notification_data'];
 
             // 実行履歴を記録
             $this->scheduledTaskRepository->recordExecution([
@@ -98,10 +101,12 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                 'note' => null,
             ]);
 
-            // 【将来の通知機能用】
-            // $this->notifyTaskCreation($newTask);
-
             DB::commit();
+
+            // トランザクション成功後に通知を送信（ロールバック時は通知しない）
+            if ($notificationData) {
+                $this->sendNotifications($notificationData);
+            }
 
             return 'success';
 
@@ -260,7 +265,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
     /**
      * スケジュールから新しいタスクを作成
      */
-    protected function createTaskFromSchedule(ScheduledGroupTask $scheduledTask, \DateTime $date)
+    protected function createTaskFromSchedule(ScheduledGroupTask $scheduledTask, \DateTime $date): array
     {
         // 担当者の決定
         $assignedUserId = $this->determineAssignedUser($scheduledTask);
@@ -283,9 +288,14 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             'created_by'          => $scheduledTask->created_by,
         ];
 
+        $notificationData = null;
+        $task = null;
+
         // 担当者が未設定の場合は編集権限のないメンバ全員向けのタスクを作成
         if (!$assignedUserId) {
             $groupMembers = $this->profileUserRepository->getGroupMembersByGroupId($scheduledTask->group_id);
+            $memberIds = [];
+            
             foreach ($groupMembers as $member) {
                 $taskData['user_id'] = $member->id;
 
@@ -297,14 +307,17 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                 if (!empty($tagNames)) {
                     $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
                 }
+                
+                $memberIds[] = $member->id;
             }
-            // 担当者に通知
-            $this->notificationService->sendNotificationForGroup(
-                config('const.notification_types.group_task_created'),
-                '新しいグループタスクが作成されました。',
-                '新しいグループタスク: ' . $taskData['title'] . 'が作成されました。タスクリストを確認してください。',
-                'important'
-            );
+            
+            // 通知データを準備（トランザクション外で送信）
+            $notificationData = [
+                'type' => 'group',
+                'member_ids' => $memberIds,
+                'task_title' => $taskData['title'],
+                'created_by' => $scheduledTask->created_by,
+            ];
         // 担当者指定の場合はその担当者向けのタスクを作成
         } else {
             $taskData['user_id'] = $assignedUserId;
@@ -317,18 +330,74 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             if (!empty($tagNames)) {
                 $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
             }
-            // 担当者に通知を送信
-            $this->notificationService->sendNotification(
-                Auth::user()->id,
-                $assignedUserId,
-                config('const.notification_types.group_task_created'),
-                '新しいグループタスクが作成されました。',
-                '新しいグループタスク: ' . $taskData['title'] . 'が作成されました。タスクリストを確認してください。',
-                'important'
-            );       
+            
+            // 通知データを準備（トランザクション外で送信）
+            $notificationData = [
+                'type' => 'individual',
+                'assigned_user_id' => $assignedUserId,
+                'task_title' => $taskData['title'],
+                'created_by' => $scheduledTask->created_by,
+            ];
         }
 
-        return $task;
+        return [
+            'task' => $task,
+            'notification_data' => $notificationData,
+        ];
+    }
+
+    /**
+     * 通知を送信
+     */
+    protected function sendNotifications(array $notificationData): void
+    {
+        try {
+            if ($notificationData['type'] === 'group') {
+                // グループメンバーへの個別通知
+                foreach ($notificationData['member_ids'] as $memberId) {
+                    $member = $this->profileUserRepository->findById($memberId);
+                    if (!$member) {
+                        continue;
+                    }
+
+                    $message = $member->useChildTheme()
+                        ? 'あたらしいタスクができたよ！🎯 がんばってやってみよう！'
+                        : '定期タスクが自動作成されました';
+
+                    $this->notificationService->sendNotification(
+                        $notificationData['created_by'],
+                        $memberId,
+                        config('const.notification_types.group_task_created'),
+                        $message,
+                        '新しいタスク: ' . $notificationData['task_title'] . 'が作成されました。タスクリストを確認してください。',
+                        'important'
+                    );
+                }
+            } elseif ($notificationData['type'] === 'individual') {
+                // 個別担当者への通知
+                $assignedUser = $this->profileUserRepository->findById($notificationData['assigned_user_id']);
+                if ($assignedUser) {
+                    $message = $assignedUser->useChildTheme()
+                        ? 'あたらしいタスクができたよ！🎯 がんばってやってみよう！'
+                        : '定期タスクが自動作成されました';
+
+                    $this->notificationService->sendNotification(
+                        $notificationData['created_by'],
+                        $notificationData['assigned_user_id'],
+                        config('const.notification_types.group_task_created'),
+                        $message,
+                        '新しいタスク: ' . $notificationData['task_title'] . 'が作成されました。タスクリストを確認してください。',
+                        'important'
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            // 通知失敗はログに記録するが、タスク作成自体は成功とみなす
+            Log::warning('Failed to send notification for scheduled task', [
+                'notification_data' => $notificationData,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
