@@ -133,13 +133,27 @@ class TaskManagementService implements TaskManagementServiceInterface
                     }
                     // 最初に作成されたタスクを返す（代表として）
                     $task = $createdTasks[0] ?? null;
-                    // 通知を送信
-                    $this->notificationService->sendNotificationForGroup(
-                        config('const.notification_types.group_task_created'),
-                        '新しいグループタスクが作成されました。',
-                        '新しいグループタスク: ' . $data['title'] . 'が作成されました。タスクリストを確認してください。',
-                        'important'
-                    );
+                    
+                    // 編集権限のないメンバーに通知を送信
+                    foreach ($users as $member) {
+                        // ユーザーのテーマに応じてメッセージを変更
+                        if ($member->useChildTheme()) {
+                            $title = 'あたらしいタスクができたよ！';
+                            $body = '「' . $data['title'] . '」というタスクができました。がんばってやってみよう！';
+                        } else {
+                            $title = '新しいグループタスクが作成されました';
+                            $body = '新しいグループタスク「' . $data['title'] . '」が作成されました。タスクリストを確認してください。';
+                        }
+                        
+                        $this->notificationService->sendNotification(
+                            Auth::user()->id,
+                            $member->id,
+                            config('const.notification_types.group_task_created'),
+                            $title,
+                            $body,
+                            'important'
+                        );
+                    }
                 // 担当者が設定されている場合は担当者分のみタスクを作成
                 } else {
                     $taskData['user_id'] = $data['assigned_user_id'];
@@ -154,12 +168,23 @@ class TaskManagementService implements TaskManagementServiceInterface
                     $task = $createdTask;
                     
                     // 担当者に通知を送信
+                    $assignedUser = $this->profileUserRepository->findById($data['assigned_user_id']);
+                    
+                    // ユーザーのテーマに応じてメッセージを変更
+                    if ($assignedUser && $assignedUser->useChildTheme()) {
+                        $title = 'あたらしいタスクができたよ！';
+                        $body = '「' . $data['title'] . '」というタスクができました。がんばってやってみよう！';
+                    } else {
+                        $title = '新しいグループタスクが作成されました';
+                        $body = '新しいグループタスク「' . $data['title'] . '」が作成されました。タスクリストを確認してください。';
+                    }
+                    
                     $this->notificationService->sendNotification(
                         Auth::user()->id,
                         $data['assigned_user_id'],
                         config('const.notification_types.group_task_created'),
-                        '新しいグループタスクが作成されました。',
-                        '新しいグループタスク: ' . $data['title'] . 'が作成されました。タスクリストを確認してください。',
+                        $title,
+                        $body,
                         'important'
                     );       
                 }

@@ -14,7 +14,6 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         Commands\ExecuteScheduledTasks::class,
-        Commands\ExecuteScheduledTaskById::class,
         Commands\ListScheduledTasks::class,
         Commands\MonitorRedisHealth::class,
         Commands\MonitorDualAuthCommand::class, // Phase 1.5: 並行運用監視

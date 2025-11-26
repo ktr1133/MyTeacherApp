@@ -100,9 +100,6 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                 'note' => null,
             ]);
 
-            // 【将来の通知機能用】
-            // $this->notifyTaskCreation($newTask);
-
             DB::commit();
 
             return 'success';
@@ -330,6 +327,8 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
         // 担当者が未設定の場合は編集権限のないメンバ全員向けのタスクを作成
         if (!$assignedUserId) {
             $groupMembers = $this->profileUserRepository->getGroupMembersByGroupId($scheduledTask->group_id);
+            $createdTasks = [];
+            
             foreach ($groupMembers as $member) {
                 $taskData['user_id'] = $member->id;
 
@@ -341,14 +340,37 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                 if (!empty($tagNames)) {
                     $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
                 }
+                
+                $createdTasks[] = $task;
             }
-            // 担当者に通知
-            $this->notificationService->sendNotificationForGroup(
-                config('const.notification_types.group_task_created'),
-                '新しいグループタスクが作成されました。',
-                '新しいグループタスク: ' . $taskData['title'] . 'が作成されました。タスクリストを確認してください。',
-                'important'
-            );
+            
+            // 編集権限のないメンバーに通知を送信
+            foreach ($groupMembers as $member) {
+                // 編集権限を持たないメンバーのみに通知
+                if (!$member->group_edit_flg) {
+                    // ユーザーのテーマに応じてメッセージを変更
+                    if ($member->useChildTheme()) {
+                        $title = 'あたらしいクエストができたよ！';
+                        $body = '「' . $taskData['title'] . '」というクエストができました。がんばってやってみよう！';
+                    } else {
+                        $title = '定期タスクが自動作成されました';
+                        $body = '定期タスク「' . $taskData['title'] . '」が自動作成されました。タスクリストを確認してください。';
+                    }
+                    
+                    $this->notificationService->sendNotification(
+                        $scheduledTask->created_by,
+                        $member->id,
+                        config('const.notification_types.group_task_created'),
+                        $title,
+                        $body,
+                        'important'
+                    );
+                }
+            }
+            
+            // 最初に作成されたタスクを返す（代表として）
+            $task = $createdTasks[0] ?? null;
+            
         // 担当者指定の場合はその担当者向けのタスクを作成
         } else {
             $taskData['user_id'] = $assignedUserId;
@@ -361,15 +383,27 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             if (!empty($tagNames)) {
                 $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
             }
+            
             // 担当者に通知を送信
+            $assignedUser = $this->profileUserRepository->findById($assignedUserId);
+            
+            // ユーザーのテーマに応じてメッセージを変更
+            if ($assignedUser && $assignedUser->useChildTheme()) {
+                $title = 'あたらしいタスクができたよ！';
+                $body = '「' . $taskData['title'] . '」というタスクができました。がんばってやってみよう！';
+            } else {
+                $title = '定期タスクが自動作成されました';
+                $body = '定期タスク「' . $taskData['title'] . '」が自動作成されました。タスクリストを確認してください。';
+            }
+            
             $this->notificationService->sendNotification(
-                Auth::user()->id,
+                $scheduledTask->created_by,
                 $assignedUserId,
                 config('const.notification_types.group_task_created'),
-                '新しいグループタスクが作成されました。',
-                '新しいグループタスク: ' . $taskData['title'] . 'が作成されました。タスクリストを確認してください。',
+                $title,
+                $body,
                 'important'
-            );       
+            );
         }
 
         return $task;
