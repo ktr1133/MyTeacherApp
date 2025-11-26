@@ -47,4 +47,12 @@ class ProfileManagementService implements ProfileManagementServiceInterface
     {
         return $this->userRepository->findById($userId);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createUser(array $data): User
+    {
+        return $this->userRepository->create($data);
+    }
 }

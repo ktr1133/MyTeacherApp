@@ -8,6 +8,8 @@ use App\Repositories\Batch\HolidayRepositoryInterface;
 use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use App\Repositories\Task\TaskRepositoryInterface;
 use App\Services\Notification\NotificationServiceInterface;
+use App\Services\Batch\ScheduledTaskServiceInterface;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -98,9 +100,6 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                 'note' => null,
             ]);
 
-            // 【将来の通知機能用】
-            // $this->notifyTaskCreation($newTask);
-
             DB::commit();
 
             return 'success';
@@ -170,6 +169,10 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
     /**
      * 祝日のためスキップすべきかチェック
+     * 
+     * @param ScheduledGroupTask $scheduledTask スケジュールタスク
+     * @param \DateTime $date 判定基準日時（UTC）
+     * @return bool スキップする場合true
      */
     protected function shouldSkipDueToHoliday(ScheduledGroupTask $scheduledTask, \DateTime $date): bool
     {
@@ -177,7 +180,18 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             return false;
         }
 
-        $isHoliday = $this->holidayRepository->isHoliday($date);
+        // 作成者のタイムゾーンで日付を取得
+        $creator = $scheduledTask->creator;
+        if (!$creator) {
+            Log::warning('Scheduled task creator not found for holiday check', ['scheduled_task_id' => $scheduledTask->id]);
+            return false;
+        }
+        
+        // UTC時刻を作成者のタイムゾーンに変換して日付を取得
+        $userTimezone = $creator->timezone ?? 'Asia/Tokyo';
+        $dateInUserTz = Carbon::parse($date)->timezone($userTimezone);
+        
+        $isHoliday = $this->holidayRepository->isHoliday($dateInUserTz);
 
         if (!$isHoliday) {
             return false;
@@ -194,11 +208,40 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
     /**
      * スケジュールとマッチするかチェック
+     * 
+     * @param ScheduledGroupTask $scheduledTask スケジュールタスク
+     * @param \DateTime $date 判定基準日時（UTC）
+     * @return bool マッチする場合true
      */
     protected function matchesSchedule(ScheduledGroupTask $scheduledTask, \DateTime $date): bool
     {
         $schedules = $scheduledTask->schedules;
-        $currentTime = $date->format('H:i');
+        
+        // 作成者のタイムゾーンで現在時刻を取得
+        $creator = $scheduledTask->creator;
+        if (!$creator) {
+            Log::warning('Scheduled task creator not found', [
+                'scheduled_task_id' => $scheduledTask->id,
+                'created_by' => $scheduledTask->created_by,
+            ]);
+            return false;
+        }
+        
+        // UTC時刻を作成者のタイムゾーンに変換
+        $userTimezone = $creator->timezone ?? 'Asia/Tokyo';
+        $dateInUserTz = Carbon::parse($date)->timezone($userTimezone);
+        $currentTime = $dateInUserTz->format('H:i');
+        $dayOfWeek = (int)$dateInUserTz->format('w'); // 0=日曜, 6=土曜
+        $dayOfMonth = (int)$dateInUserTz->format('j'); // 1-31
+
+        Log::debug('Checking schedule match', [
+            'scheduled_task_id' => $scheduledTask->id,
+            'creator_id' => $creator->id,
+            'creator_timezone' => $userTimezone,
+            'utc_time' => $date->format('Y-m-d H:i:s'),
+            'user_local_time' => $dateInUserTz->format('Y-m-d H:i:s'),
+            'current_time' => $currentTime,
+        ]);
 
         foreach ($schedules as $schedule) {
             // 時刻が一致しない場合はスキップ
@@ -212,11 +255,9 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                     return true;
 
                 case 'weekly':
-                    $dayOfWeek = (int)$date->format('w'); // 0=日曜, 6=土曜
                     return in_array($dayOfWeek, $schedule['days'] ?? []);
 
                 case 'monthly':
-                    $dayOfMonth = (int)$date->format('j'); // 1-31
                     return in_array($dayOfMonth, $schedule['dates'] ?? []);
             }
         }
@@ -286,6 +327,8 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
         // 担当者が未設定の場合は編集権限のないメンバ全員向けのタスクを作成
         if (!$assignedUserId) {
             $groupMembers = $this->profileUserRepository->getGroupMembersByGroupId($scheduledTask->group_id);
+            $createdTasks = [];
+            
             foreach ($groupMembers as $member) {
                 $taskData['user_id'] = $member->id;
 
@@ -297,14 +340,37 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                 if (!empty($tagNames)) {
                     $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
                 }
+                
+                $createdTasks[] = $task;
             }
-            // 担当者に通知
-            $this->notificationService->sendNotificationForGroup(
-                config('const.notification_types.group_task_created'),
-                '新しいグループタスクが作成されました。',
-                '新しいグループタスク: ' . $taskData['title'] . 'が作成されました。タスクリストを確認してください。',
-                'important'
-            );
+            
+            // 編集権限のないメンバーに通知を送信
+            foreach ($groupMembers as $member) {
+                // 編集権限を持たないメンバーのみに通知
+                if (!$member->group_edit_flg) {
+                    // ユーザーのテーマに応じてメッセージを変更
+                    if ($member->useChildTheme()) {
+                        $title = 'あたらしいクエストができたよ！';
+                        $body = '「' . $taskData['title'] . '」というクエストができました。がんばってやってみよう！';
+                    } else {
+                        $title = '定期タスクが自動作成されました';
+                        $body = '定期タスク「' . $taskData['title'] . '」が自動作成されました。タスクリストを確認してください。';
+                    }
+                    
+                    $this->notificationService->sendNotification(
+                        $scheduledTask->created_by,
+                        $member->id,
+                        config('const.notification_types.group_task_created'),
+                        $title,
+                        $body,
+                        'important'
+                    );
+                }
+            }
+            
+            // 最初に作成されたタスクを返す（代表として）
+            $task = $createdTasks[0] ?? null;
+            
         // 担当者指定の場合はその担当者向けのタスクを作成
         } else {
             $taskData['user_id'] = $assignedUserId;
@@ -317,15 +383,27 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             if (!empty($tagNames)) {
                 $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
             }
+            
             // 担当者に通知を送信
+            $assignedUser = $this->profileUserRepository->findById($assignedUserId);
+            
+            // ユーザーのテーマに応じてメッセージを変更
+            if ($assignedUser && $assignedUser->useChildTheme()) {
+                $title = 'あたらしいタスクができたよ！';
+                $body = '「' . $taskData['title'] . '」というタスクができました。がんばってやってみよう！';
+            } else {
+                $title = '定期タスクが自動作成されました';
+                $body = '定期タスク「' . $taskData['title'] . '」が自動作成されました。タスクリストを確認してください。';
+            }
+            
             $this->notificationService->sendNotification(
-                Auth::user()->id,
+                $scheduledTask->created_by,
                 $assignedUserId,
                 config('const.notification_types.group_task_created'),
-                '新しいグループタスクが作成されました。',
-                '新しいグループタスク: ' . $taskData['title'] . 'が作成されました。タスクリストを確認してください。',
+                $title,
+                $body,
                 'important'
-            );       
+            );
         }
 
         return $task;
@@ -353,6 +431,10 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
     /**
      * 期限を計算
+     * 
+     * @param ScheduledGroupTask $scheduledTask スケジュールタスク
+     * @param \DateTime $date 基準日時（UTC）
+     * @return \DateTime|null 期限日時（UTC）
      */
     protected function calculateDueDate(ScheduledGroupTask $scheduledTask, \DateTime $date): ?\DateTime
     {
@@ -360,7 +442,12 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             return null;
         }
 
-        $dueDate = Carbon::parse($date);
+        // 作成者のタイムゾーンで基準日時を取得
+        $creator = $scheduledTask->creator;
+        $userTimezone = $creator ? ($creator->timezone ?? 'Asia/Tokyo') : 'Asia/Tokyo';
+        
+        // UTC時刻を作成者のタイムゾーンに変換してから期限を計算
+        $dueDate = Carbon::parse($date)->timezone($userTimezone);
 
         if ($scheduledTask->due_duration_days) {
             $dueDate->addDays($scheduledTask->due_duration_days);
@@ -370,6 +457,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             $dueDate->addHours($scheduledTask->due_duration_hours);
         }
 
-        return $dueDate;
+        // UTCに戻して返す（データベース保存用）
+        return $dueDate->timezone('UTC');
     }
 }

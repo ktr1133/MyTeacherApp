@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique()->comment('グループ名');
-            $table->unsignedBigInteger('master_user_id')->nullable()->comment('マスターのユーザーID');
+            $table->unsignedBigInteger('master_user_id')->nullable()->comment('グループ管理者のユーザーID');
             
             // Stripe関連フィールド (Laravel Cashier - グループ課金用)
             $table->string('stripe_id')->nullable()->index()->comment('Stripe顧客ID');
@@ -28,7 +28,7 @@ return new class extends Migration
 
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('username')->unique()->comment('ユーザー名（ログインID）');
+            $table->string('username')->unique()->comment('ユーザー名');
             $table->timestamp('last_login_at')->nullable()->comment('最終ログイン日時');
             $table->unsignedBigInteger('group_id')->nullable()->comment('グループID');
             $table->boolean('group_edit_flg')->default(false)->comment('グループ編集フラグ');

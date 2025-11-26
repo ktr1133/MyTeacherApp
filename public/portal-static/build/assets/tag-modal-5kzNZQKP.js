@@ -1,0 +1,1 @@
+(function(){window.openTagModal=function(o){window.Alpine?window.dispatchEvent(new CustomEvent(`open-tag-modal-${o}`)):console.error("[TagModal] Alpine.js not available")},console.log("[TagModal] Initialized")})();

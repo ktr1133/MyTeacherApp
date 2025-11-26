@@ -49,7 +49,7 @@
                                     <p class="text-xs text-gray-600 dark:text-gray-400">プロフィールとセキュリティ設定</p>
                                 @else
                                     <h1 class="dashboard-header-title text-lg font-bold">
-                                        アカウント管理
+                                        アカウント
                                     </h1>
                                 @endif
                             </div>

@@ -64,8 +64,8 @@
                 <input type="hidden" name="formality" x-model="formData.formality">
                 <input type="hidden" name="humor" x-model="formData.humor">
                 <input type="hidden" name="draw_model_version" x-model="formData.draw_model_version">
-                <input type="hidden" name="is_transparent" x-model="formData.is_transparent ? '1' : '0'">
-                <input type="hidden" name="is_chibi" x-model="formData.is_chibi ? '1' : '0'">
+                <input type="hidden" name="is_transparent" :value="formData.is_transparent ? '1' : '0'">
+                <input type="hidden" name="is_chibi" :value="formData.is_chibi ? '1' : '0'">
 
                 {{-- ステップ1: 性別 --}}
                 <div x-show="currentStep === 1" x-transition class="wizard-step-child">
