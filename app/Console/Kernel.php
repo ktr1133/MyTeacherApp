@@ -41,7 +41,7 @@ class Kernel extends ConsoleKernel
         // 本番環境: 毎時実行
         else {
             $schedule->command('batch:execute-scheduled-tasks')
-                ->hourly()
+                ->everyMinute()
                 ->withoutOverlapping(10)
                 ->onOneServer() // 冗長構成対応
                 ->runInBackground()
