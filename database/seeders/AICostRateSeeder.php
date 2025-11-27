@@ -79,8 +79,8 @@ class AICostRateSeeder extends Seeder
                 'service_type' => 'dalle3',
                 'service_detail' => 'standard-input',
                 'image_size' => '1024x1024',
-                'unit_cost_usd' => 0.040,
-                'token_conversion_rate' => 4000,
+                'unit_cost_usd' => 0.040, // 20251127時点のレート
+                'token_conversion_rate' => 4000, // 20251127時点のレート
                 'is_active' => true,
                 'effective_from' => $now,
                 'note' => 'OpenAI DALL-E 3 Standard 1024x1024',
@@ -91,8 +91,8 @@ class AICostRateSeeder extends Seeder
                 'service_type' => 'dalle3',
                 'service_detail' => 'standard-output',
                 'image_size' => '1024x1792',
-                'unit_cost_usd' => 0.080,
-                'token_conversion_rate' => 8000,
+                'unit_cost_usd' => 0.080, // 20251127時点のレート
+                'token_conversion_rate' => 8000, // 20251127時点のレート
                 'is_active' => true,
                 'effective_from' => $now,
                 'note' => 'OpenAI DALL-E 3 Standard 1024x1792',
@@ -103,8 +103,8 @@ class AICostRateSeeder extends Seeder
                 'service_type' => 'dalle3',
                 'service_detail' => 'standard',
                 'image_size' => '1792x1024',
-                'unit_cost_usd' => 0.080,
-                'token_conversion_rate' => 8000,
+                'unit_cost_usd' => 0.080, // 20251127時点のレート
+                'token_conversion_rate' => 8000, // 20251127時点のレート
                 'is_active' => true,
                 'effective_from' => $now,
                 'note' => 'OpenAI DALL-E 3 Standard 1792x1024',
@@ -119,11 +119,11 @@ class AICostRateSeeder extends Seeder
                 'service_type' => 'anything-v4.0',
                 'service_detail' => 'image_generation',
                 'image_size' => '512x512',
-                'unit_cost_usd' => 0.01,
-                'token_conversion_rate' => 5000,
+                'unit_cost_usd' => 0.01, // 20251127時点のレート
+                'token_conversion_rate' => 1000, // 20251127時点のレート
                 'is_active' => true,
                 'effective_from' => $now,
-                'note' => 'Replicate anything-v4.0 画像生成 (512x512) - Replicate公式レート',
+                'note' => 'Replicate anything-v4.0 画像生成 (512x512) - 1枚あたりの単価',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -131,11 +131,11 @@ class AICostRateSeeder extends Seeder
                 'service_type' => 'anything-v4.0',
                 'service_detail' => 'image_generation',
                 'image_size' => '768x768',
-                'unit_cost_usd' => 0.0035,
-                'token_conversion_rate' => 7500,
+                'unit_cost_usd' => 0.0035, // 20251127時点のレート
+                'token_conversion_rate' => 1500, // 20251127時点のレート
                 'is_active' => true,
                 'effective_from' => $now,
-                'note' => 'Replicate anything-v4.0 画像生成 (768x768) - 512x512の1.5倍',
+                'note' => 'Replicate anything-v4.0 画像生成 (768x768) - 1枚あたりの単価',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -143,11 +143,11 @@ class AICostRateSeeder extends Seeder
                 'service_type' => 'anything-v4.0',
                 'service_detail' => 'image_generation',
                 'image_size' => '1024x1024',
-                'unit_cost_usd' => 0.0050,
-                'token_conversion_rate' => 10000,
+                'unit_cost_usd' => 0.0050, // 20251127時点のレート
+                'token_conversion_rate' => 2000, // 20251127時点のレート
                 'is_active' => true,
                 'effective_from' => $now,
-                'note' => 'Replicate anything-v4.0 画像生成 (1024x1024) - 512x512の2倍',
+                'note' => 'Replicate anything-v4.0 画像生成 (1024x1024) - 1枚あたりの単価',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -155,11 +155,11 @@ class AICostRateSeeder extends Seeder
                 'service_type' => 'stable-diffusion-3.5-medium',
                 'service_detail' => 'image_generation',
                 'image_size' => '512x512',
-                'unit_cost_usd' => 0.035,
-                'token_conversion_rate' => 23000,
+                'unit_cost_usd' => 0.035, // 20251127時点のレート
+                'token_conversion_rate' => 4600, // 20251127時点のレート
                 'is_active' => true,
                 'effective_from' => $now,
-                'note' => 'Replicate stable-diffusion-3.5-medium 画像生成 (512x512) - Replicate公式レート',
+                'note' => 'Replicate stable-diffusion-3.5-medium 画像生成 (512x512) - 1枚あたりの単価',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -167,11 +167,11 @@ class AICostRateSeeder extends Seeder
                 'service_type' => 'animagine-xl-3.1',
                 'service_detail' => 'image_generation',
                 'image_size' => '512x512',
-                'unit_cost_usd' => 0.0040,
-                'token_conversion_rate' => 2000,
+                'unit_cost_usd' => 0.0040, // 20251127時点のレート
+                'token_conversion_rate' => 400, // 20251127時点のレート
                 'is_active' => true,
                 'effective_from' => $now,
-                'note' => 'Replicate animagine-xl-3.1 画像生成 (512x512) - Replicate公式レート',
+                'note' => 'Replicate animagine-xl-3.1 画像生成 (512x512) - 1枚あたりの単価',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -183,8 +183,8 @@ class AICostRateSeeder extends Seeder
                 'service_type' => 'rembg',
                 'service_detail' => 'background_removal',
                 'image_size' => null, // サイズ不問
-                'unit_cost_usd' => 0.0005,
-                'token_conversion_rate' => 50,
+                'unit_cost_usd' => 0.0005, // 20251127時点のレート
+                'token_conversion_rate' => 50, // 20251127時点のレート
                 'is_active' => true,
                 'effective_from' => $now,
                 'note' => 'Replicate rembg 背景除去',

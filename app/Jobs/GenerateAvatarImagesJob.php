@@ -301,7 +301,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
                         $avatar->user,
                         TeacherAvatar::class,
                         $avatar->id,
-                        'anything-v4.0',
+                        $model,
                         "{$poseType}_{$expressionType}",
                         1.0,
                         $generationCost,

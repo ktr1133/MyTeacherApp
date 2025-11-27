@@ -169,14 +169,13 @@ return [
         'animagine-xl-3.1' => env('REPLICATE_MODEL_VERSION_V2'),
         'stable-diffusion-3.5-medium' => env('REPLICATE_MODEL_VERSION_V3'),
     ],
-    //// 推定使用トークン量（ai_cost_ratesテーブルのtoken_conversion_rateと一致させる）
-    // ※ 本番環境ではAICostService::calculateReplicateCost()でai_cost_ratesから取得
-    // ※ 以下の値はSeeder値（database/seeders/AICostRateSeeder.php）と一致
-    // ※ フォールバック時にも使用される
-    // ※ Replicate公式レートに基づく（2025-11-27確認）
+    //// 推定使用トークン量（ユーザーへの事前表示用 - 1回のアバター生成で5枚分）
+    // ※ ai_cost_ratesテーブルの値は1枚あたりの単価
+    // ※ 実際のコスト計算: AICostService::calculateReplicateCost() × 枚数
+    // ※ 以下は5枚分の合計値（全身5種 or バストアップ5種）
     'estimated_token_usages' => [
-        'anything-v4.0'    => 5000,  // Replicate公式レート: 512x512=5000トークン
-        'animagine-xl-3.1' => 2000,  // Replicate公式レート: 512x512=2000トークン
-        'stable-diffusion-3.5-medium' => 23000, // Replicate公式レート: 512x512=23000トークン
+        'anything-v4.0'    => 5000,  // 1枚1000 × 5枚
+        'animagine-xl-3.1' => 2000,  // 1枚400 × 5枚
+        'stable-diffusion-3.5-medium' => 23000, // 1枚4600 × 5枚
     ],
 ];
