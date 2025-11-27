@@ -202,8 +202,14 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
      */
     protected function matchesSchedule(ScheduledGroupTask $scheduledTask, \DateTime $date): bool
     {
+        // ユーザーのタイムゾーンを取得（デフォルト: Asia/Tokyo）
+        $userTimezone = $scheduledTask->creator->timezone ?? 'Asia/Tokyo';
+        
+        // UTC時刻をユーザーのタイムゾーンに変換
+        $userLocalTime = \Carbon\Carbon::parse($date)->timezone($userTimezone);
+        $currentTime = $userLocalTime->format('H:i');
+
         $schedules = $scheduledTask->schedules;
-        $currentTime = $date->format('H:i');
 
         foreach ($schedules as $schedule) {
             // 時刻が一致しない場合はスキップ
@@ -211,18 +217,23 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                 continue;
             }
 
-            // スケジュールタイプ別の判定
+            // スケジュールタイプ別の判定（ユーザーのタイムゾーンで判定）
             switch ($schedule['type']) {
                 case 'daily':
                     return true;
 
                 case 'weekly':
-                    $dayOfWeek = (int)$date->format('w'); // 0=日曜, 6=土曜
-                    return in_array($dayOfWeek, $schedule['days'] ?? []);
+                    // 曜日: 0=日曜, 1=月曜, ..., 6=土曜
+                    $dayOfWeek = (int)$userLocalTime->format('w');
+                    // DBに文字列として保存されている可能性があるため、文字列でも比較
+                    return in_array($dayOfWeek, $schedule['days'] ?? [], false) 
+                        || in_array((string)$dayOfWeek, $schedule['days'] ?? [], true);
 
                 case 'monthly':
-                    $dayOfMonth = (int)$date->format('j'); // 1-31
-                    return in_array($dayOfMonth, $schedule['dates'] ?? []);
+                    $dayOfMonth = (int)$userLocalTime->format('j'); // 1-31
+                    // DBに文字列として保存されている可能性があるため、文字列でも比較
+                    return in_array($dayOfMonth, $schedule['dates'] ?? [], false)
+                        || in_array((string)$dayOfMonth, $schedule['dates'] ?? [], true);
             }
         }
 
