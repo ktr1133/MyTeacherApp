@@ -5,7 +5,7 @@
         ->count();
     $sidebarPendingTotal = 0;
     if ($u->canEditGroup()) {
-        $sidebarTaskTotal = \App\Models\Task::query()
+        $sidebarApprovalTotal = \App\Models\Task::query()
             ->where('requires_approval', true)
             ->where('is_completed', true)
             ->whereNull('approved_at')
@@ -16,7 +16,7 @@
                     ->where('id', '!=', $u->id);
             })->pending()
             ->count();
-        $sidebarPendingTotal = $sidebarTaskTotal + $sidebarPurchaseTotal;
+        $sidebarPendingTotal = $sidebarApprovalTotal + $sidebarPurchaseTotal;
     }
 
     // トークン残高を取得
