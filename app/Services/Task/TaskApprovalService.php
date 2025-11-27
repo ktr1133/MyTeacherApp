@@ -20,6 +20,7 @@ class TaskApprovalService implements TaskApprovalServiceInterface
     public function __construct(
         private TaskRepositoryInterface $taskRepository,
         private NotificationServiceInterface $notificationService,
+        private TaskManagementServiceInterface $taskManagementService,
     ) {}
 
     /**
@@ -64,6 +65,9 @@ class TaskApprovalService implements TaskApprovalServiceInterface
             $userName = $user->username;
             $message = $userName . 'からタスク: ' . $task->title . ' の完了申請がありました。';
             $this->notificationService->sendNotification($task->user_id, $task->assigned_by_user_id, config('const.notification_types.approval_required'), $title, $message);
+
+            // キャッシュをクリア（最新データを反映させるため）
+            $this->taskManagementService->clearUserTaskCache($task->user_id);
 
             return $task;
         });
@@ -242,6 +246,9 @@ class TaskApprovalService implements TaskApprovalServiceInterface
             if ($groupTaskId) {
                 $this->taskRepository->deleteByGroupTaskIdExcludingUser($groupTaskId, $user->id);                
             }
+
+            // キャッシュをクリア（最新データを反映させるため）
+            $this->taskManagementService->clearUserTaskCache($task->user_id);
 
             return $task;
         });
