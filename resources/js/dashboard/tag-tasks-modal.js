@@ -188,6 +188,9 @@ class TagTasksModalController {
         
         this.isOpen = true;
         this.modal.classList.remove('hidden');
+        if (this.overlay) {
+            this.overlay.style.display = 'flex';
+        }
         document.body.classList.add('overflow-hidden');
         
         // 初期フィルター適用
@@ -217,6 +220,9 @@ class TagTasksModalController {
         
         setTimeout(() => {
             this.modal.classList.add('hidden');
+            if (this.overlay) {
+                this.overlay.style.display = 'none';
+            }
             document.body.classList.remove('overflow-hidden');
             this.isOpen = false;
         }, 200);

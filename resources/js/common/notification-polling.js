@@ -93,7 +93,7 @@ function createToastContainer() {
     container.style.flexDirection = 'column';
     container.style.gap = '12px';
     container.style.maxWidth = '400px';
-    container.style.pointerEvents = 'none';
+    // pointer-events: none は削除（コンテナ自体はクリック可能にする必要がある）
     
     document.body.appendChild(container);
     

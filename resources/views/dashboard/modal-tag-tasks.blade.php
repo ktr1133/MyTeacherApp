@@ -1,11 +1,12 @@
 @props(['tagId', 'tagName', 'tasksOfTag', 'allTags', 'isChildTheme' => false])
 <div 
     data-tag-tasks-modal="{{ $tagId }}"
-    data-tasks="{{ Js::from($tasksOfTag->values()->toArray()) }}"
+    data-tasks="{{ json_encode($tasksOfTag->values()->toArray()) }}"
     class="hidden">
     
     <div 
         data-modal-overlay
+        style="display: none;"
         class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 opacity-0 transition-opacity duration-300">
         
         <div 

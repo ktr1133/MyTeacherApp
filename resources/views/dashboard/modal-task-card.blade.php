@@ -4,7 +4,7 @@
     {{-- モーダルオーバーレイ --}}
     <div 
         data-modal-overlay
-        class="fixed inset-0 z-[60] bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        class="hidden fixed inset-0 z-[60] bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         
         {{-- モーダルコンテンツ --}}
         <div 

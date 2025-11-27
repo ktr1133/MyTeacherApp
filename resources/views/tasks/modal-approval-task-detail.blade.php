@@ -6,7 +6,7 @@
     
     {{-- オーバーレイ --}}
     <div data-modal-overlay
-         class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+         class="hidden fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity duration-300 opacity-0">
     </div>
 
     {{-- モーダルコンテンツ --}}

@@ -189,6 +189,7 @@ class ApprovalTaskDetailModalController {
         
         // モーダル表示
         this.modal.classList.remove('hidden');
+        this.overlay?.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
         
         // アニメーション
@@ -220,6 +221,7 @@ class ApprovalTaskDetailModalController {
         
         setTimeout(() => {
             this.modal.classList.add('hidden');
+            this.overlay?.classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
             this.isOpen = false;
         }, 200);
