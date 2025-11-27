@@ -108,13 +108,18 @@ class GenerateAvatarImagesJob implements ShouldQueue
         TokenServiceInterface $tokenService,
         NotificationServiceInterface $notificationService
     ): void {
-        $avatar = TeacherAvatar::find($this->avatarId);
+        $avatar = TeacherAvatar::with('user')->find($this->avatarId);
 
         if (!$avatar) {
             Log::error('[GenerateAvatarImages] Avatar not found', [
                 'avatar_id' => $this->avatarId,
             ]);
             return;
+        }
+
+        // キュー実行時に認証コンテキストを設定（OpenAIService等で使用）
+        if ($avatar->user) {
+            \Illuminate\Support\Facades\Auth::setUser($avatar->user);
         }
 
         try {
@@ -773,8 +778,8 @@ class GenerateAvatarImagesJob implements ShouldQueue
             $path = "avatars/{$userId}/{$filename}";
 
             $uploaded = Storage::disk('s3')->put($path, $imageContent, [
-                'visibility' => 'public',
                 'ContentType' => 'image/png',
+                'CacheControl' => 'max-age=31536000',
             ]);
 
             if (!$uploaded) {

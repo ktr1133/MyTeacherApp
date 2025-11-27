@@ -13,10 +13,11 @@ import {
     validateField,
     isFormValid,
     initValidationState,
+    updateSubmitButtonState,
 } from '../common/validation-core.js';
 
-// バリデーション状態を初期化
-initValidationState(['username', 'email', 'password', 'password_confirmation']);
+// バリデーション状態を初期化（タイムゾーンはデフォルト値があるため除外）
+initValidationState(['username', 'password', 'password_confirmation']);
 
 /**
  * ユーザー名バリデーション
@@ -48,13 +49,24 @@ async function validateUsername() {
             showError('username', result.message || '× このユーザー名は既に使用されています');
         }
     }
+
+    // ボタン状態を更新
+    updateSubmitButtonState('register-button', ['username', 'password', 'password_confirmation']);
 }
 
 /**
  * メールアドレスバリデーション
+ * 注: 現在は登録画面でメールアドレスフィールドを使用していませんが、
+ * 将来の機能拡張のために残しています。
  */
 async function validateEmail() {
     const emailInput = document.getElementById('email');
+    
+    // メールアドレスフィールドが存在しない場合はスキップ
+    if (!emailInput) {
+        return;
+    }
+    
     const email = emailInput.value.trim();
 
     if (!email || email.length === 0) {
@@ -110,6 +122,9 @@ async function validatePassword() {
             showError('password', result.message || '× パスワードが弱すぎます');
         }
     }
+
+    // ボタン状態を更新
+    updateSubmitButtonState('register-button', ['username', 'password', 'password_confirmation']);
 }
 
 /**
@@ -135,6 +150,32 @@ function validatePasswordConfirmation() {
     } else {
         showError('password_confirmation', '× パスワードが一致していません');
     }
+
+    // ボタン状態を更新
+    updateSubmitButtonState('register-button', ['username', 'password', 'password_confirmation']);
+}
+
+/**
+ * タイムゾーンバリデーション
+ */
+function validateTimezone() {
+    const timezoneSelect = document.getElementById('timezone');
+    const timezone = timezoneSelect.value;
+
+    // タイムゾーンが選択されていない場合
+    if (!timezone || timezone.length === 0) {
+        showError('timezone', '× タイムゾーンを選択してください');
+        return false;
+    }
+
+    // タイムゾーンが選択されている場合はエラーメッセージを非表示
+    hideValidationMessage('timezone');
+
+    if (import.meta.env.DEV) {
+        console.log('[RegisterValidation] Timezone selected:', timezone);
+    }
+
+    return true;
 }
 
 // デバウンス付きバリデーション関数
@@ -150,15 +191,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const usernameInput = document.getElementById('username');
-    const emailInput = document.getElementById('email');
+    const emailInput = document.getElementById('email'); // 将来用（現在は使用しない）
     const passwordInput = document.getElementById('password');
     const confirmationInput = document.getElementById('password_confirmation');
+    const timezoneSelect = document.getElementById('timezone');
     const registerForm = document.getElementById('register-form');
 
     if (usernameInput) {
         usernameInput.addEventListener('input', debouncedValidateUsername);
     }
 
+    // メールアドレスフィールドが存在する場合のみイベントリスナーを設定
     if (emailInput) {
         emailInput.addEventListener('input', debouncedValidateEmail);
     }
@@ -171,10 +214,14 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmationInput.addEventListener('input', debouncedValidatePasswordConfirmation);
     }
 
+    if (timezoneSelect) {
+        timezoneSelect.addEventListener('change', validateTimezone);
+    }
+
     // フォーム送信時のバリデーション
     if (registerForm) {
         registerForm.addEventListener('submit', function(e) {
-            const valid = isFormValid(['username', 'email', 'password', 'password_confirmation']);
+            const valid = isFormValid(['username', 'password', 'password_confirmation']);
 
             if (!valid) {
                 e.preventDefault();

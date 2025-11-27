@@ -200,7 +200,16 @@ class TokenEloquentRepository implements TokenRepositoryInterface
      */
     public function getFreeTokenSettings(): FreeTokenSetting
     {
-        return FreeTokenSetting::first();
+        $settings = FreeTokenSetting::first();
+        
+        // レコードが存在しない場合はデフォルト値で作成
+        if (!$settings) {
+            $settings = FreeTokenSetting::create([
+                'amount' => config('const.tokens.free_monthly', 50000),
+            ]);
+        }
+        
+        return $settings;
     }
 
     /**

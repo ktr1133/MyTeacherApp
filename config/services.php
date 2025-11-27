@@ -63,6 +63,21 @@ return [
         'polling_interval' => env('REPLICATE_POLLING_INTERVAL', 2),
     ],
 
+    /**
+     * Amazon Cognito設定（Phase 1: JWT認証）
+     * 
+     * @see https://docs.aws.amazon.com/cognito/latest/developerguide/
+     */
+    'cognito' => [
+        'region'        => env('COGNITO_REGION', 'ap-northeast-1'),
+        'user_pool_id'  => env('COGNITO_USER_POOL_ID'),
+        'client_id'     => env('COGNITO_CLIENT_ID'),
+        'client_secret' => env('COGNITO_CLIENT_SECRET'),  // SPAの場合はnull
+        
+        // 管理者用Client ID（オプション）
+        'admin_client_id' => env('COGNITO_ADMIN_CLIENT_ID'),
+    ],
+
     // ------------------------------------------
     // 教師アバター描画設定項目
     // ------------------------------------------

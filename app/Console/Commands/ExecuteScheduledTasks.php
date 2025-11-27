@@ -38,7 +38,8 @@ class ExecuteScheduledTasks extends Command
 
         try {
             $now = Carbon::now();
-            $this->info("実行時刻: {$now->format('Y-m-d H:i:s')}");
+            $this->info("実行時刻（UTC）: {$now->format('Y-m-d H:i:s')}");
+            $this->info("※ 各スケジュールタスクは作成者のタイムゾーンで判定されます");
 
             // スケジュールされたタスクを実行
             $results = $this->scheduledTaskService->executeScheduledTasks($now);

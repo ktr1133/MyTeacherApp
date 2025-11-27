@@ -39,13 +39,21 @@ class AuthenticatedSessionController extends Controller
         // ログイン空白期間チェック
         $lastLoginAt = $user->last_login_at;
         $eventType = config('const.avatar_events.login');
-        
+
         if ($lastLoginAt && Carbon::parse($lastLoginAt)->diffInDays(now()) >= 3) {
             $eventType = config('const.avatar_events.login_gap');
         }
         
         // 最終ログイン日時更新
         $user->update(['last_login_at' => now()]);
+
+        // アバターがない場合はアバター作成画面へ（intended()より優先）
+        if (!$user->teacherAvatar()->exists()) {
+            // intended URLをクリア（アバター作成を優先）
+            $request->session()->forget('url.intended');
+            
+            return redirect()->route('avatars.create');
+        }
 
         return redirect()->intended(self::HOME)
             ->with('avatar_event', $eventType);

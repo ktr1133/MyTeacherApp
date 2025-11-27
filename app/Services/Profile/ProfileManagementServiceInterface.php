@@ -39,4 +39,12 @@ interface ProfileManagementServiceInterface
      * @return User|null
      */
     public function findUserById(int $userId): ?User;
+
+    /**
+     * 新規ユーザーを作成する
+     *
+     * @param array<string, mixed> $data
+     * @return User
+     */
+    public function createUser(array $data): User;
 }

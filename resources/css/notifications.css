@@ -163,8 +163,8 @@
         #59B9C6 0%, 
         #3b82f6 50%, 
         #8b5cf6 100%
-    );
-    background-size: 200% 200%;
+    ) !important;
+    background-size: 200% 200% !important;
     animation: gradient-shift 8s ease infinite;
     position: relative;
 }
@@ -294,11 +294,17 @@
     }
 
     .notification-detail-header {
-        padding: 1.5rem;
+        padding: 1.5rem !important;
     }
 
     .notification-detail-body {
-        padding: 1.5rem;
+        padding: 1.5rem !important;
+    }
+    
+    /* モバイル時も外側パディングを維持（ユーザー向け・管理者向け両方） */
+    main > div[class*="max-w"] {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
 }
 

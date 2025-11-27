@@ -40,21 +40,45 @@ export function hideSpinner(fieldId) {
 
 /**
  * エラーメッセージ表示
+ * 
+ * 2つのHTMLパターンに対応:
+ * 1. 分離パターン: <div id="fieldId-error"> + <div id="fieldId-success">
+ * 2. 単一パターン: <div id="fieldId-validation">
  */
 export function showError(fieldId, message) {
+    const errorDiv = document.getElementById(`${fieldId}-error`);
+    const successDiv = document.getElementById(`${fieldId}-success`);
     const validationDiv = document.getElementById(`${fieldId}-validation`);
     const inputField = document.getElementById(fieldId);
     
-    if (validationDiv) {
-        validationDiv.textContent = message;
-        validationDiv.className = 'validation-message validation-error';
-        validationDiv.style.display = 'block';
+    // パターン1: 分離パターン（register.blade.php等）
+    if (errorDiv && successDiv) {
+        // 成功メッセージを非表示
+        successDiv.classList.add('hidden');
+        successDiv.classList.remove('validation-success-slide-in');
         
-        // アニメーション
-        validationDiv.style.animation = 'none';
+        // エラーメッセージを表示
+        const messageSpan = errorDiv.querySelector('span');
+        if (messageSpan) {
+            messageSpan.textContent = message;
+        } else {
+            errorDiv.textContent = message;
+        }
+        
+        errorDiv.classList.remove('hidden');
+        errorDiv.classList.add('validation-error-slide-in');
+        
+        // アニメーションをリセット
+        errorDiv.style.animation = 'none';
         setTimeout(() => {
-            validationDiv.style.animation = 'slideDown 0.3s ease-out';
+            errorDiv.style.animation = '';
         }, 10);
+    }
+    // パターン2: 単一パターン（グループ編集画面等）
+    else if (validationDiv) {
+        validationDiv.textContent = message;
+        validationDiv.style.display = 'block';
+        validationDiv.className = 'validation-message validation-error';
     }
     
     if (inputField) {
@@ -70,21 +94,45 @@ export function showError(fieldId, message) {
 
 /**
  * 成功メッセージ表示
+ * 
+ * 2つのHTMLパターンに対応:
+ * 1. 分離パターン: <div id="fieldId-error"> + <div id="fieldId-success">
+ * 2. 単一パターン: <div id="fieldId-validation">
  */
 export function showSuccess(fieldId, message) {
+    const successDiv = document.getElementById(`${fieldId}-success`);
+    const errorDiv = document.getElementById(`${fieldId}-error`);
     const validationDiv = document.getElementById(`${fieldId}-validation`);
     const inputField = document.getElementById(fieldId);
     
-    if (validationDiv) {
-        validationDiv.textContent = message;
-        validationDiv.className = 'validation-message validation-success';
-        validationDiv.style.display = 'block';
+    // パターン1: 分離パターン（register.blade.php等）
+    if (successDiv && errorDiv) {
+        // エラーメッセージを非表示
+        errorDiv.classList.add('hidden');
+        errorDiv.classList.remove('validation-error-slide-in');
         
-        // アニメーション
-        validationDiv.style.animation = 'none';
+        // 成功メッセージを表示
+        const messageSpan = successDiv.querySelector('span');
+        if (messageSpan) {
+            messageSpan.textContent = message;
+        } else {
+            successDiv.textContent = message;
+        }
+        
+        successDiv.classList.remove('hidden');
+        successDiv.classList.add('validation-success-slide-in');
+        
+        // アニメーションをリセット
+        successDiv.style.animation = 'none';
         setTimeout(() => {
-            validationDiv.style.animation = 'slideDown 0.3s ease-out';
+            successDiv.style.animation = '';
         }, 10);
+    }
+    // パターン2: 単一パターン（グループ編集画面等）
+    else if (validationDiv) {
+        validationDiv.textContent = message;
+        validationDiv.style.display = 'block';
+        validationDiv.className = 'validation-message validation-success';
     }
     
     if (inputField) {
@@ -100,14 +148,38 @@ export function showSuccess(fieldId, message) {
 
 /**
  * バリデーションメッセージ非表示
+ * 
+ * 2つのHTMLパターンに対応:
+ * 1. 分離パターン: <div id="fieldId-error"> + <div id="fieldId-success">
+ * 2. 単一パターン: <div id="fieldId-validation">
  */
 export function hideValidationMessage(fieldId) {
+    const errorDiv = document.getElementById(`${fieldId}-error`);
+    const successDiv = document.getElementById(`${fieldId}-success`);
     const validationDiv = document.getElementById(`${fieldId}-validation`);
     const inputField = document.getElementById(fieldId);
     
-    if (validationDiv) {
+    // パターン1: 分離パターン（register.blade.php等）
+    if (errorDiv && successDiv) {
+        errorDiv.classList.add('hidden');
+        errorDiv.classList.remove('validation-error-slide-in');
+        const errorSpan = errorDiv.querySelector('span');
+        if (errorSpan) {
+            errorSpan.textContent = '';
+        }
+        
+        successDiv.classList.add('hidden');
+        successDiv.classList.remove('validation-success-slide-in');
+        const successSpan = successDiv.querySelector('span');
+        if (successSpan) {
+            successSpan.textContent = '';
+        }
+    }
+    // パターン2: 単一パターン（グループ編集画面等）
+    else if (validationDiv) {
         validationDiv.style.display = 'none';
         validationDiv.textContent = '';
+        validationDiv.className = 'validation-message';
     }
     
     if (inputField) {

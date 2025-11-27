@@ -17,16 +17,14 @@ class FreeTokenSettingSeeder extends Seeder
      */
     public function run(): void
     {
-        $settings = [
-            [
+        // 既存レコードがあれば削除（または最初の1件のみ残す）
+        if (FreeTokenSetting::count() === 0) {
+            FreeTokenSetting::create([
                 'amount' => 50000,
-            ],
-        ];
-
-        foreach ($settings as $setting) {
-            FreeTokenSetting::create($setting);
+            ]);
+            $this->command->info('無料トークン設定を作成しました。');
+        } else {
+            $this->command->info('無料トークン設定は既に存在します。スキップしました。');
         }
-
-        $this->command->info('無料トークン設定を作成しました。');
     }
 }

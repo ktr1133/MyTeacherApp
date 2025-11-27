@@ -534,3 +534,52 @@
 .wizard-btn-create-child:active {
     transform: scale(0.98);
 }
+
+/* ===========================
+   スマホ縦画面最適化
+   =========================== */
+
+@media (max-width: 640px) {
+    /* ナビゲーションボタンエリアを縦配列に */
+    form > div:last-child {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+    }
+    
+    /* もどるボタン */
+    .wizard-btn-secondary-child {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+    }
+    
+    /* つぎへボタンコンテナ */
+    form > div:last-child > div:nth-child(2) {
+        width: 100%;
+    }
+    
+    /* つぎへボタン */
+    .wizard-btn-primary-child {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+    }
+    
+    /* スキップボタンとアバターをつくるボタンのコンテナ */
+    form > div:last-child > div:nth-child(3) {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        width: 100% !important;
+    }
+    
+    /* アバターをつくるボタン */
+    .wizard-btn-create-child {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 2rem;
+        font-size: 1.25rem;
+    }
+}
