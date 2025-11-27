@@ -3,15 +3,7 @@
         @vite(['resources/css/tokens/purchase.css'])
     @endpush
 
-    <div x-data="{ 
-        showSidebar: false, 
-        activeTab: 'packages',
-        toggleSidebar() {
-            this.showSidebar = !this.showSidebar;
-        }
-    }" 
-         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
-         class="flex min-h-[100dvh] token-gradient-bg relative overflow-hidden">
+    <div class="flex min-h-[100dvh] token-gradient-bg relative overflow-hidden">
         
         {{-- 背景装飾（大人向けのみ） --}}
         @if(!$isChildTheme)
@@ -117,9 +109,8 @@
                             {{-- タブヘッダー --}}
                             <div class="tab-header">
                                 <button 
-                                    @click="activeTab = 'packages'"
-                                    :class="activeTab === 'packages' ? 'active' : ''"
-                                    class="tab-button">
+                                    data-tab-toggle="packages"
+                                    class="tab-button active">
                                     @if($isChildTheme)
                                         <span class="coin-emoji">🪙</span>
                                         <span>買う</span>
@@ -132,8 +123,7 @@
                                 </button>
                                 
                                 <button 
-                                    @click="activeTab = 'pending'"
-                                    :class="activeTab === 'pending' ? 'active' : ''"
+                                    data-tab-toggle="pending"
                                     class="tab-button">
                                     @if($isChildTheme)
                                         <span class="emoji">⏳</span>
@@ -151,7 +141,7 @@
                             </div>
 
                             {{-- タブコンテンツ: パッケージ一覧 --}}
-                            <div x-show="activeTab === 'packages'" x-transition class="tab-content">
+                            <div data-tab-content="packages" class="tab-content">
                                 @include('tokens.partials.package-list', [
                                     'packages'     => $packages, 
                                     'balance'      => $balance, 
@@ -161,7 +151,7 @@
                             </div>
 
                             {{-- タブコンテンツ: 承認待ちリクエスト --}}
-                            <div x-show="activeTab === 'pending'" x-transition class="tab-content">
+                            <div data-tab-content="pending" class="tab-content hidden">
                                 @include('tokens.partials.pending-requests', [
                                     'pendingRequests' => $pendingRequests, 
                                     'isChildTheme' => $isChildTheme

@@ -89,7 +89,7 @@
      data-due-date="{{ $task->due_date }}"
      data-is-quest="{{ $isQuest ? 'true' : 'false' }}"
      @if($task->canEdit())
-         @click="$dispatch('open-task-modal-{{ $task->id }}')">
+         onclick="window.TaskModalController?.open({{ $task->id }})">
      @else
          onclick="window.openGroupTaskDetailModal({{ $task->id }})">
      @endif
@@ -124,7 +124,7 @@
         <div class="flex items-start gap-3 mb-3">
             {{-- チェックボックス or クエストアイコン --}}
             @if(!$isQuest)
-                <label for="task-{{ $task->id }}" class="flex items-center cursor-pointer shrink-0 mt-1" @click.stop>
+                <label for="task-{{ $task->id }}" class="flex items-center cursor-pointer shrink-0 mt-1" onclick="event.stopPropagation();">
                     <input 
                         type="checkbox" 
                         id="task-{{ $task->id }}" 

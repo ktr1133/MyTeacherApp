@@ -53,16 +53,7 @@
         <x-layouts.sidebar />
 
         {{-- メインコンテンツ --}}
-        <div
-            x-show="showModal"
-            x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="ease-in duration-200"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="flex-1 flex flex-col overflow-y-auto"
-        >
+        <div class="flex-1 flex flex-col overflow-y-auto">
             {{-- ヘッダー --}}
             <header class="sticky top-0 z-20 border-b border-gray-200/50 dark:border-gray-700/50 search-header-blur shadow-sm">
                 <div class="px-4 lg:px-6 h-14 lg:h-16 flex items-center justify-between gap-3">

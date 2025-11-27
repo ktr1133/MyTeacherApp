@@ -110,6 +110,11 @@ function updateBalanceDisplays() {
  * ページ読み込み時に実行
  */
 document.addEventListener('DOMContentLoaded', function() {
+    // タブ機能を初期化
+    if (document.querySelector('[data-tab-toggle]')) {
+        new TokenPurchaseTabs();
+    }
+    
     // トークン数の表示を更新
     updateTokenAmounts();
     
@@ -120,6 +125,79 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
+ * トークン購入画面 - タブ切り替え機能（Vanilla JS）
+ */
+class TokenPurchaseTabs {
+    constructor() {
+        this.activeTab = 'packages';
+        this.init();
+    }
+
+    init() {
+        // タブボタンにイベントリスナーを設定
+        document.querySelectorAll('[data-tab-toggle]').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const tabName = e.currentTarget.dataset.tabToggle;
+                this.switchTab(tabName);
+            });
+        });
+
+        // 初期状態を設定
+        this.updateUI();
+    }
+
+    switchTab(tabName) {
+        if (this.activeTab === tabName) return;
+        
+        this.activeTab = tabName;
+        this.updateUI();
+        
+        // タブ切り替え後にトークン数を再フォーマット
+        setTimeout(() => {
+            updateTokenAmounts();
+        }, 100);
+    }
+
+    updateUI() {
+        // タブボタンの状態更新
+        document.querySelectorAll('[data-tab-toggle]').forEach(button => {
+            const tabName = button.dataset.tabToggle;
+            const isActive = tabName === this.activeTab;
+            
+            if (isActive) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+
+        // タブコンテンツの表示/非表示（フェードアニメーション付き）
+        document.querySelectorAll('[data-tab-content]').forEach(content => {
+            const tabName = content.dataset.tabContent;
+            const isActive = tabName === this.activeTab;
+            
+            if (isActive) {
+                // フェードイン
+                content.classList.remove('hidden');
+                // 次のフレームで opacity を変更してアニメーション発動
+                requestAnimationFrame(() => {
+                    content.classList.add('fade-in');
+                });
+            } else {
+                // フェードアウト
+                content.classList.remove('fade-in');
+                // アニメーション終了後に hidden
+                setTimeout(() => {
+                    if (!content.classList.contains('fade-in')) {
+                        content.classList.add('hidden');
+                    }
+                }, 200);
+            }
+        });
+    }
+}
+
+/**
  * Alpine.js との連携（必要に応じて）
  */
 document.addEventListener('alpine:init', () => {
@@ -128,26 +206,6 @@ document.addEventListener('alpine:init', () => {
         updateTokenAmounts();
     }, 100);
 });
-
-/**
- * トークン購入画面用 Alpine.js コンポーネント
- */
-window.tokenPurchase = function() {
-    return {
-        activeTab: 'packages',
-
-        /**
-         * タブ切り替え
-         */
-        switchTab(tab) {
-            this.activeTab = tab;
-            // タブ切り替え後にトークン数を再フォーマット
-            this.$nextTick(() => {
-                updateTokenAmounts();
-            });
-        }
-    };
-};
 
 /**
  * グローバルに公開（テスト用）

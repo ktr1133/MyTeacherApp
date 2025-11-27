@@ -1338,15 +1338,6 @@ class DashboardController {
             return;
         }
 
-        // 現在アクティブなタブを取得
-        const store = Alpine.store?.('dashboard');
-        const activeTab = store?.activeTab || 'todo';
-
-        if (activeTab !== 'todo') {
-            console.log('[updateTaskList] Not on todo tab, skipping update');
-            return;
-        }
-
         // タグバケツを探す
         let bucketContainer = null;
         const allBuckets = document.querySelectorAll('[data-bucket-name]');
@@ -1414,25 +1405,25 @@ class DashboardController {
             </div>
         `;
 
-        // 未完了タブのコンテナを取得
-        const todoTabContainer = document.querySelector('[x-show="activeTab === \'todo\'"]');
-        if (!todoTabContainer) {
-            console.warn('[createNewBucket] Todo tab container not found');
+        // タスクリストコンテナを取得
+        const taskListContainer = document.querySelector('#task-list-container');
+        if (!taskListContainer) {
+            console.warn('[createNewBucket] Task list container not found');
             return;
         }
 
         // 空状態を削除
-        const emptyState = todoTabContainer.querySelector('.empty-state');
+        const emptyState = taskListContainer.querySelector('.empty-state');
         if (emptyState) {
             emptyState.remove();
         }
 
         // グリッドコンテナがない場合は作成
-        let gridContainer = todoTabContainer.querySelector('.bento-grid');
+        let gridContainer = taskListContainer.querySelector('.bento-grid');
         if (!gridContainer) {
             gridContainer = document.createElement('div');
             gridContainer.className = 'bento-grid grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6';
-            todoTabContainer.appendChild(gridContainer);
+            taskListContainer.appendChild(gridContainer);
         }
 
         // 新しいバケツを先頭に追加

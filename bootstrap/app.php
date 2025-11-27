@@ -13,11 +13,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // ALB/CloudFront経由のHTTPSリクエストを正しく認識
-        $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR | \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST | \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT | \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO);
+        // 本番環境のみプロキシを信頼（ローカル環境では無効化）
+        if (env('TRUST_PROXIES', env('APP_ENV') === 'production')) {
+            $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR | \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST | \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT | \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO);
+        }
         
         $middleware->alias([
             'check.tokens' => \App\Http\Middleware\CheckTokenBalance::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'cognito' => \App\Http\Middleware\VerifyCognitoToken::class,
         ]);
         // ★ Web ミドルウェアグループに追加
         $middleware->web(append: [

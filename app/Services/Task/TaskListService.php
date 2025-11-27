@@ -27,11 +27,11 @@ class TaskListService implements TaskListServiceInterface
     }
 
     /**
-     * ユーザーのタスク一覧を取得（キャッシュ付き）
+     * ユーザーの未完了タスク一覧を取得（キャッシュ付き）
      *
      * @param int $userId ユーザーID
      * @param array $filters フィルター条件
-     * @return Collection タスクコレクション
+     * @return Collection タスクコレクション（未完了のみ）
      */
     public function getTasksForUser(int $userId, array $filters): Collection
     {
@@ -41,7 +41,7 @@ class TaskListService implements TaskListServiceInterface
                 return $this->fetchTasksFromDatabase($userId, $filters);
             }
             
-            $cacheKey = "dashboard:user:{$userId}:tasks";
+            $cacheKey = "dashboard:user:{$userId}:incomplete-tasks";
             
             return Cache::tags(['dashboard', "user:{$userId}"])->remember(
                 $cacheKey,
@@ -60,16 +60,19 @@ class TaskListService implements TaskListServiceInterface
     }
 
     /**
-     * データベースからタスクを取得
+     * データベースから未完了タスクを取得
      *
      * @param int $userId ユーザーID
      * @param array $filters フィルター条件
-     * @return Collection タスクコレクション
+     * @return Collection タスクコレクション（未完了のみ）
      */
     private function fetchTasksFromDatabase(int $userId, array $filters): Collection
     {
         // Repository経由でタスクのクエリビルダーを取得
         $query = $this->taskRepository->getTasksByUserId($userId);
+
+        // 未完了タスクのみに絞り込む
+        $query->where('is_completed', false);
 
         // ... フィルタリングロジックの適用 ...
         

@@ -157,28 +157,6 @@
     <div class="lg:hidden px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
         <x-task-filter />
     </div>
-
-    {{-- タブナビゲーション --}}
-    <div class="flex gap-2 border-t border-gray-200 dark:border-gray-700 px-4 lg:px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
-        <button 
-            data-tab="todo"
-            class="px-4 py-3 border-b-2 font-semibold text-sm transition border-[#59B9C6] text-[#59B9C6] dashboard-tab active">
-            @if (!$isChildTheme)
-                未完了
-            @else
-                YET
-            @endif
-        </button>
-        <button 
-            data-tab="completed"
-            class="px-4 py-3 border-b-2 font-semibold text-sm transition border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 dashboard-tab">
-            @if (!$isChildTheme)
-                完了済
-            @else
-                DONE
-            @endif
-        </button>
-    </div>
 </header>
 
 {{-- 検索モーダル --}}

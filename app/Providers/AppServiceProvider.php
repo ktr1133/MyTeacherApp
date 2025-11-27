@@ -244,9 +244,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // 本番環境でHTTPSを強制（ALB経由でもHTTPSとして認識）
-        if ($this->app->environment('production')) {
+        // HTTPS強制設定（環境変数で制御可能）
+        // 本番環境: デフォルトtrue（ALB経由でもHTTPSとして認識）
+        // ローカル環境: デフォルトfalse（HTTP開発サーバーで動作）
+        $forceHttps = env('FORCE_HTTPS', $this->app->environment('production'));
+        
+        if ($forceHttps) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
+            Log::info('HTTPS scheme forced for all URLs');
         }
     }
 }
