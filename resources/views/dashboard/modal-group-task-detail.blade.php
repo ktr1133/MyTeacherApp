@@ -1,4 +1,4 @@
-<div id="group-task-detail-modal-{{ $task->id }}" class="fixed inset-0 z-50 hidden">
+<div id="group-task-detail-modal-{{ $task->id }}" class="fixed inset-0 z-[70] hidden">
     {{-- オーバーレイ --}}
     <div class="modal-overlay fixed inset-0 bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         {{-- モーダルコンテンツ --}}
@@ -196,7 +196,7 @@
 </div>
 
 {{-- 画像拡大表示モーダル --}}
-<div id="image-modal-{{ $task->id }}" class="fixed inset-0 z-[60] hidden bg-black/90 backdrop-blur-sm" onclick="closeImageModal({{ $task->id }})">
+<div id="image-modal-{{ $task->id }}" class="fixed inset-0 z-[80] hidden bg-black/90 backdrop-blur-sm" onclick="closeImageModal({{ $task->id }})">
     <div class="flex items-center justify-center min-h-screen p-4">
         <button class="absolute top-4 right-4 text-white hover:text-gray-300 transition p-2 rounded-full hover:bg-white/10" aria-label="閉じる">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
