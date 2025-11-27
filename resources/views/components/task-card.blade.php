@@ -246,8 +246,5 @@
 </div>
 
 {{-- モーダル --}}
-@if($task->canEdit())
-    @include('dashboard.modal-task-card', ['task' => $task, 'tags' => $tags ?? []])
-@else
-    @include('dashboard.modal-group-task-detail', ['task' => $task])
-@endif
+{{-- モーダルはtask-cardの外（dashboard.blade.php等）でincludeする必要があります --}}
+{{-- z-indexはスタックコンテキストを超えられないため、ここでincludeするとtag-tasksモーダル内に配置されてしまう --}}

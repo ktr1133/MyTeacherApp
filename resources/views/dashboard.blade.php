@@ -10,6 +10,7 @@
         @vite(['resources/js/dashboard/tag-tasks-modal.js'])
         @vite(['resources/js/dashboard/bulk-complete.js'])
         @vite(['resources/js/dashboard/tag-modal.js'])
+        @vite(['resources/js/dashboard/group-task-detail.js'])
         @if(Auth::user()->canEditGroup())
             @vite(['resources/js/dashboard/group-task.js'])
         @endif
@@ -55,5 +56,14 @@
         @if(Auth::user()->canEditGroup())
             @include('dashboard.modal-group-task')
         @endif
+
+        {{-- タスクカード用モーダル（すべてのタスクに対して body 直下で include） --}}
+        @foreach($tasks as $task)
+            @if($task->canEdit())
+                @include('dashboard.modal-task-card', ['task' => $task, 'tags' => $tags])
+            @else
+                @include('dashboard.modal-group-task-detail', ['task' => $task])
+            @endif
+        @endforeach
     </div>
 </x-app-layout>
