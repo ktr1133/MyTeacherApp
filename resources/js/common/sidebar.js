@@ -8,7 +8,8 @@ class SidebarController {
         // 状態管理
         this.isCollapsed = this.loadState('sidebar-collapsed', false);
         this.isMobileOpen = false;
-        this.showGeneralMenu = this.loadState('sidebar-general-menu', true);
+        // showGeneralMenuは初期化時に設定（isAdminが確定してから）
+        this.showGeneralMenu = true;
         this.portalExpanded = this.loadState('sidebar-portal-expanded', false);
         this.portalExpandedMobile = this.loadState('sidebar-portal-expanded-mobile', false);
         
@@ -38,11 +39,20 @@ class SidebarController {
         // 管理者フラグを取得
         this.isAdmin = this.desktopSidebar?.getAttribute('data-is-admin') === 'true';
         
+        // 管理者の場合のみローカルストレージから状態を読み込む
+        // 一般ユーザーの場合は常にtrueで固定（管理者時代の設定が残っていても無視）
+        if (this.isAdmin) {
+            this.showGeneralMenu = this.loadState('sidebar-general-menu', true);
+        } else {
+            this.showGeneralMenu = true; // 一般ユーザーは強制表示
+        }
+        
         console.log('[Sidebar] DOM elements found:', {
             desktopSidebar: !!this.desktopSidebar,
             mobileSidebar: !!this.mobileSidebar,
             mobileOverlay: !!this.mobileOverlay,
             isAdmin: this.isAdmin,
+            showGeneralMenu: this.showGeneralMenu,
         });
         
         // デスクトップサイドバーの初期状態を適用
