@@ -197,6 +197,8 @@ class AICostService implements AICostServiceInterface
 
     /**
      * Replicate コストのフォールバック値を取得
+     * 
+     * Replicate公式レートに基づく値（DB障害時用）
      *
      * @param string $serviceType
      * @param string|null $imageSize
@@ -204,13 +206,21 @@ class AICostService implements AICostServiceInterface
      */
     private function getFallbackReplicateCost(string $serviceType, ?string $imageSize): int
     {
-        // ハードコードのデフォルト値（DB障害時用）
+        // ハードコードのデフォルト値（DB障害時用、Replicate公式レート）
         return match ($serviceType) {
             'anything-v4.0' => match ($imageSize) {
-                '512x512' => 230,
-                '768x768' => 350,
-                '1024x1024' => 500,
-                default => 230,
+                '512x512' => 5000,
+                '768x768' => 7500,
+                '1024x1024' => 10000,
+                default => 5000,
+            },
+            'animagine-xl-3.1' => match ($imageSize) {
+                '512x512' => 2000,
+                default => 2000,
+            },
+            'stable-diffusion-3.5-medium' => match ($imageSize) {
+                '512x512' => 23000,
+                default => 23000,
             },
             'rembg' => 50,
             default => 0,
