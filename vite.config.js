@@ -31,7 +31,7 @@ export default defineConfig({
                 'resources/js/avatar/avatar-controller.js',
                 'resources/js/avatar/avatar-edit.js',
                 'resources/js/avatar/avatar-form.js',
-                // 'resources/js/avatar/avatar-wizard-child.js', // Bladeテンプレート内でインライン定義
+                'resources/js/avatar/avatar-wizard-child.js',
                 'resources/js/common/notification-polling.js',
                 'resources/js/common/sidebar.js',
                 'resources/js/common/validation-core.js',
