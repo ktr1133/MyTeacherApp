@@ -70,57 +70,62 @@ function updateTokenAmounts() {
 }
 
 /**
- * トークン履歴画面用 Alpine.js コンポーネント
+ * トークン履歴フィルターコントローラー
+ * Alpine.jsから移行: Vanilla JavaScript実装
  */
-window.tokenHistory = function() {
-    return {
-        showSidebar: false,
-        filterType: 'all',
-        filterPeriod: 'all',
+class TokenHistoryController {
+    constructor() {
+        this.filterType = 'all';
+        this.filterPeriod = 'all';
+        this.init();
+    }
+    
+    init() {
+        // URLパラメータから初期値を取得
+        const params = new URLSearchParams(window.location.search);
+        this.filterType = params.get('type') || 'all';
+        this.filterPeriod = params.get('period') || 'all';
         
-        /**
-         * サイドバーを閉じる
-         */
-        closeSidebar() {
-            this.showSidebar = false;
-        },
+        // セレクトボックスを取得
+        const typeSelect = document.querySelector('[data-filter-type]');
+        const periodSelect = document.querySelector('[data-filter-period]');
         
-        /**
-         * サイドバーを開く
-         */
-        openSidebar() {
-            this.showSidebar = true;
-        },
-        
-        /**
-         * サイドバーをトグル
-         */
-        toggleSidebar() {
-            this.showSidebar = !this.showSidebar;
-        },
-        
-        /**
-         * フィルター適用
-         */
-        filterTransactions() {
-            const params = new URLSearchParams(window.location.search);
-            
-            if (this.filterType !== 'all') {
-                params.set('type', this.filterType);
-            } else {
-                params.delete('type');
-            }
-            
-            if (this.filterPeriod !== 'all') {
-                params.set('period', this.filterPeriod);
-            } else {
-                params.delete('period');
-            }
-            
-            window.location.href = `${window.location.pathname}?${params.toString()}`;
+        if (typeSelect) {
+            typeSelect.value = this.filterType;
+            typeSelect.addEventListener('change', (e) => {
+                this.filterType = e.target.value;
+                this.filterTransactions();
+            });
         }
-    };
-};
+        
+        if (periodSelect) {
+            periodSelect.value = this.filterPeriod;
+            periodSelect.addEventListener('change', (e) => {
+                this.filterPeriod = e.target.value;
+                this.filterTransactions();
+            });
+        }
+    }
+    
+    /**
+     * フィルター適用
+     */
+    filterTransactions() {
+        const params = new URLSearchParams();
+        
+        if (this.filterType !== 'all') {
+            params.set('type', this.filterType);
+        }
+        
+        if (this.filterPeriod !== 'all') {
+            params.set('period', this.filterPeriod);
+        }
+        
+        const queryString = params.toString();
+        const url = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+        window.location.href = url;
+    }
+}
 
 /**
  * ページ読み込み時に実行
@@ -128,15 +133,7 @@ window.tokenHistory = function() {
 document.addEventListener('DOMContentLoaded', function() {
     // トークン数の表示を更新
     updateTokenAmounts();
-});
-
-/**
- * Alpine.js 初期化
- */
-document.addEventListener('alpine:init', () => {
-    console.log('Token History Alpine initialized');
-    // Alpine.jsのコンポーネントが初期化された後にも実行
-    setTimeout(() => {
-        updateTokenAmounts();
-    }, 100);
+    
+    // フィルターコントローラーを初期化
+    new TokenHistoryController();
 });

@@ -1,41 +1,18 @@
-<div x-data="{ 
-        show: false,
-        description: @js($task->description ?? ''),
-        originalDescription: @js($task->description ?? ''),
-        isDirty: false,
-        isSubmitting: false
-    }"
-    @open-approval-task-modal-{{ $task->id }}.window="show = true; description = originalDescription; isDirty = false;"
-    @keydown.escape.window="show && (show = false)"
-    x-show="show"
-    x-cloak
-    class="fixed inset-0 z-50 overflow-y-auto"
+<div data-approval-modal="{{ $task->id }}"
+    class="fixed inset-0 z-50 overflow-y-auto hidden"
     aria-labelledby="modal-title-{{ $task->id }}"
     role="dialog"
     aria-modal="true">
     
     {{-- オーバーレイ --}}
-    <div x-show="show"
-         x-transition:enter="ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity"
-         @click="show = false"></div>
+    <div data-modal-overlay
+         class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+    </div>
 
     {{-- モーダルコンテンツ --}}
     <div class="flex min-h-full items-center justify-center p-4">
-        <div x-show="show"
-             x-transition:enter="ease-out duration-300"
-             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-             x-transition:leave="ease-in duration-200"
-             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="modal-panel-lg modal-glass rounded-2xl shadow-2xl transform transition-all w-full max-w-4xl"
-             @click.stop>
+        <div data-modal-content
+             class="relative w-full max-w-2xl transform rounded-xl bg-white shadow-2xl ring-1 ring-black/5 transition-all duration-300 opacity-0 translate-y-4 scale-95 dark:bg-gray-800">
 
             {{-- ヘッダー --}}
             <div class="approval-modal-header px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
@@ -53,7 +30,7 @@
                     </div>
                 </div>
                 <button type="button"
-                        @click="show = false"
+                        data-close-modal
                         class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -127,27 +104,25 @@
                     @endif
                 </div>
 
-                {{-- 説明文（編集可能） --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
                         </svg>
                         説明文
-                        <span x-show="isDirty" class="text-xs text-yellow-600 dark:text-yellow-400">(編集中)</span>
+                        <span data-dirty-indicator class="text-xs text-yellow-600 dark:text-yellow-400 hidden">(編集中)</span>
                     </label>
                     <textarea 
-                        x-model="description"
-                        @input="isDirty = (description !== originalDescription)"
+                        data-description-field
                         rows="6"
                         maxlength="500"
                         class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 dark:focus:ring-yellow-600 transition resize-none"
-                        placeholder="タスクの説明や却下理由を入力してください..."></textarea>
+                        placeholder="タスクの説明や却下理由を入力してください...">{{ $task->description ?? '' }}</textarea>
                     <div class="mt-1 flex justify-between items-center">
                         <p class="text-xs text-gray-500 dark:text-gray-400">
                             ※ 却下時には理由を記述することをお勧めします
                         </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="`${description ? description.length : 0}/500文字`"></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400" data-char-count>0/500文字</p>
                     </div>
                 </div>
 
@@ -182,20 +157,15 @@
             {{-- フッター --}}
             <div class="px-6 py-4 border-t border-gray-200/50 dark:border-gray-700/50 flex gap-3">
                 <button type="button"
-                        @click="show = false"
+                        data-close-modal
                         class="flex-1 px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition">
                     キャンセル
                 </button>
                 <button type="button"
-                        @click="if (isDirty) { $refs.saveForm.submit(); }"
-                        :disabled="!isDirty || isSubmitting"
-                        :class="{ 
-                            'opacity-50 cursor-not-allowed': !isDirty || isSubmitting,
-                            'approval-btn-save': isDirty && !isSubmitting
-                        }"
+                        data-save-btn
                         class="flex-1 px-6 py-3 rounded-xl text-white font-semibold shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-200 disabled:hover:shadow-lg disabled:transform-none">
-                    <span x-show="!isSubmitting">保存する</span>
-                    <span x-show="isSubmitting" class="flex items-center justify-center gap-2">
+                    <span data-save-btn-text>保存する</span>
+                    <span data-saving-text class="flex items-center justify-center gap-2 hidden">
                         <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -205,14 +175,13 @@
                 </button>
 
                 {{-- 非表示のフォーム --}}
-                <form x-ref="saveForm"
+                <form data-save-form
                       method="POST"
                       action="{{ route('tasks.update-description', $task) }}"
-                      @submit="isSubmitting = true"
                       class="hidden">
                     @csrf
                     @method('PATCH')
-                    <input type="hidden" name="description" x-model="description">
+                    <input type="hidden" name="description" value="{{ $task->description ?? '' }}">
                 </form>
             </div>
         </div>

@@ -43,7 +43,7 @@
         </script>
     @endpush
 
-    <div x-data="{ showSidebar: false }" class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
+    <div class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
         {{-- 背景装飾 --}}
         <div class="absolute inset-0 -z-10 pointer-events-none">
             <div class="dashboard-floating-decoration absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>

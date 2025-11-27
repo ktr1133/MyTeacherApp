@@ -1,38 +1,16 @@
 @props(['tagId', 'tagName', 'tasksOfTag', 'allTags', 'isChildTheme' => false])
 <div 
-    x-data="{ 
-        showModal: false,
-        spanFilter: 'all',
-        allTasks: {{ Js::from($tasksOfTag->values()->toArray()) }},
-        
-        get filteredTasks() {
-            if (this.spanFilter === 'all') {
-                return this.allTasks;
-            }
-
-            return this.allTasks.filter(task => task.span == this.spanFilter);
-        }
-    }"
-    @open-tag-modal-{{ $tagId }}.window="showModal = true; document.body.classList.add('overflow-hidden')"
-    @keydown.escape.window="showModal && (showModal=false, document.body.classList.remove('overflow-hidden'))">
+    data-tag-tasks-modal="{{ $tagId }}"
+    data-tasks="{{ Js::from($tasksOfTag->values()->toArray()) }}"
+    class="hidden">
     
     <div 
-        x-show="showModal"
-        x-transition.opacity
-        @click="showModal=false; document.body.classList.remove('overflow-hidden')"
-        class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4"
-        style="display: none;">
+        data-modal-overlay
+        class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 opacity-0 transition-opacity duration-300">
         
         <div 
-            @click.stop
-            x-show="showModal"
-            x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="ease-in duration-200"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="modal-glass rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-7xl max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+            data-modal-content
+            class="modal-glass rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-7xl max-h-[95vh] sm:max-h-[90vh] flex flex-col opacity-0 scale-95 transition-all duration-300">
             
             {{-- ヘッダー --}}
             <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-[#59B9C6]/10 to-purple-600/10 flex items-center justify-between shrink-0">
@@ -45,12 +23,12 @@
                     <div class="min-w-0">
                         <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">{{ $tagName }}</h3>
                         <p class="text-xs text-gray-600 dark:text-gray-400">
-                            <span x-text="filteredTasks.length"></span> 件のタスク
+                            <span data-task-count>{{ $tasksOfTag->count() }}</span> 件のタスク
                         </p>
                     </div>
                 </div>
                 <button 
-                    @click="showModal=false; document.body.classList.remove('overflow-hidden')"
+                    data-close-modal
                     class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition p-1.5 sm:p-2 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 shrink-0"
                     aria-label="閉じる">
                     <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,39 +41,35 @@
             <div class="px-4 sm:px-6 py-2 sm:py-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-900/50 shrink-0">
                 <div class="flex gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide">
                     <button 
-                        @click="spanFilter = 'all'"
-                        :class="spanFilter === 'all' ? 'tag-modal-filter-active' : 'tag-modal-filter-inactive'"
-                        :aria-pressed="spanFilter === 'all'"
-                        class="tag-modal-filter px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                        data-span-filter="all"
+                        aria-pressed="true"
+                        class="tag-modal-filter tag-modal-filter-active px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
                         すべて
-                        <span class="ml-1.5 opacity-75" x-text="'(' + (spanFilter === 'all' ? filteredTasks.length : allTasks.length) + ')'"></span>
+                        <span class="ml-1.5 opacity-75" data-filter-count>({{ $tasksOfTag->count() }})</span>
                     </button>
                     <button 
-                        @click="spanFilter = '{{ config('const.task_spans.short') }}'"
-                        :class="spanFilter === '{{ config('const.task_spans.short') }}' ? 'tag-modal-filter-active' : 'tag-modal-filter-inactive'"
-                        :aria-pressed="spanFilter === '{{ config('const.task_spans.short') }}'"
-                        class="tag-modal-filter px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                        data-span-filter="{{ config('const.task_spans.short') }}"
+                        aria-pressed="false"
+                        class="tag-modal-filter tag-modal-filter-inactive px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
                         <span class="inline-block w-2 h-2 rounded-full bg-[#9DD9C0] mr-1.5"></span>
                         短期
-                        <span class="ml-1.5 opacity-75" x-text="'(' + allTasks.filter(t => t.span == '{{ config('const.task_spans.short') }}').length + ')'"></span>
+                        <span class="ml-1.5 opacity-75" data-filter-count>({{ $tasksOfTag->where('span', config('const.task_spans.short'))->count() }})</span>
                     </button>
                     <button 
-                        @click="spanFilter = '{{ config('const.task_spans.mid') }}'"
-                        :class="spanFilter === '{{ config('const.task_spans.mid') }}' ? 'tag-modal-filter-active' : 'tag-modal-filter-inactive'"
-                        :aria-pressed="spanFilter === '{{ config('const.task_spans.mid') }}'"
-                        class="tag-modal-filter px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                        data-span-filter="{{ config('const.task_spans.mid') }}"
+                        aria-pressed="false"
+                        class="tag-modal-filter tag-modal-filter-inactive px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
                         <span class="inline-block w-2 h-2 rounded-full bg-[#7BC9A8] mr-1.5"></span>
                         中期
-                        <span class="ml-1.5 opacity-75" x-text="'(' + allTasks.filter(t => t.span == '{{ config('const.task_spans.mid') }}').length + ')'"></span>
+                        <span class="ml-1.5 opacity-75" data-filter-count>({{ $tasksOfTag->where('span', config('const.task_spans.mid'))->count() }})</span>
                     </button>
                     <button 
-                        @click="spanFilter = '{{ config('const.task_spans.long') }}'"
-                        :class="spanFilter === '{{ config('const.task_spans.long') }}' ? 'tag-modal-filter-active' : 'tag-modal-filter-inactive'"
-                        :aria-pressed="spanFilter === '{{ config('const.task_spans.long') }}'"
-                        class="tag-modal-filter px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                        data-span-filter="{{ config('const.task_spans.long') }}"
+                        aria-pressed="false"
+                        class="tag-modal-filter tag-modal-filter-inactive px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
                         <span class="inline-block w-2 h-2 rounded-full bg-[#59B9C6] mr-1.5"></span>
                         長期
-                        <span class="ml-1.5 opacity-75" x-text="'(' + allTasks.filter(t => t.span == '{{ config('const.task_spans.long') }}').length + ')'"></span>
+                        <span class="ml-1.5 opacity-75" data-filter-count>({{ $tasksOfTag->where('span', config('const.task_spans.long'))->count() }})</span>
                     </button>
                 </div>
             </div>
@@ -105,10 +79,7 @@
                 @if($tasksOfTag->isNotEmpty())
                     <div class="tag-tasks-grid">
                         @foreach($tasksOfTag as $task)
-                            <div x-show="spanFilter === 'all' || spanFilter === '{{ $task->span }}'" 
-                                 x-transition:enter="transition ease-out duration-200"
-                                 x-transition:enter-start="opacity-0 scale-95"
-                                 x-transition:enter-end="opacity-100 scale-100">
+                            <div data-task-card data-task-span="{{ $task->span }}">
                                 <x-task-card :task="$task" :tags="$allTags" :isChildTheme="$isChildTheme" />
                             </div>
                         @endforeach

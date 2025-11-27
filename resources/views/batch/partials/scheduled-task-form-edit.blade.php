@@ -1,5 +1,10 @@
 @props (['scheduledTask', 'groupMembers'])
 
+<div data-scheduled-form 
+     data-auto-assign="{{ old('auto_assign', $scheduledTask?->auto_assign ?? false) ? 'true' : 'false' }}"
+     data-schedules='{{ json_encode(old('schedules', $scheduledTask?->schedules ?? [['type' => 'daily', 'time' => '09:00', 'days' => [], 'dates' => []]])) }}'
+     data-tags='{{ json_encode(old('tags', $scheduledTask?->tags ?? [])) }}'>
+
 {{-- 基本情報 --}}
 <div class="bento-card rounded-xl p-6 space-y-6">
     <div class="flex items-center gap-3 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -116,7 +121,7 @@
             <input type="checkbox" 
                    name="auto_assign" 
                    value="1"
-                   x-model="autoAssign"
+                   data-auto-assign
                    {{ old('auto_assign', $scheduledTask?->auto_assign ?? false) ? 'checked' : '' }}
                    class="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
             <div>
@@ -126,7 +131,7 @@
         </label>
 
         {{-- 担当者選択 --}}
-        <div x-show="!autoAssign" x-transition>
+        <div data-assigned-user-container class="hidden">
             <label for="assigned_user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 固定担当者
             </label>
@@ -158,142 +163,12 @@
         <h3 class="text-lg font-bold text-gray-900 dark:text-white">スケジュール設定 <span class="text-red-500">*</span></h3>
     </div>
 
-    <div id="schedules-container" class="space-y-4">
-        <template x-for="(schedule, index) in schedules" :key="index">
-            <div class="schedule-card border-2 border-gray-200 dark:border-gray-700 p-4 rounded-xl space-y-4">
-                <div class="flex items-center justify-between">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        スケジュール <span x-text="index + 1"></span>
-                    </h4>
-                    <button type="button"
-                            @click="removeSchedule(index)"
-                            x-show="schedules.length > 1"
-                            class="p-1.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                {{-- スケジュールタイプ --}}
-                <div class="space-y-3">
-                    <label class="schedule-type-label">
-                        <input type="radio" 
-                               class="schedule-type-radio"
-                               :name="'schedules[' + index + '][type]'" 
-                               value="daily"
-                               x-model="schedule.type"
-                               required>
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-white">毎日</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">毎日同じ時刻に実行</div>
-                            </div>
-                        </div>
-                    </label>
-
-                    <label class="schedule-type-label">
-                        <input type="radio" 
-                               class="schedule-type-radio"
-                               :name="'schedules[' + index + '][type]'" 
-                               value="weekly"
-                               x-model="schedule.type"
-                               required>
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-white">毎週</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">曜日を指定して実行</div>
-                            </div>
-                        </div>
-                    </label>
-
-                    <label class="schedule-type-label">
-                        <input type="radio" 
-                               class="schedule-type-radio"
-                               :name="'schedules[' + index + '][type]'" 
-                               value="monthly"
-                               x-model="schedule.type"
-                               required>
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-pink-600 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-white">毎月</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">日付を指定して実行</div>
-                            </div>
-                        </div>
-                    </label>
-                </div>
-
-                {{-- 曜日選択（毎週の場合） --}}
-                <div x-show="schedule.type === 'weekly'" x-transition class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        曜日選択 <span class="text-red-500">*</span>
-                    </label>
-                    <div class="flex flex-wrap gap-2">
-                        <template x-for="(day, dayIndex) in weekdays" :key="dayIndex">
-                            <label>
-                                <input type="checkbox" 
-                                       class="weekday-checkbox"
-                                       :name="'schedules[' + index + '][days][]'" 
-                                       :value="dayIndex"
-                                       x-model="schedule.days">
-                                <div class="weekday-label" x-text="day"></div>
-                            </label>
-                        </template>
-                    </div>
-                </div>
-
-                {{-- 日付選択（毎月の場合） --}}
-                <div x-show="schedule.type === 'monthly'" x-transition class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        日付選択 <span class="text-red-500">*</span>
-                    </label>
-                    <div class="grid grid-cols-7 gap-2">
-                        <template x-for="date in 31" :key="date">
-                            <label>
-                                <input type="checkbox" 
-                                       class="date-checkbox"
-                                       :name="'schedules[' + index + '][dates][]'" 
-                                       :value="date"
-                                       x-model="schedule.dates">
-                                <div class="date-label" x-text="date"></div>
-                            </label>
-                        </template>
-                    </div>
-                </div>
-
-                {{-- 実行時刻 --}}
-                <div>
-                    <label :for="'time_' + index" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        実行時刻 <span class="text-red-500">*</span>
-                    </label>
-                    <input type="time" 
-                           :id="'time_' + index"
-                           :name="'schedules[' + index + '][time]'" 
-                           x-model="schedule.time"
-                           required
-                           class="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition">
-                </div>
-            </div>
-        </template>
+    <div data-schedules-container class="space-y-4">
+        {{-- JSが動的にスケジュールカードを生成 --}}
     </div>
 
     <button type="button"
-            @click="addSchedule"
+            data-add-schedule
             class="add-schedule-btn w-full">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -471,27 +346,17 @@
             タグを追加（Enter で追加）
         </label>
         <div class="tag-input-wrapper">
-            <template x-for="(tag, index) in tags" :key="index">
-                <div class="tag-chip">
-                    <input type="hidden" :name="'tags[]'" :value="tag">
-                    <span x-text="'#' + tag"></span>
-                    <button type="button" 
-                            @click="removeTag(index)"
-                            class="tag-chip-remove">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-            </template>
+            <div data-tags-container class="flex flex-wrap gap-2">
+                {{-- JSが動的にタグチップを生成 --}}
+            </div>
             <input type="text" 
                    id="tag-input"
-                   x-model="tagInput"
-                   @keydown.enter.prevent="addTag"
+                   data-tag-input
                    placeholder="タグを入力..."
                    maxlength="50"
                    class="flex-1 min-w-[120px] px-2 py-1 bg-transparent border-none focus:ring-0 text-sm">
         </div>
         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">タスクの分類に使用できます（最大50文字）</p>
     </div>
+</div>
 </div>

@@ -102,7 +102,7 @@
 
         <div class="bento-card group relative rounded-2xl shadow-lg hover:shadow-2xl p-4 lg:p-6 cursor-pointer transition-all duration-300 {{ $sizeClass }}"
              data-tag-modal-id="{{ $prefix }}-{{ $bucket['id'] }}"
-             onclick="window.openTagModal && window.openTagModal('{{ $prefix }}-{{ $bucket['id'] }}');">
+             onclick="window.TagTasksModalController?.open('{{ $prefix }}-{{ $bucket['id'] }}');">
             
             {{-- ヘッダー --}}
             <div class="flex items-start justify-between mb-3 lg:mb-4">

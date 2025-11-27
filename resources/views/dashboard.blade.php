@@ -6,6 +6,8 @@
 
     @push('scripts')
         @vite(['resources/js/dashboard/dashboard.js'])
+        @vite(['resources/js/dashboard/task-modal.js'])
+        @vite(['resources/js/dashboard/tag-tasks-modal.js'])
         @vite(['resources/js/dashboard/bulk-complete.js'])
         @vite(['resources/js/dashboard/tag-modal.js'])
         @if(Auth::user()->canEditGroup())

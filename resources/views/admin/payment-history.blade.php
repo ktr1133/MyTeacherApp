@@ -7,7 +7,7 @@
         @vite(['resources/js/admin/common.js'])
     @endpush
 
-    <div x-data="adminPage()" class="flex min-h-screen admin-gradient-bg relative overflow-hidden">
+    <div class="flex min-h-screen admin-gradient-bg relative overflow-hidden">
         <x-layouts.sidebar />
 
         <div class="flex-1 flex flex-col overflow-hidden relative z-10">

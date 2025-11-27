@@ -5,6 +5,10 @@
         @vite(['resources/css/dashboard.css', 'resources/css/tasks/pending-approvals.css'])
     @endpush
 
+    @push('scripts')
+        @vite(['resources/js/tasks/approval-task-detail-modal.js'])
+    @endpush
+
     {{-- アバターイベント監視用 --}}
     <x-layouts.avatar-event-common />
 
@@ -102,7 +106,7 @@
                                 @if($approval['type'] === 'task')
                                     {{-- タスクカード --}}
                                     <div class="bento-card approval-card-task bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 task-card-enter hover:shadow-xl transition-all duration-300 cursor-pointer"
-                                         onclick="window.openGroupTaskDetailModal({{ $approval['model']->id }})">
+                                         onclick="window.ApprovalTaskDetailModalController?.open({{ $approval['model']->id }})">
                                         <div class="flex items-start justify-between mb-4">
                                             <div class="flex-1">
                                                 {{-- タイプバッジ --}}
@@ -182,9 +186,6 @@
                                             </button>
                                         </div>
                                     </div>
-
-                                    {{-- タスク詳細モーダル --}}
-                                    @include('dashboard.modal-group-task-detail', ['task' => $approval['model']])
 
                                 @else
                                     {{-- トークン購入カード --}}
@@ -352,4 +353,11 @@
             }
         </script>
     @endpush
+
+    {{-- タスク詳細モーダルのインクルード --}}
+    @foreach($approvals as $approval)
+        @if($approval['type'] === 'task')
+            @include('tasks.modal-approval-task-detail', ['task' => $approval['model']])
+        @endif
+    @endforeach
 </x-app-layout>

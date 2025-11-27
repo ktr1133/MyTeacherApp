@@ -3,9 +3,7 @@
         @vite(['resources/css/dashboard.css', 'resources/css/batch.css'])
     @endpush
 
-    <div x-data="{ showSidebar: false }" 
-         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
-         class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
+    <div class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
 
         {{-- 背景装飾 --}}
         <div class="absolute inset-0 -z-10 pointer-events-none">

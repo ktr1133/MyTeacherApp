@@ -1,49 +1,15 @@
 @props(['task'])
 
-<div 
-    x-data="{ 
-        showModal: false,
-        title: {{ Js::from($task->title) }},
-        description: {{ Js::from($task->description ?? '') }},
-        span: {{ $task->span ?? config('const.task_spans.mid') }},
-        due_date: {{ Js::from($task->due_date ?? '') }},
-        selectedTags: {{ Js::from($task->tags->pluck('id')->toArray()) }},
-        
-        open() {
-            this.showModal = true;
-            document.body.classList.add('overflow-hidden');
-        },
-        close() {
-            this.showModal = false;
-            document.body.classList.remove('overflow-hidden');
-        },
-        submit() {
-            document.getElementById('edit-task-form-{{ $task->id }}').submit();
-        }
-    }"
-    @open-task-modal-{{ $task->id }}.window="open()"
-    @keydown.escape.window="showModal && close()"
->
-    
+<div data-task-modal="{{ $task->id }}" class="hidden">
     {{-- モーダルオーバーレイ --}}
     <div 
-        x-show="showModal"
-        x-transition.opacity
-        @click="close()"
-        class="fixed inset-0 z-[60] bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4"
-        style="display: none;">
+        data-modal-overlay
+        class="fixed inset-0 z-[60] bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         
         {{-- モーダルコンテンツ --}}
         <div 
-            @click.stop
-            x-show="showModal"
-            x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="ease-in duration-200"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="modal-content modal-panel bg-white dark:bg-gray-900 w-full max-w-2xl shadow-2xl rounded-2xl">
+            data-modal-content
+            class="modal-content modal-panel bg-white dark:bg-gray-900 w-full max-w-2xl shadow-2xl rounded-2xl opacity-0 scale-95 transition-all duration-300">
             
             {{-- ヘッダー --}}
             <div class="px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 modal-header-gradient flex items-center justify-between shrink-0">
@@ -58,7 +24,7 @@
                     </h3>
                 </div>
                 <button 
-                    @click="close()"
+                    data-close-modal
                     class="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
                     aria-label="閉じる">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +51,7 @@
                             type="text" 
                             id="title-{{ $task->id }}"
                             name="title"
-                            x-model="title"
+                            value="{{ $task->title }}"
                             required
                             placeholder="タスク名を入力"
                             class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm placeholder-gray-400">
@@ -102,10 +68,9 @@
                         <textarea 
                             id="description-{{ $task->id }}"
                             name="description"
-                            x-model="description"
                             rows="5"
                             placeholder="タスクの詳細な説明を入力してください"
-                            class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm placeholder-gray-400 resize-none custom-scrollbar"></textarea>
+                            class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm placeholder-gray-400 resize-none custom-scrollbar">{{ $task->description ?? '' }}</textarea>
                     </div>
 
                     {{-- スパンと期限のグリッド --}}
@@ -121,12 +86,11 @@
                             <select 
                                 id="span-{{ $task->id }}"
                                 name="span"
-                                x-model.number="span"
                                 required
                                 class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm">
-                                <option value="{{ config('const.task_spans.short') }}">短期</option>
-                                <option value="{{ config('const.task_spans.mid') }}">中期</option>
-                                <option value="{{ config('const.task_spans.long') }}">長期</option>
+                                <option value="{{ config('const.task_spans.short') }}" @selected($task->span == config('const.task_spans.short'))>短期</option>
+                                <option value="{{ config('const.task_spans.mid') }}" @selected($task->span == config('const.task_spans.mid'))>中期</option>
+                                <option value="{{ config('const.task_spans.long') }}" @selected($task->span == config('const.task_spans.long'))>長期</option>
                             </select>
                         </div>
 
@@ -140,37 +104,37 @@
                             </label>
                             
                             {{-- 短期: 日付入力 --}}
-                            <div x-show="span == {{ config('const.task_spans.short') }}">
+                            <div data-due-date-short class="{{ $task->span == config('const.task_spans.short') ? '' : 'hidden' }}">
                                 <input 
                                     type="date"
                                     name="due_date"
-                                    x-model="due_date"
-                                    :min="new Date().toISOString().split('T')[0]"
+                                    value="{{ $task->due_date instanceof \Illuminate\Support\Carbon ? $task->due_date->format('Y-m-d') : $task->due_date }}"
+                                    min="{{ date('Y-m-d') }}"
                                     class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm">
                             </div>
 
                             {{-- 中期: 年選択 --}}
-                            <div x-show="span == {{ config('const.task_spans.mid') }}">
+                            <div data-due-date-mid class="{{ $task->span == config('const.task_spans.mid') ? '' : 'hidden' }}">
                                 <select 
                                     name="due_date"
-                                    x-model="due_date"
                                     class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm">
                                     @php
                                         $currentYear = date('Y');
                                         $years = range($currentYear, $currentYear + 5);
+                                        $taskDueYear = $task->due_date instanceof \Illuminate\Support\Carbon ? $task->due_date->year : (is_numeric($task->due_date) ? (int)$task->due_date : null);
                                     @endphp
                                     @foreach($years as $year)
-                                        <option value="{{ $year }}">{{ $year }}年</option>
+                                        <option value="{{ $year }}" @selected($taskDueYear == $year)>{{ $year }}年</option>
                                     @endforeach
                                 </select>
                             </div>
 
                             {{-- 長期: テキスト入力 --}}
-                            <div x-show="span == {{ config('const.task_spans.long') }}">
+                            <div data-due-date-long class="{{ $task->span == config('const.task_spans.long') ? '' : 'hidden' }}">
                                 <input 
                                     type="text"
                                     name="due_date"
-                                    x-model="due_date"
+                                    value="{{ $task->due_date instanceof \Illuminate\Support\Carbon ? $task->due_date->format('Y-m-d') : $task->due_date }}"
                                     placeholder="例：5年後"
                                     class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm placeholder-gray-400">
                             </div>
@@ -241,12 +205,12 @@
                         </label>
                         <div class="flex flex-wrap gap-2">
                             @foreach($tags ?? [] as $tag)
-                                <label class="tag-chip inline-flex items-center px-4 py-2 rounded-xl cursor-pointer transition">
+                                <label class="tag-chip inline-flex items-center px-4 py-2 rounded-xl cursor-pointer transition {{ $task->tags->contains($tag->id) ? 'bg-gradient-to-r from-[#59B9C6] to-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }}">
                                     <input 
                                         type="checkbox" 
                                         name="tags[]" 
                                         value="{{ $tag->id }}"
-                                        x-model="selectedTags"
+                                        @checked($task->tags->contains($tag->id))
                                         class="sr-only">
                                     <span class="text-sm font-medium">{{ $tag->name }}</span>
                                 </label>
@@ -273,13 +237,13 @@
                 <div class="flex gap-3">
                     <button 
                         type="button"
-                        @click="close()"
+                        data-close-modal
                         class="inline-flex items-center px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition">
                         キャンセル
                     </button>
                     <button 
                         type="button"
-                        @click="submit()"
+                        data-submit-form
                         class="dashboard-btn-primary inline-flex items-center px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow-lg hover:shadow-xl transition">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

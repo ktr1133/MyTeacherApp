@@ -7,9 +7,7 @@
         @vite(['resources/js/admin/common.js'])
     @endpush
 
-    <div x-data="adminPage()" 
-         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
-         class="flex min-h-screen admin-gradient-bg relative overflow-hidden">
+    <div class="flex min-h-screen admin-gradient-bg relative overflow-hidden">
         
         <div class="absolute inset-0 pointer-events-none z-0">
             <div class="absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl admin-floating-decoration"></div>

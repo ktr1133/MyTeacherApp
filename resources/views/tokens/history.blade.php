@@ -7,9 +7,7 @@
         @vite(['resources/js/tokens/history.js'])
     @endpush
 
-    <div x-data="tokenHistory()"
-         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
-         class="flex min-h-[100dvh] {{ $isChildTheme ? 'token-gradient-bg-child' : 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800' }} relative overflow-hidden">
+    <div class="flex min-h-[100dvh] {{ $isChildTheme ? 'token-gradient-bg-child' : 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800' }} relative overflow-hidden">
         
         {{-- 背景装飾 --}}
         @if(!$isChildTheme)
@@ -179,14 +177,14 @@
                     {{-- フィルター --}}
                     <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 {{ $isChildTheme ? 'shadow-lg border-2 border-purple-300 dark:border-purple-600' : 'shadow-md border border-gray-200 dark:border-gray-700' }}">
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <select x-model="filterType" @change="filterTransactions()" class="flex-1 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 {{ $isChildTheme ? 'text-base py-3 px-4 font-medium' : 'text-sm py-2' }} focus:ring-2 {{ $isChildTheme ? 'focus:ring-purple-500' : 'focus:ring-blue-500' }}">
+                            <select data-filter-type class="flex-1 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 {{ $isChildTheme ? 'text-base py-3 px-4 font-medium' : 'text-sm py-2' }} focus:ring-2 {{ $isChildTheme ? 'focus:ring-purple-500' : 'focus:ring-blue-500' }}">
                                 <option value="all">{{ $isChildTheme ? 'ぜんぶ' : 'すべて表示' }}</option>
                                 <option value="purchase">{{ $isChildTheme ? '買ったもの' : '購入のみ' }}</option>
                                 <option value="usage">{{ $isChildTheme ? '使ったもの' : '使用のみ' }}</option>
                                 <option value="monthly_reset">{{ $isChildTheme ? '毎月もらえるコイン' : '月次リセット' }}</option>
                             </select>
                             
-                            <select x-model="filterPeriod" @change="filterTransactions()" class="flex-1 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 {{ $isChildTheme ? 'text-base py-3 px-4 font-medium' : 'text-sm py-2' }} focus:ring-2 {{ $isChildTheme ? 'focus:ring-purple-500' : 'focus:ring-blue-500' }}">
+                            <select data-filter-period class="flex-1 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 {{ $isChildTheme ? 'text-base py-3 px-4 font-medium' : 'text-sm py-2' }} focus:ring-2 {{ $isChildTheme ? 'focus:ring-purple-500' : 'focus:ring-blue-500' }}">
                                 <option value="all">{{ $isChildTheme ? 'ぜんぶの期間' : '全期間' }}</option>
                                 <option value="this_month">{{ $isChildTheme ? '今月' : '今月' }}</option>
                                 <option value="last_month">{{ $isChildTheme ? '先月' : '先月' }}</option>

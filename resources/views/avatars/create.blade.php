@@ -21,8 +21,6 @@
                 <form 
                     method="POST" 
                     action="{{ route('avatars.store') }}"
-                    x-data="avatarForm()"
-                    @submit="submitForm($event)"
                     class="avatar-card rounded-2xl p-6"
                 >
                     @csrf

@@ -63,9 +63,7 @@
         </script>
     @endpush
 
-    <div x-data="{ showSidebar: false }" 
-         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
-         class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
+    <div class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
 
         {{-- 背景装飾 --}}
         <div class="absolute inset-0 -z-10 pointer-events-none">
@@ -133,13 +131,8 @@
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12 space-y-6">
                     
                     {{-- ステータスメッセージ --}}
-                    @if (session('status'))
-                        <div 
-                            x-data="{ show: true }" 
-                            x-show="show" 
-                            x-transition 
-                            x-init="setTimeout(() => show = false, 3000)"
-                            class="bento-card rounded-xl p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700"
+                    @if (session('success'))
+                        <div class="bento-card rounded-xl p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700"
                             role="alert">
                             <div class="flex items-center gap-3">
                                 <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">

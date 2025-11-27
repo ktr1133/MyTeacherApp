@@ -2,13 +2,11 @@
     @push('styles')
         @vite(['resources/css/dashboard.css', 'resources/css/batch.css'])
     @endpush
+    @push('scripts')
+        @vite(['resources/js/batch/scheduled-task-controller.js'])
+    @endpush
 
-    <div x-data="{ 
-        showSidebar: false,
-        ...scheduledTaskForm() 
-        }" 
-         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
-         class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
+    <div class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
 
         {{-- 背景装飾 --}}
         <div class="absolute inset-0 -z-10 pointer-events-none">
@@ -93,6 +91,4 @@
             </main>
         </div>
     </div>
-
-    @include('batch.partials.scheduled-task-form-script-create')
 </x-app-layout>
