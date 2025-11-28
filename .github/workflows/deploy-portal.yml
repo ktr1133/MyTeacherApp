@@ -18,9 +18,9 @@ on:
     branches:
       - main
     paths:
-      - 'laravel/resources/views/portal/**'
-      - 'laravel/public/images/**'
-      - 'laravel/public/build/**'
+      - 'resources/views/portal/**'
+      - 'public/images/**'
+      - 'public/build/**'
       - 'scripts/export-portal-static.sh'
       - '.github/workflows/deploy-portal.yml'
   workflow_dispatch:  # 手動トリガー

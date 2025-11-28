@@ -28,7 +28,7 @@ on:
       - main
       - develop
     paths:
-      - '../services/task-service/**'
+      - 'services/task-service/**'
       - '.github/workflows/task-service-ci-cd.yml'
   pull_request:
     branches:
