@@ -44,6 +44,10 @@ on:
         description: 'DB optimization mode (analyze, vacuum-analyze, reindex)'
         required: false
         default: 'analyze'
+      run-db-observe:
+        description: 'Collect DB workload stats (read-only)'
+        required: false
+        default: 'false'
   pull_request:
     branches:
       - main
@@ -367,6 +371,91 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ==================== DB観測（Observe） ====================
+  db-observe:
+    name: DB Observe (Read-only)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs['run-db-observe'] == 'true' && (secrets.DB_HOST != '' || secrets.RDS_PROXY_ENDPOINT != '')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Run DB observation
+        env:
+          DB_HOST: ${{ secrets.RDS_PROXY_ENDPOINT || secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT || '5432' }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          OUT_DIR="db-observe"
+          mkdir -p "$OUT_DIR"
+          psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -c "select version();" | tee "$OUT_DIR/version.txt"
+
+          # Top queries by total_exec_time (requires pg_stat_statements)
+          psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -At -v ON_ERROR_STOP=1 \
+            -c "select 1 from pg_extension where extname='pg_stat_statements'" >/dev/null || echo "WARN: pg_stat_statements not installed"
+          psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
+            -c "copy (select queryid,calls,total_exec_time,mean_exec_time,rows from pg_stat_statements order by total_exec_time desc limit 50) to stdout csv header" \
+            > "$OUT_DIR/top_queries.csv" || true
+
+          # Active sessions (non-idle)
+          psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
+            -c "copy (select pid,usename,application_name,client_addr,state,wait_event_type,wait_event,query_start,now()-query_start as duration,substr(query,1,1000) as query from pg_stat_activity where state <> 'idle' order by query_start desc limit 100) to stdout csv header" \
+            > "$OUT_DIR/active_sessions.csv"
+
+          # Locks summary
+          psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
+            -c "copy (select l.mode,l.granted,a.pid,a.usename,a.state,substr(a.query,1,500) as query from pg_locks l join pg_stat_activity a on l.pid=a.pid where a.state <> 'idle') to stdout csv header" \
+            > "$OUT_DIR/locks.csv"
+
+          # Unused indexes (candidates)
+          psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
+            -c "copy (select schemaname,relname,indexrelname,idx_scan from pg_stat_user_indexes where idx_scan = 0 and indexrelname not like '%_pkey' order by relname) to stdout csv header" \
+            > "$OUT_DIR/unused_indexes.csv"
+
+          # Table scan stats
+          psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 \
+            -c "copy (select relname,seq_scan,idx_scan,n_live_tup,vacuum_count,autovacuum_count,analyze_count,autoanalyze_count from pg_stat_user_tables order by (seq_scan - idx_scan) desc limit 50) to stdout csv header" \
+            > "$OUT_DIR/table_scan_stats.csv"
+
+          # Markdown summary
+          {
+            echo "# DB Observe Summary"
+            echo
+            echo "- Host: $DB_HOST"
+            echo "- Database: $DB_NAME"
+            echo "- Collected at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo
+            for f in version.txt top_queries.csv active_sessions.csv locks.csv unused_indexes.csv table_scan_stats.csv; do
+              if [ -f "$OUT_DIR/$f" ]; then
+                lines=$(wc -l < "$OUT_DIR/$f" || echo 0)
+                [ "$f" != "version.txt" ] && echo "- $f: $((lines>0?lines-1:0)) rows"
+              fi
+            done
+          } > "$OUT_DIR/SUMMARY.md"
+
+      - name: Upload DB observe artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-observe-${{ github.run_id }}
+          path: db-observe/
+
+      - name: Notify observe completion (Slack)
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          text=$(sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g' db-observe/SUMMARY.md)
+          payload=$(jq -n --arg t "$text" '{text:$t}')
+          curl -s -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL" || true
 
   # ==================== DB最適化（Staging） ====================
   db-optimize-staging:
