@@ -63,6 +63,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    if: hashFiles('services/task-service/package.json') != ''
     
     steps:
       - name: Checkout code
@@ -111,7 +112,7 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && hashFiles('services/task-service/package.json') != ''
     
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
@@ -315,7 +316,7 @@ jobs:
   rollback:
     name: Rollback Production
     runs-on: ubuntu-latest
-    if: failure() && github.ref == 'refs/heads/main'
+    if: failure() && github.ref == 'refs/heads/main' && needs.deploy-production.result == 'failure'
     needs: deploy-production
     
     steps:
