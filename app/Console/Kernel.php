@@ -28,26 +28,9 @@ class Kernel extends ConsoleKernel
         // スケジュールタスクの自動実行
         // ========================================
         
-        // 開発環境: 毎分実行（テスト用）
-        if (app()->environment('local')) {
-            $schedule->command('batch:execute-scheduled-tasks')
-                ->everyMinute()
-                ->runInBackground()
-                ->appendOutputTo(storage_path('logs/scheduled-tasks.log'));
-        } 
-        // 本番環境: 毎分実行
-        else {
-            $schedule->command('batch:execute-scheduled-tasks')
-                ->everyMinute()
-                ->runInBackground()
-                ->appendOutputTo(storage_path('logs/scheduled-tasks.log'))
-                ->onSuccess(function () {
-                    \Illuminate\Support\Facades\Log::info('Scheduled tasks executed successfully via cron');
-                })
-                ->onFailure(function () {
-                    \Illuminate\Support\Facades\Log::error('Scheduled tasks execution failed via cron');
-                });
-        }
+        $schedule->command('batch:execute-scheduled-tasks')
+            ->everyMinute();
+
 
         // ========================================
         // 祝日データのキャッシュ更新（毎日0時）
