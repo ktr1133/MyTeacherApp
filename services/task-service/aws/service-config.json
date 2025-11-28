@@ -1,19 +1,19 @@
 {
-  "serviceName": "myteacher-task-service",
-  "cluster": "myteacher-production-cluster",
-  "taskDefinition": "myteacher-task-service-production:1",
+  "serviceName": "task-service",
+  "cluster": "mtdev-cluster",
+  "taskDefinition": "myteacher-task-service-production:4",
   "desiredCount": 1,
   "launchType": "FARGATE",
   "networkConfiguration": {
     "awsvpcConfiguration": {
       "subnets": [
-        "subnet-020e87d7082dfa4be",
-        "subnet-0dbe0cc6142fdee33"
+        "subnet-0c1d79eadf1822eab",
+        "subnet-0fadd933d273e2703"
       ],
       "securityGroups": [
-        "sg-0e94db2289e5cb5b0"
+        "sg-0e688b423f6ae5a88"
       ],
-      "assignPublicIp": "DISABLED"
+      "assignPublicIp": "ENABLED"
     }
   },
   "loadBalancers": [],
