@@ -4,8 +4,8 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
   "memory": "1024",
-  "executionRoleArn": "arn:aws:iam::469751479977:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::469751479977:role/ecsTaskRole",
+  "executionRoleArn": "arn:aws:iam::469751479977:role/myteacher-production-ecs-task-execution-role",
+  "taskRoleArn": "arn:aws:iam::469751479977:role/myteacher-production-ecs-task-role",
   "containerDefinitions": [
     {
       "name": "task-service",

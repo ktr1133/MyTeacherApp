@@ -6,7 +6,7 @@ on:
     branches: [main, develop]
     paths:
       - 'services/task-service/**'
-      - '.github/workflows/task-service-ci-cd.yml'
+      - '.github/workflows/task-service-ci-cd-clean.yml'
   workflow_dispatch:
     inputs:
       skip-deploy:

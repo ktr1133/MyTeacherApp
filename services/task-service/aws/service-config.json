@@ -1,0 +1,32 @@
+{
+  "serviceName": "myteacher-task-service",
+  "cluster": "myteacher-production-cluster",
+  "taskDefinition": "myteacher-task-service-production:1",
+  "desiredCount": 1,
+  "launchType": "FARGATE",
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": [
+        "subnet-020e87d7082dfa4be",
+        "subnet-0dbe0cc6142fdee33"
+      ],
+      "securityGroups": [
+        "sg-0e94db2289e5cb5b0"
+      ],
+      "assignPublicIp": "DISABLED"
+    }
+  },
+  "loadBalancers": [],
+  "serviceRegistries": [],
+  "placementConstraints": [],
+  "placementStrategy": [],
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 50,
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true
+    }
+  },
+  "enableExecuteCommand": true
+}
