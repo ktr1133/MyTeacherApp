@@ -4,11 +4,14 @@ Laravel 12 + Docker構成。**Action-Service-Repositoryパターン**（従来�
 
 ## プロジェクト構造（重要）
 
-**Docker構成**: Laravelは `/laravel` サブディレクトリに配置
+**リポジトリルート変更**: `/home/ktr/mtdev/` がGitルート（変更前: `laravel/` がルート）
 
 ```
-/home/ktr/mtdev/
+/home/ktr/mtdev/                    # ← リポジトリルート
 ├── docker-compose.yml          # DB (PostgreSQL), App (Apache/PHP), S3 (MinIO)
+├── definitions/                # プロジェクトドキュメント
+├── infrastructure/             # Terraform, 運用スクリプト
+├── services/                   # マイクロサービス
 └── laravel/                    # ← Laravelアプリケーション本体
     ├── app/
     │   ├── Http/Actions/       # Invokableアクション（コントローラー代替）
@@ -33,27 +36,27 @@ Route → Action (__invoke) → Service → Repository → Model
 
 ### 実装ルール
 
-1. **Action** (`app/Http/Actions/{ドメイン}/`): 単一責任のInvokableクラス
+1. **Action** (`laravel/app/Http/Actions/{ドメイン}/`): 単一責任のInvokableクラス
    - 命名: `{動詞}{対象}Action` (例: `StoreTaskAction`, `ApproveTaskAction`)
    - `public function __invoke()` メソッド必須
    - ビジネスロジックは書かない - Serviceに委譲
 
-2. **Service** (`app/Services/{ドメイン}/`): ビジネスロジック
+2. **Service** (`laravel/app/Services/{ドメイン}/`): ビジネスロジック
    - **必ずインターフェースを先に作成**: `{機能}ServiceInterface` + `{機能}Service`
    - `AppServiceProvider::register()` でバインド: `$this->app->bind(Interface::class, Implementation::class)`
    - コンストラクタでインターフェース経由で注入
 
-3. **Repository** (`app/Repositories/{ドメイン}/`): データアクセス
+3. **Repository** (`laravel/app/Repositories/{ドメイン}/`): データアクセス
    - **必ずインターフェースを先に作成**: `{対象}RepositoryInterface` + `{対象}EloquentRepository`
    - `AppServiceProvider::register()` でバインド
 
-4. **Responder** (`app/Http/Responders/{ドメイン}/`): レスポンス整形
+4. **Responder** (`laravel/app/Http/Responders/{ドメイン}/`): レスポンス整形
    - **新規コードでは必ず使用** (一部レガシーコードは直接返却 - 触る際にリファクタリング)
 
 ### 実装例
 
 ```php
-// routes/web.php
+// laravel/routes/web.php
 Route::post('/tasks', StoreTaskAction::class)->name('tasks.store');
 
 // StoreTaskAction.php
@@ -245,20 +248,22 @@ $tasks = Task::with(['user', 'images', 'tags'])->where('user_id', $userId)->get(
 
 | パス | 説明 |
 |------|------|
-| `routes/web.php` | ルート定義（Actionを直接参照、use文必須） |
-| `app/Providers/AppServiceProvider.php` | DIバインディング（Interface ⇔ Implementation） |
-| `app/Console/Kernel.php` | スケジューラー設定（`schedule()` メソッド） |
-| `app/Http/Actions/{ドメイン}/` | Invokableアクション（`__invoke()` 必須） |
-| `app/Services/{ドメイン}/` | ビジネスロジック（必ずInterface付き） |
-| `app/Repositories/{ドメイン}/` | データアクセス（必ずInterface付き） |
-| `app/Http/Responders/{ドメイン}/` | レスポンス整形（新規コードで使用） |
-| `app/Http/Requests/{ドメイン}/` | FormRequest（バリデーション定義） |
-| `app/Jobs/` | 非同期ジョブ（`GenerateAvatarImagesJob` など） |
-| `config/const.php` | 定数定義（イベント、トークン種別、ステータス） |
-| `config/filesystems.php` | S3/MinIO設定 |
-| `config/avatar-options.php` | アバター生成オプション |
-| `database/migrations/` | マイグレーションファイル（命名: `YYYY_MM_DD_*`) |
-| `definitions/*.md` | 機能要件定義書 |
+| `laravel/routes/web.php` | ルート定義（Actionを直接参照、use文必須） |
+| `laravel/app/Providers/AppServiceProvider.php` | DIバインディング（Interface ⇔ Implementation） |
+| `laravel/app/Console/Kernel.php` | スケジューラー設定（`schedule()` メソッド） |
+| `laravel/app/Http/Actions/{ドメイン}/` | Invokableアクション（`__invoke()` 必須） |
+| `laravel/app/Services/{ドメイン}/` | ビジネスロジック（必ずInterface付き） |
+| `laravel/app/Repositories/{ドメイン}/` | データアクセス（必ずInterface付き） |
+| `laravel/app/Http/Responders/{ドメイン}/` | レスポンス整形（新規コードで使用） |
+| `laravel/app/Http/Requests/{ドメイン}/` | FormRequest（バリデーション定義） |
+| `laravel/app/Jobs/` | 非同期ジョブ（`GenerateAvatarImagesJob` など） |
+| `laravel/config/const.php` | 定数定義（イベント、トークン種別、ステータス） |
+| `laravel/config/filesystems.php` | S3/MinIO設定 |
+| `laravel/config/avatar-options.php` | アバター生成オプション |
+| `laravel/database/migrations/` | マイグレーションファイル（命名: `YYYY_MM_DD_*`) |
+| `definitions/*.md` | 機能要件定義書（リポジトリルート） |
+| `infrastructure/` | Terraform、運用スクリプト、レポート |
+| `services/` | マイクロサービス（Task Service等） |
 | `docker-compose.yml` | DB:5432, App:8080, MinIO:9100/9101 |
 
 ## 5. 要件定義管理
@@ -346,7 +351,7 @@ php artisan queue:retry {job-id}                 # ジョブ再実行
 |--------|------|------|
 | `Class Interface not found` | DIバインディング漏れ | `AppServiceProvider::register()` に追加 |
 | `SQLSTATE[23503]` (外部キー) | 関連データ削除忘れ | `onDelete('cascade')` 追加 or 手動削除 |
-| `Target class [XxxAction] does not exist` | routes/web.php のuse文漏れ | `use App\Http\Actions\...` 追加 |
+| `Target class [XxxAction] does not exist` | laravel/routes/web.php のuse文漏れ | `use App\Http\Actions\...` 追加 |
 | `Call to undefined method` | Eager Loading不足 | `with(['relation'])` 追加 |
 | S3エラー | エンドポイント設定ミス | `.env` の `AWS_ENDPOINT` 確認 |
 
