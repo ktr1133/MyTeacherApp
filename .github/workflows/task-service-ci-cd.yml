@@ -35,22 +35,26 @@ on:
       skip-deploy:
         description: 'Skip deploy steps'
         required: false
-        default: 'false'
-      run-db-optimization:
-        # DEPRECATED (2025-11-28): DB maintenance removed from pipeline
-        description: 'Run DB optimization after deploy (DEPRECATED)'
+        default: false
+        type: boolean
+      build-only:
+        description: 'Run tests and build only (skip deploy)'
         required: false
-        default: 'false'
-      db-optimization-mode:
-        # DEPRECATED (2025-11-28): DB maintenance removed from pipeline
-        description: 'DB optimization mode (analyze, vacuum-analyze, reindex) (DEPRECATED)'
+        default: true
+        type: boolean
+      target-environment:
+        description: 'Target deployment environment'
         required: false
-        default: 'analyze'
-      run-db-observe:
-        # DEPRECATED (2025-11-28): DB maintenance removed from pipeline
-        description: 'Collect DB workload stats (read-only) (DEPRECATED)'
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      force-deploy:
+        description: 'Force deployment even if tests fail'
         required: false
-        default: 'false'
+        default: false
+        type: boolean
   pull_request:
     branches:
       - main
@@ -119,7 +123,12 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: test
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && hashFiles('services/task-service/package.json') != ''
+    if: |
+      (github.event_name == 'push' || 
+       (github.event_name == 'workflow_dispatch' && 
+        github.event.inputs.build-only != 'true' && 
+        github.event.inputs.skip-deploy != 'true')) && 
+      hashFiles('services/task-service/package.json') != '' && (needs.test.result == 'success' || github.event.inputs.force-deploy == 'true')
     
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
@@ -179,7 +188,7 @@ jobs:
     name: Deploy to Staging
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/develop' && (github.event.inputs.skip-deploy != 'true')
+    if: (github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target-environment == 'staging')) && (github.event.inputs.skip-deploy != 'true' && github.event.inputs.build-only != 'true')
     environment:
       name: staging
       url: https://staging-api.myteacher.com
@@ -232,7 +241,7 @@ jobs:
     name: Deploy to Production (Blue/Green)
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' && (github.event.inputs.skip-deploy != 'true')
+    if: (github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target-environment == 'production')) && (github.event.inputs.skip-deploy != 'true' && github.event.inputs.build-only != 'true')
     environment:
       name: production
       url: https://api.myteacher.com
