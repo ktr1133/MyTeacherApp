@@ -19,41 +19,203 @@ env:
   ECR_REPOSITORY: task-service
 
 jobs:
+  debug-info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "🔍 [DEBUG] Workflow trigger information"
+        run: |
+          echo "=== Workflow Trigger Information ==="
+          echo "Event name: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "SHA: ${{ github.sha }}"
+          echo "=== Event inputs ==="
+          echo "Skip deploy: ${{ github.event.inputs.skip-deploy }}"
+          echo "=== Environment variables ==="
+          echo "AWS_REGION: ${{ env.AWS_REGION }}"
+          echo "ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}"
+          echo "=== Changed files (if push event) ==="
+          echo "Head commit message: ${{ github.event.head_commit.message }}"
+
   test:
     runs-on: ubuntu-latest
-    if: hashFiles('services/task-service/package.json') != ''
+    needs: debug-info
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: "🔍 [DEBUG] Checkout repository"
+        uses: actions/checkout@v4
+        
+      - name: "🔍 [DEBUG] Verify repository structure"
+        run: |
+          echo "=== Working directory ==="
+          pwd
+          echo "=== Root directory listing ==="
+          ls -la
+          echo "=== Services directory check ==="
+          if [ -d "services" ]; then
+            echo "✅ services directory exists"
+            ls -la services/
+          else
+            echo "❌ services directory not found"
+            exit 1
+          fi
+          echo "=== Task service directory check ==="
+          if [ -d "services/task-service" ]; then
+            echo "✅ task-service directory exists"
+            ls -la services/task-service/
+          else
+            echo "❌ task-service directory not found"
+            exit 1
+          fi
+          echo "=== Package.json verification ==="
+          if [ -f "services/task-service/package.json" ]; then
+            echo "✅ package.json exists"
+            echo "--- package.json content ---"
+            cat services/task-service/package.json
+          else
+            echo "❌ package.json not found"
+            exit 1
+          fi
+          echo "=== Package-lock.json verification ==="
+          if [ -f "services/task-service/package-lock.json" ]; then
+            echo "✅ package-lock.json exists (size: $(stat -c%s services/task-service/package-lock.json) bytes)"
+          else
+            echo "❌ package-lock.json not found"
+            exit 1
+          fi
+          
+      - name: "🔍 [DEBUG] Setup Node.js 22"
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: services/task-service/package-lock.json
-      - run: npm ci
+          
+      - name: "🔍 [DEBUG] Verify Node.js setup"
+        run: |
+          echo "=== Node.js version ==="
+          node --version
+          echo "=== NPM version ==="
+          npm --version
+          echo "=== NPM config ==="
+          npm config list
+          echo "=== Cache directory ==="
+          npm config get cache
+          
+      - name: "🔍 [DEBUG] Install dependencies"
         working-directory: services/task-service
-      - run: npm run lint
+        run: |
+          echo "=== Before npm ci ==="
+          ls -la
+          echo "=== Running npm ci ==="
+          npm ci --verbose
+          echo "=== After npm ci ==="
+          ls -la
+          echo "=== node_modules check ==="
+          if [ -d "node_modules" ]; then
+            echo "✅ node_modules created"
+            echo "node_modules size: $(du -sh node_modules | cut -f1)"
+          else
+            echo "❌ node_modules not created"
+            exit 1
+          fi
+          
+      - name: "🔍 [DEBUG] Run linting"
         working-directory: services/task-service
-      - run: npm test
+        run: |
+          echo "=== Running ESLint ==="
+          npm run lint --verbose
+          
+      - name: "🔍 [DEBUG] Run tests"
         working-directory: services/task-service
+        run: |
+          echo "=== Running tests ==="
+          npm test --verbose
 
   build:
     runs-on: ubuntu-latest
-    needs: test
-    if: github.event.inputs.skip-deploy != true
+    needs: [debug-info, test]
+    if: github.event.inputs.skip-deploy != 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: "🔍 [DEBUG] Checkout repository"
+        uses: actions/checkout@v4
+        
+      - name: "🔍 [DEBUG] Verify build context"
+        run: |
+          echo "=== Build context verification ==="
+          echo "Working directory: $(pwd)"
+          echo "=== Task Service context ==="
+          if [ -d "services/task-service" ]; then
+            echo "✅ Task Service directory exists"
+            ls -la services/task-service/
+            echo "--- Dockerfile check ---"
+            if [ -f "services/task-service/Dockerfile" ]; then
+              echo "✅ Dockerfile exists"
+              head -10 services/task-service/Dockerfile
+            else
+              echo "❌ Dockerfile not found"
+              exit 1
+            fi
+          else
+            echo "❌ Task Service directory not found"
+            exit 1
+          fi
+          
+      - name: "🔍 [DEBUG] Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: aws-actions/amazon-ecr-login@v2
+          
+      - name: "🔍 [DEBUG] Verify AWS configuration"
+        run: |
+          echo "=== AWS Configuration ==="
+          echo "Region: ${{ env.AWS_REGION }}"
+          echo "ECR Repository: ${{ env.ECR_REPOSITORY }}"
+          echo "=== AWS CLI version ==="
+          aws --version
+          echo "=== AWS identity ==="
+          aws sts get-caller-identity
+          echo "=== ECR repository check ==="
+          if aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
+            echo "✅ ECR repository exists"
+          else
+            echo "⚠️  ECR repository does not exist, creating..."
+            aws ecr create-repository --repository-name ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }}
+            echo "✅ ECR repository created"
+          fi
+          
+      - name: "🔍 [DEBUG] Login to Amazon ECR"
+        uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v5
+        
+      - name: "🔍 [DEBUG] Verify ECR login"
+        run: |
+          echo "=== ECR Login Results ==="
+          echo "Registry: ${{ steps.login-ecr.outputs.registry }}"
+          echo "Full image name: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}"
+          
+      - name: "🔍 [DEBUG] Setup Docker Buildx"
+        uses: docker/setup-buildx-action@v3
+        
+      - name: "🔍 [DEBUG] Build and push Docker image"
+        uses: docker/build-push-action@v5
         with:
           context: services/task-service
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+            
+      - name: "🔍 [DEBUG] Verify image push"
+        run: |
+          echo "=== Image Push Verification ==="
+          echo "Latest tag: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest"
+          echo "SHA tag: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          echo "=== ECR images list ==="
+          aws ecr list-images --repository-name ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }} | head -20
