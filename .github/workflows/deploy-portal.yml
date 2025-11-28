@@ -58,13 +58,12 @@ jobs:
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
-          path: laravel/vendor
+          path: vendor
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
-        working-directory: laravel
         run: composer install --no-dev --optimize-autoloader --no-interaction
 
       #########################################################################
@@ -78,27 +77,24 @@ jobs:
       - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
-          path: laravel/node_modules
+          path: node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-
 
       - name: Install npm dependencies
-        working-directory: laravel
         run: npm ci
 
       #########################################################################
       # 5. アセットビルド
       #########################################################################
       - name: Build assets
-        working-directory: laravel
         run: npm run build
 
       #########################################################################
       # 6. 環境ファイル準備
       #########################################################################
       - name: Create .env file
-        working-directory: laravel
         run: |
           cp .env.example .env
           php artisan key:generate
@@ -110,8 +106,8 @@ jobs:
       #########################################################################
       - name: Export portal static site
         run: |
-          bash scripts/export-portal-static.sh
-          ls -la laravel/public/portal-static/
+          bash ../scripts/export-portal-static.sh
+          ls -la public/portal-static/
 
       #########################################################################
       # 8. AWS認証情報設定
@@ -128,7 +124,7 @@ jobs:
       #########################################################################
       - name: Sync to S3
         run: |
-          aws s3 sync laravel/public/portal-static/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
+          aws s3 sync public/portal-static/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
             --delete \
             --cache-control "max-age=3600" \
             --metadata-directive REPLACE \
