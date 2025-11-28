@@ -1,0 +1,162 @@
+###############################################################################
+# ポータルサイト 自動デプロイワークフロー
+#
+# トリガー:
+#   - main ブランチへのpush
+#   - ポータル関連ファイルの変更
+#
+# ステップ:
+#   1. 静的HTMLエクスポート
+#   2. S3同期
+#   3. CloudFront Invalidation
+###############################################################################
+
+name: Deploy Portal Site
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'laravel/resources/views/portal/**'
+      - 'laravel/public/images/**'
+      - 'laravel/public/build/**'
+      - 'scripts/export-portal-static.sh'
+      - '.github/workflows/deploy-portal.yml'
+  workflow_dispatch:  # 手動トリガー
+
+env:
+  PHP_VERSION: '8.2'
+  NODE_VERSION: '20'
+  AWS_REGION: 'ap-northeast-1'
+
+jobs:
+  deploy:
+    name: Deploy to S3 + CloudFront
+    runs-on: ubuntu-latest
+    
+    steps:
+      #########################################################################
+      # 1. リポジトリチェックアウト
+      #########################################################################
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #########################################################################
+      # 2. PHP環境セットアップ
+      #########################################################################
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json
+          coverage: none
+
+      #########################################################################
+      # 3. Composer依存関係インストール
+      #########################################################################
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: laravel/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        working-directory: laravel
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      #########################################################################
+      # 4. Node.js環境セットアップ
+      #########################################################################
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: laravel/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install npm dependencies
+        working-directory: laravel
+        run: npm ci
+
+      #########################################################################
+      # 5. アセットビルド
+      #########################################################################
+      - name: Build assets
+        working-directory: laravel
+        run: npm run build
+
+      #########################################################################
+      # 6. 環境ファイル準備
+      #########################################################################
+      - name: Create .env file
+        working-directory: laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          echo "APP_ENV=production" >> .env
+          echo "APP_DEBUG=false" >> .env
+
+      #########################################################################
+      # 7. ポータルサイト静的HTMLエクスポート
+      #########################################################################
+      - name: Export portal static site
+        run: |
+          bash scripts/export-portal-static.sh
+          ls -la laravel/public/portal-static/
+
+      #########################################################################
+      # 8. AWS認証情報設定
+      #########################################################################
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      #########################################################################
+      # 9. S3同期
+      #########################################################################
+      - name: Sync to S3
+        run: |
+          aws s3 sync laravel/public/portal-static/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
+            --delete \
+            --cache-control "max-age=3600" \
+            --metadata-directive REPLACE \
+            --exclude "*.sh"
+
+      #########################################################################
+      # 10. CloudFront Invalidation
+      #########################################################################
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+      #########################################################################
+      # 11. デプロイ成功通知
+      #########################################################################
+      - name: Deploy success notification
+        if: success()
+        run: |
+          echo "✅ ポータルサイトのデプロイが完了しました"
+          echo "CloudFront URL: https://${{ secrets.CLOUDFRONT_DOMAIN_NAME }}"
+
+      #########################################################################
+      # 12. デプロイ失敗通知
+      #########################################################################
+      - name: Deploy failure notification
+        if: failure()
+        run: |
+          echo "❌ ポータルサイトのデプロイに失敗しました"
+          echo "ログを確認してください: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

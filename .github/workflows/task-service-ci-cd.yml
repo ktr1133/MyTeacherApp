@@ -1,0 +1,354 @@
+# GitHub Actions Workflow for Task Service CI/CD
+#
+# @description Continuous Integration and Deployment pipeline for Task Service
+# @workflow Test → Build → Deploy (Blue/Green) → Rollback (on failure)
+# @triggers Push to main/develop, Pull Requests
+# @environments Staging (develop branch), Production (main branch)
+# @author MyTeacher Team
+# @version 1.0.0
+# @created 2025-11-27
+#
+# Pipeline Stages:
+# 1. Test: ESLint + Unit Tests + Integration Tests + Coverage Report
+# 2. Build: Docker image build and push to ECR
+# 3. Deploy: ECS Fargate deployment with Blue/Green strategy
+# 4. Rollback: Automatic rollback on deployment failure
+#
+# Required Secrets:
+# - AWS_ACCESS_KEY_ID: AWS IAM access key
+# - AWS_SECRET_ACCESS_KEY: AWS IAM secret key
+# - TEST_JWT_TOKEN: JWT token for production health check
+# - SLACK_WEBHOOK_URL: Slack webhook for deployment notifications
+
+name: Task Service - Test & Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'services/task-service/**'
+      - '.github/workflows/task-service-ci-cd.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'services/task-service/**'
+
+env:
+  AWS_REGION: ap-northeast-1
+  ECR_REPOSITORY: myteacher-task-service
+  ECS_CLUSTER: myteacher-production-cluster
+  ECS_SERVICE: task-service
+  TASK_DEFINITION_FILE: services/task-service/aws/task-definition.json
+
+jobs:
+  # ==================== テストジョブ ====================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/task-service/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: services/task-service
+        run: npm ci
+      
+      - name: Run ESLint
+        working-directory: services/task-service
+        run: npm run lint || true
+      
+      - name: Run unit tests
+        working-directory: services/task-service
+        run: npm test -- --coverage --testPathPattern=tests/unit
+      
+      - name: Run integration tests
+        working-directory: services/task-service
+        run: npm test -- --testPathPattern=tests/integration
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: services/task-service/coverage/lcov.info
+          flags: task-service
+          name: task-service-coverage
+          fail_ci_if_error: false
+      
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: services/task-service/coverage/
+
+  # ==================== ビルドジョブ ====================
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: services/task-service
+          file: services/task-service/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_ENV=production
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            GIT_COMMIT=${{ github.sha }}
+      
+      - name: Image digest
+        run: |
+          echo "Image digest: ${{ steps.build.outputs.digest }}"
+
+  # ==================== デプロイジョブ（Staging） ====================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging-api.myteacher.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition myteacher-task-service-staging \
+            --query taskDefinition > task-def-staging.json
+      
+      - name: Update task definition with new image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-def-staging.json
+          container-name: task-service
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+      
+      - name: Deploy to ECS (Staging)
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}-staging
+          cluster: myteacher-staging-cluster
+          wait-for-service-stability: true
+          wait-for-minutes: 10
+      
+      - name: Verify deployment
+        run: |
+          sleep 30
+          curl -f https://staging-api.myteacher.com/health || exit 1
+
+  # ==================== デプロイジョブ（Production - Blue/Green） ====================
+  deploy-production:
+    name: Deploy to Production (Blue/Green)
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://api.myteacher.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition myteacher-task-service-production \
+            --query taskDefinition > task-def-production.json
+      
+      - name: Update task definition with new image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-def-production.json
+          container-name: task-service
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+      
+      - name: Deploy to ECS with CodeDeploy (Blue/Green)
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 15
+          codedeploy-appspec: services/task-service/aws/appspec.yml
+          codedeploy-application: myteacher-task-service
+          codedeploy-deployment-group: myteacher-task-service-dg
+      
+      - name: Wait for Green deployment
+        run: sleep 60
+      
+      - name: Verify production health
+        run: |
+          curl -f https://api.myteacher.com/health || exit 1
+          curl -f https://api.myteacher.com/api/tasks?page=1&limit=1 \
+            -H "Authorization: Bearer ${{ secrets.TEST_JWT_TOKEN }}" || exit 1
+      
+      - name: Notify deployment success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "✅ Task Service deployed to Production",
+              attachments: [{
+                color: 'good',
+                text: `Commit: ${{ github.sha }}\nAuthor: ${{ github.actor }}\nImage: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}`
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: Notify deployment failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "❌ Task Service deployment FAILED",
+              attachments: [{
+                color: 'danger',
+                text: `Commit: ${{ github.sha }}\nAuthor: ${{ github.actor }}\nCheck: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ==================== ロールバックジョブ ====================
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    if: failure() && github.ref == 'refs/heads/main'
+    needs: deploy-production
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Get previous task definition revision
+        id: previous-task-def
+        run: |
+          CURRENT_REVISION=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --query 'services[0].taskDefinition' \
+            --output text | grep -oP '\d+$')
+          
+          PREVIOUS_REVISION=$((CURRENT_REVISION - 1))
+          echo "previous-revision=${PREVIOUS_REVISION}" >> $GITHUB_OUTPUT
+      
+      - name: Rollback to previous revision
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition myteacher-task-service-production:${{ steps.previous-task-def.outputs.previous-revision }} \
+            --force-new-deployment
+      
+      - name: Wait for rollback stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+      
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "⚠️ Task Service ROLLED BACK to revision ${{ steps.previous-task-def.outputs.previous-revision }}",
+              attachments: [{
+                color: 'warning',
+                text: `Failed commit: ${{ github.sha }}\nRolled back by: GitHub Actions`
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -274,3 +274,5 @@
     </div>
 </section>
 @endsection
+
+<- batch:execute-scheduled-tasks に withoutOverlapping ( ) と runInBackground ( ) CI/CD Test: 2025-11-28 14:28:28 -->
