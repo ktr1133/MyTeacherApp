@@ -33,16 +33,14 @@ class Kernel extends ConsoleKernel
             $schedule->command('batch:execute-scheduled-tasks')
                 ->everyMinute()
                 ->withoutOverlapping(5)
-                ->onOneServer() // 冗長構成対応
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/scheduled-tasks.log'));
         } 
-        // 本番環境: 毎時実行
+        // 本番環境: 毎分実行
         else {
             $schedule->command('batch:execute-scheduled-tasks')
                 ->everyMinute()
                 ->withoutOverlapping(10)
-                ->onOneServer() // 冗長構成対応
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/scheduled-tasks.log'))
                 ->onSuccess(function () {
@@ -69,8 +67,7 @@ class Kernel extends ConsoleKernel
             ]);
         })
         ->dailyAt('00:00')
-        ->name('cache-holidays')
-        ->onOneServer();
+        ->name('cache-holidays');
 
         // ========================================
         // 古い実行履歴の削除（毎週日曜日3時）
@@ -85,8 +82,7 @@ class Kernel extends ConsoleKernel
             ]);
         })
         ->weeklyOn(0, '03:00') // 日曜日3時
-        ->name('cleanup-execution-history')
-        ->onOneServer();
+        ->name('cleanup-execution-history');
 
         // ========================================
         // 期限切れ通知の削除（毎日深夜3時）
@@ -94,7 +90,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('notifications:delete-expired')
             ->dailyAt('03:00')
             ->withoutOverlapping()
-            ->onOneServer() // 冗長構成対応
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/notifications-cleanup.log'));
 
@@ -104,7 +99,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('redis:monitor')
             ->everyFiveMinutes()
             ->withoutOverlapping()
-            ->onOneServer() // 冗長構成対応
             ->runInBackground();
 
         // ========================================
@@ -115,8 +109,7 @@ class Kernel extends ConsoleKernel
             \Illuminate\Support\Facades\Log::info('Old dashboard cache cleared');
         })
         ->dailyAt('03:00')
-        ->name('clear-old-cache')
-        ->onOneServer();
+        ->name('clear-old-cache');
 
         // ========================================
         // Phase 1.5: Breeze + Cognito並行運用監視（5分ごと）
@@ -126,7 +119,6 @@ class Kernel extends ConsoleKernel
             $schedule->command('auth:monitor-dual-auth --alert')
                 ->everyFiveMinutes()
                 ->withoutOverlapping()
-                ->onOneServer() // 冗長構成対応
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/dual-auth-monitoring.log'));
         }
