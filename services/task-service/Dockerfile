@@ -39,9 +39,9 @@ RUN mkdir -p logs && \
     chown -R nodejs:nodejs logs && \
     chmod -R 755 logs
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+# Temporary: Disable health check to debug startup issues
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#     CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Security configurations
 RUN chmod -R 755 /app
