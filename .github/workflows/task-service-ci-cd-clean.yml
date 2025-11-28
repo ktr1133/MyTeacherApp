@@ -16,7 +16,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-1
-  ECR_REPOSITORY: myteacher-task-service
+  ECR_REPOSITORY: task-service
 
 jobs:
   test:
