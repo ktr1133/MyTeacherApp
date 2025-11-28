@@ -21,7 +21,7 @@ on:
       - 'resources/views/portal/**'
       - 'public/images/**'
       - 'public/build/**'
-      - 'scripts/export-portal-static.sh'
+      - 'artisan-export-portal.php'
       - '.github/workflows/deploy-portal.yml'
   workflow_dispatch:  # 手動トリガー
 
@@ -106,7 +106,7 @@ jobs:
       #########################################################################
       - name: Export portal static site
         run: |
-          bash ../scripts/export-portal-static.sh
+          php artisan-export-portal.php
           ls -la public/portal-static/
 
       #########################################################################

@@ -35,7 +35,7 @@ on:
       - main
       - develop
     paths:
-      - '../services/task-service/**'
+      - 'services/task-service/**'
 
 env:
   AWS_REGION: ap-northeast-1
@@ -59,22 +59,22 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: ../services/task-service/package-lock.json
+          cache-dependency-path: services/task-service/package-lock.json
       
       - name: Install dependencies
-        working-directory: ../services/task-service
+        working-directory: services/task-service
         run: npm ci
       
       - name: Run ESLint
-        working-directory: ../services/task-service
+        working-directory: services/task-service
         run: npm run lint || true
       
       - name: Run unit tests
-        working-directory: ../services/task-service
+        working-directory: services/task-service
         run: npm test -- --coverage --testPathPattern=tests/unit
       
       - name: Run integration tests
-        working-directory: ../services/task-service
+        working-directory: services/task-service
         run: npm test -- --testPathPattern=tests/integration
       
       - name: Upload coverage to Codecov
@@ -136,8 +136,8 @@ jobs:
         id: build
         uses: docker/build-push-action@v5
         with:
-          context: ../services/task-service
-          file: ../services/task-service/Dockerfile
+          context: services/task-service
+          file: services/task-service/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -252,7 +252,7 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
           wait-for-minutes: 15
-          codedeploy-appspec: ../services/task-service/aws/appspec.yml
+          codedeploy-appspec: services/task-service/aws/appspec.yml
           codedeploy-application: myteacher-task-service
           codedeploy-deployment-group: myteacher-task-service-dg
       
