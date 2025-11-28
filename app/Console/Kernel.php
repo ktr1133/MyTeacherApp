@@ -32,7 +32,6 @@ class Kernel extends ConsoleKernel
         if (app()->environment('local')) {
             $schedule->command('batch:execute-scheduled-tasks')
                 ->everyMinute()
-                ->withoutOverlapping(5)
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/scheduled-tasks.log'));
         } 
@@ -40,7 +39,6 @@ class Kernel extends ConsoleKernel
         else {
             $schedule->command('batch:execute-scheduled-tasks')
                 ->everyMinute()
-                ->withoutOverlapping(10)
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/scheduled-tasks.log'))
                 ->onSuccess(function () {
@@ -89,7 +87,6 @@ class Kernel extends ConsoleKernel
         // ========================================
         $schedule->command('notifications:delete-expired')
             ->dailyAt('03:00')
-            ->withoutOverlapping()
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/notifications-cleanup.log'));
 
@@ -98,7 +95,6 @@ class Kernel extends ConsoleKernel
         // ========================================
         $schedule->command('redis:monitor')
             ->everyFiveMinutes()
-            ->withoutOverlapping()
             ->runInBackground();
 
         // ========================================
@@ -118,7 +114,6 @@ class Kernel extends ConsoleKernel
         if (now()->between('2025-12-01', '2025-12-14')) {
             $schedule->command('auth:monitor-dual-auth --alert')
                 ->everyFiveMinutes()
-                ->withoutOverlapping()
                 ->runInBackground()
                 ->appendOutputTo(storage_path('logs/dual-auth-monitoring.log'));
         }
