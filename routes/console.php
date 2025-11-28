@@ -12,7 +12,16 @@ Artisan::command('inspire', function () {
 // スケジュールタスクの自動実行（毎分）
 // ========================================
 Schedule::command('batch:execute-scheduled-tasks')
-    ->everyMinute();
+    ->everyMinute()
+    ->withoutOverlapping(10)
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/scheduled-tasks.log'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Scheduled tasks executed successfully via cron');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Scheduled tasks execution failed via cron');
+    });
 
 // ========================================
 // 毎月1日午前0時に無料枠をリセット
