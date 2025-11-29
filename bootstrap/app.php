@@ -20,7 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         
         $middleware->alias([
             'check.tokens' => \App\Http\Middleware\CheckTokenBalance::class,
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'admin.ip' => \App\Http\Middleware\AdminIpRestriction::class,
             'cognito' => \App\Http\Middleware\VerifyCognitoToken::class,
         ]);
         // ★ Web ミドルウェアグループに追加

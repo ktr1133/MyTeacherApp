@@ -1,0 +1,24 @@
+# ========================================
+# 管理者セキュリティ設定（Stripe要件対応）
+# ========================================
+
+# 管理者アカウント（初回Seeder用）
+ADMIN_EMAIL=admin@myteacher.local
+ADMIN_PASSWORD=ChangeMe!2025SecurePassword
+
+# IP制限設定
+ADMIN_IP_RESTRICTION_ENABLED=false
+# カンマ区切りで複数指定可能。CIDR表記も可能（例: 192.168.1.0/24）
+ADMIN_ALLOWED_IPS=127.0.0.1,::1
+
+# Basic認証（IP制限のフォールバック）
+ADMIN_BASIC_AUTH_ENABLED=false
+ADMIN_BASIC_AUTH_USERNAME=admin
+ADMIN_BASIC_AUTH_PASSWORD=ChangeMe!2025
+
+# アカウントロック設定
+ADMIN_MAX_LOGIN_ATTEMPTS=5
+ADMIN_LOCKOUT_DURATION=30
+
+# セキュリティログ保持期間（日）
+ADMIN_SECURITY_LOG_RETENTION_DAYS=90

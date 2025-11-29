@@ -102,6 +102,9 @@ use App\Services\Portal\FaqServiceInterface;
 use App\Services\Portal\FaqService;
 use App\Services\Portal\AppUpdateServiceInterface;
 use App\Services\Portal\AppUpdateService;
+// Security
+use App\Services\Security\VirusScanServiceInterface;
+use App\Services\Security\ClamAVScanService;
 
 // 外部APIサービスのインポート
 use App\Services\AI\OpenAIService;
@@ -179,6 +182,10 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Auth ---
         $this->app->bind(ValidationServiceInterface::class, ValidationService::class);
+        $this->app->bind(\App\Services\Auth\LoginAttemptServiceInterface::class, \App\Services\Auth\LoginAttemptService::class);
+
+        // --- Security ---
+        $this->app->bind(VirusScanServiceInterface::class, ClamAVScanService::class);
 
         // --- Avatar ---
         $this->app->bind(TeacherAvatarServiceInterface::class, TeacherAvatarService::class);

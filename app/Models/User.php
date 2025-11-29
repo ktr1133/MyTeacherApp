@@ -17,10 +17,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Laravel\Cashier\Billable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, Billable;
+    use HasFactory, Notifiable, Billable, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -40,6 +41,17 @@ class User extends Authenticatable
         'timezone',
         'cognito_sub',
         'auth_provider',
+        // セキュリティ関連カラム（Stripe要件対応）
+        'is_locked',
+        'locked_at',
+        'locked_reason',
+        'failed_login_attempts',
+        'last_failed_login_at',
+        'two_factor_enabled',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
+        'allowed_ips',
     ];
     
     /**
@@ -61,6 +73,15 @@ class User extends Authenticatable
         'password' => 'hashed',
         'group_edit_flg' => 'boolean',
         'last_login_at' => 'datetime',
+        // セキュリティ関連のキャスト
+        'is_locked' => 'boolean',
+        'locked_at' => 'datetime',
+        'failed_login_attempts' => 'integer',
+        'last_failed_login_at' => 'datetime',
+        'two_factor_enabled' => 'boolean',
+        'two_factor_recovery_codes' => 'array',
+        'two_factor_confirmed_at' => 'datetime',
+        'allowed_ips' => 'array',
     ];
 
     /**

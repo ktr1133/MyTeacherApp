@@ -1,4 +1,3 @@
-{{-- filepath: /home/ktr/mtdev/laravel/resources/views/welcome.blade.php --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>

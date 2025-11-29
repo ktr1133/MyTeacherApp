@@ -1,0 +1,36 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient (Teal) -->
+  <defs>
+    <linearGradient id="familyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#16a085;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1abc9c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="630" fill="url(#familyGrad)"/>
+  
+  <!-- Decorative circles (family icons) -->
+  <circle cx="150" cy="120" r="60" fill="white" opacity="0.15"/>
+  <circle cx="1050" cy="510" r="80" fill="white" opacity="0.12"/>
+  <circle cx="950" cy="150" r="50" fill="white" opacity="0.15"/>
+  
+  <!-- Badge -->
+  <rect x="50" y="50" width="200" height="45" rx="22.5" fill="white" opacity="0.3"/>
+  <text x="150" y="80" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">家族向けプラン</text>
+  
+  <!-- Main Title -->
+  <text x="60" y="180" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="white">MyTeacher</text>
+  <text x="60" y="240" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white">ファミリープラン</text>
+  
+  <!-- Price -->
+  <text x="60" y="310" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="white">月額 ¥500</text>
+  
+  <!-- Features -->
+  <text x="60" y="380" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.95">✓ 家族メンバー最大6名まで</text>
+  <text x="60" y="420" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.95">✓ グループタスク管理</text>
+  <text x="60" y="460" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.95">✓ 子供アカウント対応</text>
+  <text x="60" y="500" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.95">✓ 14日間無料トライアル</text>
+  
+  <!-- Footer -->
+  <text x="60" y="570" font-family="Arial, sans-serif" font-size="20" fill="white" opacity="0.8">家族みんなで使えるタスク管理</text>
+</svg>

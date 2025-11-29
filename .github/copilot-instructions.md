@@ -139,25 +139,50 @@ public function __invoke(StoreTaskRequest $request): RedirectResponse {
 
 ## 1. 重要なワークフロー
 
+### Docker環境の注意事項（重要）
+
+**コンテナマウント構造**: Dockerコンテナは**旧ディレクトリ構造**を使用しています。
+
+```
+ホスト側: /home/ktr/mtdev/laravel/ → コンテナ内: /var/www/html/
+```
+
+**現在の状況**:
+- リポジトリ構造は `/home/ktr/mtdev/` をルートに変更済み
+- Dockerコンテナは旧構造（`/home/ktr/mtdev/laravel/`）をマウント
+- `laravel/` ディレクトリは空の残骸で、実際のアプリケーションは `/home/ktr/mtdev/` 直下
+
+**コマンド実行方法**:
+```bash
+# ❌ コンテナ内では実行できない（マウントが空）
+docker exec mtdev-app-1 php artisan migrate
+
+# ✅ ホスト側で実行（DB接続情報を上書き）
+cd /home/ktr/mtdev
+DB_HOST=localhost DB_PORT=5432 php artisan migrate
+DB_HOST=localhost DB_PORT=5432 php artisan db:seed
+DB_HOST=localhost DB_PORT=5432 php artisan test
+```
+
+**理由**: `.env` の `DB_HOST=db` はコンテナ間通信用。ホスト側からは `localhost` で接続。
+
 ### セットアップ・開発
 
 ```bash
-# 初回セットアップ (/home/ktr/mtdev/laravel/ から実行)
-cd /home/ktr/mtdev/laravel
-composer setup  # 依存関係、キー生成、マイグレーション、アセットビルド
+# 初回セットアップ (/home/ktr/mtdev/ から実行)
+cd /home/ktr/mtdev
+composer install
+php artisan key:generate
+DB_HOST=localhost DB_PORT=5432 php artisan migrate
+npm install && npm run build
 
 # 開発サーバー起動（並列: サーバー、キュー、ログ、Vite HMR）
 composer dev
 
-# Docker操作（プロジェクトルートから）
-cd /home/ktr/mtdev
-docker-compose up -d
-docker-compose exec app bash  # コンテナに入る (cwd: /var/www/html/)
-
 # アセット再ビルド（CSS/JS変更後）
-cd /home/ktr/mtdev/laravel
-docker compose exec app npm run build
-docker compose exec app php artisan optimize:clear
+cd /home/ktr/mtdev
+npm run build
+php artisan optimize:clear
 ```
 
 ### テスト

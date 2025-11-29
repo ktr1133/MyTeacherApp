@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
+// 管理者用 - 認証
+use App\Http\Actions\Admin\Auth\AdminLoginAction;
+
 // 管理者用
 use App\Http\Actions\Admin\Notification\IndexAdminNotificationAction;
 use App\Http\Actions\Admin\Notification\CreateAdminNotificationAction;
@@ -122,6 +125,10 @@ use App\Http\Actions\Token\IndexTokenPurchaseAction;
 use App\Http\Actions\Token\ProcessTokenPurchaseAction;
 use App\Http\Actions\Token\RejectTokenPurchaseRequestAction;
 use App\Http\Actions\Validation\ValidateGroupNameAction;
+// ヘルスチェック用
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 // ========================================
 // ヘルスチェックエンドポイント（冗長構成対応）
@@ -132,10 +139,10 @@ Route::get('/health', function () {
         DB::connection()->getPdo();
         
         // Redis接続確認
-        \Illuminate\Support\Facades\Redis::ping();
+        Redis::ping();
         
         // ストレージ確認（S3/MinIO）
-        \Illuminate\Support\Facades\Storage::disk('s3')->exists('health-check');
+        Storage::disk('s3')->exists('health-check');
         
         return response()->json([
             'status' => 'healthy',
@@ -147,7 +154,7 @@ Route::get('/health', function () {
             ]
         ], 200);
     } catch (\Exception $e) {
-        \Illuminate\Support\Facades\Log::error('Health check failed', [
+        Log::error('Health check failed', [
             'error' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
         ]);
@@ -453,6 +460,25 @@ Route::prefix('portal')->name('portal.')->group(function () {
     // 使い方ガイド
     Route::prefix('guide')->name('guide.')->group(function () {
         Route::get('/', \App\Http\Actions\Portal\Guide\ShowGuideIndexAction::class)->name('index');
+    });
+});
+
+// =========================================================================
+// 管理者認証ルート (Stripe要件対応)
+// =========================================================================
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    // ログイン（認証不要）
+    Route::get('login', [AdminLoginAction::class, 'create'])->name('login.form');
+    Route::post('login', AdminLoginAction::class)->name('login');
+    
+    // 管理者エリア（認証必須 + IP制限 + Basic認証）
+    Route::middleware(['auth', 'admin', \App\Http\Middleware\AdminIpRestriction::class])->group(function () {
+        Route::get('dashboard', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
+        
+        // 既存の管理者ルートをここに移動予定
     });
 });
 

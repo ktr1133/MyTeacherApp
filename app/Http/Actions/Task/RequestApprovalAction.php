@@ -6,6 +6,7 @@ use App\Http\Requests\Task\RequestApprovalRequest;
 use App\Models\Task;
 use App\Services\Notification\NotificationServiceInterface;
 use App\Services\Task\TaskApprovalServiceInterface;
+use App\Services\Security\VirusScanServiceInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,13 +19,16 @@ class RequestApprovalAction
 {
     protected NotificationServiceInterface $notificationService;
     protected TaskApprovalServiceInterface $taskApprovalService;
+    protected VirusScanServiceInterface $virusScanService;
 
     public function __construct(
         NotificationServiceInterface $notificationService,
-        TaskApprovalServiceInterface $taskApprovalService
+        TaskApprovalServiceInterface $taskApprovalService,
+        VirusScanServiceInterface $virusScanService
     ) {
         $this->notificationService = $notificationService;
         $this->taskApprovalService = $taskApprovalService;
+        $this->virusScanService = $virusScanService;
     }
 
     /**
@@ -77,12 +81,38 @@ class RequestApprovalAction
      * @param RequestApprovalRequest $request
      * @param Task $task
      * @return void
+     * @throws \Exception ウイルス検出時
      */
     protected function uploadImages(RequestApprovalRequest $request, Task $task): void
     {
         $images = $request->file('images');
+        $scanEnabled = config('security.upload.virus_scan_enabled', true);
         
         foreach ($images as $image) {
+            // ウイルススキャン（有効な場合）
+            if ($scanEnabled && $this->virusScanService->isAvailable()) {
+                $isClean = $this->virusScanService->scan($image);
+                
+                if (!$isClean) {
+                    $scanResult = $this->virusScanService->getScanResult();
+                    
+                    Log::warning('Virus detected in uploaded file', [
+                        'user_id' => $request->user()->id,
+                        'task_id' => $task->id,
+                        'filename' => $image->getClientOriginalName(),
+                        'scan_result' => $scanResult,
+                    ]);
+                    
+                    throw new \Exception('アップロードされたファイルにウイルスが検出されました。ファイル: ' . $image->getClientOriginalName());
+                }
+                
+                Log::info('File passed virus scan', [
+                    'user_id' => $request->user()->id,
+                    'task_id' => $task->id,
+                    'filename' => $image->getClientOriginalName(),
+                ]);
+            }
+            
             // S3にアップロード
             $path = Storage::disk('s3')->putFile('task_approvals', $image, 'public');
             

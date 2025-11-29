@@ -4,6 +4,7 @@ namespace App\Http\Actions\Api\Task;
 
 use App\Models\Task;
 use App\Models\TaskImage;
+use App\Services\Security\VirusScanServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,13 @@ use Illuminate\Support\Facades\Log;
  */
 class UploadTaskImageApiAction
 {
+    protected VirusScanServiceInterface $virusScanService;
+
+    public function __construct(VirusScanServiceInterface $virusScanService)
+    {
+        $this->virusScanService = $virusScanService;
+    }
+
     /**
      * タスク画像をアップロード
      *
@@ -49,6 +57,34 @@ class UploadTaskImageApiAction
             $validated = $request->validate([
                 'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:10240'], // 10MB
             ]);
+
+            // ウイルススキャン
+            $scanEnabled = config('security.upload.virus_scan_enabled', true);
+            if ($scanEnabled && $this->virusScanService->isAvailable()) {
+                $isClean = $this->virusScanService->scan($validated['image']);
+                
+                if (!$isClean) {
+                    $scanResult = $this->virusScanService->getScanResult();
+                    
+                    Log::warning('Virus detected in uploaded file (API)', [
+                        'user_id' => $user->id,
+                        'task_id' => $task->id,
+                        'filename' => $validated['image']->getClientOriginalName(),
+                        'scan_result' => $scanResult,
+                    ]);
+                    
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'アップロードされたファイルにウイルスが検出されました。',
+                    ], 422);
+                }
+                
+                Log::info('File passed virus scan (API)', [
+                    'user_id' => $user->id,
+                    'task_id' => $task->id,
+                    'filename' => $validated['image']->getClientOriginalName(),
+                ]);
+            }
 
             // 画像をS3/MinIOにアップロード
             $path = Storage::disk('s3')->putFile('task_approvals', $validated['image'], 'public');

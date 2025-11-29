@@ -1,7 +1,7 @@
 @props([
     'disabled' => false,
-    'id',
-    'class',
+    'id' => null,
+    'class' => null,
     'color' => 'indigo',
 ])
 
