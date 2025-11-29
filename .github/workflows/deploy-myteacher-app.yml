@@ -124,11 +124,10 @@ jobs:
             '.containerDefinitions[0].image = $IMAGE' \
             task-definition-clean.json > task-definition-tmp.json
           
-          # APP_KEY環境変数を追加/更新
+          # APP_KEY環境変数を更新（既存の値を削除して追加）
           jq --arg APP_KEY "$APP_KEY" \
             '.containerDefinitions[0].environment = 
-              (.containerDefinitions[0].environment // []) | 
-              map(select(.name != "APP_KEY")) + 
+              [.containerDefinitions[0].environment[] | select(.name != "APP_KEY")] + 
               [{name: "APP_KEY", value: $APP_KEY}]' \
             task-definition-tmp.json > task-definition-new.json
 
