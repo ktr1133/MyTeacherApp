@@ -1,0 +1,88 @@
+services:
+  app:
+    image: mtdev-app:latest
+    container_name: mtdev-app-1
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/apache/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
+    command: >
+      bash -c "
+      chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache &&
+      chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache &&
+      apache2-foreground
+      "
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=myteacher
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - AWS_ENDPOINT=http://s3:9100
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - s3
+      - redis
+    networks:
+      - mtdev-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: mtdev-db-1
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=myteacher
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - mtdev-network
+
+  s3:
+    image: mtdev-s3:latest
+    container_name: mtdev-s3-1
+    ports:
+      - "9100:9100"
+      - "9101:9101"
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio123
+    command: server /data --address ":9100" --console-address ":9101"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9100/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - mtdev-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: myteacher-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    networks:
+      - mtdev-network
+
+volumes:
+  postgres-data:
+  minio-data:
+  redis-data:
+
+networks:
+  mtdev-network:
+    driver: bridge
