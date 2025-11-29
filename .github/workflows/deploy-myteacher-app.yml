@@ -1,0 +1,175 @@
+###############################################################################
+# MyTeacher App 自動デプロイワークフロー
+#
+# トリガー:
+#   - main ブランチへのpush (app/配下の変更時)
+#   - 手動トリガー
+#
+# ステップ:
+#   1. Dockerイメージビルド
+#   2. ECRプッシュ
+#   3. ECSタスク定義更新
+#   4. ECSサービス更新（ローリングアップデート）
+###############################################################################
+
+name: Deploy MyTeacher App
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - 'config/**'
+      - 'database/**'
+      - 'resources/**'
+      - 'routes/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - '.github/workflows/deploy-myteacher-app.yml'
+  workflow_dispatch:  # 手動トリガー
+    inputs:
+      skip_build:
+        description: 'Skip Docker build (use existing image)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  AWS_REGION: ap-northeast-1
+  ECR_REPOSITORY: myteacher-production
+  ECS_CLUSTER: myteacher-production-cluster
+  ECS_SERVICE: myteacher-production-app-service
+  ECS_TASK_DEFINITION: myteacher-production-app
+
+jobs:
+  deploy:
+    name: Build and Deploy to ECS
+    runs-on: ubuntu-latest
+    
+    steps:
+      #########################################################################
+      # 1. リポジトリチェックアウト
+      #########################################################################
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #########################################################################
+      # 2. AWS認証
+      #########################################################################
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      #########################################################################
+      # 3. ECRログイン
+      #########################################################################
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      #########################################################################
+      # 4. Dockerイメージビルド & プッシュ
+      #########################################################################
+      - name: Build and push Docker image
+        if: ${{ !inputs.skip_build }}
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Dockerイメージビルド
+          docker build \
+            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+            --build-arg VCS_REF=${{ github.sha }} \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --file docker/Dockerfile \
+            .
+          
+          # ECRにプッシュ
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          echo "Pushed image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      #########################################################################
+      # 5. ECSタスク定義取得
+      #########################################################################
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition $ECS_TASK_DEFINITION \
+            --query taskDefinition \
+            > task-definition.json
+          
+          # 不要なフィールドを削除
+          jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
+            task-definition.json > task-definition-clean.json
+
+      #########################################################################
+      # 6. 新しいイメージでタスク定義更新
+      #########################################################################
+      - name: Update task definition with new image
+        if: ${{ !inputs.skip_build }}
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # コンテナイメージを更新
+          jq --arg IMAGE "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
+            '.containerDefinitions[0].image = $IMAGE' \
+            task-definition-clean.json > task-definition-new.json
+
+      #########################################################################
+      # 7. ECSタスク定義登録
+      #########################################################################
+      - name: Register new task definition
+        if: ${{ !inputs.skip_build }}
+        id: task-def
+        run: |
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://task-definition-new.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          
+          echo "task-definition-arn=$TASK_DEF_ARN" >> $GITHUB_OUTPUT
+          echo "Registered task definition: $TASK_DEF_ARN"
+
+      #########################################################################
+      # 8. ECSサービス更新（ローリングアップデート）
+      #########################################################################
+      - name: Update ECS service
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --force-new-deployment \
+            --query 'service.{ServiceName:serviceName,Status:status,DesiredCount:desiredCount}'
+          
+          echo "✅ ECS service update initiated"
+
+      #########################################################################
+      # 9. デプロイ完了待機
+      #########################################################################
+      - name: Wait for deployment to complete
+        run: |
+          echo "⏳ Waiting for deployment to complete..."
+          aws ecs wait services-stable \
+            --cluster $ECS_CLUSTER \
+            --services $ECS_SERVICE
+          
+          echo "✅ Deployment completed successfully"
+
+      #########################################################################
+      # 10. デプロイ成功通知
+      #########################################################################
+      - name: Deployment success notification
+        if: success()
+        run: |
+          echo "🎉 MyTeacher App deployed successfully!"
+          echo "Cluster: $ECS_CLUSTER"
+          echo "Service: $ECS_SERVICE"
+          echo "Commit: ${{ github.sha }}"

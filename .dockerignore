@@ -1,0 +1,65 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# 開発環境
+.env.local
+.env.*.local
+*.log
+storage/logs/*
+!storage/logs/.gitignore
+
+# テスト
+tests/
+phpunit.xml
+.phpunit.result.cache
+coverage/
+
+# ドキュメント
+docs/
+README.md
+*.md
+!copilot-instructions.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Laravel開発環境
+storage/framework/cache/*
+!storage/framework/cache/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/testing/*
+!storage/framework/testing/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+
+# Terraform
+infrastructure/
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# 一時ファイル
+temp/
+tmp/
+*.tmp

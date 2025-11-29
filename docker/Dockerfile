@@ -1,0 +1,93 @@
+# =============================================================================
+# MyTeacher Production Dockerfile
+# =============================================================================
+# Base: PHP 8.3 with Apache
+# Purpose: Laravel 12 application deployment
+# =============================================================================
+
+FROM php:8.3-apache
+
+# Build引数
+ARG BUILD_DATE
+ARG VCS_REF
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.title="MyTeacher App" \
+      org.opencontainers.image.description="Laravel 12 AI Task Management Platform"
+
+# =============================================================================
+# システムパッケージインストール
+# =============================================================================
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    libpq-dev \
+    zip \
+    unzip \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# =============================================================================
+# Composerインストール
+# =============================================================================
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# =============================================================================
+# Apache設定
+# =============================================================================
+RUN a2enmod rewrite headers
+
+# DocumentRootを/var/www/html/publicに設定
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# =============================================================================
+# 作業ディレクトリ設定
+# =============================================================================
+WORKDIR /var/www/html
+
+# =============================================================================
+# Laravelアプリケーションコピー
+# =============================================================================
+# Composer依存関係ファイルを先にコピー（キャッシュ効率化）
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
+# アプリケーション全体をコピー
+COPY . .
+
+# =============================================================================
+# Laravel最適化
+# =============================================================================
+RUN composer install --no-dev --optimize-autoloader --prefer-dist \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+
+# =============================================================================
+# パーミッション設定
+# =============================================================================
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# =============================================================================
+# ヘルスチェック
+# =============================================================================
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+# =============================================================================
+# ポート公開
+# =============================================================================
+EXPOSE 80
+
+# =============================================================================
+# 起動コマンド
+# =============================================================================
+CMD ["apache2-foreground"]
