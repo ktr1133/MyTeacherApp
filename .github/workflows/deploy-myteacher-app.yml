@@ -117,11 +117,20 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
+          APP_KEY: ${{ secrets.APP_KEY }}
         run: |
           # コンテナイメージを更新
           jq --arg IMAGE "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
             '.containerDefinitions[0].image = $IMAGE' \
-            task-definition-clean.json > task-definition-new.json
+            task-definition-clean.json > task-definition-tmp.json
+          
+          # APP_KEY環境変数を追加/更新
+          jq --arg APP_KEY "$APP_KEY" \
+            '.containerDefinitions[0].environment = 
+              (.containerDefinitions[0].environment // []) | 
+              map(select(.name != "APP_KEY")) + 
+              [{name: "APP_KEY", value: $APP_KEY}]' \
+            task-definition-tmp.json > task-definition-new.json
 
       #########################################################################
       # 7. ECSタスク定義登録
