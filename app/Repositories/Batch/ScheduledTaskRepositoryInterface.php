@@ -41,6 +41,13 @@ interface ScheduledTaskRepositoryInterface
     public function getActiveByGroupId(int $groupId): Collection;
 
     /**
+     * 全てのアクティブなスケジュールタスクを取得
+     *
+     * @return Collection<ScheduledGroupTask>
+     */
+    public function getAllActive(): Collection;
+
+    /**
      * スケジュールタスクを作成
      *
      * @param array $data

@@ -67,6 +67,17 @@ class ScheduledTaskRepository implements ScheduledTaskRepositoryInterface
     }
 
     /**
+     * 全てのアクティブなスケジュールタスクを取得
+     */
+    public function getAllActive(): Collection
+    {
+        return ScheduledGroupTask::with(['group', 'tags', 'assignedUser', 'creator'])
+            ->active()
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
      * スケジュールタスクを作成
      */
     public function create(array $data): ScheduledGroupTask
