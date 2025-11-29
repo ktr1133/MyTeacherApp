@@ -29,6 +29,9 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('username')->unique()->comment('ユーザー名');
+            $table->string('email')->unique()->comment('メールアドレス');
+            $table->string('name')->nullable()->comment('表示名');
+            $table->timestamp('email_verified_at')->nullable()->comment('メール認証日時');
             $table->timestamp('last_login_at')->nullable()->comment('最終ログイン日時');
             $table->unsignedBigInteger('group_id')->nullable()->comment('グループID');
             $table->boolean('group_edit_flg')->default(false)->comment('グループ編集フラグ');
@@ -38,6 +41,10 @@ return new class extends Migration
             $table->string('password')->comment('パスワード');
             $table->boolean('requires_purchase_approval')->default(true)->comment('トークン購入承認');
             $table->rememberToken();
+            
+            // Cognito認証フィールド（Phase 1: Cognito統合）
+            $table->string('cognito_sub')->nullable()->unique()->comment('Cognito User Sub (UUID)');
+            $table->string('auth_provider', 50)->default('breeze')->comment('認証プロバイダー: breeze, cognito');
             
             // Stripe関連フィールド (Laravel Cashier)
             $table->string('stripe_id')->nullable()->index()->comment('Stripe顧客ID');
@@ -54,6 +61,10 @@ return new class extends Migration
             
             // 外部キー制約
             $table->foreign('group_id')->references('id')->on('groups')->onDelete('set null');
+            
+            // インデックス
+            $table->index('auth_provider');
+            $table->index('cognito_sub');
         });
 
         // groups テーブルに外部キー制約を追加

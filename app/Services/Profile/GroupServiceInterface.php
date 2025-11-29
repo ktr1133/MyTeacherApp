@@ -31,7 +31,7 @@ interface GroupServiceInterface
      * @param bool $canEdit
      * @return User
      */
-    public function addMember(User $actor, string $username, string $password, bool $canEdit): User;
+    public function addMember(User $actor, string $username, string $email, string $password, ?string $name, bool $canEdit): User;
 
     /**
      * メンバーの編集権限を更新する。

@@ -3,6 +3,19 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Actions\Task\ProposeTaskAction;
+use App\Http\Actions\Api\Task\StoreTaskApiAction;
+use App\Http\Actions\Api\Task\IndexTaskApiAction;
+use App\Http\Actions\Api\Task\UpdateTaskApiAction;
+use App\Http\Actions\Api\Task\DestroyTaskApiAction;
+use App\Http\Actions\Api\Task\ToggleTaskCompletionApiAction;
+use App\Http\Actions\Api\Task\ApproveTaskApiAction;
+use App\Http\Actions\Api\Task\RejectTaskApiAction;
+use App\Http\Actions\Api\Task\UploadTaskImageApiAction;
+use App\Http\Actions\Api\Task\DeleteTaskImageApiAction;
+use App\Http\Actions\Api\Task\BulkCompleteTasksApiAction;
+use App\Http\Actions\Api\Task\RequestApprovalApiAction;
+use App\Http\Actions\Api\Task\ListPendingApprovalsApiAction;
+use App\Http\Actions\Api\Task\SearchTasksApiAction;
 
 // ============================================================
 // Phase 1.5: 並行運用期間のAPI設定
@@ -23,9 +36,32 @@ Route::prefix('v1')->middleware(['cognito'])->group(function () {
         ]);
     })->name('api.v1.user');
 
-    // ★ 今後の新規API追加はこちらに
-    // Route::get('/tasks', ...)->name('api.v1.tasks.index');
-    // Route::post('/tasks', ...)->name('api.v1.tasks.store');
+    // タスクAPI（モバイルアプリ向け）
+    Route::get('/tasks', IndexTaskApiAction::class)->name('api.v1.tasks.index');
+    Route::post('/tasks', StoreTaskApiAction::class)->name('api.v1.tasks.store');
+    Route::put('/tasks/{task}', UpdateTaskApiAction::class)->name('api.v1.tasks.update');
+    Route::delete('/tasks/{task}', DestroyTaskApiAction::class)->name('api.v1.tasks.destroy');
+    Route::patch('/tasks/{task}/toggle', ToggleTaskCompletionApiAction::class)->name('api.v1.tasks.toggle');
+    
+    // タスク承認API（グループタスク）
+    Route::post('/tasks/{task}/approve', ApproveTaskApiAction::class)->name('api.v1.tasks.approve');
+    Route::post('/tasks/{task}/reject', RejectTaskApiAction::class)->name('api.v1.tasks.reject');
+    
+    // タスク画像API
+    Route::post('/tasks/{task}/images', UploadTaskImageApiAction::class)->name('api.v1.tasks.images.upload');
+    Route::delete('/task-images/{image}', DeleteTaskImageApiAction::class)->name('api.v1.tasks.images.delete');
+
+    // タスク一括完了/未完了
+    Route::patch('/tasks/bulk-complete', BulkCompleteTasksApiAction::class)->name('api.v1.tasks.bulk-complete');
+
+    // タスク完了申請
+    Route::post('/tasks/{task}/request-approval', RequestApprovalApiAction::class)->name('api.v1.tasks.request-approval');
+
+    // 承認待ち一覧取得
+    Route::get('/approvals/pending', ListPendingApprovalsApiAction::class)->name('api.v1.approvals.pending');
+
+    // タスク検索
+    Route::post('/tasks/search', SearchTasksApiAction::class)->name('api.v1.tasks.search');
 });
 
 // Breeze + Cognito 並行運用ルート（Phase 1.5 期間限定）

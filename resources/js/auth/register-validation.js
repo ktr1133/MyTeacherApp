@@ -17,7 +17,7 @@ import {
 } from '../common/validation-core.js';
 
 // バリデーション状態を初期化（タイムゾーンはデフォルト値があるため除外）
-initValidationState(['username', 'password', 'password_confirmation']);
+initValidationState(['username', 'email', 'password', 'password_confirmation']);
 
 /**
  * ユーザー名バリデーション
@@ -56,8 +56,6 @@ async function validateUsername() {
 
 /**
  * メールアドレスバリデーション
- * 注: 現在は登録画面でメールアドレスフィールドを使用していませんが、
- * 将来の機能拡張のために残しています。
  */
 async function validateEmail() {
     const emailInput = document.getElementById('email');
@@ -91,6 +89,9 @@ async function validateEmail() {
             showError('email', result.message || '× このメールアドレスは既に使用されています');
         }
     }
+
+    // ボタン状態を更新
+    updateSubmitButtonState('register-button', ['username', 'email', 'password', 'password_confirmation']);
 }
 
 /**
@@ -221,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // フォーム送信時のバリデーション
     if (registerForm) {
         registerForm.addEventListener('submit', function(e) {
-            const valid = isFormValid(['username', 'password', 'password_confirmation']);
+            const valid = isFormValid(['username', 'email', 'password', 'password_confirmation']);
 
             if (!valid) {
                 e.preventDefault();

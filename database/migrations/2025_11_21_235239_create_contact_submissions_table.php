@@ -29,8 +29,11 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
         
-        DB::statement("ALTER TABLE contact_submissions ADD CONSTRAINT check_app_name CHECK (app_name IN ('myteacher', 'app2', 'app3', 'general'))");
-        DB::statement("ALTER TABLE contact_submissions ADD CONSTRAINT check_status CHECK (status IN ('pending', 'in_progress', 'resolved'))");
+        // CHECK制約: PostgreSQLのみ適用（SQLiteはCREATE TABLE内で定義が必要なためスキップ）
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE contact_submissions ADD CONSTRAINT check_app_name CHECK (app_name IN ('myteacher', 'app2', 'app3', 'general'))");
+            DB::statement("ALTER TABLE contact_submissions ADD CONSTRAINT check_status CHECK (status IN ('pending', 'in_progress', 'resolved'))");
+        }
     }
 
     /**

@@ -83,18 +83,20 @@ class GroupService implements GroupServiceInterface
      *
      * @param User $actor
      * @param string $username
+     * @param string $email
      * @param string $password
+     * @param string|null $name
      * @param bool $canEdit
      * @return User
      */
-    public function addMember(User $actor, string $username, string $password, bool $canEdit): User
+    public function addMember(User $actor, string $username, string $email, string $password, ?string $name, bool $canEdit): User
     {
         $group = $actor->group;
         if (!$group || !$this->canEditGroup($actor)) {
             abort(403, 'グループメンバーを追加する権限がありません。');
         }
 
-        return DB::transaction(function () use ($username, $password, $group, $canEdit, &$user): User {
+        return DB::transaction(function () use ($username, $email, $password, $name, $group, $canEdit, &$user): User {
             if (User::where('username', $username)->exists()) {
                 abort(422, '指定されたユーザー名は既に存在します。');
             }
@@ -102,6 +104,8 @@ class GroupService implements GroupServiceInterface
             // ユーザー作成＆グループ作成
             return $this->groupUsers->create([
                 'username' => $username,
+                'email' => $email,
+                'name' => $name ?? $username, // nameが空の場合はusernameを使用
                 'password' => Hash::make($password),
                 'group_id' => $group->id,
                 'group_edit_flg' => $canEdit,

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
+use App\Helpers\AuthHelper;
 
 /**
  * Amazon Cognito JWT トークン検証ミドルウェア
@@ -82,21 +83,28 @@ class VerifyCognitoToken
             // JWT検証
             $decoded = $this->verifyToken($token);
             
-            // リクエストにCognitoユーザー情報を追加
-            $request->merge([
-                'cognito_user' => $decoded,
-                'cognito_sub' => $decoded['sub'] ?? null,
-                'cognito_email' => $decoded['email'] ?? null,
-                'cognito_username' => $decoded['username'] ?? null,
-            ]);
+            // リクエストにCognito属性を設定
+            $request->attributes->set('cognito_sub', $decoded['sub'] ?? null);
+            $request->attributes->set('email', $decoded['email'] ?? null);
+            $request->attributes->set('username', $decoded['username'] ?? null);
 
-            // 既存のLaravelユーザーとのマッピング（オプション）
-            // Phase 1の並行運用期間中に使用
+            // CognitoユーザーをLaravelのUserモデルにマッピング
             if (isset($decoded['sub'])) {
-                $user = \App\Models\User::where('cognito_sub', $decoded['sub'])->first();
-                if ($user) {
-                    $request->setUserResolver(fn() => $user);
-                }
+                $user = AuthHelper::getOrCreateCognitoUser(
+                    $decoded['sub'],
+                    $decoded['email'] ?? '',
+                    $decoded['username'] ?? null
+                );
+                
+                // Laravelの認証システムにユーザーを注入
+                // これにより $request->user() でユーザーを取得可能
+                $request->setUserResolver(fn() => $user);
+                
+                Log::info('Cognito認証成功', [
+                    'cognito_sub' => $decoded['sub'],
+                    'user_id' => $user->id,
+                    'email' => $decoded['email'] ?? null,
+                ]);
             }
 
             return $next($request);

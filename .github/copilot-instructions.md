@@ -6,23 +6,38 @@ Laravel 12 + Docker構成。**Action-Service-Repositoryパターン**（従来�
 
 **リポジトリルート変更**: `/home/ktr/mtdev/` がGitルート（変更前: `laravel/` がルート）
 
+**重要**: リポジトリルート移行により、Laravelアプリケーション本体は `/home/ktr/mtdev/` 直下に配置されています。
+
 ```
-/home/ktr/mtdev/                    # ← リポジトリルート
-├── docker-compose.yml          # DB (PostgreSQL), App (Apache/PHP), S3 (MinIO)
+/home/ktr/mtdev/                    # ← リポジトリルート = Laravelアプリケーションルート
+├── app/                        # Laravelアプリケーション
+│   ├── Helpers/                # ヘルパークラス（AuthHelper等）
+│   ├── Http/Actions/           # Invokableアクション（コントローラー代替）
+│   ├── Services/               # ビジネスロジック（必ずインターフェース付き）
+│   ├── Repositories/           # データアクセス（必ずインターフェース付き）
+│   └── Http/Responders/        # レスポンス整形
+├── routes/                     # ルート定義
+│   ├── web.php                 # Web routes
+│   └── api.php                 # API routes
+├── config/                     # 設定ファイル
+├── database/                   # マイグレーション、シーダー
 ├── definitions/                # プロジェクトドキュメント
-├── infrastructure/             # Terraform, 運用スクリプト
-├── services/                   # マイクロサービス
-└── laravel/                    # ← Laravelアプリケーション本体
-    ├── app/
-    │   ├── Http/Actions/       # Invokableアクション（コントローラー代替）
-    │   ├── Services/           # ビジネスロジック（必ずインターフェース付き）
-    │   ├── Repositories/       # データアクセス（必ずインターフェース付き）
-    │   └── Responders/         # レスポンス整形
-    ├── routes/web.php          # ルートはActionを直接指定
-    └── composer.json           # setup: `composer setup`, dev: `composer dev`
+├── docs/                       # 技術ドキュメント、レポート
+├── infrastructure/             # Terraform、運用スクリプト
+├── services/                   # マイクロサービス（削除予定）
+├── laravel/                    # ⚠️ 旧構造の残骸（使用しない）
+├── composer.json               # Composer設定（ルート直下）
+├── package.json                # npm設定
+├── artisan                     # Artisanコマンド
+└── vendor/                     # Composer依存関係
 ```
 
-**コマンド実行は `/home/ktr/mtdev/laravel/` から** - Dockerコンテナ内では `/var/www/html/` にマウント
+**コマンド実行は `/home/ktr/mtdev/` から** - Dockerコンテナ使用時は `/var/www/html/` にマウント
+
+**注意事項**:
+- `laravel/` ディレクトリは旧構造の残骸で、現在は使用していません
+- 新規ファイルは必ず `/home/ktr/mtdev/app/` 配下に作成
+- `composer` コマンドは `/home/ktr/mtdev/` から実行
 
 ## 不具合対応方針（重要）
 
@@ -410,6 +425,133 @@ php artisan queue:work --tries=3
 # ジョブテーブルクリア（開発環境）
 php artisan queue:flush
 ```
+
+## レポート作成規則（重要）
+
+作業完了時のレポート作成は以下の規則を厳守する：
+
+### ファイル命名規則
+
+```
+docs/reports/YYYY-MM-DD-タイトル-report.md
+```
+
+**例**:
+- `2025-11-29-microservice-removal-completion-report.md`
+- `2025-11-27-alpine-js-removal-completion-report.md`
+- `2025-11-28-ci-cd-completion-report.md`
+
+### 必須セクション
+
+#### 1. 更新履歴セクション（冒頭に配置）
+
+```markdown
+## 更新履歴
+
+| 日付 | 更新者 | 更新内容 |
+|------|--------|---------|
+| YYYY-MM-DD | 作成者名 | 初版作成: レポートの概要 |
+| YYYY-MM-DD | 更新者名 | 更新内容の説明 |
+```
+
+#### 2. 概要セクション
+
+作業の全体像、達成した目標、主要な成果を簡潔に記載:
+
+```markdown
+## 概要
+
+[システム名]から**[実施内容]**を完了しました。この作業により、以下の目標を達成しました：
+
+- ✅ **目標1**: 具体的な成果
+- ✅ **目標2**: 具体的な成果
+- ✅ **目標3**: 具体的な成果
+```
+
+#### 3. 計画との対応関係
+
+元の計画（実行プラン、要件定義書など）との対応を明記:
+
+```markdown
+## 計画との対応
+
+**参照ドキュメント**: `docs/operations/xxx-plan.md`
+
+| 計画項目 | ステータス | 実施内容 | 差異・備考 |
+|---------|-----------|---------|-----------|
+| Phase 1: XXX | ✅ 完了 | 計画通り実施 | なし |
+| Phase 2: YYY | ⚠️ 一部変更 | ZZZに変更 | 理由: ... |
+| Phase 3: AAA | ❌ 未実施 | 手動実施待ち | 理由: ... |
+```
+
+#### 4. 実施内容詳細
+
+計画に対して実際に行った作業を具体的に記載:
+
+```markdown
+## 実施内容詳細
+
+### 完了した作業
+
+1. **作業項目1**
+   - 実施内容の詳細
+   - 使用したコマンド・ツール
+   - 成果物（ファイルパス、行数など）
+
+2. **作業項目2**
+   - ...
+```
+
+#### 5. 成果と効果
+
+数値的な効果、品質改善、リスク低減などを記載:
+
+```markdown
+## 成果と効果
+
+### 定量的効果
+- コスト削減: $XX/月（XX%削減）
+- ファイル削減: XXファイル削除
+- パフォーマンス改善: XX%高速化
+
+### 定性的効果
+- 保守性向上: 複雑性排除
+- セキュリティ強化: 脆弱性解消
+```
+
+#### 6. 未完了項目・次のステップ
+
+残作業や今後の対応事項を明記:
+
+```markdown
+## 未完了項目・次のステップ
+
+### 手動実施が必要な作業
+- [ ] 作業1: 理由と手順
+- [ ] 作業2: 理由と手順
+
+### 今後の推奨事項
+- 項目1: 理由と期限
+- 項目2: 理由と期限
+```
+
+### レポート作成タイミング
+
+- ✅ Phase/タスク完了時
+- ✅ 大規模な変更・削除作業後
+- ✅ 不具合調査・修正完了時
+- ✅ インフラ変更・デプロイ後
+- ✅ パフォーマンス改善・最適化後
+
+### 禁止事項
+
+- ❌ ファイル名に日付なしで作成
+- ❌ 更新履歴セクションの省略
+- ❌ 計画との対応関係を記載しない
+- ❌ 実施内容を曖昧に記載（具体性欠如）
+- ❌ 未完了項目を隠蔽・省略
+
+---
 
 ## コミュニケーションスタイル
 

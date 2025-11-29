@@ -50,6 +50,7 @@ use App\Http\Actions\Admin\Token\UpdateFreeTokenAmountAction;
 // 認証用
 use App\Http\Actions\Auth\ValidateUsernameAction;
 use App\Http\Actions\Auth\ValidatePasswordAction;
+use App\Http\Actions\Auth\ValidateEmailAction;
 use App\Http\Actions\Avatar\CreateTeacherAvatarAction;
 use App\Http\Actions\Avatar\EditTeacherAvatarAction;
 use App\Http\Actions\Avatar\RegenerateAvatarImageAction;
@@ -179,6 +180,9 @@ Route::middleware(['guest'])->group(function () {
     // ユーザー名の非同期バリデーション
     Route::post('/validate/username', ValidateUsernameAction::class)->name('validate.username');
     
+    // メールアドレスの非同期バリデーション
+    Route::post('/validate/email', ValidateEmailAction::class)->name('validate.email');
+    
     // パスワードの非同期バリデーション
     Route::post('/validate/password', ValidatePasswordAction::class)->name('validate.password');
 });
@@ -192,6 +196,7 @@ Route::middleware(['auth'])->group(function () {
     
     // メンバー追加時非同期のバリデーション
     Route::post('/validate/member-username', ValidateUsernameAction::class)->name('validate.member.username');
+    Route::post('/validate/member-email', ValidateEmailAction::class)->name('validate.member.email');
     Route::post('/validate/member-password', ValidatePasswordAction::class)->name('validate.member.password');
 
     // --- メインメニュー画面 (タスク一覧) ---

@@ -3,9 +3,7 @@
         @vite(['resources/css/dashboard.css'])
     @endpush
 
-    <div x-data="{ showSidebar: false }" 
-         x-effect="document.body.style.overflow = showSidebar ? 'hidden' : ''"
-         class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
+    <div class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
 
         {{-- 背景装飾 --}}
         @if(!$isChildTheme)
@@ -226,6 +224,6 @@
     </div>
 
     @push('scripts')
-        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        @vite(['resources/js/profile/profile-edit-validation.js'])
     @endpush
 </x-app-layout>

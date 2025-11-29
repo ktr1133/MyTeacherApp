@@ -31,5 +31,9 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Cognito Test Configuration -->
+        <env name="COGNITO_REGION" value="ap-northeast-1"/>
+        <env name="COGNITO_USER_POOL_ID" value="test-pool-id"/>
+        <env name="COGNITO_CLIENT_ID" value="test-client-id"/>
     </php>
 </phpunit>

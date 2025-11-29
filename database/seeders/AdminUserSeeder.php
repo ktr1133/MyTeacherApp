@@ -17,6 +17,8 @@ class AdminUserSeeder extends Seeder
         User::firstOrCreate(
             ['username' => 'admin'],
             [
+                'email' => 'famicoapp@gmail.com',
+                'name' => 'Administrator',
                 'password' => Hash::make('password'), // 本番環境では強力なパスワードに変更
                 'group_id' => null,
                 'group_edit_flg' => false,
@@ -28,6 +30,8 @@ class AdminUserSeeder extends Seeder
         User::firstOrCreate(
             ['username' => 'testuser'],
             [
+                'email' => 'testuser@myteacher.local',
+                'name' => 'Test User',
                 'password' => Hash::make('password'), // 本番環境では強力なパスワードに変更
                 'group_id' => null,
                 'group_edit_flg' => false,

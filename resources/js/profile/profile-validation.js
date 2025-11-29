@@ -93,7 +93,42 @@ async function validateMemberUsername() {
     }
 
     // ボタン状態を更新
-    updateSubmitButtonState('add-member-button', ['username', 'password']);
+    updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
+}
+
+/**
+ * メンバー追加時のメールアドレスバリデーション
+ */
+async function validateMemberEmail() {
+    const emailInput = document.getElementById('email');
+    const email = emailInput.value.trim();
+
+    if (!email || email.length === 0) {
+        hideValidationMessage('email');
+        updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
+        return;
+    }
+
+    if (import.meta.env.DEV) {
+        console.log('[ProfileValidation] Validating member email:', email);
+    }
+
+    showSpinner('email');
+
+    const result = await validateField('/validate/email', { email }, 'email');
+
+    hideSpinner('email');
+
+    if (result) {
+        if (result.valid) {
+            showSuccess('email', result.message || '✓ 利用可能なメールアドレスです');
+        } else {
+            showError('email', result.message || '× このメールアドレスは既に使用されています');
+        }
+    }
+
+    // ボタン状態を更新
+    updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
 }
 
 /**
@@ -105,7 +140,7 @@ async function validateMemberPassword() {
 
     if (!password || password.length === 0) {
         hideValidationMessage('password');
-        updateSubmitButtonState('add-member-button', ['username', 'password']); // ★ ボタン状態更新
+        updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
         return;
     }
 
@@ -128,12 +163,13 @@ async function validateMemberPassword() {
     }
 
     // ボタン状態を更新
-    updateSubmitButtonState('add-member-button', ['username', 'password']);
+    updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
 }
 
 // デバウンス付きバリデーション関数
 const debouncedValidateGroupName = debounce(validateGroupName, 500);
 const debouncedValidateMemberUsername = debounce(validateMemberUsername, 500);
+const debouncedValidateMemberEmail = debounce(validateMemberEmail, 500);
 const debouncedValidateMemberPassword = debounce(validateMemberPassword, 500);
 
 // イベントリスナー設定
@@ -189,13 +225,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // メンバー追加フォーム
     // ===================================
     const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const addMemberForm = document.getElementById('add-member-form');
     const addMemberButton = document.getElementById('add-member-button');
 
-    if (usernameInput && passwordInput) {
+    if (usernameInput && emailInput && passwordInput) {
         // バリデーション状態を初期化
-        initValidationState(['username', 'password']);
+        initValidationState(['username', 'email', 'password']);
 
         // 初期状態でボタンを非活性化
         if (addMemberButton) {
@@ -204,16 +241,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         usernameInput.addEventListener('input', debouncedValidateMemberUsername);
+        emailInput.addEventListener('input', debouncedValidateMemberEmail);
         passwordInput.addEventListener('input', debouncedValidateMemberPassword);
 
         if (import.meta.env.DEV) {
-            console.log('[ProfileValidation] Member validation enabled');
+            console.log('[ProfileValidation] Member validation enabled (username, email, password)');
         }
     }
 
     if (addMemberForm) {
         addMemberForm.addEventListener('submit', function(e) {
-            const valid = isFormValid(['username', 'password']);
+            const valid = isFormValid(['username', 'email', 'password']);
 
             if (!valid) {
                 e.preventDefault();
@@ -228,5 +266,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+    }
+
+    // 追加成功メッセージの自動非表示
+    const memberAddedMessage = document.getElementById('member-added-message');
+    if (memberAddedMessage) {
+        setTimeout(() => {
+            memberAddedMessage.style.opacity = '0';
+            setTimeout(() => {
+                memberAddedMessage.style.display = 'none';
+            }, 300);
+        }, 2000);
     }
 });

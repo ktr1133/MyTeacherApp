@@ -49,6 +49,8 @@ class RegisterAction
             // ユーザー作成
             $user = $this->profileService->createUser([
                 'username' => $request->input('username'),
+                'email' => $request->input('email'),
+                'name' => $request->input('username'), // 表示名として使用
                 'password' => Hash::make($request->input('password')),
                 'timezone' => $request->input('timezone', 'Asia/Tokyo'),
             ]);

@@ -2,9 +2,8 @@
 
 namespace App\Http\Actions\Profile\Group;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\Profile\Group\AddMemberRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules;
 use App\Services\Profile\GroupServiceInterface;
 use App\Responders\Profile\Group\GroupResponder;
 
@@ -15,15 +14,18 @@ class AddMemberAction
         private GroupResponder $responder
     ) {}
 
-    public function __invoke(Request $request)
+    public function __invoke(AddMemberRequest $request)
     {
-        $data = $request->validate([
-            'username' => ['required', 'string', 'max:255', 'unique:users,username'],
-            'password' => ['required', Rules\Password::defaults()],
-            'group_edit_flg' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
-        $this->service->addMember(Auth::user(), $data['username'], $data['password'], (bool)($data['group_edit_flg'] ?? false));
+        $this->service->addMember(
+            Auth::user(), 
+            $validated['username'], 
+            $validated['email'],
+            $validated['password'], 
+            $validated['name'] ?? null,
+            (bool)($validated['group_edit_flg'] ?? false)
+        );
 
         return $this->responder->redirectToEditWithStatus([
             'status' => 'member-added',

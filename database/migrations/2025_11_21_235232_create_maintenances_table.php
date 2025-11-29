@@ -29,7 +29,10 @@ return new class extends Migration
             $table->foreign('created_by')->references('id')->on('users')->onDelete('restrict');
         });
         
-        DB::statement("ALTER TABLE maintenances ADD CONSTRAINT check_status CHECK (status IN ('scheduled', 'in_progress', 'completed', 'cancelled'))");
+        // CHECK制約: PostgreSQLのみ適用（SQLiteはCREATE TABLE内で定義が必要なためスキップ）
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE maintenances ADD CONSTRAINT check_status CHECK (status IN ('scheduled', 'in_progress', 'completed', 'cancelled'))");
+        }
     }
 
     /**
