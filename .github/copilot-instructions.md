@@ -95,37 +95,100 @@ Route → Action (__invoke) → Service → Repository → Model
 
 ### 実装ルール
 
-1. **Action** (`laravel/app/Http/Actions/{ドメイン}/`): 単一責任のInvokableクラス
+1. **Action** (`/home/ktr/mtdev/app/Http/Actions/{ドメイン}/`): 単一責任のInvokableクラス
    - 命名: `{動詞}{対象}Action` (例: `StoreTaskAction`, `ApproveTaskAction`)
    - `public function __invoke()` メソッド必須
    - ビジネスロジックは書かない - Serviceに委譲
+   - データ取得・登録・更新・削除も書かない - Serviceを経由してRepositoryに委譲
 
-2. **Service** (`laravel/app/Services/{ドメイン}/`): ビジネスロジック
+2. **Service** (`/home/ktr/mtdev/app/Services/{ドメイン}/`): ビジネスロジック（データ整形専門）
    - **必ずインターフェースを先に作成**: `{機能}ServiceInterface` + `{機能}Service`
    - `AppServiceProvider::register()` でバインド: `$this->app->bind(Interface::class, Implementation::class)`
-   - コンストラクタでインターフェース経由で注入
+   - コンストラクタでRepositoryインターフェース経由で注入
+   - **責務**: Repositoryから取得したデータの整形・加工・ビジネスルール適用のみ
+   - **禁止**: DB操作（Eloquent ORM直接呼び出し）、外部API直接呼び出し、データCRUD処理
+   - **例外**: Modelに関連しないクエリ（例: `auth()->user()`）はServiceに記述可能
 
-3. **Repository** (`laravel/app/Repositories/{ドメイン}/`): データアクセス
+3. **Repository** (`/home/ktr/mtdev/app/Repositories/{ドメイン}/`): データアクセス（CRUD専門）
    - **必ずインターフェースを先に作成**: `{対象}RepositoryInterface` + `{対象}EloquentRepository`
    - `AppServiceProvider::register()` でバインド
+   - **責務**: データベース操作（取得・作成・更新・削除）、外部API呼び出し（Stripe等）
+   - **命名規則**: メソッド名は`create`, `update`, `delete`, `find`, `get`等のCRUD動詞を使用
+   - **返り値**: Eloquentモデル、Collection、または生データ（整形しない）
+   - **参考**: `TaskEloquentRepository`, `TaskRepositoryInterface`を参照
 
-4. **Responder** (`laravel/app/Http/Responders/{ドメイン}/`): レスポンス整形
+4. **Responder** (`/home/ktr/mtdev/app/Http/Responders/{ドメイン}/`): レスポンス整形
+   - **インターフェース不要** - 直接クラスをActionに注入
    - **新規コードでは必ず使用** (一部レガシーコードは直接返却 - 触る際にリファクタリング)
 
-### 実装例
+### 責務分離の具体例
 
 ```php
-// laravel/routes/web.php
+// ❌ NG: ServiceでDB操作
+class TaskService {
+    public function createTask($data) {
+        return Task::create($data); // NG: Eloquent直接呼び出し
+    }
+}
+
+// ✅ OK: Repository層でDB操作
+class TaskEloquentRepository implements TaskRepositoryInterface {
+    public function create(array $data): Task {
+        return Task::create($data); // OK: RepositoryがDB操作
+    }
+}
+
+class TaskService implements TaskServiceInterface {
+    public function __construct(
+        protected TaskRepositoryInterface $repository
+    ) {}
+    
+    public function createTask(User $user, array $data): Task {
+        // データ加工・整形
+        $data['user_id'] = $user->id;
+        $data['priority'] = $data['priority'] ?? 3;
+        
+        // Repository経由でDB操作
+        return $this->repository->create($data);
+    }
+}
+```
+
+### 実装例（完全版）
+
+```php
+// routes/web.php
 Route::post('/tasks', StoreTaskAction::class)->name('tasks.store');
 
 // StoreTaskAction.php
 public function __construct(
-    protected TaskManagementServiceInterface $taskService  // ✅ インターフェース
+    protected TaskManagementServiceInterface $taskService,  // ✅ インターフェース
+    protected TaskResponder $responder  // ✅ 直接クラス注入
 ) {}
 
 public function __invoke(StoreTaskRequest $request): RedirectResponse {
     $task = $this->taskService->createTask($request->user(), $request->validated());
-    return redirect()->route('dashboard')->with('success', 'タスクが登録されました。');
+    return $this->responder->success($task);
+}
+
+// TaskManagementService.php
+public function __construct(
+    protected TaskRepositoryInterface $repository  // ✅ Repository注入
+) {}
+
+public function createTask(User $user, array $data): Task {
+    // データ整形（Serviceの責務）
+    $data['user_id'] = $user->id;
+    $data['priority'] = $data['priority'] ?? 3;
+    
+    // Repository経由でDB操作
+    return $this->repository->create($data);
+}
+
+// TaskEloquentRepository.php
+public function create(array $data): Task {
+    // DB操作のみ（Repositoryの責務）
+    return Task::create($data);
 }
 ```
 
@@ -288,6 +351,7 @@ $url = Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(5));  // 署�
 - DB: `snake_case` (カラム・テーブル)
 - Action: `{動詞}{対象}Action`
 - Service/Repository: `{機能}Service(Interface)` / `{対象}Repository(Interface)`
+- Responder: `{機能}Responder` (インターフェース不要)
 
 ### PHPDoc必須
 クラス、メソッド、プロパティは必ずドキュメント化:
@@ -332,19 +396,19 @@ $tasks = Task::with(['user', 'images', 'tags'])->where('user_id', $userId)->get(
 
 | パス | 説明 |
 |------|------|
-| `laravel/routes/web.php` | ルート定義（Actionを直接参照、use文必須） |
-| `laravel/app/Providers/AppServiceProvider.php` | DIバインディング（Interface ⇔ Implementation） |
-| `laravel/app/Console/Kernel.php` | スケジューラー設定（`schedule()` メソッド） |
-| `laravel/app/Http/Actions/{ドメイン}/` | Invokableアクション（`__invoke()` 必須） |
-| `laravel/app/Services/{ドメイン}/` | ビジネスロジック（必ずInterface付き） |
-| `laravel/app/Repositories/{ドメイン}/` | データアクセス（必ずInterface付き） |
-| `laravel/app/Http/Responders/{ドメイン}/` | レスポンス整形（新規コードで使用） |
-| `laravel/app/Http/Requests/{ドメイン}/` | FormRequest（バリデーション定義） |
-| `laravel/app/Jobs/` | 非同期ジョブ（`GenerateAvatarImagesJob` など） |
-| `laravel/config/const.php` | 定数定義（イベント、トークン種別、ステータス） |
-| `laravel/config/filesystems.php` | S3/MinIO設定 |
-| `laravel/config/avatar-options.php` | アバター生成オプション |
-| `laravel/database/migrations/` | マイグレーションファイル（命名: `YYYY_MM_DD_*`) |
+| `routes/web.php` | ルート定義（Actionを直接参照、use文必須） |
+| `app/Providers/AppServiceProvider.php` | DIバインディング（Interface ⇔ Implementation） |
+| `app/Console/Kernel.php` | スケジューラー設定（`schedule()` メソッド） |
+| `app/Http/Actions/{ドメイン}/` | Invokableアクション（`__invoke()` 必須） |
+| `app/Services/{ドメイン}/` | ビジネスロジック（必ずInterface付き、データ整形のみ） |
+| `app/Repositories/{ドメイン}/` | データアクセス（必ずInterface付き、CRUD実行） |
+| `app/Http/Responders/{ドメイン}/` | レスポンス整形（インターフェース不要） |
+| `app/Http/Requests/{ドメイン}/` | FormRequest（バリデーション定義） |
+| `app/Jobs/` | 非同期ジョブ（`GenerateAvatarImagesJob` など） |
+| `config/const.php` | 定数定義（イベント、トークン種別、ステータス） |
+| `config/filesystems.php` | S3/MinIO設定 |
+| `config/avatar-options.php` | アバター生成オプション |
+| `database/migrations/` | マイグレーションファイル（命名: `YYYY_MM_DD_*`) |
 | `definitions/*.md` | 機能要件定義書（リポジトリルート） |
 | `infrastructure/` | Terraform、運用スクリプト、レポート |
 | `services/` | マイクロサービス（Task Service等） |
@@ -360,9 +424,16 @@ $tasks = Task::with(['user', 'images', 'tags'])->where('user_id', $userId)->get(
 ## アンチパターン
 
 ```php
-// ❌ Actionにロジック
+// ❌ Actionにロジック・DB操作
 public function __invoke(Request $request) {
     $task = Task::create($request->all());  // 直接モデル操作!
+}
+
+// ❌ ServiceにDB操作
+class TaskService implements TaskServiceInterface {
+    public function createTask($data) {
+        return Task::create($data);  // NG: ServiceがDB操作
+    }
 }
 
 // ❌ インターフェースなし
@@ -374,7 +445,20 @@ public function __invoke(Request $request) {
     return view('tasks.index', compact('tasks'));  // Responder経由すべき
 }
 
-// ✅ 正しい実装
+// ✅ 正しい実装（Service-Repositoryの責務分離）
+// Repository: DB操作
+public function create(array $data): Task {
+    return Task::create($data);
+}
+
+// Service: データ整形 + Repository呼び出し
+public function createTask(User $user, array $data): Task {
+    $data['user_id'] = $user->id;
+    $data['priority'] = $data['priority'] ?? 3;
+    return $this->repository->create($data);
+}
+
+// Action: Serviceに委譲 + Responderで返却
 public function __invoke(StoreTaskRequest $request) {
     $task = $this->taskService->createTask($request->user(), $request->validated());
     return $this->responder->success($task);

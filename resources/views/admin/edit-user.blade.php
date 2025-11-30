@@ -139,6 +139,97 @@
                                     </label>
                                 </div>
 
+                                {{-- グループタスク制限設定（グループ所属時のみ表示） --}}
+                                @if($user->group)
+                                    <div class="admin-form-group mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                            </svg>
+                                            グループ設定（{{ $user->group->name }}）
+                                        </h3>
+
+                                        <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 space-y-4">
+                                            {{-- サブスクリプション状態（表示のみ） --}}
+                                            <div>
+                                                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                                    サブスクリプション状態
+                                                </label>
+                                                <div class="flex items-center gap-2">
+                                                    @if($user->group->subscription_active)
+                                                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                            有効
+                                                        </span>
+                                                        @if($user->group->subscription_plan)
+                                                            <span class="text-xs px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                                                                {{ ucfirst($user->group->subscription_plan) }}プラン
+                                                            </span>
+                                                        @endif
+                                                    @else
+                                                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                                            無料プラン
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            {{-- グループタスク無料枠上限 --}}
+                                            <div>
+                                                <label for="free_group_task_limit" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                                    グループタスク無料作成回数（月次）
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    id="free_group_task_limit" 
+                                                    name="free_group_task_limit" 
+                                                    value="{{ old('free_group_task_limit', $user->group->free_group_task_limit) }}"
+                                                    min="0"
+                                                    max="100"
+                                                    class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm @error('free_group_task_limit') border-red-500 @enderror"
+                                                >
+                                                <p class="mt-1 text-xs text-gray-500">
+                                                    現在の使用状況: {{ $user->group->group_task_count_current_month }} / {{ $user->group->free_group_task_limit }}
+                                                </p>
+                                                @error('free_group_task_limit')
+                                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+
+                                            {{-- 無料トライアル日数 --}}
+                                            <div>
+                                                <label for="free_trial_days" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                                    無料トライアル期間（日数）
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    id="free_trial_days" 
+                                                    name="free_trial_days" 
+                                                    value="{{ old('free_trial_days', $user->group->free_trial_days) }}"
+                                                    min="0"
+                                                    max="90"
+                                                    class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm @error('free_trial_days') border-red-500 @enderror"
+                                                >
+                                                <p class="mt-1 text-xs text-gray-500">
+                                                    サブスクリプション開始時の無料試用期間
+                                                </p>
+                                                @error('free_trial_days')
+                                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <p class="mt-2 text-xs text-yellow-600 dark:text-yellow-400 flex items-start gap-1">
+                                            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span>これらの設定は<strong>システム管理者のみ</strong>が変更できます。グループ管理者は閲覧のみ可能です。</span>
+                                        </p>
+                                    </div>
+                                @endif
+
                                 {{-- トークン残高（表示のみ） --}}
                                 <div class="admin-form-group">
                                     <label class="admin-form-label">トークン残高</label>

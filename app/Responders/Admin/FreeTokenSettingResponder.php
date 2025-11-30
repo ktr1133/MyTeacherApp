@@ -5,7 +5,7 @@ namespace App\Responders\Admin;
 /**
  * 無料トークンを更新する処理のレスポンダ
  */
-class FreeTokenSettingResponder implements FreeTokenSettingResponderInterface
+class FreeTokenSettingResponder
 {
     public function redirectWithSuccess()
     {

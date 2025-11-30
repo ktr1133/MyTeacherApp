@@ -15,6 +15,17 @@ class Group extends Model
     use HasFactory, Billable;
 
     /**
+     * Get the name of the column for the "billable" foreign key.
+     * Cashierのデフォルトはuser_idだが、Groupモデルではidを使用
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+        return 'user_id';
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -22,6 +33,27 @@ class Group extends Model
     protected $fillable = [
         'name',
         'master_user_id',
+        // サブスクリプション関連
+        'subscription_active',
+        'subscription_plan',
+        'max_members',
+        'max_groups',
+        'free_group_task_limit',
+        'group_task_count_current_month',
+        'group_task_count_reset_at',
+        'free_trial_days',
+        'report_enabled_until',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'subscription_active' => 'boolean',
+        'group_task_count_reset_at' => 'datetime',
+        'report_enabled_until' => 'date',
     ];
 
     /**
@@ -29,7 +61,7 @@ class Group extends Model
      */
     public function users(): HasMany
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class, 'group_id');
     }
 
     /**

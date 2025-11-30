@@ -115,7 +115,7 @@ async function validateMemberEmail() {
 
     showSpinner('email');
 
-    const result = await validateField('/validate/email', { email }, 'email');
+    const result = await validateField('/validate/member-email', { email }, 'email');
 
     hideSpinner('email');
 

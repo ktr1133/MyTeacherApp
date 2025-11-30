@@ -122,6 +122,54 @@ return [
     'stripe' => [
         // テストモード（.envから取得）
         'test_mode' => env('STRIPE_TEST_MODE', true),
+        
+        // サブスクリプションプラン
+        'subscription_plans' => [
+            'family' => [
+                'name' => 'ファミリープラン',
+                'price_id' => env('STRIPE_FAMILY_PLAN_PRICE_ID'),
+                'amount' => 500,  // 円
+                'currency' => 'jpy',
+                'interval' => 'month',
+                'max_members' => 6,
+                'max_groups' => 1,
+                'trial_days' => 14,
+                'features' => [
+                    'unlimited_group_tasks' => true,
+                    'monthly_reports' => true,
+                    'group_token_sharing' => true,
+                ],
+            ],
+            'enterprise' => [
+                'name' => 'エンタープライズプラン',
+                'price_id' => env('STRIPE_ENTERPRISE_PLAN_PRICE_ID'),
+                'amount' => 3000,  // 円（基本20名まで）
+                'currency' => 'jpy',
+                'interval' => 'month',
+                'max_members' => 20,
+                'max_groups' => 5,
+                'trial_days' => 14,
+                'features' => [
+                    'unlimited_group_tasks' => true,
+                    'monthly_reports' => true,
+                    'group_token_sharing' => true,
+                    'statistics_reports' => true,  // 将来実装
+                    'priority_support' => true,    // 将来実装
+                ],
+            ],
+        ],
+        
+        // 追加メンバー価格（エンタープライズプラン）
+        'additional_member_price_id' => env('STRIPE_ADDITIONAL_MEMBER_PRICE_ID'),
+        'additional_member_amount' => 150,  // 円/月/名
+        
+        // 無料プラン制限
+        'free_plan' => [
+            'max_members' => 6,
+            'max_groups' => 1,
+            'group_task_limit_per_month' => 3,
+            'report_free_months' => 1,  // 初月のみ無料
+        ],
     ],
 
     // ========================================

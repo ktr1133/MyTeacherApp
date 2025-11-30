@@ -236,4 +236,77 @@ class AddMemberTest extends TestCase
 
         $response->assertForbidden(); // 403
     }
+
+    /**
+     * グループメンバー追加: max_members制限でエラー
+     */
+    public function test_member_cannot_be_added_when_max_members_reached(): void
+    {
+        // max_members=3のグループを作成
+        $group = Group::create([
+            'name' => 'Test Group',
+            'max_members' => 3,
+        ]);
+        $master = User::factory()->create([
+            'group_id' => $group->id,
+            'group_edit_flg' => true,
+        ]);
+        $group->update(['master_user_id' => $master->id]);
+
+        // 既に3名（上限）のメンバーが存在
+        User::factory()->count(2)->create([
+            'group_id' => $group->id,
+        ]);
+
+        // 4人目を追加しようとする
+        $response = $this->actingAs($master)->post('/profile/group/member', [
+            'username' => 'newuser',
+            'email' => 'newuser@example.com',
+            'password' => 'password123',
+        ]);
+
+        // 422エラー（制限超過）
+        $response->assertStatus(422);
+        
+        // データベースに追加されていないことを確認
+        $this->assertNull(User::where('username', 'newuser')->first());
+    }
+
+    /**
+     * グループメンバー追加: サブスクリプション加入でmax_members拡張
+     */
+    public function test_member_can_be_added_with_subscription(): void
+    {
+        // サブスクリプション加入済みのグループ（max_members=20）
+        $group = Group::create([
+            'name' => 'Test Group',
+            'max_members' => 20,
+            'subscription_active' => true,
+            'subscription_plan' => 'family',
+        ]);
+        $master = User::factory()->create([
+            'group_id' => $group->id,
+            'group_edit_flg' => true,
+        ]);
+        $group->update(['master_user_id' => $master->id]);
+
+        // 既に6名のメンバーが存在（無料枠超過）
+        User::factory()->count(5)->create([
+            'group_id' => $group->id,
+        ]);
+
+        // 7人目を追加（サブスクリプションにより可能）
+        $response = $this->actingAs($master)->post('/profile/group/member', [
+            'username' => 'newuser',
+            'email' => 'newuser@example.com',
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('status', 'member-added');
+
+        $newMember = User::where('username', 'newuser')->first();
+        $this->assertNotNull($newMember);
+        $this->assertEquals($group->id, $newMember->group_id);
+    }
 }

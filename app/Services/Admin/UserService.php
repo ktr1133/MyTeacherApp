@@ -57,6 +57,17 @@ class UserService implements UserServiceInterface
         $data['is_admin'] = $data['is_admin'] ?? false;
         $data['group_edit_flg'] = $data['group_edit_flg'] ?? false;
 
+        // グループ設定の更新（グループに所属している場合のみ）
+        if ($user->group && isset($data['free_group_task_limit'])) {
+            $user->group->update([
+                'free_group_task_limit' => $data['free_group_task_limit'],
+                'free_trial_days' => $data['free_trial_days'] ?? $user->group->free_trial_days,
+            ]);
+            
+            // グループ設定はユーザー更新データから除外
+            unset($data['free_group_task_limit'], $data['free_trial_days']);
+        }
+
         return $this->userRepository->update($user, $data);
     }
 

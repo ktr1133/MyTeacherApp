@@ -31,6 +31,20 @@ Schedule::command('tokens:reset-free')
     ->timezone('Asia/Tokyo');
 
 // ========================================
+// 毎月1日午前0時にグループタスク作成数をリセット
+// ========================================
+Schedule::command('group:reset-monthly-task-count')
+    ->monthlyOn(1, '00:00')
+    ->timezone('Asia/Tokyo')
+    ->appendOutputTo(storage_path('logs/group-task-reset.log'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('グループタスク月次リセット成功');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('グループタスク月次リセット失敗');
+    });
+
+// ========================================
 // 毎週日曜日午前2時に古い課金履歴を削除
 // ========================================
 Schedule::command('payments:clean-old')

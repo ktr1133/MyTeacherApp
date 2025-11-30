@@ -55,7 +55,7 @@ return new class extends Migration
             // トークン管理モード
             $table->enum('token_mode', ['individual', 'group'])
                 ->default('individual')
-                ->comment('individual: 個人課金, group: グループ課金');
+                ->comment('individual'); // トークン管理モード: individual=個人, group=グループ
             
             $table->timestamps();
             

@@ -96,6 +96,11 @@ class GroupService implements GroupServiceInterface
             abort(403, 'グループメンバーを追加する権限がありません。');
         }
 
+        // メンバー数制限チェック
+        if (!$this->canAddMember($group)) {
+            abort(422, 'グループメンバー数が上限に達しています。サブスクリプションプランをアップグレードしてください。');
+        }
+
         return DB::transaction(function () use ($username, $email, $password, $name, $group, $canEdit, &$user): User {
             if (User::where('username', $username)->exists()) {
                 abort(422, '指定されたユーザー名は既に存在します。');
@@ -236,5 +241,29 @@ class GroupService implements GroupServiceInterface
     public function canChangeThemeOf(User $actor, User $member): bool
     {
         return $actor->canChangeThemeOf($member);
+    }
+
+    /**
+     * グループに新しいメンバーを追加できるか確認する。
+     * 
+     * @param Group $group
+     * @return bool
+     */
+    public function canAddMember(Group $group): bool
+    {
+        $currentMemberCount = $group->users()->count();
+        return $currentMemberCount < $group->max_members;
+    }
+
+    /**
+     * グループの残りメンバー枠数を取得する。
+     * 
+     * @param Group $group
+     * @return int
+     */
+    public function getRemainingMemberSlots(Group $group): int
+    {
+        $currentMemberCount = $group->users()->count();
+        return max(0, $group->max_members - $currentMemberCount);
     }
 }

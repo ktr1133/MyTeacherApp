@@ -1,0 +1,517 @@
+/* ===================================
+   サブスクリプション画面専用スタイル
+   大人向けのみ
+   =================================== */
+
+/* ===================================
+   背景デザイン
+   =================================== */
+.subscription-gradient-bg {
+    background: linear-gradient(135deg, #EEF2FF 0%, #ffffff 50%, #DBEAFE 100%);
+}
+
+.dark .subscription-gradient-bg {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #1e3a8a 100%);
+}
+
+.subscription-floating-decoration {
+    animation: float-slow 20s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+    0%, 100% { transform: translate(0, 0); }
+    33% { transform: translate(30px, -30px); }
+    66% { transform: translate(-20px, 20px); }
+}
+
+/* ===================================
+   ヘッダーデザイン
+   =================================== */
+.subscription-header-blur {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+}
+
+.dark .subscription-header-blur {
+    background: rgba(17, 24, 39, 0.8) !important;
+}
+
+.subscription-header-icon {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.subscription-header-title {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===================================
+   プランカード
+   =================================== */
+.plan-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.dark .plan-card {
+    background: #1f2937;
+    border-color: #374151;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.plan-card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.dark .plan-card::before {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+}
+
+/* 無料プランとエンタープライズプランのホバー時のみ::beforeを表示 */
+.plan-card:not(.featured-plan):not(.current-plan):hover::before {
+    opacity: 1;
+}
+
+/* 基本的なホバー効果（featured-plan以外） */
+.plan-card:not(.featured-plan):hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+.dark .plan-card:not(.featured-plan):hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* 無料プラン(現在のプラン)のホバー時 */
+.current-plan:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(16, 185, 129, 0.35) !important;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%) !important;
+}
+
+.dark .current-plan:hover {
+    box-shadow: 0 20px 40px rgba(5, 150, 105, 0.5) !important;
+    background: linear-gradient(135deg, #064e3b 0%, #1f2937 100%) !important;
+}
+
+/* 特選プラン（Family） */
+.featured-plan {
+    border: 2px solid #4f46e5;
+    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.2);
+    background: white !important;
+}
+
+.dark .featured-plan {
+    border-color: #6366f1;
+    box-shadow: 0 12px 24px rgba(99, 102, 241, 0.3);
+    background: #1f2937 !important;
+}
+
+.featured-plan::before {
+    display: none !important;
+}
+
+.featured-plan:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 24px 48px rgba(79, 70, 229, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.8) !important;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+}
+
+.dark .featured-plan:hover {
+    box-shadow: 0 24px 48px rgba(99, 102, 241, 0.4), 0 0 0 2px rgba(99, 102, 241, 0.3) !important;
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%) !important;
+}
+
+/* プランバッジ */
+.plan-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 8px 20px;
+    border-radius: 20px;
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+    animation: badge-pulse 2s ease-in-out infinite;
+    z-index: 10;
+}
+
+@keyframes badge-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
+    50% { transform: scale(1.08); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.6); }
+}
+
+/* プランアイコン */
+.plan-icon {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    transition: transform 0.3s ease;
+}
+
+.plan-card:hover .plan-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* プランヘッダー */
+.plan-header {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.dark .plan-header {
+    border-bottom-color: #374151;
+}
+
+.plan-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+}
+
+.dark .plan-title {
+    color: #f9fafb;
+}
+
+/* 価格表示 */
+.plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.price-amount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+
+.price-period {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.dark .price-period {
+    color: #9ca3af;
+}
+
+/* 機能リスト */
+.plan-features {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 24px 0;
+    flex-grow: 1;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+    font-size: 0.9375rem;
+    color: #374151;
+}
+
+.dark .feature-item {
+    color: #d1d5db;
+}
+
+.feature-item svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: #10b981;
+}
+
+.dark .feature-item svg {
+    color: #34d399;
+}
+
+/* ===================================
+   現在のプラン表示
+   =================================== */
+.current-plan-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    border: 2px solid #10b981;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.dark .current-plan-card {
+    background: linear-gradient(135deg, #064e3b 0%, #1f2937 100%);
+    border-color: #059669;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+.current-plan {
+    border: 2px solid #10b981 !important;
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25) !important;
+    position: relative;
+}
+
+.current-plan::after {
+    content: '現在のプラン';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    z-index: 10;
+}
+
+.dark .current-plan {
+    border-color: #059669 !important;
+    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35) !important;
+}
+
+/* ===================================
+   モーダル
+   =================================== */
+.modal-overlay {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    animation: modal-slide-up 0.3s ease-out;
+}
+
+@keyframes modal-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* プランアクション */
+.plan-action {
+    margin-top: auto;
+    padding-top: 24px;
+}
+
+.plan-button-primary {
+    width: 100%;
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    color: white;
+    font-weight: 700;
+    padding: 14px 24px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.plan-button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+}
+
+.plan-button-secondary {
+    width: 100%;
+    background: white;
+    color: #4f46e5;
+    font-weight: 700;
+    padding: 14px 24px;
+    border-radius: 12px;
+    border: 2px solid #4f46e5;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dark .plan-button-secondary {
+    background: #1f2937;
+    color: #6366f1;
+    border-color: #6366f1;
+}
+
+.plan-button-secondary:hover {
+    background: #4f46e5;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.dark .plan-button-secondary:hover {
+    background: #6366f1;
+}
+
+.plan-button-disabled {
+    width: 100%;
+    background: #e5e7eb;
+    color: #9ca3af;
+    font-weight: 600;
+    padding: 14px 24px;
+    border-radius: 12px;
+    border: 2px solid #d1d5db;
+    cursor: not-allowed;
+}
+
+.dark .plan-button-disabled {
+    background: #374151;
+    color: #6b7280;
+    border-color: #4b5563;
+}
+
+/* ===================================
+   価格サマリー
+   =================================== */
+.price-summary {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 2px solid #3b82f6;
+}
+
+.dark .price-summary {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    border-color: #2563eb;
+}
+
+.price-summary .total-price {
+    font-weight: 800;
+    font-size: 2rem;
+    color: #1e40af;
+}
+
+.dark .price-summary .total-price {
+    color: #60a5fa;
+}
+
+/* ===================================
+   ボタンスタイル
+   =================================== */
+.btn-primary {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #f3f4f6;
+    transform: translateY(-2px);
+}
+
+.dark .btn-secondary:hover {
+    background: #374151;
+}
+
+/* ===================================
+   インフォボックス
+   =================================== */
+.info-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-left: 4px solid #3b82f6;
+}
+
+.dark .info-box {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    border-left-color: #2563eb;
+}
+
+.info-box ul {
+    list-style: none;
+    padding: 0;
+}
+
+.info-box li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.info-box li::before {
+    content: '✓';
+    color: #3b82f6;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.dark .info-box li::before {
+    color: #60a5fa;
+}
+
+/* ===================================
+   レスポンシブ調整
+   =================================== */
+@media (max-width: 768px) {
+    .plan-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .plan-price {
+        font-size: 2rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+}

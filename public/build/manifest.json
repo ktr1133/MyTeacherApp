@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-BbHVwztd.css",
+    "file": "assets/app-DAOIhzng.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -87,6 +87,14 @@
       "notifications.css"
     ]
   },
+  "resources/css/profile/group-edit.css": {
+    "file": "assets/group-edit-By7rMIOM.css",
+    "src": "resources/css/profile/group-edit.css",
+    "isEntry": true,
+    "names": [
+      "group-edit.css"
+    ]
+  },
   "resources/css/profile/timezone.css": {
     "file": "assets/timezone-Ci5heVmB.css",
     "src": "resources/css/profile/timezone.css",
@@ -109,6 +117,14 @@
     "isEntry": true,
     "names": [
       "sidebar.css"
+    ]
+  },
+  "resources/css/subscriptions/select-plan.css": {
+    "file": "assets/select-plan-QSxgSniW.css",
+    "src": "resources/css/subscriptions/select-plan.css",
+    "isEntry": true,
+    "names": [
+      "select-plan.css"
     ]
   },
   "resources/css/tags.css": {
@@ -317,7 +333,7 @@
     "isEntry": true
   },
   "resources/js/profile/profile-validation.js": {
-    "file": "assets/profile-validation-BnjpZnAD.js",
+    "file": "assets/profile-validation-IngEaS_J.js",
     "name": "profile-validation",
     "src": "resources/js/profile/profile-validation.js",
     "isEntry": true,
@@ -329,6 +345,12 @@
     "file": "assets/performance-Dgrw3Roy.js",
     "name": "performance",
     "src": "resources/js/reports/performance.js",
+    "isEntry": true
+  },
+  "resources/js/subscriptions/select-plan.js": {
+    "file": "assets/select-plan-CxcDzH03.js",
+    "name": "select-plan",
+    "src": "resources/js/subscriptions/select-plan.js",
     "isEntry": true
   },
   "resources/js/tags/tags.js": {

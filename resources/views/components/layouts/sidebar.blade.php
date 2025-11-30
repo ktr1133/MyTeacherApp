@@ -219,6 +219,23 @@
                     </span>
                 @endif
             </x-nav-link>
+
+            {{-- サブスクリプション管理リンク（グループ管理者・編集権限のみ） --}}
+            @if($u->group_id && $u->canEditGroup())
+            <x-nav-link 
+                :href="route('subscriptions.index')" 
+                :active="request()->routeIs('subscriptions.*')"
+                class="sidebar-nav-link flex items-center gap-3 px-2.5 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-indigo-500/10 hover:to-blue-500/5 transition-all duration-200 group relative {{ request()->routeIs('subscriptions.*') ? 'active bg-gradient-to-r from-indigo-500/10 to-blue-500/5 text-indigo-600' : '' }}"
+            >
+                <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+                <span data-show-when="expanded" 
+                      class="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1">
+                    サブスクリプション
+                </span>
+            </x-nav-link>
+            @endif
             
             </div>{{-- 一般ユーザーメニュー終了 --}}
 
@@ -611,6 +628,21 @@
                     <span class="inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 @endif
             </x-nav-link>
+
+            {{-- サブスクリプション管理リンク（モバイル、グループ管理者・編集権限のみ） --}}
+            @if($u->group_id && $u->canEditGroup())
+            <x-nav-link 
+                :href="route('subscriptions.index')" 
+                :active="request()->routeIs('subscriptions.*')"
+                data-close-on-click
+                class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-indigo-500/10 hover:to-blue-500/5 transition-all duration-200 {{ request()->routeIs('subscriptions.*') ? 'active bg-gradient-to-r from-indigo-500/10 to-blue-500/5 text-indigo-600' : '' }}"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+                <span class="text-sm font-medium">サブスクリプション</span>
+            </x-nav-link>
+            @endif
 
             </div>{{-- 一般ユーザーメニュー終了（モバイル） --}}
 

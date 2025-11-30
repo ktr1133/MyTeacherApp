@@ -7,6 +7,7 @@ use App\Services\Profile\GroupServiceInterface;
 use App\Services\Profile\ProfileManagementServiceInterface;
 use App\Services\Task\TaskManagementServiceInterface;
 use App\Services\Task\TaskApprovalServiceInterface;
+use App\Services\Group\GroupTaskLimitServiceInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,7 @@ class StoreTaskAction
     protected GroupServiceInterface $groupService;
     protected ProfileManagementServiceInterface $profileService;
     protected TaskApprovalServiceInterface $taskApprovalService;
+    protected GroupTaskLimitServiceInterface $groupTaskLimitService;
 
     /**
      * コンストラクタ。タスク管理サービスインターフェースを注入。
@@ -29,12 +31,14 @@ class StoreTaskAction
         TaskManagementServiceInterface $taskManagementService,
         GroupServiceInterface $groupService,
         ProfileManagementServiceInterface $profileService,
-        TaskApprovalServiceInterface $taskApprovalService
+        TaskApprovalServiceInterface $taskApprovalService,
+        GroupTaskLimitServiceInterface $groupTaskLimitService
     ) {
         $this->taskManagementService = $taskManagementService;
         $this->groupService = $groupService;
         $this->profileService = $profileService;
         $this->taskApprovalService = $taskApprovalService;
+        $this->groupTaskLimitService = $groupTaskLimitService;
     }
 
     /**
@@ -54,6 +58,30 @@ class StoreTaskAction
             $user = Auth::user();
             if (!$this->groupService->canEditGroup($user) || !$user->group_id) {
                 abort(403, 'グループタスク作成権限がありません。');
+            }
+
+            // グループを取得
+            $group = $user->group;
+            
+            // グループタスク作成数の制限チェック
+            if (!$this->groupTaskLimitService->canCreateGroupTask($group)) {
+                $usage = $this->groupTaskLimitService->getGroupTaskUsage($group);
+                $message = sprintf(
+                    '今月のグループタスク作成数が上限（%d件）に達しました。プレミアムプランにアップグレードすると無制限でグループタスクを作成できます。',
+                    $usage['limit']
+                );
+                
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => $message,
+                        'usage' => $usage,
+                        'upgrade_required' => true,
+                    ], 422);
+                }
+                
+                return redirect()->back()
+                    ->withErrors(['error' => $message])
+                    ->withInput();
             }
 
             $data['user_id'] = $data['assigned_user_id'] ?? null;
@@ -76,6 +104,11 @@ class StoreTaskAction
             : Auth::user();
 
         $task = $this->taskManagementService->createTask($user, $data, $groupFlg);
+        
+        // グループタスク作成カウンターを増加
+        if ($groupFlg && isset($group)) {
+            $this->groupTaskLimitService->incrementGroupTaskCount($group);
+        }
         
         // 承認不要のグループタスクの場合は自動承認
         if ($groupFlg && !$task->requires_approval) {

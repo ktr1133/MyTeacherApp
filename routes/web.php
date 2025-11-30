@@ -124,6 +124,10 @@ use App\Http\Actions\Token\IndexTokenHistoryAction;
 use App\Http\Actions\Token\IndexTokenPurchaseAction;
 use App\Http\Actions\Token\ProcessTokenPurchaseAction;
 use App\Http\Actions\Token\RejectTokenPurchaseRequestAction;
+use App\Http\Actions\Subscription\CreateCheckoutSessionAction;
+use App\Http\Actions\Subscription\ShowSubscriptionPlansAction;
+use App\Http\Actions\Subscription\SubscriptionCancelAction;
+use App\Http\Actions\Subscription\SubscriptionSuccessAction;
 use App\Http\Actions\Validation\ValidateGroupNameAction;
 // ヘルスチェック用
 use Illuminate\Support\Facades\Redis;
@@ -280,6 +284,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tokens/pending-approvals', IndexPendingTokenPurchaseRequestsAction::class)->name('tokens.pending-approvals');
     // トークン履歴
     Route::get('/tokens/history', IndexTokenHistoryAction::class)->name('tokens.history');
+
+    // ========================================
+    // サブスクリプション管理
+    // ========================================
+    Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+        // プラン選択画面
+        Route::get('/', ShowSubscriptionPlansAction::class)->name('index');
+        // Checkout Session作成 & Stripe決済ページへリダイレクト
+        Route::post('/checkout', CreateCheckoutSessionAction::class)->name('checkout');
+        // Stripe決済後の成功画面
+        Route::get('/success', SubscriptionSuccessAction::class)->name('success');
+        // Stripe決済キャンセル画面
+        Route::get('/cancel', SubscriptionCancelAction::class)->name('cancel');
+    });
 
     // ========================================   
     // 通知

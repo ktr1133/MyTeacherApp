@@ -82,4 +82,20 @@ interface GroupServiceInterface
      * @return bool
      */
     public function canChangeThemeOf(User $actor, User $member): bool;
+
+    /**
+     * グループに新しいメンバーを追加できるか確認する。
+     * 
+     * @param Group $group
+     * @return bool
+     */
+    public function canAddMember(Group $group): bool;
+
+    /**
+     * グループの残りメンバー枠数を取得する。
+     * 
+     * @param Group $group
+     * @return int
+     */
+    public function getRemainingMemberSlots(Group $group): int;
 }

@@ -71,6 +71,8 @@ use App\Services\Profile\ProfileManagementService;
 use App\Services\Profile\ProfileManagementServiceInterface;
 use App\Services\Profile\GroupServiceInterface;
 use App\Services\Profile\GroupService;
+use App\Services\Group\GroupTaskLimitServiceInterface;
+use App\Services\Group\GroupTaskLimitService;
 use App\Services\Report\PerformanceServiceInterface;
 use App\Services\Report\PerformanceService;
 use App\Services\Tag\TagServiceInterface;
@@ -102,6 +104,13 @@ use App\Services\Portal\FaqServiceInterface;
 use App\Services\Portal\FaqService;
 use App\Services\Portal\AppUpdateServiceInterface;
 use App\Services\Portal\AppUpdateService;
+// Subscription
+use App\Services\Subscription\SubscriptionServiceInterface;
+use App\Services\Subscription\SubscriptionService;
+use App\Services\Subscription\SubscriptionWebhookServiceInterface;
+use App\Services\Subscription\SubscriptionWebhookService;
+use App\Repositories\Subscription\SubscriptionRepositoryInterface;
+use App\Repositories\Subscription\SubscriptionEloquentRepository;
 // Security
 use App\Services\Security\VirusScanServiceInterface;
 use App\Services\Security\ClamAVScanService;
@@ -167,6 +176,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(FaqRepositoryInterface::class, EloquentFaqRepository::class);
         $this->app->bind(AppUpdateRepositoryInterface::class, EloquentAppUpdateRepository::class);
 
+        // --- Subscription ---
+        $this->app->bind(SubscriptionRepositoryInterface::class, SubscriptionEloquentRepository::class);
+
         // ========================================
         // 2. サービスのバインド
         // ========================================
@@ -203,6 +215,7 @@ class AppServiceProvider extends ServiceProvider
         // --- Profile ---
         $this->app->bind(ProfileManagementServiceInterface::class, ProfileManagementService::class);
         $this->app->bind(GroupServiceInterface::class, GroupService::class);
+        $this->app->bind(GroupTaskLimitServiceInterface::class, GroupTaskLimitService::class);
         $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);
         $this->app->bind(GroupUserRepositoryInterface::class, GroupUserRepository::class);
 
@@ -231,6 +244,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ContactServiceInterface::class, ContactService::class);
         $this->app->bind(FaqServiceInterface::class, FaqService::class);
         $this->app->bind(AppUpdateServiceInterface::class, AppUpdateService::class);
+
+        // --- Subscription ---
+        $this->app->bind(SubscriptionServiceInterface::class, SubscriptionService::class);
+        $this->app->bind(SubscriptionWebhookServiceInterface::class, SubscriptionWebhookService::class);
 
         // --- AI ---
         $this->app->bind(StableDiffusionServiceInterface::class, StableDiffusionService::class);

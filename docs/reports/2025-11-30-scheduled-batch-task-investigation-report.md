@@ -11,19 +11,22 @@
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
 | 2025-11-30 | GitHub Copilot | 初版作成: 定期バッチ不具合調査と修正完了 |
+| 2025-11-30 | GitHub Copilot | スケジューラー起動問題を発見・修正、動作確認完了 |
 
 ---
 
 ## 概要
 
-本番環境において定期バッチで設定したグループタスクが作成されていない問題を調査し、**データベーススキーマエラー**が根本原因であることを特定して修正しました。
+本番環境において定期バッチで設定したグループタスクが作成されていない問題を調査し、**2つの根本原因**を特定して修正しました。
 
 ### 主要な成果
 
-- ✅ **根本原因特定**: `scheduled_task_executions`テーブルのカラム不一致を発見
+- ✅ **根本原因1特定**: `scheduled_task_executions`テーブルのカラム不一致を発見・修正
+- ✅ **根本原因2特定**: Laravelスケジューラーが起動していないことを発見・修正
 - ✅ **スキーマ修正**: マイグレーションでカラム構造を修正
+- ✅ **スケジューラー起動**: entrypoint.shに起動コード追加
 - ✅ **デバッグログ追加**: 時刻マッチング詳細をログ出力
-- ✅ **本番環境適用**: マイグレーション実行完了
+- ✅ **動作確認完了**: 毎分正常に実行されることを確認
 
 ---
 
@@ -198,7 +201,34 @@ public function up(): void
 }
 ```
 
-### 修正3: デバッグログ追加
+### 修正3: スケジューラー起動コード追加
+
+**ファイル**: `docker/entrypoint.sh`
+
+```bash
+# =============================================================================
+# 4. Laravel Schedulerの起動（バックグラウンド）
+# =============================================================================
+echo "[Entrypoint] Step 4: Starting Laravel Scheduler in background..."
+
+# スケジューラーログファイルの設定（日別ローテーション）
+SCHEDULER_LOGFILE="storage/logs/scheduler-$(date '+%Y%m%d').log"
+
+# スケジューラーをバックグラウンドで起動
+(
+    while true; do
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Running scheduler..." >> "$SCHEDULER_LOGFILE" 2>&1
+        php artisan schedule:run >> "$SCHEDULER_LOGFILE" 2>&1
+        sleep 60
+    done
+) &
+
+SCHEDULER_PID=$!
+echo "[Entrypoint] Scheduler started with PID: $SCHEDULER_PID"
+echo "[Entrypoint] Scheduler logs: $SCHEDULER_LOGFILE"
+```
+
+### 修正4: デバッグログ追加
 
 **ファイル**: `app/Services/Batch/ScheduledTaskService.php`
 
@@ -232,35 +262,62 @@ protected function matchesSchedule(ScheduledGroupTask $scheduledTask, \DateTime 
 
 ### デプロイ手順
 
-1. **コミット＆プッシュ**:
+1. **第1回デプロイ（スキーマ修正）**:
    ```bash
    git add -A
    git commit -m "Fix scheduled_task_executions table schema"
    git push origin main
    ```
-
-2. **GitHub Actions自動デプロイ**: 
-   - ビルド時間: 5分42秒
    - デプロイ完了: 2025-11-30 10:39 JST
+   - マイグレーション実行: 107.50ms
 
-3. **マイグレーション実行**:
+2. **第2回デプロイ（スケジューラー起動）**:
    ```bash
-   aws ecs execute-command --cluster myteacher-production-cluster \
-       --task [TASK_ID] --container app --interactive \
-       --command "php artisan migrate --force"
+   git add -A
+   git commit -m "Add Laravel Scheduler to entrypoint.sh"
+   git push origin main
    ```
-   
-   **結果**:
-   ```
-   2025_11_30_000001_fix_scheduled_task_executions_columns ...... 107.50ms DONE
-   ```
+   - デプロイ完了: 2025-11-30 10:52 JST
 
 ### 検証結果
+
+#### ✅ スケジューラー起動確認
+
+```bash
+# スケジューラーログファイル確認
+ls -lh storage/logs/scheduler-*.log
+
+# 結果
+-rwxrwxr-x 1 www-data www-data 6.1K Nov 30 10:56 storage/logs/scheduler-20251130.log
+```
+
+**判定**: 本日のログファイルが作成され、継続的に更新されている
+
+#### ✅ 毎分実行確認
+
+```
+[2025-11-30 10:53:26] Running scheduler...
+  2025-11-30 10:53:26 Running ['artisan' batch:execute-scheduled-tasks] ✓
+
+[2025-11-30 10:54:05] Running scheduler...
+  2025-11-30 10:54:05 Running ['artisan' batch:execute-scheduled-tasks] ✓
+
+[2025-11-30 10:55:05] Running scheduler...
+  2025-11-30 10:55:05 Running ['artisan' batch:execute-scheduled-tasks] ✓
+
+[2025-11-30 10:56:05] Running scheduler...
+  2025-11-30 10:56:06 Running ['artisan' batch:execute-scheduled-tasks] ✓
+
+[2025-11-30 10:57:06] Running scheduler...
+  2025-11-30 10:57:06 Running ['artisan' batch:execute-scheduled-tasks] ✓
+```
+
+**判定**: 約60秒間隔で正確に実行されている（許容誤差: 1-2秒）
 
 #### ✅ エラー解消確認
 
 ```bash
-# バッチ実行（現在時刻: JST 19:39）
+# バッチ実行（現在時刻: JST 19:57）
 php artisan batch:execute-scheduled-tasks
 ```
 
@@ -282,22 +339,32 @@ php artisan batch:execute-scheduled-tasks
 #### ✅ デバッグログ出力確認
 
 ```
-[2025-11-30 10:39:44] Schedule match check
+[2025-11-30 10:56:06] Schedule match check
 {
     "scheduled_task_id": 2,
     "title": "父のマッサージ",
     "user_timezone": "Asia/Tokyo",
-    "utc_time": "2025-11-30 10:39:44",
-    "local_time": "2025-11-30 19:39:44",
-    "current_time": "19:39",
+    "utc_time": "2025-11-30 10:56:06",
+    "local_time": "2025-11-30 19:56:06",
+    "current_time": "19:56",
     "schedules": [{"type":"daily","time":"09:00"}]
 }
-[2025-11-30 10:39:44] Time mismatch
+[2025-11-30 10:56:06] Time mismatch
 {
     "expected_time": "09:00",
-    "current_time": "19:39"
+    "current_time": "19:56"
 }
 ```
+
+**判定**: 時刻判定ロジックが正確に動作し、詳細なログが記録されている
+
+#### ✅ その他のスケジュールタスク確認
+
+```
+2025-11-30 10:55:05 Running ['artisan' redis:monitor] in background ✓
+```
+
+**判定**: 5分ごとのRedis監視も正常実行
 
 ---
 

@@ -4,6 +4,8 @@ namespace App\Http\Actions\Api\Task;
 
 use App\Http\Requests\Task\StoreTaskRequest;
 use App\Services\Task\TaskManagementServiceInterface;
+use App\Services\Profile\GroupServiceInterface;
+use App\Services\Group\GroupTaskLimitServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
@@ -19,7 +21,9 @@ class StoreTaskApiAction
      * コンストラクタ
      */
     public function __construct(
-        protected TaskManagementServiceInterface $taskService
+        protected TaskManagementServiceInterface $taskService,
+        protected GroupServiceInterface $groupService,
+        protected GroupTaskLimitServiceInterface $groupTaskLimitService
     ) {}
 
     /**
@@ -41,11 +45,40 @@ class StoreTaskApiAction
                 ], 401);
             }
 
+            // グループタスクの場合、追加チェック
+            $isGroupTask = $request->isGroupTask();
+            if ($isGroupTask) {
+                // グループタスク作成権限チェック
+                if (!$this->groupService->canEditGroup($user) || !$user->group_id) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'グループタスク作成権限がありません。',
+                    ], 403);
+                }
+
+                // グループを取得
+                $group = $user->group;
+                
+                // グループタスク作成数の制限チェック
+                if (!$this->groupTaskLimitService->canCreateGroupTask($group)) {
+                    $usage = $this->groupTaskLimitService->getGroupTaskUsage($group);
+                    return response()->json([
+                        'success' => false,
+                        'message' => sprintf(
+                            '今月のグループタスク作成数が上限（%d件）に達しました。プレミアムプランにアップグレードすると無制限でグループタスクを作成できます。',
+                            $usage['limit']
+                        ),
+                        'usage' => $usage,
+                        'upgrade_required' => true,
+                    ], 422);
+                }
+            }
+
             // タスクを作成（グループタスクフラグを渡す）
             $task = $this->taskService->createTask(
                 $user,
                 $request->validated(),
-                $request->isGroupTask()
+                $isGroupTask
             );
 
             if (!$task) {
@@ -53,6 +86,11 @@ class StoreTaskApiAction
                     'success' => false,
                     'message' => 'タスクの作成に失敗しました。',
                 ], 500);
+            }
+
+            // グループタスク作成カウンターを増加
+            if ($isGroupTask && isset($group)) {
+                $this->groupTaskLimitService->incrementGroupTaskCount($group);
             }
 
             // レスポンス
