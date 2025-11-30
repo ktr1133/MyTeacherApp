@@ -144,7 +144,16 @@ jobs:
           jq '.containerDefinitions[0].environment = 
               [.containerDefinitions[0].environment[] | select(.name != "LOG_CHANNEL")] + 
               [{name: "LOG_CHANNEL", value: "stderr"}]' \
-            task-definition-tmp3.json > task-definition-new.json
+            task-definition-tmp3.json > task-definition-tmp4.json
+          
+          # ENTRYPOINT/CMDを明示的に設定（ECSがDockerイメージのENTRYPOINTを無視する問題の回避）
+          # デバッグ: startup-debug.shが実行されるか確認
+          jq '.containerDefinitions[0].entryPoint = ["/usr/local/bin/startup-debug.sh"] |
+              .containerDefinitions[0].command = ["apache2-foreground"]' \
+            task-definition-tmp4.json > task-definition-new.json
+          
+          echo "=== Task Definition Preview ==="
+          jq '.containerDefinitions[0] | {name, image, entryPoint, command}' task-definition-new.json
 
       #########################################################################
       # 7. ECSタスク定義登録
