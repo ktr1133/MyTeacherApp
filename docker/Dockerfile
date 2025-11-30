@@ -63,6 +63,16 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 COPY . .
 
 # =============================================================================
+# storage構造の作成（.dockerignoreで除外されたディレクトリを復元）
+# =============================================================================
+RUN mkdir -p storage/logs \
+    && mkdir -p storage/framework/cache \
+    && mkdir -p storage/framework/sessions \
+    && mkdir -p storage/framework/testing \
+    && mkdir -p storage/framework/views \
+    && mkdir -p storage/app/public
+
+# =============================================================================
 # Laravel最適化
 # =============================================================================
 RUN composer install --no-dev --optimize-autoloader --prefer-dist \

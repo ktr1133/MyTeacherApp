@@ -138,7 +138,13 @@ jobs:
             '.containerDefinitions[0].environment = 
               [.containerDefinitions[0].environment[] | select(.name != "DB_PASSWORD")] + 
               [{name: "DB_PASSWORD", value: $DB_PASSWORD}]' \
-            task-definition-tmp2.json > task-definition-new.json
+            task-definition-tmp2.json > task-definition-tmp3.json
+          
+          # LOG_CHANNEL環境変数を追加（stderr: CloudWatch Logsに直接出力）
+          jq '.containerDefinitions[0].environment = 
+              [.containerDefinitions[0].environment[] | select(.name != "LOG_CHANNEL")] + 
+              [{name: "LOG_CHANNEL", value: "stderr"}]' \
+            task-definition-tmp3.json > task-definition-new.json
 
       #########################################################################
       # 7. ECSタスク定義登録
