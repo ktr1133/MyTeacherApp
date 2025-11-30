@@ -175,11 +175,20 @@ jobs:
       #########################################################################
       - name: Update ECS service
         run: |
+          # 新しいTask Definitionを使用してサービスを更新
+          TASK_DEF_ARN="${{ steps.task-def.outputs.task-definition-arn }}"
+          if [ -z "$TASK_DEF_ARN" ]; then
+            echo "❌ ERROR: Task Definition ARN not found"
+            exit 1
+          fi
+          
+          echo "📋 Updating service with Task Definition: $TASK_DEF_ARN"
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
+            --task-definition "$TASK_DEF_ARN" \
             --force-new-deployment \
-            --query 'service.{ServiceName:serviceName,Status:status,DesiredCount:desiredCount}'
+            --query 'service.{ServiceName:serviceName,Status:status,DesiredCount:desiredCount,TaskDefinition:taskDefinition}'
           
           echo "✅ ECS service update initiated"
 
