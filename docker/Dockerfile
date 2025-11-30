@@ -106,18 +106,40 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && echo "[Docker Build] entrypoint.sh copied and made executable" \
     && ls -la /usr/local/bin/entrypoint.sh \
-    && head -5 /usr/local/bin/entrypoint.sh
+    && head -5 /usr/local/bin/entrypoint.sh \
+    && echo "[Docker Build] Testing entrypoint.sh can execute..." \
+    && /usr/local/bin/entrypoint.sh --test || echo "[Docker Build] WARNING: entrypoint.sh test failed"
 
 # =============================================================================
-# 起動コマンド検証
+# デバッグ用スタートアップラッパー作成
 # =============================================================================
-# デバッグ: ENTRYPOINT/CMDが正しく設定されているか確認
-RUN echo "[Docker Build] Verifying ENTRYPOINT will be used..." \
-    && echo "[Docker Build] ENTRYPOINT: /usr/local/bin/entrypoint.sh" \
-    && echo "[Docker Build] CMD: apache2-foreground"
+# ECSがENTRYPOINTをバイパスしているか検証するため、複数の検証層を用意
+RUN echo "[Docker Build] Creating startup-debug.sh wrapper..." \
+    && echo '#!/bin/bash' > /usr/local/bin/startup-debug.sh \
+    && echo 'echo "[STARTUP-DEBUG] ========================================" >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'echo "[STARTUP-DEBUG] Container started at $(date)" >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'echo "[STARTUP-DEBUG] Script: $0" >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'echo "[STARTUP-DEBUG] Args: $@" >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'echo "[STARTUP-DEBUG] PID: $$" >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'echo "[STARTUP-DEBUG] PWD: $(pwd)" >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'echo "[STARTUP-DEBUG] USER: $(whoami)" >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'echo "[STARTUP-DEBUG] Testing entrypoint.sh existence..." >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'ls -la /usr/local/bin/entrypoint.sh >&2 || echo "[STARTUP-DEBUG] ERROR: entrypoint.sh not found!" >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'echo "[STARTUP-DEBUG] Executing entrypoint.sh..." >&2' >> /usr/local/bin/startup-debug.sh \
+    && echo 'exec /usr/local/bin/entrypoint.sh "$@"' >> /usr/local/bin/startup-debug.sh \
+    && chmod +x /usr/local/bin/startup-debug.sh \
+    && echo "[Docker Build] startup-debug.sh created:" \
+    && cat /usr/local/bin/startup-debug.sh
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# =============================================================================
+# 起動コマンド設定
+# =============================================================================
+# デバッグラッパー経由でentrypoint.shを呼び出す
+# これにより、ECSが何を実行しているか（またはスキップしているか）が明確になる
+ENTRYPOINT ["/usr/local/bin/startup-debug.sh"]
 CMD ["apache2-foreground"]
 
 # デバッグ: イメージのメタデータを確認可能にする
-LABEL entrypoint.test="should_see_entrypoint_logs_in_cloudwatch"
+LABEL entrypoint.wrapper="startup-debug.sh" \
+      entrypoint.target="entrypoint.sh" \
+      debug.level="maximum"

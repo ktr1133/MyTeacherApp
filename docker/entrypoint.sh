@@ -2,11 +2,21 @@
 set -e
 
 # ==================================================================================
+# ビルド時のテストモード
+# ==================================================================================
+if [ "$1" = "--test" ]; then
+    echo "[entrypoint.sh] TEST MODE: entrypoint.sh is executable"
+    exit 0
+fi
+
+# ==================================================================================
 # 🔥🔥🔥 ENTRYPOINT.SH IS EXECUTING 🔥🔥🔥
 # If you see Apache logs but NOT this message, then entrypoint.sh is being bypassed!
 # ==================================================================================
 echo "🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥" >&2
 echo "🔥 ENTRYPOINT.SH IS RUNNING - TIMESTAMP: $(date)" >&2
+echo "🔥 CALLED WITH ARGS: $@" >&2
+echo "🔥 PARENT PROCESS: $(ps -p $PPID -o comm=)" >&2
 echo "🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥" >&2
 
 # すべての出力をstderrに送る（CloudWatch Logsで確実に表示）
