@@ -44,4 +44,51 @@ interface SubscriptionServiceInterface
      * @return bool 管理可能な場合true
      */
     public function canManageSubscription(Group $group): bool;
+
+    /**
+     * サブスクリプションをキャンセル（期間終了時に解約）
+     * 
+     * @param Group $group グループ
+     * @return bool キャンセル成功時true
+     * @throws \RuntimeException キャンセル失敗時
+     */
+    public function cancelSubscription(Group $group): bool;
+
+    /**
+     * サブスクリプションを即座にキャンセル
+     * 
+     * @param Group $group グループ
+     * @return bool キャンセル成功時true
+     * @throws \RuntimeException キャンセル失敗時
+     */
+    public function cancelSubscriptionNow(Group $group): bool;
+
+    /**
+     * サブスクリプションのプランを変更
+     * 
+     * @param Group $group グループ
+     * @param string $newPlan 新しいプラン種別
+     * @param int $additionalMembers 追加メンバー数（エンタープライズのみ）
+     * @return bool 変更成功時true
+     * @throws \RuntimeException プラン変更失敗時
+     */
+    public function updateSubscriptionPlan(Group $group, string $newPlan, int $additionalMembers = 0): bool;
+
+    /**
+     * 請求履歴を整形して返す
+     * 
+     * @param Group $group グループ
+     * @param int $limit 取得件数（デフォルト10件）
+     * @return array 請求履歴の配列
+     */
+    public function getInvoiceHistory(Group $group, int $limit = 10): array;
+
+    /**
+     * Stripe Billing Portalのセッションを作成
+     * 
+     * @param Group $group グループ
+     * @return string Billing PortalのURL
+     * @throws \RuntimeException セッション作成失敗時
+     */
+    public function createBillingPortalSession(Group $group): string;
 }

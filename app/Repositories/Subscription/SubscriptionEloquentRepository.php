@@ -93,4 +93,119 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
     {
         return $subscription->active();
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function cancel(Subscription $subscription): bool
+    {
+        try {
+            $subscription->cancel();
+            
+            Log::info('Subscription canceled (end of period)', [
+                'subscription_id' => $subscription->id,
+                'stripe_id' => $subscription->stripe_id,
+            ]);
+            
+            return true;
+        } catch (ApiErrorException $e) {
+            Log::error('Subscription cancel failed', [
+                'subscription_id' => $subscription->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            throw new \RuntimeException('サブスクリプションのキャンセルに失敗しました。');
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function cancelNow(Subscription $subscription): bool
+    {
+        try {
+            $subscription->cancelNow();
+            
+            Log::info('Subscription canceled immediately', [
+                'subscription_id' => $subscription->id,
+                'stripe_id' => $subscription->stripe_id,
+            ]);
+            
+            return true;
+        } catch (ApiErrorException $e) {
+            Log::error('Subscription cancel now failed', [
+                'subscription_id' => $subscription->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            throw new \RuntimeException('サブスクリプションの即時キャンセルに失敗しました。');
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function swap(Subscription $subscription, string $newPriceId): bool
+    {
+        try {
+            $subscription->swap($newPriceId);
+            
+            Log::info('Subscription plan swapped', [
+                'subscription_id' => $subscription->id,
+                'stripe_id' => $subscription->stripe_id,
+                'new_price_id' => $newPriceId,
+            ]);
+            
+            return true;
+        } catch (ApiErrorException $e) {
+            Log::error('Subscription swap failed', [
+                'subscription_id' => $subscription->id,
+                'new_price_id' => $newPriceId,
+                'error' => $e->getMessage(),
+            ]);
+            
+            throw new \RuntimeException('プランの変更に失敗しました。');
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getInvoices(Group $group, int $limit = 10): \Illuminate\Support\Collection
+    {
+        try {
+            return $group->invoices($limit);
+        } catch (ApiErrorException $e) {
+            Log::error('Failed to fetch invoices', [
+                'group_id' => $group->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return collect();
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createBillingPortalSession(Group $group): string
+    {
+        try {
+            $response = $group->redirectToBillingPortal(route('subscriptions.manage'));
+            
+            Log::info('Billing portal session created', [
+                'group_id' => $group->id,
+            ]);
+            
+            // redirectToBillingPortalはRedirectResponseを返すので、getTargetUrl()でURLを取得
+            return $response->getTargetUrl();
+        } catch (ApiErrorException $e) {
+            Log::error('Billing portal session creation failed', [
+                'group_id' => $group->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            throw new \RuntimeException('請求管理ポータルへのアクセスに失敗しました。');
+        }
+    }
 }

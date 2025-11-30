@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-DAOIhzng.css",
+    "file": "assets/app-CkgzWyG2.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -120,7 +120,7 @@
     ]
   },
   "resources/css/subscriptions/select-plan.css": {
-    "file": "assets/select-plan-QSxgSniW.css",
+    "file": "assets/select-plan-B4h2jn3E.css",
     "src": "resources/css/subscriptions/select-plan.css",
     "isEntry": true,
     "names": [
@@ -348,7 +348,7 @@
     "isEntry": true
   },
   "resources/js/subscriptions/select-plan.js": {
-    "file": "assets/select-plan-CxcDzH03.js",
+    "file": "assets/select-plan-iV8UAnWo.js",
     "name": "select-plan",
     "src": "resources/js/subscriptions/select-plan.js",
     "isEntry": true

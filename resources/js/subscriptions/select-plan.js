@@ -5,16 +5,140 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // ===================================
+    // モーダル共通処理
+    // ===================================
+    
+    /**
+     * モーダルを開く
+     */
+    function openModal(modalElement) {
+        modalElement.classList.remove('hidden');
+        modalElement.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    /**
+     * モーダルを閉じる
+     */
+    function closeModalByElement(modalElement) {
+        modalElement.classList.add('hidden');
+        modalElement.classList.remove('flex');
+        document.body.style.overflow = '';
+    }
+    
+    // data-modal-close属性を持つボタンでモーダルを閉じる
+    document.querySelectorAll('[data-modal-close]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                closeModalByElement(modal);
+            }
+        });
+    });
+    
+    // モーダルオーバーレイクリックで閉じる
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                closeModalByElement(modal);
+            }
+        });
+    });
+    
+    // ESCキーでモーダルを閉じる
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // Enterpriseモーダル
+            document.querySelectorAll('.modal:not(.hidden)').forEach(modal => {
+                closeModalByElement(modal);
+            });
+        }
+    });
+
+    // ===================================
+    // 新規プラン加入確認（汎用ダイアログ使用）
+    // ===================================
+    document.querySelectorAll('[data-plan-subscribe]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const plan = this.getAttribute('data-plan-subscribe');
+            const planName = this.getAttribute('data-plan-name');
+            const planPrice = this.getAttribute('data-plan-price');
+            
+            if (typeof window.showConfirmDialog === 'function') {
+                const message = `「${planName}」に加入しますか？\n\n月額料金: ¥${planPrice}\n\n特典: 14日間の無料トライアル期間があります。\nトライアル期間中はいつでもキャンセル可能です。`;
+                
+                window.showConfirmDialog(
+                    message,
+                    () => {
+                        // 確認時: フォームを作成して送信
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/subscriptions/checkout';
+                        
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                        if (csrfToken) {
+                            const csrfInput = document.createElement('input');
+                            csrfInput.type = 'hidden';
+                            csrfInput.name = '_token';
+                            csrfInput.value = csrfToken;
+                            form.appendChild(csrfInput);
+                        }
+                        
+                        const planInput = document.createElement('input');
+                        planInput.type = 'hidden';
+                        planInput.name = 'plan';
+                        planInput.value = plan;
+                        form.appendChild(planInput);
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                );
+            }
+        });
+    });
+
+    // ===================================
+    // サブスクリプションキャンセル確認（汎用ダイアログ使用）
+    // ===================================
+    document.querySelectorAll('[data-cancel-subscription]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (typeof window.showConfirmDialog === 'function') {
+                const message = 'サブスクリプションをキャンセルしてもよろしいですか？\n\nご注意: キャンセル後も、現在の有効期限まで引き続きご利用いただけます。';
+                
+                window.showConfirmDialog(
+                    message,
+                    () => {
+                        // 確認時: フォームを作成して送信
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/subscriptions/cancel-subscription';
+                        
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                        if (csrfToken) {
+                            const csrfInput = document.createElement('input');
+                            csrfInput.type = 'hidden';
+                            csrfInput.name = '_token';
+                            csrfInput.value = csrfToken;
+                            form.appendChild(csrfInput);
+                        }
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                );
+            }
+        });
+    });
+
+    // ===================================
     // Enterprise追加メンバーモーダル
     // ===================================
-    const enterpriseBtn = document.getElementById('enterprise-plan-btn');
-    const modal = document.getElementById('enterprise-modal');
-    const modalOverlay = document.getElementById('modal-overlay');
-    const closeModalBtn = document.getElementById('close-modal');
-    const cancelModalBtn = document.getElementById('cancel-modal');
+    const enterpriseModal = document.getElementById('enterprise-modal');
     const additionalMembersInput = document.getElementById('additional_members');
+    const additionalPriceDisplay = document.getElementById('additional-price');
     const totalPriceDisplay = document.getElementById('total-price');
-    const confirmEnterpriseBtn = document.getElementById('confirm-enterprise');
 
     // 基本料金（Enterprise）
     const BASE_PRICE = 3000;
@@ -22,34 +146,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const ADDITIONAL_MEMBER_PRICE = 150;
 
     /**
-     * モーダルを開く
-     */
-    function openModal() {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-        
-        // 初期値で価格を計算
-        calculateTotalPrice();
-    }
-
-    /**
-     * モーダルを閉じる
-     */
-    function closeModal() {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.body.style.overflow = '';
-        
-        // 入力値をリセット
-        additionalMembersInput.value = '0';
-        calculateTotalPrice();
-    }
-
-    /**
      * 合計価格を計算して表示
      */
     function calculateTotalPrice() {
+        if (!additionalMembersInput || !totalPriceDisplay || !additionalPriceDisplay) return;
+        
         const additionalMembers = parseInt(additionalMembersInput.value) || 0;
         
         // 0-100の範囲に制限
@@ -60,66 +161,27 @@ document.addEventListener('DOMContentLoaded', function() {
             additionalMembersInput.value = validMembers;
         }
         
-        // 合計金額 = 基本料金 + (追加メンバー数 × 単価)
-        const totalPrice = BASE_PRICE + (validMembers * ADDITIONAL_MEMBER_PRICE);
+        // 追加料金と合計金額を計算
+        const additionalPrice = validMembers * ADDITIONAL_MEMBER_PRICE;
+        const totalPrice = BASE_PRICE + additionalPrice;
         
-        // カンマ区切りで表示
-        totalPriceDisplay.textContent = totalPrice.toLocaleString('ja-JP');
-        
-        // 確定ボタンのラベル更新
-        if (validMembers > 0) {
-            confirmEnterpriseBtn.textContent = `¥${totalPrice.toLocaleString('ja-JP')}/月で申し込む`;
-        } else {
-            confirmEnterpriseBtn.textContent = '¥3,000/月で申し込む';
-        }
+        // 表示を更新
+        additionalPriceDisplay.textContent = `¥${additionalPrice.toLocaleString('ja-JP')}`;
+        totalPriceDisplay.textContent = `¥${totalPrice.toLocaleString('ja-JP')}`;
     }
-
-    /**
-     * Enterpriseプラン申し込み確定
-     */
-    function confirmEnterprisePlan() {
-        // フォームをサブミット
-        const form = document.getElementById('enterprise-form');
-        
-        // 追加メンバー数をフォームに設定
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'additional_members';
-        hiddenInput.value = additionalMembersInput.value || '0';
-        form.appendChild(hiddenInput);
-        
-        // プラン種別を設定
-        const planInput = document.createElement('input');
-        planInput.type = 'hidden';
-        planInput.name = 'plan';
-        planInput.value = 'enterprise';
-        form.appendChild(planInput);
-        
-        // サブミット
-        form.submit();
-    }
-
-    // イベントリスナー登録
-    if (enterpriseBtn) {
-        enterpriseBtn.addEventListener('click', openModal);
-    }
-
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', closeModal);
-    }
-
-    if (cancelModalBtn) {
-        cancelModalBtn.addEventListener('click', closeModal);
-    }
-
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', function(e) {
-            // オーバーレイの直接クリック時のみ閉じる
-            if (e.target === modalOverlay) {
-                closeModal();
+    
+    // data-plan="enterprise"属性を持つボタンでEnterpriseモーダルを開く
+    document.querySelectorAll('[data-plan="enterprise"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (enterpriseModal) {
+                if (additionalMembersInput) {
+                    additionalMembersInput.value = '0';
+                }
+                calculateTotalPrice();
+                openModal(enterpriseModal);
             }
         });
-    }
+    });
 
     // 追加メンバー数変更時に価格を再計算
     if (additionalMembersInput) {
@@ -131,40 +193,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
             }
         });
-    }
-
-    // 確定ボタン
-    if (confirmEnterpriseBtn) {
-        confirmEnterpriseBtn.addEventListener('click', confirmEnterprisePlan);
-    }
-
-    // ESCキーでモーダルを閉じる
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-            closeModal();
-        }
-    });
-
-    // ===================================
-    // Family/Freeプラン申し込み
-    // ===================================
-    const familyPlanBtn = document.getElementById('family-plan-btn');
-
-    if (familyPlanBtn) {
-        familyPlanBtn.addEventListener('click', function() {
-            // Familyプランフォームをサブミット
-            const form = document.getElementById('family-form');
+        
+        // バリデーション
+        additionalMembersInput.addEventListener('blur', function() {
+            const value = parseInt(this.value) || 0;
             
-            const planInput = document.createElement('input');
-            planInput.type = 'hidden';
-            planInput.name = 'plan';
-            planInput.value = 'family';
-            form.appendChild(planInput);
+            if (value < 0) {
+                this.value = '0';
+            } else if (value > 100) {
+                this.value = '100';
+            }
             
-            form.submit();
+            calculateTotalPrice();
         });
     }
 
+    
     // ===================================
     // アニメーション: プランカードホバー
     // ===================================
@@ -219,48 +263,4 @@ document.addEventListener('DOMContentLoaded', function() {
         card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(card);
     });
-
-    // ===================================
-    // バリデーション: 追加メンバー数
-    // ===================================
-    if (additionalMembersInput) {
-        additionalMembersInput.addEventListener('blur', function() {
-            const value = parseInt(this.value) || 0;
-            
-            if (value < 0) {
-                this.value = '0';
-                showValidationMessage('追加メンバー数は0以上を指定してください。');
-            } else if (value > 100) {
-                this.value = '100';
-                showValidationMessage('追加メンバー数は100名までです。');
-            }
-            
-            calculateTotalPrice();
-        });
-    }
-
-    /**
-     * バリデーションメッセージを表示
-     */
-    function showValidationMessage(message) {
-        // 既存のメッセージを削除
-        const existingMessage = document.getElementById('validation-message');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-        
-        // メッセージ要素を作成
-        const messageDiv = document.createElement('div');
-        messageDiv.id = 'validation-message';
-        messageDiv.className = 'mt-2 text-sm text-red-600 dark:text-red-400';
-        messageDiv.textContent = message;
-        
-        // 入力欄の後に挿入
-        additionalMembersInput.parentNode.appendChild(messageDiv);
-        
-        // 3秒後に削除
-        setTimeout(() => {
-            messageDiv.remove();
-        }, 3000);
-    }
 });

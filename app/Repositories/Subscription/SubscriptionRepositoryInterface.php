@@ -37,4 +37,46 @@ interface SubscriptionRepositoryInterface
      * @return bool アクティブな場合true
      */
     public function isSubscriptionActive(Subscription $subscription): bool;
+
+    /**
+     * サブスクリプションをキャンセル（期間終了時に解約）
+     * 
+     * @param Subscription $subscription Cashierサブスクリプション
+     * @return bool キャンセル成功時true
+     */
+    public function cancel(Subscription $subscription): bool;
+
+    /**
+     * サブスクリプションを即座にキャンセル
+     * 
+     * @param Subscription $subscription Cashierサブスクリプション
+     * @return bool キャンセル成功時true
+     */
+    public function cancelNow(Subscription $subscription): bool;
+
+    /**
+     * サブスクリプションのプランを変更
+     * 
+     * @param Subscription $subscription Cashierサブスクリプション
+     * @param string $newPriceId 新しい価格ID
+     * @return bool 変更成功時true
+     */
+    public function swap(Subscription $subscription, string $newPriceId): bool;
+
+    /**
+     * グループの請求履歴を取得
+     * 
+     * @param Group $group グループ
+     * @param int $limit 取得件数
+     * @return \Illuminate\Support\Collection 請求履歴のコレクション
+     */
+    public function getInvoices(Group $group, int $limit = 10): \Illuminate\Support\Collection;
+
+    /**
+     * Stripe Billing Portalのセッションを作成
+     * 
+     * @param Group $group グループ
+     * @return string Billing PortalのURL
+     */
+    public function createBillingPortalSession(Group $group): string;
 }

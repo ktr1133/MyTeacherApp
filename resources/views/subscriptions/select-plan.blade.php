@@ -68,22 +68,90 @@
             <main class="flex-1 overflow-y-auto custom-scrollbar">
                 <div class="max-w-7xl mx-auto px-4 lg:px-6 py-4 lg:py-6">
                     
-                    {{-- 現在のプラン表示 --}}
+                    {{-- 成功・エラーメッセージ --}}
+                    @if(session('success'))
+                        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200 px-4 py-3 rounded-lg mb-6">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if($errors->any())
+                        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg mb-6">
+                            <ul class="list-disc list-inside">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    
+                    {{-- 現在のサブスクリプション情報（加入者のみ表示） --}}
                     @if($currentSubscription)
-                        <div class="current-plan-card mb-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">現在のプラン</p>
-                                    <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                        {{ $plans[$currentSubscription['plan']]['name'] }}
+                        <div class="subscription-card-modern p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6">
+                            <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                                            現在のサブスクリプション
+                                        </h2>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                            プランを変更する場合は、下記から選択してください
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                {{-- 管理ボタン --}}
+                                <div class="flex gap-2 flex-wrap">
+                                    <a href="{{ route('subscriptions.billing-portal') }}" 
+                                       class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition shadow-md text-sm">
+                                        支払い情報を管理
+                                    </a>
+                                    <button type="button" 
+                                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition shadow-md text-sm"
+                                            data-cancel-subscription>
+                                        サブスクリプションをキャンセル
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div class="space-y-1">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">プラン</p>
+                                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        {{ $plans[$currentSubscription['plan']]['name'] ?? 'Unknown' }}
                                     </p>
                                 </div>
-                                <div class="text-right">
+                                <div class="space-y-1">
                                     <p class="text-sm text-gray-600 dark:text-gray-400">ステータス</p>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                        有効
-                                    </span>
+                                    <p class="text-lg font-semibold">
+                                        @if($currentSubscription['active'])
+                                            <span class="text-green-600 dark:text-green-400">✓ 有効</span>
+                                        @else
+                                            <span class="text-red-600 dark:text-red-400">× 無効</span>
+                                        @endif
+                                    </p>
                                 </div>
+                                @if($currentSubscription['trial_ends_at'])
+                                    <div class="space-y-1">
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">トライアル終了日</p>
+                                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                            {{ \Carbon\Carbon::parse($currentSubscription['trial_ends_at'])->format('Y年m月d日') }}
+                                        </p>
+                                    </div>
+                                @endif
+                                @if($currentSubscription['ends_at'])
+                                    <div class="space-y-1">
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">有効期限</p>
+                                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                            {{ \Carbon\Carbon::parse($currentSubscription['ends_at'])->format('Y年m月d日') }}
+                                        </p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endif
@@ -168,23 +236,46 @@
                                     <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
-                                    <span>14日間無料トライアル</span>
+                                    @if($currentSubscription && $currentSubscription['plan'] === 'family' && $currentSubscription['trial_ends_at'])
+                                        @php
+                                            $trialEnd = \Carbon\Carbon::parse($currentSubscription['trial_ends_at']);
+                                            $daysLeft = now()->diffInDays($trialEnd, false);
+                                        @endphp
+                                        @if($daysLeft > 0)
+                                            <span class="text-orange-600 dark:text-orange-400 font-semibold">
+                                                トライアル中（残り{{ ceil($daysLeft) }}日）
+                                            </span>
+                                        @else
+                                            <span>14日間無料トライアル</span>
+                                        @endif
+                                    @else
+                                        <span>14日間無料トライアル</span>
+                                    @endif
                                 </div>
                             </div>
 
                             <div class="plan-action">
                                 @if($currentSubscription && $currentSubscription['plan'] === 'family')
                                     <button disabled class="plan-button-disabled">
-                                        現在のプラン
+                                        加入中のプラン
+                                    </button>
+                                @elseif($currentSubscription)
+                                    {{-- プラン変更 --}}
+                                    <button type="button" 
+                                            class="plan-button-primary" 
+                                            data-plan-change="family"
+                                            data-plan-name="ファミリープラン">
+                                        このプランに変更
                                     </button>
                                 @else
-                                    <form action="{{ route('subscriptions.checkout') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="plan" value="family">
-                                        <button type="submit" class="plan-button-primary">
-                                            このプランを選択
-                                        </button>
-                                    </form>
+                                    {{-- 新規契約 --}}
+                                    <button type="button" 
+                                            class="plan-button-primary" 
+                                            data-plan-subscribe="family"
+                                            data-plan-name="ファミリープラン"
+                                            data-plan-price="500">
+                                        このプランを選択
+                                    </button>
                                 @endif
                             </div>
                         </div>
@@ -237,16 +328,39 @@
                                     <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
-                                    <span>14日間無料トライアル</span>
+                                    @if($currentSubscription && $currentSubscription['plan'] === 'enterprise' && $currentSubscription['trial_ends_at'])
+                                        @php
+                                            $trialEnd = \Carbon\Carbon::parse($currentSubscription['trial_ends_at']);
+                                            $daysLeft = now()->diffInDays($trialEnd, false);
+                                        @endphp
+                                        @if($daysLeft > 0)
+                                            <span class="text-orange-600 dark:text-orange-400 font-semibold">
+                                                トライアル中（残り{{ ceil($daysLeft) }}日）
+                                            </span>
+                                        @else
+                                            <span>14日間無料トライアル</span>
+                                        @endif
+                                    @else
+                                        <span>14日間無料トライアル</span>
+                                    @endif
                                 </div>
                             </div>
 
                             <div class="plan-action">
                                 @if($currentSubscription && $currentSubscription['plan'] === 'enterprise')
                                     <button disabled class="plan-button-disabled">
-                                        現在のプラン
+                                        加入中のプラン
+                                    </button>
+                                @elseif($currentSubscription)
+                                    {{-- プラン変更 --}}
+                                    <button type="button" 
+                                            class="plan-button-secondary" 
+                                            data-plan-change="enterprise"
+                                            data-plan-name="エンタープライズプラン">
+                                        このプランに変更
                                     </button>
                                 @else
+                                    {{-- 新規契約 --}}
                                     <button type="button" class="plan-button-secondary" data-plan="enterprise">
                                         このプランを選択
                                     </button>
@@ -351,10 +465,71 @@
                             </li>
                         </ul>
                     </div>
+
+                    {{-- 請求履歴（サブスクリプション加入者のみ） --}}
+                    @if($currentSubscription && count($invoices) > 0)
+                        <div class="mt-8 subscription-card-modern p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                                請求履歴
+                            </h2>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-800">
+                                        <tr>
+                                            <th class="px-4 py-3">日付</th>
+                                            <th class="px-4 py-3">金額</th>
+                                            <th class="px-4 py-3">ステータス</th>
+                                            <th class="px-4 py-3">請求書</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($invoices as $invoice)
+                                            <tr class="border-b dark:border-gray-700">
+                                                <td class="px-4 py-3">
+                                                    {{ \Carbon\Carbon::parse($invoice['date'])->format('Y年m月d日') }}
+                                                </td>
+                                                <td class="px-4 py-3 font-semibold">
+                                                    ¥{{ number_format($invoice['total']) }}
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    @if($invoice['status'] === 'paid')
+                                                        <span class="text-green-600 dark:text-green-400">支払い済み</span>
+                                                    @elseif($invoice['status'] === 'open')
+                                                        <span class="text-yellow-600 dark:text-yellow-400">未払い</span>
+                                                    @else
+                                                        <span class="text-gray-600 dark:text-gray-400">{{ $invoice['status'] }}</span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    @if($invoice['invoice_pdf'])
+                                                        <a href="{{ $invoice['invoice_pdf'] }}" target="_blank" 
+                                                           class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                                            PDF
+                                                        </a>
+                                                    @else
+                                                        <span class="text-gray-400">-</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </main>
         </div>
     </div>
+
+    {{-- 汎用確認ダイアログ --}}
+    <x-confirm-dialog />
+
+    {{-- プラン変更モーダル --}}
+    @if($currentSubscription)
+        <x-subscription-change-modal :currentPlan="$currentSubscription['plan']" :plans="$plans" />
+    @endif
 
     @push('scripts')
         @vite(['resources/js/subscriptions/select-plan.js'])
