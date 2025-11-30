@@ -75,10 +75,7 @@ RUN mkdir -p storage/logs \
 # =============================================================================
 # Laravel最適化
 # =============================================================================
-RUN composer install --no-dev --optimize-autoloader --prefer-dist \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+RUN composer install --no-dev --optimize-autoloader --prefer-dist
 
 # =============================================================================
 # パーミッション設定
@@ -98,6 +95,13 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 EXPOSE 80
 
 # =============================================================================
+# Entrypoint設定（起動時の初期化処理）
+# =============================================================================
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# =============================================================================
 # 起動コマンド
 # =============================================================================
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["apache2-foreground"]
