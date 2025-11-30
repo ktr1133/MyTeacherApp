@@ -361,7 +361,10 @@
                                     </button>
                                 @else
                                     {{-- 新規契約 --}}
-                                    <button type="button" class="plan-button-secondary" data-plan="enterprise">
+                                    <button type="button" 
+                                            class="plan-button-secondary" 
+                                            data-enterprise-subscribe
+                                            data-plan-name="エンタープライズプラン">
                                         このプランを選択
                                     </button>
                                 @endif

@@ -183,6 +183,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // ===================================
+    // エンタープライズプラン新規加入確認
+    // ===================================
+    document.querySelectorAll('[data-enterprise-subscribe]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const planName = this.getAttribute('data-plan-name');
+            
+            if (typeof window.showConfirmDialog === 'function') {
+                const message = `「${planName}」に加入しますか？\n\n基本料金: ¥3,000/月（10名まで）\n追加メンバー: ¥150/月/名\n\n特典: 14日間の無料トライアル期間があります。\nトライアル期間中はいつでもキャンセル可能です。\n\n次の画面で追加メンバー数を設定できます。`;
+                
+                window.showConfirmDialog(
+                    message,
+                    () => {
+                        // 確認後: Enterpriseモーダル（メンバー数設定）を開く
+                        if (enterpriseModal) {
+                            if (additionalMembersInput) {
+                                additionalMembersInput.value = '0';
+                            }
+                            calculateTotalPrice();
+                            openModal(enterpriseModal);
+                        }
+                    }
+                );
+            } else {
+                // フォールバック: 直接Enterpriseモーダルを開く
+                if (enterpriseModal) {
+                    if (additionalMembersInput) {
+                        additionalMembersInput.value = '0';
+                    }
+                    calculateTotalPrice();
+                    openModal(enterpriseModal);
+                }
+            }
+        });
+    });
+
     // 追加メンバー数変更時に価格を再計算
     if (additionalMembersInput) {
         additionalMembersInput.addEventListener('input', calculateTotalPrice);
