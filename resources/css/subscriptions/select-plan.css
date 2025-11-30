@@ -148,9 +148,8 @@
 /* プランバッジ */
 .plan-badge {
     position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 12px;
+    right: 12px;
     background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
     color: white;
     font-size: 0.75rem;
@@ -163,7 +162,7 @@
     white-space: nowrap;
 }
 
-/* 加入中バッジ（緑色・上部中央） */
+/* 加入中バッジ（緑色・右上） */
 .plan-badge.bg-green-500 {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
@@ -171,13 +170,13 @@
 }
 
 @keyframes badge-pulse {
-    0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.5); }
-    50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.7); }
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.5); }
+    50% { transform: scale(1.05); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.7); }
 }
 
 @keyframes current-badge-pulse {
-    0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5); }
-    50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.7); }
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5); }
+    50% { transform: scale(1.05); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.7); }
 }
 
 /* プランアイコン */
