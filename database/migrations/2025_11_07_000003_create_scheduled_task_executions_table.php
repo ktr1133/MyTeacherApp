@@ -18,11 +18,11 @@ return new class extends Migration
             $table->timestamp('executed_at')->comment('実行日時');
             $table->enum('status', array_keys(config('const.schedule_task_execution_statuses')))->default('success')->comment('実行ステータス'); // success, failed, skipped
 
-            $table->foreignId('task_id')->nullable()->constrained()->onDelete('set null')->comment('作成されたタスクID');
-            $table->foreignId('assigned_user_id')->nullable()->constrained('users')->onDelete('set null')->comment('割り当てられたユーザーID');
+            $table->foreignId('created_task_id')->nullable()->constrained('tasks')->onDelete('set null')->comment('作成されたタスクID');
+            $table->foreignId('deleted_task_id')->nullable()->constrained('tasks')->onDelete('set null')->comment('削除されたタスクID');
             
+            $table->text('note')->nullable()->comment('備考');
             $table->text('error_message')->nullable()->comment('エラーメッセージ');
-            $table->text('skip_reason')->nullable()->comment('スキップ理由');
             
             $table->timestamps();
             
