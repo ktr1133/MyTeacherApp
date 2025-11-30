@@ -209,33 +209,75 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
         $userLocalTime = \Carbon\Carbon::parse($date)->timezone($userTimezone);
         $currentTime = $userLocalTime->format('H:i');
 
+        Log::info("Schedule match check", [
+            'scheduled_task_id' => $scheduledTask->id,
+            'title' => $scheduledTask->title,
+            'user_timezone' => $userTimezone,
+            'utc_time' => $date->format('Y-m-d H:i:s'),
+            'local_time' => $userLocalTime->format('Y-m-d H:i:s'),
+            'current_time' => $currentTime,
+            'schedules' => $scheduledTask->schedules,
+        ]);
+
         $schedules = $scheduledTask->schedules;
 
         foreach ($schedules as $schedule) {
             // 時刻が一致しない場合はスキップ
             if (isset($schedule['time']) && $schedule['time'] !== $currentTime) {
+                Log::debug("Time mismatch", [
+                    'scheduled_task_id' => $scheduledTask->id,
+                    'expected_time' => $schedule['time'],
+                    'current_time' => $currentTime,
+                ]);
                 continue;
             }
 
             // スケジュールタイプ別の判定（ユーザーのタイムゾーンで判定）
             switch ($schedule['type']) {
                 case 'daily':
+                    Log::info("Daily schedule matched", [
+                        'scheduled_task_id' => $scheduledTask->id,
+                        'title' => $scheduledTask->title,
+                    ]);
                     return true;
 
                 case 'weekly':
                     // 曜日: 0=日曜, 1=月曜, ..., 6=土曜
                     $dayOfWeek = (int)$userLocalTime->format('w');
-                    // DBに文字列として保存されている可能性があるため、文字列でも比較
-                    return in_array($dayOfWeek, $schedule['days'] ?? [], false) 
+                    $matched = in_array($dayOfWeek, $schedule['days'] ?? [], false) 
                         || in_array((string)$dayOfWeek, $schedule['days'] ?? [], true);
+                    
+                    Log::info("Weekly schedule check", [
+                        'scheduled_task_id' => $scheduledTask->id,
+                        'title' => $scheduledTask->title,
+                        'day_of_week' => $dayOfWeek,
+                        'expected_days' => $schedule['days'] ?? [],
+                        'matched' => $matched,
+                    ]);
+                    
+                    return $matched;
 
                 case 'monthly':
                     $dayOfMonth = (int)$userLocalTime->format('j'); // 1-31
-                    // DBに文字列として保存されている可能性があるため、文字列でも比較
-                    return in_array($dayOfMonth, $schedule['dates'] ?? [], false)
+                    $matched = in_array($dayOfMonth, $schedule['dates'] ?? [], false)
                         || in_array((string)$dayOfMonth, $schedule['dates'] ?? [], true);
+                    
+                    Log::info("Monthly schedule check", [
+                        'scheduled_task_id' => $scheduledTask->id,
+                        'title' => $scheduledTask->title,
+                        'day_of_month' => $dayOfMonth,
+                        'expected_dates' => $schedule['dates'] ?? [],
+                        'matched' => $matched,
+                    ]);
+                    
+                    return $matched;
             }
         }
+
+        Log::info("No schedule matched", [
+            'scheduled_task_id' => $scheduledTask->id,
+            'title' => $scheduledTask->title,
+        ]);
 
         return false;
     }
