@@ -47,6 +47,11 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+# PHPエラーログを標準エラー出力にリダイレクト
+RUN echo "error_log = /proc/self/fd/2" >> /usr/local/etc/php/php.ini \
+    && echo "log_errors = On" >> /usr/local/etc/php/php.ini \
+    && echo "[Docker Build] PHP error logging configured to stderr"
+
 # =============================================================================
 # 作業ディレクトリ設定
 # =============================================================================
@@ -98,10 +103,21 @@ EXPOSE 80
 # Entrypoint設定（起動時の初期化処理）
 # =============================================================================
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh \
+    && echo "[Docker Build] entrypoint.sh copied and made executable" \
+    && ls -la /usr/local/bin/entrypoint.sh \
+    && head -5 /usr/local/bin/entrypoint.sh
 
 # =============================================================================
-# 起動コマンド
+# 起動コマンド検証
 # =============================================================================
+# デバッグ: ENTRYPOINT/CMDが正しく設定されているか確認
+RUN echo "[Docker Build] Verifying ENTRYPOINT will be used..." \
+    && echo "[Docker Build] ENTRYPOINT: /usr/local/bin/entrypoint.sh" \
+    && echo "[Docker Build] CMD: apache2-foreground"
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["apache2-foreground"]
+
+# デバッグ: イメージのメタデータを確認可能にする
+LABEL entrypoint.test="should_see_entrypoint_logs_in_cloudwatch"
