@@ -84,6 +84,27 @@ echo "[Entrypoint] Setting up permissions..."
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+# =============================================================================
+# 4. Laravel Schedulerの起動（バックグラウンド）
+# =============================================================================
+echo "[Entrypoint] Step 4: Starting Laravel Scheduler in background..."
+
+# スケジューラーログファイルの設定（日別ローテーション）
+SCHEDULER_LOGFILE="storage/logs/scheduler-$(date '+%Y%m%d').log"
+
+# スケジューラーをバックグラウンドで起動
+(
+    while true; do
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Running scheduler..." >> "$SCHEDULER_LOGFILE" 2>&1
+        php artisan schedule:run >> "$SCHEDULER_LOGFILE" 2>&1
+        sleep 60
+    done
+) &
+
+SCHEDULER_PID=$!
+echo "[Entrypoint] Scheduler started with PID: $SCHEDULER_PID"
+echo "[Entrypoint] Scheduler logs: $SCHEDULER_LOGFILE"
+
 echo "[Entrypoint] Initialization complete. Starting Apache..."
 echo "[Entrypoint] Executing command: $@"
 echo "========================================"
