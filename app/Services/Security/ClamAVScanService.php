@@ -211,6 +211,36 @@ class ClamAVScanService implements VirusScanServiceInterface
     public function isAvailable(): bool
     {
         try {
+            // リモートデーモンの場合はポート接続確認
+            if ($this->daemonHost && $this->daemonPort) {
+                $socket = @fsockopen($this->daemonHost, $this->daemonPort, $errno, $errstr, 2);
+                if ($socket) {
+                    // PINGコマンドで疎通確認
+                    fwrite($socket, "zPING\0");
+                    $response = trim(fgets($socket));
+                    fclose($socket);
+                    
+                    if ($response === 'PONG') {
+                        return true;
+                    }
+                    
+                    Log::warning('ClamAV remote daemon PING failed', [
+                        'host' => $this->daemonHost,
+                        'port' => $this->daemonPort,
+                        'response' => $response,
+                    ]);
+                    return false;
+                }
+                
+                Log::warning('ClamAV remote daemon connection failed', [
+                    'host' => $this->daemonHost,
+                    'port' => $this->daemonPort,
+                    'error' => "$errno: $errstr"
+                ]);
+                return false;
+            }
+            
+            // ローカルの場合はコマンド実行確認
             $path = $this->useDaemon && $this->isDaemonAvailable() ? $this->clamdScanPath : $this->clamScanPath;
             $process = new Process([$path, '--version']);
             $process->setTimeout(2);
