@@ -30,7 +30,7 @@
     } elseif (session()->has('info')) {
         $flashMessage = session('info');
         $flashType = 'info';
-    } elseif ($errors->any()) {
+    } elseif (isset($errors) && $errors->any()) {
         $flashMessage = $errors->first();
         $flashType = 'error';
     }
