@@ -19,11 +19,14 @@
                 currentData: @json($currentData),
                 // アバター用データ追加
                 normalData: @json($normalData),
-                groupData: @json($groupData)
+                groupData: @json($groupData),
+                // サブスクリプション状態
+                hasSubscription: @json($hasSubscription)
             };
             
             // 累積データの確認ログ（デバッグ用）
             console.log('[Performance] Current data:', window.performanceData.currentData);
+            console.log('[Performance] Has subscription:', window.performanceData.hasSubscription);
             
             @if($tab === 'normal')
                 console.log('[Performance] Normal task cumulative:', window.performanceData.currentData.nCum);
@@ -34,7 +37,10 @@
         </script>
     @endpush
 
-    <div x-data="performanceReport(@js($tab), @js($period), @js($offset))" 
+    <div data-report-type="performance"
+         data-tab="@js($tab)"
+         data-period="@js($period)"
+         data-offset="@js($offset)"
          class="flex min-h-screen max-h-screen performance-gradient-bg relative overflow-hidden">
         
         {{-- 背景装飾（大人用のみ） --}}
@@ -94,28 +100,64 @@
                                     Weekly
                                 @endif
                             </a>
-                            <a href="?tab={{ $tab }}&period=month&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                            class="period-button {{ $period === 'month' ? 'active' : '' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                @if(!$isChildTheme)
-                                    月間
-                                @else
-                                    Monthly
-                                @endif
-                            </a>
-                            <a href="?tab={{ $tab }}&period=year&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                            class="period-button {{ $period === 'year' ? 'active' : '' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                @if(!$isChildTheme)
-                                    年間
-                                @else
-                                    Yearly
-                                @endif
-                            </a>
+                            
+                            @if($hasSubscription)
+                                {{-- サブスク加入者: 月間・年間選択可能 --}}
+                                <a href="?tab={{ $tab }}&period=month&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                                class="period-button {{ $period === 'month' ? 'active' : '' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    @if(!$isChildTheme)
+                                        月間
+                                    @else
+                                        Monthly
+                                    @endif
+                                </a>
+                                <a href="?tab={{ $tab }}&period=year&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                                class="period-button {{ $period === 'year' ? 'active' : '' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    @if(!$isChildTheme)
+                                        年間
+                                    @else
+                                        Yearly
+                                    @endif
+                                </a>
+                            @else
+                                {{-- 無料ユーザー: 月間・年間はロック --}}
+                                <button type="button"
+                                        class="period-button opacity-60 hover:opacity-100 relative show-subscription-alert"
+                                        data-feature="period">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    @if(!$isChildTheme)
+                                        月間
+                                    @else
+                                        Monthly
+                                    @endif
+                                    <svg class="w-3 h-3 ml-1 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <button type="button"
+                                        class="period-button opacity-60 hover:opacity-100 relative show-subscription-alert"
+                                        data-feature="period">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    @if(!$isChildTheme)
+                                        年間
+                                    @else
+                                        Yearly
+                                    @endif
+                                    <svg class="w-3 h-3 ml-1 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -123,8 +165,7 @@
                 {{-- タブナビゲーション（やること/クエスト） --}}
                 <div class="flex gap-2 border-t border-gray-200 dark:border-gray-700 px-4 lg:px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
                     <a href="?tab=normal&period={{ $period }}&offset={{ $offset }}"
-                       :class="'{{ $tab }}' === 'normal' ? 'performance-tab performance-tab-normal performance-tab-active' : 'performance-tab performance-tab-inactive'"
-                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition">
+                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition {{ $tab === 'normal' ? 'performance-tab performance-tab-normal performance-tab-active' : 'performance-tab performance-tab-inactive' }}">
                         @if(!$isChildTheme)
                             通常タスク
                         @else
@@ -132,8 +173,7 @@
                         @endif
                     </a>
                     <a href="?tab=group&period={{ $period }}&offset={{ $offset }}"
-                       :class="'{{ $tab }}' === 'group' ? 'performance-tab performance-tab-group performance-tab-active' : 'performance-tab performance-tab-inactive'"
-                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition">
+                       class="px-3 py-2 lg:px-4 lg:py-3 border-b-2 font-semibold text-xs lg:text-sm transition {{ $tab === 'group' ? 'performance-tab performance-tab-group performance-tab-active' : 'performance-tab performance-tab-inactive' }}">
                         @if(!$isChildTheme)
                             グループタスク
                         @else
@@ -157,24 +197,57 @@
                             @else
                                 だれのグラフをみる？
                             @endif
+                            @if(!$hasSubscription)
+                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    サブスク限定
+                                </span>
+                            @endif
                         </label>
-                        <select 
-                            id="user-select" 
-                            onchange="window.location.href='?tab=group&period={{ $period }}&offset={{ $offset }}&user_id=' + this.value"
-                            class="w-full max-w-xs text-sm border-purple-200 dark:border-purple-700 rounded-lg shadow-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-600/50 bg-white dark:bg-gray-800 pr-8">
-                            <option value="0" {{ $isGroupWhole ? 'selected' : '' }}>
-                                @if(!$isChildTheme)
-                                    グループ全体
-                                @else
-                                    みんな
-                                @endif
-                            </option>
-                            @foreach($members as $member)
-                                <option value="{{ $member->id }}" {{ $targetUser && $targetUser->id === $member->id ? 'selected' : '' }}>
-                                    {{ $member->username }}
+                        
+                        @if($hasSubscription)
+                            {{-- サブスク加入者: 個人選択可能 --}}
+                            <select 
+                                id="user-select" 
+                                onchange="window.location.href='?tab=group&period={{ $period }}&offset={{ $offset }}&user_id=' + this.value"
+                                class="w-full max-w-xs text-sm border-purple-200 dark:border-purple-700 rounded-lg shadow-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-600/50 bg-white dark:bg-gray-800 pr-8">
+                                <option value="0" {{ $isGroupWhole ? 'selected' : '' }}>
+                                    @if(!$isChildTheme)
+                                        グループ全体
+                                    @else
+                                        みんな
+                                    @endif
                                 </option>
-                            @endforeach
-                        </select>
+                                @foreach($members as $member)
+                                    <option value="{{ $member->id }}" {{ $targetUser && $targetUser->id === $member->id ? 'selected' : '' }}>
+                                        {{ $member->username }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @else
+                            {{-- 無料ユーザー: グループ全体のみ、クリックでアラート --}}
+                            <button type="button"
+                                    class="show-subscription-alert w-full max-w-xs text-left px-3 py-2 text-sm border-2 border-purple-300 dark:border-purple-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 hover:border-purple-500 dark:hover:border-purple-400 transition flex items-center justify-between"
+                                    data-feature="member">
+                                <span class="text-gray-700 dark:text-gray-300">
+                                    @if(!$isChildTheme)
+                                        グループ全体
+                                    @else
+                                        みんな
+                                    @endif
+                                </span>
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-3 h-3 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </div>
+                            </button>
+                        @endif
                     </div>
                 @endif
 
@@ -184,20 +257,42 @@
 
                 {{-- 期間ナビゲーション --}}
                 <div class="flex items-center justify-between bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-200 dark:border-gray-700 shrink-0">
-                    <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset - 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                       class="nav-button {{ !$periodInfo['canGoPrevious'] ? 'disabled' : '' }}"
-                       @if(!$periodInfo['canGoPrevious']) onclick="event.preventDefault(); return false;" @endif>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                        </svg>
-                        <span class="hidden sm:inline">
-                            @if(!$isChildTheme)
-                                前へ
-                            @else
-                                まえ
-                            @endif
-                        </span>
-                    </a>
+                    @if($hasSubscription || $offset === 0)
+                        {{-- サブスク加入者 or 現在週: 通常のナビゲーション --}}
+                        <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset - 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                           class="nav-button {{ !$periodInfo['canGoPrevious'] ? 'disabled' : '' }}"
+                           @if(!$periodInfo['canGoPrevious']) onclick="event.preventDefault(); return false;" @endif>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            <span class="hidden sm:inline">
+                                @if(!$isChildTheme)
+                                    前へ
+                                @else
+                                    まえ
+                                @endif
+                            </span>
+                        </a>
+                    @else
+                        {{-- 無料ユーザー + 過去週: ロックボタン --}}
+                        <button type="button"
+                                class="show-subscription-alert nav-button opacity-60 hover:opacity-100 flex items-center gap-1"
+                                data-feature="navigation">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            <span class="hidden sm:inline">
+                                @if(!$isChildTheme)
+                                    前へ
+                                @else
+                                    まえ
+                                @endif
+                            </span>
+                            <svg class="w-3 h-3 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </button>
+                    @endif
 
                     <div class="period-display">
                         <svg class="w-4 h-4 {{ $tab === 'normal' ? 'text-[#59B9C6]' : 'text-purple-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,20 +301,42 @@
                         <span class="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">{{ $periodInfo['displayText'] }}</span>
                     </div>
 
-                    <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset + 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                       class="nav-button {{ !$periodInfo['canGoNext'] ? 'disabled' : '' }}"
-                       @if(!$periodInfo['canGoNext']) onclick="event.preventDefault(); return false;" @endif>
-                        <span class="hidden sm:inline">
-                            @if(!$isChildTheme)
-                                次へ
-                            @else
-                                つぎ
-                            @endif
-                        </span>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                        </svg>
-                    </a>
+                    @if($hasSubscription || $offset === 0)
+                        {{-- サブスク加入者 or 現在週: 通常のナビゲーション --}}
+                        <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset + 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                           class="nav-button {{ !$periodInfo['canGoNext'] ? 'disabled' : '' }}"
+                           @if(!$periodInfo['canGoNext']) onclick="event.preventDefault(); return false;" @endif>
+                            <span class="hidden sm:inline">
+                                @if(!$isChildTheme)
+                                    次へ
+                                @else
+                                    つぎ
+                                @endif
+                            </span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    @else
+                        {{-- 無料ユーザー + 過去/未来週: ロックボタン --}}
+                        <button type="button"
+                                class="show-subscription-alert nav-button opacity-60 hover:opacity-100 flex items-center gap-1"
+                                data-feature="navigation">
+                            <span class="hidden sm:inline">
+                                @if(!$isChildTheme)
+                                    次へ
+                                @else
+                                    つぎ
+                                @endif
+                            </span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                            <svg class="w-3 h-3 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </button>
+                    @endif
                 </div>
 
                 {{-- グラフ表示エリア（画面内に収まるように調整） --}}
@@ -253,4 +370,32 @@
             </main>
         </div>
     </div>
+
+    {{-- サブスクリプションアラートモーダル --}}
+    @if($showSubscriptionAlert)
+        <x-subscription-alert-modal :show="true" :feature="$subscriptionAlertFeature" />
+    @else
+        {{-- イベントリスナー用に常に配置（初期非表示） --}}
+        <x-subscription-alert-modal :show="false" :feature="''" />
+    @endif
+
+    {{-- Vanilla JS: サブスクリプションアラートボタンのイベントハンドラー --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // イベントデリゲーション: documentレベルでクリックをキャッチ
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.show-subscription-alert');
+            if (target) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const feature = target.dataset.feature || '';
+                
+                if (typeof SubscriptionAlertModal !== 'undefined') {
+                    SubscriptionAlertModal.show(feature);
+                }
+            }
+        });
+    });
+    </script>
 </x-app-layout>

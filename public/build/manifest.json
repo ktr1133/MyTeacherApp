@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-Cpx_1eKa.css",
+    "file": "assets/app-DURq85WU.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -201,7 +201,7 @@
     ]
   },
   "resources/js/avatar/avatar-controller.js": {
-    "file": "assets/avatar-controller-DxUQbxiQ.js",
+    "file": "assets/avatar-controller-CmV48gJX.js",
     "name": "avatar-controller",
     "src": "resources/js/avatar/avatar-controller.js",
     "isEntry": true
@@ -342,7 +342,7 @@
     ]
   },
   "resources/js/reports/performance.js": {
-    "file": "assets/performance-Dgrw3Roy.js",
+    "file": "assets/performance-D_CfxajU.js",
     "name": "performance",
     "src": "resources/js/reports/performance.js",
     "isEntry": true

@@ -3,7 +3,9 @@
 ## 更新履歴
 
 | 日付 | 更新者 | 更新内容 |
-|------|--------|---------|
+|------|--------|---------|-----|
+| 2025-12-01 | GitHub Copilot | **Phase 1.1.8-1完了**: 実績画面サブスク制限実装完了（4機能+Alpine.js削除） |
+| 2025-12-01 | GitHub Copilot | Phase 1.1.8完了: 実績画面機能制限・Alpine.js削除・デザイン統一 |
 | 2025-11-29 | GitHub Copilot | 初版作成: Stripe課金システム実装計画 |
 | 2025-12-01 | GitHub Copilot | Phase 1.1.3b完了: Webhook処理実装（サブスクリプションイベント処理） |
 | 2025-12-01 | GitHub Copilot | 進捗サマリー追加: 実装状況の可視化 |
@@ -13,6 +15,7 @@
 | 2025-12-01 | GitHub Copilot | Phase 1.1.5改善: モーダル確認機能追加（新規加入、プラン変更、キャンセル時）|
 | 2025-12-01 | GitHub Copilot | Phase 1.1.6完了確認: メンバー追加バリデーション機能は既存実装済み |
 | 2025-12-01 | GitHub Copilot | **Phase 1.1.7完了**: アカウント削除処理実装完了（SoftDeletes対応、テスト8/8通過） |
+| 2025-12-01 | GitHub Copilot | **Phase 1.1.8詳細計画作成**: 実績画面機能制限+月次レポート自動生成+PDF出力の実装計画確定 |
 
 ## 進捗サマリー
 
@@ -28,34 +31,63 @@
 | 1.1.5 | サブスクリプション管理画面 | ✅ 完了 | 100% | プラン選択画面と統合実装 |
 | 1.1.6 | メンバー追加バリデーション | ✅ 完了 | 100% | 既存実装確認、テスト済み |
 | 1.1.7 | アカウント削除処理 | ✅ 完了 | 100% | **本日完了**: SoftDeletes対応、テスト8/8通過 |
-| 1.1.8 | 月次レポート生成 | ⏳ 未着手 | 0% | 次の実装対象 |
-| 1.1.9 | 包括的テスト | ⏳ 未着手 | 0% | 最終フェーズ |
+| 1.1.8-1 | 実績画面サブスク制限 | ✅ 完了 | 100% | **本日完了**: 4機能制限+Alpine.js削除+ドキュメント整備 |
+| 1.1.8-2 | 月次レポート自動生成 | ⏳ 未着手 | 0% | Cronジョブ・レポート生成サービス実装 |
+| 1.1.8-3 | PDF出力機能 | ⏳ 未着手 | 0% | Dompdf統合・テンプレート作成 |
+| 1.1.9 | 包括的テスト | ⏳ 未着手 | 0% | Phase 1.1.8完了後に実施 |
 
-**全体進捗**: 8/9フェーズ完了 **（89%完了）**
+**全体進捗**: 8.33/10フェーズ完了 **（83%完了）**
 
-### 最近の成果（Phase 1.1.7）
+### 最近の成果（Phase 1.1.8-1）
 
-- ✅ **UserDeletionService実装**: グループマスター削除制限、グループ全体削除、サブスクリプション即時解約
-- ✅ **SoftDeletes導入**: User/Groupモデルへのソフトデリート対応（マイグレーション作成）
-- ✅ **ユーザー選択式UI**: グループマスター警告+マスター譲渡リンク表示
-- ✅ **confirm-dialog統合**: 既存コンポーネント活用による一貫したUX
-- ✅ **包括的テスト**: 8テストケース全通過（15アサーション）
-- ✅ **Transaction safety**: 全削除操作をDB::transaction()で保証
-- ✅ **詳細レポート作成**: `docs/reports/2025-12-01-phase1-1-7-account-deletion-completion-report.md`
+- ✅ **サブスクリプション制限実装**: 期間選択・メンバー選択・期間ナビゲーション・アバター表示の4機能を制限
+- ✅ **Alpine.js完全削除**: iPad互換性問題を根本解決、Vanilla JSに統一
+- ✅ **用語統一**: 「プレミアム」→「サブスク限定」に統一
+- ✅ **デザイン統一**: confirm-dialogコンポーネントと統一したモーダルデザイン
+- ✅ **ドキュメント整備**: Performance.md Section 2.5にアバター表示ロジックを詳細記載
+- ✅ **責務分離**: $requestedOffset（UI判定用）と$actualOffset（データ取得用）の分離
+- ✅ **二重チェック体制**: サーバー側（TeacherAvatarService）とクライアント側（performance.js）
+- ✅ **詳細レポート作成**: `docs/reports/2025-12-01-phase1-1-8-performance-restriction-completion-report.md`
 
 **実装詳細**: レポートファイル参照
 
 ### 次のステップ
 
-**Phase 1.1.8: 月次レポート生成機能（次の実装対象）**
-- 月次レポート自動生成（Cronジョブ）
-- PDF出力機能
-- 無料ユーザー利用制限（初月のみ）
+**Phase 1.1.8-2: 月次レポート自動生成機能（実装準備完了）**
 
-**Phase 1.1.9: 包括的テスト作成（未着手）**
+**実装内容**:
+1. **Cronジョブ実装**（毎月1日深夜2時実行）
+   - `app/Console/Commands/GenerateMonthlyReports.php` 作成
+   - 全グループを走査してレポート生成
+   - エラーハンドリング・ログ記録
+
+2. **MonthlyReportServiceの実装**
+   - レポート生成ロジック
+   - メンバー別統計計算
+   - 日別推移データ取得
+   - 初月無料閲覧ロジック
+
+3. **データベース設計**
+   - `monthly_reports` テーブル作成
+   - カラム: `id`, `group_id`, `year_month`, `data`, `pdf_path`, `created_at`
+   - インデックス: `(group_id, year_month)`
+
+**想定期間**: 2日
+
+**Phase 1.1.8-3: PDF出力機能（Phase 1.1.8-2完了後）**
+- Dompdf統合
+- PDFテンプレート作成
+- S3保存・ダウンロード機能
+- 月次レポート一覧・詳細画面実装
+
+**想定期間**: 1-2日
+
+**Phase 1.1.9: 包括的テスト作成（Phase 1.1.8完了後）**
 - 全機能の統合テスト
 - エッジケーステスト
-- パフォーマンステスト
+- CI/CD統合確認
+
+**想定期間**: 2-3日
 
 ## 1. 概要
 
@@ -854,23 +886,73 @@ STRIPE_ADDITIONAL_MEMBER_PRICE_ID=price_...
 - `app/Http/Actions/Profile/DeleteProfileAction.php` 更新
 - `app/Services/User/UserDeletionService.php` 作成
 
-### Phase 1.1.8: 実績レポート生成機能（3-4日） ⏳ **未着手**
+### Phase 1.1.8: 実績レポート生成機能（5-7日） ⏳ **Part 1完了、Part 2-3実装中**
+
+#### ✅ Part 1完了: 実績画面サブスクリプション制限（2025-12-01）
+
+**完了機能**:
+1. ✅ **期間選択制限**: 月間・年間表示をサブスク限定化
+2. ✅ **メンバー選択制限**: 個人別実績表示をサブスク限定化
+3. ✅ **期間ナビゲーション制限**: 無料ユーザーは当週のみ閲覧可能
+4. ✅ **アバター表示制限**: 無料ユーザーには実績画面でアバター非表示
+
+**技術的改善**:
+- ✅ Alpine.js完全削除（iPad互換性問題解決）
+- ✅ 用語統一（「サブスク限定」）
+- ✅ デザイン統一（confirm-dialog踏襲）
+- ✅ ドキュメント整備（Performance.md Section 2.5追加）
+
+**詳細レポート**: `docs/reports/2025-12-01-phase1-1-8-performance-restriction-completion-report.md`
+
+---
+
+#### 📋 Part 2計画: 月次レポート自動生成（未着手）
+
+**アクセス制限**:
+- サブスク加入者のみ閲覧可能
+- 無料ユーザーは初月（グループ作成後1ヶ月）のみ閲覧可能
+- 判定基準: `groups.created_at` から1ヶ月以内
+- 保存期間: 1年間（サブスク加入期間中のみ閲覧可能）
+
+**表示内容**:
+1. **サマリー統計**
+   - 当月タスク完了数・報酬合計
+   - メンバー別の統計
+   - 前月比較（前月比○%増減）
+
+2. **グラフ表示**
+   - 月間推移の積み上げ棒グラフ（メンバー別内訳）
+   - 通常タスク・グループタスク別で表示
+
+3. **AIコメント**
+   - アバターがいる場合: アバターのコメントとして当月実績概況
+   - アバターがいない場合: テキストで当月実績概況まとめ
+
+4. **詳細データテーブル**
+   - メンバー別に月間達成タスク内訳
+   - カラム: 日時、タイトル、種別（通常/グループ）、報酬額
+
+**アクセス方法**:
+- 実績画面に「月次レポートを見る」ボタン追加
+- レスポンシブ: 画面横幅が狭い場合はアイコンのみ表示
 
 **タスク**:
-1. 月次レポート自動生成（Cronジョブ）
-2. レポートHTML生成
+1. 実績画面の機能制限実装（Phase 1 - 優先度最高）
+2. 月次レポート自動生成（Cronジョブ）
 3. PDF出力機能
-4. グループ管理者への通知
-5. レポート閲覧画面（過去レポート一覧）
-6. 無料ユーザーの利用制限（初月のみ）
+4. アラートモーダル実装
 
 **成果物**:
+- `app/Services/Subscription/SubscriptionCheckService.php` 作成
 - `app/Console/Commands/GenerateMonthlyReports.php` 作成
 - `app/Services/Report/MonthlyReportService.php` 作成
 - `resources/views/reports/monthly-report.blade.php` 作成
+- `resources/views/components/subscription-alert-modal.blade.php` 作成
 - `app/Http/Actions/Reports/ShowMonthlyReportAction.php` 作成
+- `app/Http/Actions/Reports/ListMonthlyReportsAction.php` 作成
 - `app/Http/Actions/Reports/DownloadMonthlyReportPdfAction.php` 作成
-- PDF生成ライブラリ統合（Dompdf or Snappy）
+- PDF生成ライブラリ統合（Dompdf）
+- 実績画面レイアウト改善（子供用テーマ）
 
 ### Phase 1.1.9: テスト作成（2-3日） ⏳ **未着手**
 
@@ -990,7 +1072,7 @@ class SubscriptionService implements SubscriptionServiceInterface
             'customer_email' => $group->master->email,
             'client_reference_id' => $group->id,
             'success_url' => route('subscriptions.success') . '?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => route('subscriptions.select-plan'),
+            'cancel_url' => route('subscriptions.index'),
             'line_items' => [
                 [
                     'price' => $priceId,
@@ -2576,6 +2658,1081 @@ public function handle(): int
 - サブスクリプション会員割引
 
 **想定期間**: 2-3週間
+
+---
+
+## 13. Phase 1.1.8 詳細実装計画（2025-12-01確定）
+
+### 実装フェーズ構成
+
+**Phase 1: 実績画面の機能制限実装**（2日、優先度：最高）
+**Phase 2: 月次レポート自動生成機能**（2日）
+**Phase 3: PDF出力機能**（1-2日）
+**Phase 4: テスト作成**（Phase 1.1.9で実施）
+
+### Phase 1: 実績画面の機能制限実装
+
+#### 1-1. サブスクリプション判定サービス作成
+
+**実装済みサービス**: `app/Services/Subscription/SubscriptionService.php`
+
+**Phase 1.1.8で実装したメソッド**:
+
+```php
+/**
+ * グループがサブスクリプション加入済みかチェック
+ */
+public function isGroupSubscribed(Group $group): bool
+{
+    return $group->subscription_active === true;
+}
+
+/**
+ * サブスクリプション限定機能へのアクセス権限チェック
+ * （期間選択・メンバー選択・アバターイベント）
+ */
+public function canAccessSubscriptionFeatures(Group $group): bool
+{
+    return $this->isGroupSubscribed($group);
+}
+
+/**
+ * 実績画面の期間選択制限チェック
+ * 無料: 週間のみ / サブスク: すべて選択可能
+ */
+public function canSelectPeriod(Group $group, string $period): bool
+{
+    if ($this->isGroupSubscribed($group)) {
+        return true;
+    }
+    return $period === 'week';
+}
+
+/**
+ * 実績画面のメンバー選択制限チェック
+ * 無料: グループ全体のみ / サブスク: 個人別選択可能
+ */
+public function canSelectMember(Group $group, bool $individualSelection): bool
+{
+    if ($this->isGroupSubscribed($group)) {
+        return true;
+    }
+    return !$individualSelection;
+}
+
+/**
+ * 実績画面の期間ナビゲーション制限チェック
+ * 無料: 当週のみ / サブスク: 過去期間の閲覧可能
+ */
+public function canNavigateToPeriod(Group $group, Carbon $targetPeriod): bool
+{
+    if ($this->isGroupSubscribed($group)) {
+        return true;
+    }
+    return $targetPeriod->isCurrentWeek();
+}
+    
+    /**
+     * グループがサブスクリプション加入済みか判定
+     * 
+     * @param Group $group
+     * @return bool
+     */
+    public function isGroupSubscribed(Group $group): bool
+    {
+        return $group->subscription_active === true;
+    }
+    
+    /**
+     * 無料ユーザーが月次レポートを閲覧できるか判定（初月のみ）
+     * 
+     * @param Group $group
+     * @return bool
+     */
+    public function canAccessMonthlyReport(Group $group): bool
+    {
+        // サブスク加入済みなら閲覧可能
+        if ($this->isGroupSubscribed($group)) {
+            return true;
+        }
+        
+        // グループ作成後1ヶ月以内なら閲覧可能（初月無料）
+        return Carbon::parse($group->created_at)->addMonth()->isFuture();
+    }
+    
+    /**
+     * 過去の月次レポートを閲覧できるか判定
+     * 
+     * @param Group $group
+     * @param Carbon $reportMonth
+     * @return bool
+     */
+    public function canAccessPastReport(Group $group, Carbon $reportMonth): bool
+    {
+        // サブスク未加入なら過去レポートは閲覧不可
+        if (!$this->isGroupSubscribed($group)) {
+            return false;
+        }
+        
+        // 1年以内のレポートのみ閲覧可能
+        return $reportMonth->greaterThanOrEqualTo(now()->subYear());
+    }
+}
+```
+
+**インターフェース**: `app/Services/Subscription/SubscriptionServiceInterface.php`
+
+**Phase 1.1.8で追加したメソッド定義**:
+
+```php
+public function isGroupSubscribed(Group $group): bool;
+public function canAccessSubscriptionFeatures(Group $group): bool;
+public function canAccessMonthlyReport(Group $group): bool;
+public function canAccessPastReport(Group $group, Carbon $reportMonth): bool;
+public function canSelectPeriod(Group $group, string $period): bool;
+public function canSelectMember(Group $group, bool $individualSelection): bool;
+public function canNavigateToPeriod(Group $group, Carbon $targetPeriod): bool;
+public function shouldShowSubscriptionAlert(Group $group, string $feature): bool;
+```
+
+**サービスプロバイダー登録**: `app/Providers/AppServiceProvider.php`
+
+**既存のバインディングを使用**（Phase 1.1.8では新規サービス作成せず、既存SubscriptionServiceに統合）:
+
+```php
+$this->app->bind(
+    \App\Services\Subscription\SubscriptionServiceInterface::class,
+    \App\Services\Subscription\SubscriptionService::class
+);
+```
+
+#### 1-2. 実績画面の制限実装
+
+**ファイル**: `app/Http/Actions/Reports/IndexPerformanceAction.php`（Phase 1.1.8で実装完了）
+
+```php
+use App\Services\Subscription\SubscriptionServiceInterface;
+
+public function __construct(
+    protected PerformanceServiceInterface $performanceService,
+    protected ProfileManagementServiceInterface $profileService,
+    protected SubscriptionServiceInterface $subscriptionService
+) {}
+
+public function __invoke(Request $request)
+{
+    $currentUser = $request->user();
+    $group = $currentUser->group;
+    
+    // サブスク加入状況を判定
+    $hasSubscription = $group ? $this->subscriptionService->isGroupSubscribed($group) : false;
+    
+    // 期間選択制限
+    $period = $request->input('period', 'week');
+    if ($group && !$this->subscriptionService->canSelectPeriod($group, $period)) {
+        return redirect()->route('reports.performance', ['period' => 'week'])
+            ->with('subscriptionAlertFeature', 'period');
+    }
+    
+    // メンバー選択制限
+    $selectedUserId = (int) $request->input('user_id', 0);
+    if ($group && $selectedUserId > 0 && !$this->subscriptionService->canSelectMember($group, true)) {
+        return redirect()->route('reports.performance', ['user_id' => 0])
+            ->with('subscriptionAlertFeature', 'member');
+    }
+    
+    // 期間ナビゲーション制限
+    $offset = (int) $request->input('offset', 0);
+    if ($offset !== 0 && $group) {
+        $targetPeriod = $this->calculateTargetPeriod($period, $offset);
+        if (!$this->subscriptionService->canNavigateToPeriod($group, $targetPeriod)) {
+            return redirect()->route('reports.performance', ['offset' => 0])
+                ->with('subscriptionAlertFeature', 'navigation');
+        }
+    }
+    
+    // 無料ユーザーの制限
+    $availablePeriods = $hasSubscription 
+        ? ['week', 'month', 'year'] 
+        : ['week'];  // 無料は週間のみ
+    
+    $period = $request->input('period', 'week');
+    
+    // 無料ユーザーが月間・年間にアクセスしようとした場合、週間にリダイレクト
+    if (!in_array($period, $availablePeriods)) {
+        return redirect()->route('reports.performance', ['period' => 'week']);
+    }
+    
+    // 無料ユーザーは当週のみ（offset制限）
+    $offset = (int) $request->input('offset', 0);
+    if (!$hasSubscription && $offset !== 0) {
+        $offset = 0;  // 強制的に当週に戻す
+    }
+    
+    // メンバー選択制限（グループタスクのみ）
+    $tab = $request->input('tab', 'normal');
+    $targetUserId = $request->input('user_id', 0);
+    
+    if ($tab === 'group' && !$hasSubscription && $targetUserId != 0) {
+        // 無料ユーザーは個人別表示不可、グループ全体のみ
+        $targetUserId = 0;
+    }
+    
+    // ... 既存のデータ取得処理 ...
+    
+    return view('reports.performance', [
+        // ... 既存の変数 ...
+        'hasSubscription' => $hasSubscription,
+        'availablePeriods' => $availablePeriods,
+        'canNavigatePeriods' => $hasSubscription,  // 無料は期間ナビゲーション不可
+        'canSelectMembers' => $hasSubscription,  // 無料はメンバー選択不可
+    ]);
+}
+```
+
+#### 1-3. 実績画面ビューの更新
+
+**ファイル**: `resources/views/reports/performance.blade.php`
+
+```blade
+{{-- 期間選択ボタン（月間・年間は無料ユーザーでグレーアウト） --}}
+<div class="flex gap-2 shrink-0 flex-wrap">
+    <a href="?tab={{ $tab }}&period=week&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+       class="period-button {{ $period === 'week' ? 'active' : '' }}">
+        {{-- 週間ボタン --}}
+    </a>
+    
+    @if($hasSubscription)
+        <a href="?tab={{ $tab }}&period=month&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+           class="period-button {{ $period === 'month' ? 'active' : '' }}">
+            {{-- 月間ボタン --}}
+        </a>
+        <a href="?tab={{ $tab }}&period=year&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+           class="period-button {{ $period === 'year' ? 'active' : '' }}">
+            {{-- 年間ボタン --}}
+        </a>
+    @else
+        {{-- グレーアウトボタン --}}
+        <button type="button" 
+                onclick="showSubscriptionAlert('この機能はサブスク加入者のみ利用できます')"
+                class="period-button disabled opacity-50 cursor-not-allowed">
+            月間
+        </button>
+        <button type="button" 
+                onclick="showSubscriptionAlert('この機能はサブスク加入者のみ利用できます')"
+                class="period-button disabled opacity-50 cursor-not-allowed">
+            年間
+        </button>
+    @endif
+</div>
+
+{{-- 月次レポートボタン --}}
+@if($group)
+    <a href="{{ route('reports.monthly.index') }}" 
+       class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <span class="hidden md:inline">月次レポート</span>
+    </a>
+@endif
+
+{{-- メンバー選択（グループタスクのみ） --}}
+@if ($tab === 'group' && $members->isNotEmpty())
+    <select id="user-select" 
+            onchange="handleMemberSelect(this.value, {{ $hasSubscription ? 'true' : 'false' }})"
+            class="...">
+        <option value="0" {{ $isGroupWhole ? 'selected' : '' }}>グループ全体</option>
+        @foreach($members as $member)
+            <option value="{{ $member->id }}" 
+                    {{ !$hasSubscription ? 'disabled class="text-gray-400"' : '' }}
+                    {{ $targetUser && $targetUser->id === $member->id ? 'selected' : '' }}>
+                {{ $member->username }}
+                @if(!$hasSubscription) 🔒 @endif
+            </option>
+        @endforeach
+    </select>
+@endif
+
+{{-- 期間ナビゲーション制限 --}}
+<a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset - 1 }}..."
+   class="nav-button {{ !$canNavigatePeriods && $offset - 1 < 0 ? 'disabled' : '' }}"
+   @if(!$canNavigatePeriods && $offset !== 0) 
+       onclick="event.preventDefault(); showSubscriptionAlert('過去の期間を見るにはサブスク加入が必要です'); return false;" 
+   @endif>
+    前へ
+</a>
+
+<a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset + 1 }}..."
+   class="nav-button {{ !$canNavigatePeriods && $offset + 1 > 0 ? 'disabled' : '' }}"
+   @if(!$canNavigatePeriods && $offset !== 0) 
+       onclick="event.preventDefault(); showSubscriptionAlert('過去の期間を見るにはサブスク加入が必要です'); return false;" 
+   @endif>
+    次へ
+</a>
+```
+
+#### 1-4. サブスクリプションアラートモーダル作成
+
+**ファイル**: `resources/views/components/subscription-alert-modal.blade.php`
+
+```blade
+<div id="subscription-alert-modal" 
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center"
+     onclick="if(event.target === this) hideSubscriptionAlert()">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    プレミアム機能
+                </h3>
+                <p id="subscription-alert-message" class="text-gray-600 dark:text-gray-300 mb-4">
+                    この機能はサブスク加入者のみ利用できます
+                </p>
+                <div class="flex gap-3">
+                    <a href="{{ route('subscriptions.index') }}" 
+                       class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-center py-2.5 px-4 rounded-lg font-semibold transition">
+                        プランを見る
+                    </a>
+                    <button type="button" 
+                            onclick="hideSubscriptionAlert()"
+                            class="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                        閉じる
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSubscriptionAlert(message) {
+    const modal = document.getElementById('subscription-alert-modal');
+    const messageEl = document.getElementById('subscription-alert-message');
+    messageEl.textContent = message || 'この機能はサブスク加入者のみ利用できます';
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function hideSubscriptionAlert() {
+    const modal = document.getElementById('subscription-alert-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+function handleMemberSelect(userId, hasSubscription) {
+    if (userId != 0 && !hasSubscription) {
+        showSubscriptionAlert('メンバー別の実績を見るにはサブスク加入が必要です');
+        document.getElementById('user-select').value = '0';
+        return false;
+    }
+    window.location.href = '?tab=group&period={{ $period }}&offset={{ $offset }}&user_id=' + userId;
+}
+</script>
+```
+
+#### 1-5. 子供用テーマのレイアウト改善
+
+**ファイル**: `resources/css/reports/performance.css`（既存修正）
+
+```css
+/* 子供用テーマの縮小表示 */
+.child-theme .chart-container-large {
+    height: 60vh; /* グラフエリアを縮小 */
+}
+
+.child-theme .chart-footer {
+    font-size: 0.75rem; /* ラベルを縮小 */
+    padding: 0.5rem;
+}
+
+.child-theme .chart-footer .stat-label {
+    font-size: 0.65rem;
+}
+
+.child-theme .chart-footer .stat-value {
+    font-size: 0.9rem;
+}
+
+/* スクロール無効化 */
+.child-theme .performance-gradient-bg {
+    overflow-y: hidden;
+}
+```
+
+#### 1-6. アバターイベント制限
+
+**ファイル**: `app/Services/Avatar/AvatarEventService.php`（既存修正）
+
+```php
+use App\Services\Subscription\SubscriptionCheckServiceInterface;
+
+public function __construct(
+    protected SubscriptionCheckServiceInterface $subscriptionCheck
+) {}
+
+public function triggerEvent(User $user, string $eventType): ?string
+{
+    // サブスク未加入の場合、アバターイベント非表示
+    if (!$this->subscriptionCheck->canAccessPremiumFeatures($user)) {
+        return null;
+    }
+    
+    // 既存のイベント処理
+    // ...
+}
+```
+
+### Phase 2: 月次レポート自動生成機能
+
+#### 2-1. データベーステーブル準備
+
+**マイグレーション**: `database/migrations/YYYY_MM_DD_add_pdf_path_to_monthly_reports.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('monthly_reports', function (Blueprint $table) {
+            $table->string('pdf_path')->nullable()->after('generated_at')->comment('PDFファイルパス（S3）');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('monthly_reports', function (Blueprint $table) {
+            $table->dropColumn('pdf_path');
+        });
+    }
+};
+```
+
+#### 2-2. 月次レポートサービス実装
+
+**ファイル**: `app/Services/Report/MonthlyReportService.php`
+
+```php
+<?php
+
+namespace App\Services\Report;
+
+use App\Models\Group;
+use App\Models\MonthlyReport;
+use App\Models\Task;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
+class MonthlyReportService implements MonthlyReportServiceInterface
+{
+    /**
+     * 指定グループ・月のレポートを生成
+     */
+    public function generateReport(Group $group, Carbon $month): MonthlyReport
+    {
+        $startDate = $month->copy()->startOfMonth();
+        $endDate = $month->copy()->endOfMonth();
+        
+        // 当月データ集計
+        $currentStats = $this->calculateMonthlyStats($group, $startDate, $endDate);
+        
+        // 前月データ取得
+        $previousMonth = $month->copy()->subMonth();
+        $previousReport = MonthlyReport::where('group_id', $group->id)
+            ->where('report_month', $previousMonth->startOfMonth())
+            ->first();
+        
+        // レポート作成
+        $report = MonthlyReport::updateOrCreate(
+            [
+                'group_id' => $group->id,
+                'report_month' => $startDate,
+            ],
+            [
+                // 通常タスク
+                'normal_task_count' => $currentStats['normal_count'],
+                'normal_task_completed_count' => $currentStats['normal_completed'],
+                'normal_task_total_reward' => $currentStats['normal_reward'],
+                
+                // グループタスク
+                'group_task_count' => $currentStats['group_count'],
+                'group_task_completed_count' => $currentStats['group_completed'],
+                'group_task_total_reward' => $currentStats['group_reward'],
+                
+                // メンバー統計
+                'member_count' => $currentStats['member_count'],
+                'active_member_count' => $currentStats['active_members'],
+                
+                // 前月比較
+                'normal_count_previous_month' => $previousReport->normal_task_count ?? 0,
+                'group_count_previous_month' => $previousReport->group_task_count ?? 0,
+                'reward_previous_month' => ($previousReport->normal_task_total_reward ?? 0) + ($previousReport->group_task_total_reward ?? 0),
+                
+                'generated_at' => now(),
+            ]
+        );
+        
+        return $report;
+    }
+    
+    /**
+     * 月間統計データを計算
+     */
+    protected function calculateMonthlyStats(Group $group, Carbon $start, Carbon $end): array
+    {
+        $memberIds = $group->users()->pluck('id');
+        
+        // 通常タスク統計
+        $normalTasks = Task::whereIn('user_id', $memberIds)
+            ->whereNull('group_task_id')
+            ->whereBetween('created_at', [$start, $end])
+            ->selectRaw('COUNT(*) as count, SUM(CASE WHEN is_completed THEN 1 ELSE 0 END) as completed, SUM(CASE WHEN is_completed THEN reward ELSE 0 END) as reward')
+            ->first();
+        
+        // グループタスク統計
+        $groupTasks = Task::whereIn('user_id', $memberIds)
+            ->whereNotNull('group_task_id')
+            ->whereBetween('created_at', [$start, $end])
+            ->selectRaw('COUNT(*) as count, SUM(CASE WHEN is_completed THEN 1 ELSE 0 END) as completed, SUM(CASE WHEN is_completed THEN reward ELSE 0 END) as reward')
+            ->first();
+        
+        // アクティブメンバー（当月にタスク完了したメンバー）
+        $activeMembers = Task::whereIn('user_id', $memberIds)
+            ->where('is_completed', true)
+            ->whereBetween('completed_at', [$start, $end])
+            ->distinct('user_id')
+            ->count('user_id');
+        
+        return [
+            'normal_count' => $normalTasks->count ?? 0,
+            'normal_completed' => $normalTasks->completed ?? 0,
+            'normal_reward' => $normalTasks->reward ?? 0,
+            'group_count' => $groupTasks->count ?? 0,
+            'group_completed' => $groupTasks->completed ?? 0,
+            'group_reward' => $groupTasks->reward ?? 0,
+            'member_count' => $group->users()->count(),
+            'active_members' => $activeMembers,
+        ];
+    }
+    
+    /**
+     * メンバー別統計を取得
+     */
+    public function getMemberStats(Group $group, Carbon $month): array
+    {
+        $startDate = $month->copy()->startOfMonth();
+        $endDate = $month->copy()->endOfMonth();
+        
+        $members = $group->users;
+        $stats = [];
+        
+        foreach ($members as $member) {
+            $tasks = Task::where('user_id', $member->id)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->get();
+            
+            $stats[] = [
+                'user' => $member,
+                'normal_count' => $tasks->whereNull('group_task_id')->count(),
+                'normal_completed' => $tasks->whereNull('group_task_id')->where('is_completed', true)->count(),
+                'group_count' => $tasks->whereNotNull('group_task_id')->count(),
+                'group_completed' => $tasks->whereNotNull('group_task_id')->where('is_completed', true)->count(),
+                'total_reward' => $tasks->where('is_completed', true)->sum('reward'),
+                'tasks' => $tasks->where('is_completed', true)->sortByDesc('completed_at'),
+            ];
+        }
+        
+        return $stats;
+    }
+    
+    /**
+     * 日別推移データを取得（積み上げ棒グラフ用）
+     */
+    public function getDailyProgress(Group $group, Carbon $month): array
+    {
+        $startDate = $month->copy()->startOfMonth();
+        $endDate = $month->copy()->endOfMonth();
+        $memberIds = $group->users()->pluck('id');
+        
+        // 日別・メンバー別の完了タスク数を取得
+        $dailyData = Task::whereIn('user_id', $memberIds)
+            ->where('is_completed', true)
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->selectRaw('DATE(completed_at) as date, user_id, group_task_id IS NOT NULL as is_group, COUNT(*) as count, SUM(reward) as reward')
+            ->groupBy('date', 'user_id', 'is_group')
+            ->get();
+        
+        // データ整形
+        $result = [];
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $dayKey = $date->format('Y-m-d');
+            $result[$dayKey] = [
+                'date' => $date->format('m/d'),
+                'members' => [],
+            ];
+        }
+        
+        foreach ($dailyData as $row) {
+            $result[$row->date]['members'][$row->user_id] = [
+                'normal' => $row->is_group ? 0 : $row->count,
+                'group' => $row->is_group ? $row->count : 0,
+                'reward' => $row->reward,
+            ];
+        }
+        
+        return $result;
+    }
+}
+```
+
+**インターフェース**: `app/Services/Report/MonthlyReportServiceInterface.php`
+
+```php
+<?php
+
+namespace App\Services\Report;
+
+use App\Models\Group;
+use App\Models\MonthlyReport;
+use Carbon\Carbon;
+
+interface MonthlyReportServiceInterface
+{
+    public function generateReport(Group $group, Carbon $month): MonthlyReport;
+    public function getMemberStats(Group $group, Carbon $month): array;
+    public function getDailyProgress(Group $group, Carbon $month): array;
+}
+```
+
+#### 2-3. Cronコマンド実装
+
+**ファイル**: `app/Console/Commands/GenerateMonthlyReports.php`
+
+```php
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\Group;
+use App\Services\Report\MonthlyReportServiceInterface;
+use Illuminate\Console\Command;
+use Carbon\Carbon;
+
+class GenerateMonthlyReports extends Command
+{
+    protected $signature = 'reports:generate-monthly {--month=}';
+    protected $description = '月次レポートを自動生成（全グループ）';
+
+    public function __construct(
+        protected MonthlyReportServiceInterface $reportService
+    ) {
+        parent::__construct();
+    }
+
+    public function handle(): int
+    {
+        $month = $this->option('month') 
+            ? Carbon::parse($this->option('month')) 
+            : now()->subMonth();
+        
+        $this->info("月次レポート生成開始: {$month->format('Y年m月')}");
+        
+        $groups = Group::whereHas('users')->get();
+        $successCount = 0;
+        $failCount = 0;
+        
+        foreach ($groups as $group) {
+            try {
+                $report = $this->reportService->generateReport($group, $month);
+                $this->info("✓ グループ {$group->id} のレポート生成完了");
+                $successCount++;
+            } catch (\Exception $e) {
+                $this->error("✗ グループ {$group->id} のレポート生成失敗: {$e->getMessage()}");
+                $failCount++;
+            }
+        }
+        
+        $this->info("\n完了: 成功 {$successCount}件、失敗 {$failCount}件");
+        
+        return Command::SUCCESS;
+    }
+}
+```
+
+**スケジュール登録**: `app/Console/Kernel.php`
+
+```php
+protected function schedule(Schedule $schedule): void
+{
+    // 毎月1日の深夜2時に前月レポート生成
+    $schedule->command('reports:generate-monthly')
+        ->monthlyOn(1, '02:00')
+        ->timezone('Asia/Tokyo');
+}
+```
+
+### Phase 3: PDF出力機能
+
+#### 3-1. Dompdf統合
+
+```bash
+composer require barryvdh/laravel-dompdf
+```
+
+**設定**: `config/app.php`
+
+```php
+'providers' => [
+    // ...
+    Barryvdh\DomPDF\ServiceProvider::class,
+],
+
+'aliases' => [
+    // ...
+    'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
+],
+```
+
+#### 3-2. PDF生成サービス拡張
+
+**ファイル**: `app/Services/Report/MonthlyReportService.php`（拡張）
+
+```php
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
+
+public function generatePdf(MonthlyReport $report): string
+{
+    $group = $report->group;
+    $month = Carbon::parse($report->report_month);
+    
+    // メンバー統計取得
+    $memberStats = $this->getMemberStats($group, $month);
+    
+    // 日別推移データ取得
+    $dailyProgress = $this->getDailyProgress($group, $month);
+    
+    // PDF生成
+    $pdf = Pdf::loadView('reports.monthly-report-pdf', [
+        'report' => $report,
+        'group' => $group,
+        'month' => $month,
+        'memberStats' => $memberStats,
+        'dailyProgress' => $dailyProgress,
+    ]);
+    
+    // S3に保存
+    $filename = "monthly-reports/{$group->id}/{$month->format('Y-m')}.pdf";
+    $pdfContent = $pdf->output();
+    Storage::disk('s3')->put($filename, $pdfContent, 'public');
+    
+    // レポートにパス保存
+    $report->update(['pdf_path' => $filename]);
+    
+    return $filename;
+}
+```
+
+#### 3-3. PDFテンプレート作成
+
+**ファイル**: `resources/views/reports/monthly-report-pdf.blade.php`
+
+```blade
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>月次レポート - {{ $month->format('Y年m月') }}</title>
+    <style>
+        body { font-family: "Noto Sans JP", sans-serif; font-size: 12px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .section { margin-bottom: 30px; }
+        .section-title { font-size: 16px; font-weight: bold; border-bottom: 2px solid #8B5CF6; padding-bottom: 5px; margin-bottom: 15px; }
+        .stats-grid { display: table; width: 100%; }
+        .stat-item { display: table-cell; text-align: center; padding: 10px; border: 1px solid #E5E7EB; }
+        .stat-label { font-size: 10px; color: #6B7280; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #8B5CF6; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #E5E7EB; padding: 8px; text-align: left; }
+        th { background-color: #F3F4F6; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>月次実績レポート</h1>
+        <p>{{ $month->format('Y年m月') }}</p>
+        <p>グループ: {{ $group->name ?? 'グループ' }}</p>
+    </div>
+
+    {{-- サマリー統計 --}}
+    <div class="section">
+        <h2 class="section-title">📊 当月サマリー</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">通常タスク完了</div>
+                <div class="stat-value">{{ $report->normal_task_completed_count }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">グループタスク完了</div>
+                <div class="stat-value">{{ $report->group_task_completed_count }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">獲得報酬合計</div>
+                <div class="stat-value">{{ number_format($report->normal_task_total_reward + $report->group_task_total_reward) }}</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- メンバー別統計 --}}
+    <div class="section">
+        <h2 class="section-title">👥 メンバー別実績</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>メンバー</th>
+                    <th>通常タスク</th>
+                    <th>グループタスク</th>
+                    <th>獲得報酬</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($memberStats as $stat)
+                    <tr>
+                        <td>{{ $stat['user']->username }}</td>
+                        <td>{{ $stat['normal_completed'] }} / {{ $stat['normal_count'] }}</td>
+                        <td>{{ $stat['group_completed'] }} / {{ $stat['group_count'] }}</td>
+                        <td>{{ number_format($stat['total_reward']) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    {{-- メンバー別タスク詳細 --}}
+    @foreach($memberStats as $stat)
+        <div class="section">
+            <h2 class="section-title">{{ $stat['user']->username }} のタスク詳細</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>日時</th>
+                        <th>タイトル</th>
+                        <th>種別</th>
+                        <th>報酬</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($stat['tasks'] as $task)
+                        <tr>
+                            <td>{{ $task->completed_at->format('m/d H:i') }}</td>
+                            <td>{{ $task->title }}</td>
+                            <td>{{ $task->group_task_id ? 'グループ' : '通常' }}</td>
+                            <td>{{ number_format($task->reward) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endforeach
+</body>
+</html>
+```
+
+#### 3-4. 月次レポート画面実装
+
+**ファイル**: `app/Http/Actions/Reports/ListMonthlyReportsAction.php`
+
+```php
+<?php
+
+namespace App\Http\Actions\Reports;
+
+use App\Models\MonthlyReport;
+use App\Services\Subscription\SubscriptionCheckServiceInterface;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class ListMonthlyReportsAction
+{
+    public function __construct(
+        protected SubscriptionCheckServiceInterface $subscriptionCheck
+    ) {}
+
+    public function __invoke(Request $request): View
+    {
+        $user = $request->user();
+        $group = $user->group;
+        
+        if (!$group) {
+            abort(404, 'グループに所属していません');
+        }
+        
+        // アクセス権限チェック
+        if (!$this->subscriptionCheck->canAccessMonthlyReport($group)) {
+            return view('reports.monthly-locked', [
+                'message' => 'グループ作成後の初月が経過しました。月次レポートを閲覧するにはサブスクリプションへの加入が必要です。',
+            ]);
+        }
+        
+        // 過去1年間のレポート取得
+        $reports = MonthlyReport::where('group_id', $group->id)
+            ->where('report_month', '>=', now()->subYear())
+            ->orderByDesc('report_month')
+            ->get();
+        
+        // サブスク未加入の場合、初月レポートのみ表示
+        if (!$this->subscriptionCheck->isGroupSubscribed($group)) {
+            $reports = $reports->filter(function ($report) use ($group) {
+                return $this->subscriptionCheck->canAccessPastReport($group, $report->report_month);
+            });
+        }
+        
+        return view('reports.monthly-index', [
+            'group' => $group,
+            'reports' => $reports,
+            'hasSubscription' => $this->subscriptionCheck->isGroupSubscribed($group),
+        ]);
+    }
+}
+```
+
+**ファイル**: `app/Http/Actions/Reports/ShowMonthlyReportAction.php`
+
+```php
+<?php
+
+namespace App\Http\Actions\Reports;
+
+use App\Models\MonthlyReport;
+use App\Services\Report\MonthlyReportServiceInterface;
+use App\Services\Subscription\SubscriptionCheckServiceInterface;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class ShowMonthlyReportAction
+{
+    public function __construct(
+        protected MonthlyReportServiceInterface $reportService,
+        protected SubscriptionCheckServiceInterface $subscriptionCheck
+    ) {}
+
+    public function __invoke(Request $request, int $reportId): View
+    {
+        $user = $request->user();
+        $report = MonthlyReport::findOrFail($reportId);
+        
+        // 自分のグループのレポートか確認
+        if ($report->group_id !== $user->group_id) {
+            abort(403);
+        }
+        
+        // アクセス権限チェック
+        if (!$this->subscriptionCheck->canAccessPastReport($user->group, $report->report_month)) {
+            abort(403, 'このレポートを閲覧する権限がありません');
+        }
+        
+        // メンバー統計取得
+        $memberStats = $this->reportService->getMemberStats($report->group, $report->report_month);
+        
+        // 日別推移データ取得
+        $dailyProgress = $this->reportService->getDailyProgress($report->group, $report->report_month);
+        
+        return view('reports.monthly-show', [
+            'report' => $report,
+            'memberStats' => $memberStats,
+            'dailyProgress' => $dailyProgress,
+        ]);
+    }
+}
+```
+
+**ファイル**: `app/Http/Actions/Reports/DownloadMonthlyReportPdfAction.php`
+
+```php
+<?php
+
+namespace App\Http\Actions\Reports;
+
+use App\Models\MonthlyReport;
+use App\Services\Report\MonthlyReportServiceInterface;
+use App\Services\Subscription\SubscriptionCheckServiceInterface;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
+
+class DownloadMonthlyReportPdfAction
+{
+    public function __construct(
+        protected MonthlyReportServiceInterface $reportService,
+        protected SubscriptionCheckServiceInterface $subscriptionCheck
+    ) {}
+
+    public function __invoke(Request $request, int $reportId): Response
+    {
+        $user = $request->user();
+        $report = MonthlyReport::findOrFail($reportId);
+        
+        // 権限チェック
+        if ($report->group_id !== $user->group_id) {
+            abort(403);
+        }
+        
+        if (!$this->subscriptionCheck->isGroupSubscribed($user->group)) {
+            abort(403, 'PDF出力はサブスク加入者のみ利用できます');
+        }
+        
+        // PDF未生成の場合は生成
+        if (!$report->pdf_path) {
+            $this->reportService->generatePdf($report);
+        }
+        
+        // S3からダウンロード
+        $pdfContent = Storage::disk('s3')->get($report->pdf_path);
+        $filename = "monthly-report-{$report->report_month->format('Y-m')}.pdf";
+        
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+}
+```
+
+**ルート追加**: `routes/web.php`
+
+```php
+// 月次レポート
+Route::middleware(['auth'])->group(function () {
+    Route::get('/reports/monthly', ListMonthlyReportsAction::class)->name('reports.monthly.index');
+    Route::get('/reports/monthly/{report}', ShowMonthlyReportAction::class)->name('reports.monthly.show');
+    Route::get('/reports/monthly/{report}/pdf', DownloadMonthlyReportPdfAction::class)->name('reports.monthly.pdf');
+});
+```
+
+### 実装スケジュール
+
+| Phase | タスク | 期間 | 優先度 |
+|-------|--------|------|--------|
+| Phase 1 | 実績画面の機能制限実装 | 2日 | 最高 |
+| Phase 2 | 月次レポート自動生成機能 | 2日 | 高 |
+| Phase 3 | PDF出力機能 | 1-2日 | 中 |
+| Phase 4 | テスト作成（Phase 1.1.9） | 2-3日 | 高 |
+
+**合計想定期間**: 5-7日
 
 ---
 

@@ -321,11 +321,21 @@ window.AvatarManager = {
  * @param {string} eventType - イベントタイプ（task_created, group_task_created等）
  */
 window.dispatchAvatarEvent = function(eventType) {
+    console.log('[dispatchAvatarEvent] Called with eventType:', eventType);
+    console.log('[dispatchAvatarEvent] Call stack:', new Error().stack);
+    
     const startTime = performance.now();
 
     fetch(`/avatars/comment/${eventType}`)
         .then(response => {
             const fetchTime = performance.now() - startTime;
+            
+            console.log('[dispatchAvatarEvent] Fetch response received', {
+                eventType,
+                status: response.status,
+                ok: response.ok,
+                fetchTime: `${fetchTime.toFixed(2)}ms`,
+            });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

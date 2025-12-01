@@ -126,6 +126,11 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
      */
     public function getCommentForEvent(User $user, string $eventType): ?array
     {
+        // サブスク未加入の場合、実績画面のアバターイベントは非表示
+        if ($this->shouldSkipAvatarEvent($user, $eventType)) {
+            return null;
+        }
+
         try {
             return Cache::tags(['avatar', "user:{$user->id}"])->remember(
                 "user:{$user->id}:avatar:comment:{$eventType}",
@@ -140,6 +145,26 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
             ]);
             return $this->fetchCommentFromDatabase($user, $eventType);
         }
+    }
+
+    /**
+     * アバターイベントをスキップすべきかチェック
+     * サブスク未加入の場合、実績画面イベントは非表示
+     */
+    private function shouldSkipAvatarEvent(User $user, string $eventType): bool
+    {
+        // サブスク加入済みの場合は常に表示
+        if ($user->group && $user->group->subscription_active) {
+            return false;
+        }
+
+        // 実績画面関連イベントはサブスク限定
+        $restrictedEvents = [
+            config('const.avatar_events.performance_personal_viewed'),
+            config('const.avatar_events.performance_group_viewed'),
+        ];
+
+        return in_array($eventType, $restrictedEvents);
     }
 
     /**
