@@ -90,7 +90,7 @@ use App\Http\Actions\Profile\Group\ToggleMemberThemeAction;
 use App\Http\Actions\Profile\Group\TransferGroupMasterAction;
 use App\Http\Actions\Profile\Group\RemoveMemberAction;
 use App\Http\Actions\Reports\IndexPerformanceAction;
-use App\Http\Actions\Reports\IndexMonthlyReportAction;
+use App\Http\Actions\Reports\ShowMonthlyReportAction;
 use App\Http\Actions\Tags\TagsListAction;
 use App\Http\Actions\Tags\StoreTagAction;
 use App\Http\Actions\Tags\UpdateTagAction;
@@ -230,7 +230,7 @@ Route::middleware(['auth'])->group(function () {
 
     // --- 実績 ---
     Route::get('/reports/performance', IndexPerformanceAction::class)->name('reports.performance');
-    Route::get('/reports/monthly', IndexMonthlyReportAction::class)->name('reports.monthly.index');
+    Route::get('/reports/monthly/{year?}/{month?}', ShowMonthlyReportAction::class)->name('reports.monthly.show');
 
     // --- アカウント管理画面 ---
     Route::prefix('/profile')->group(function () {

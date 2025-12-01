@@ -396,4 +396,43 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         
         return $deletedCount;
     }
+    
+    /**
+     * @inheritDoc
+     */
+    public function getAvailableMonths(Group $group, int $limit = 12): array
+    {
+        $months = [];
+        $now = now();
+        $groupCreatedAt = Carbon::parse($group->created_at);
+        
+        // 既存レポートの年月リストを取得
+        $existingReports = $this->repository->getByGroup($group->id, $limit);
+        $existingYearMonths = $existingReports->pluck('report_month')
+            ->map(fn($date) => $date->format('Y-m'))
+            ->toArray();
+        
+        // 過去12ヶ月分のリストを生成
+        for ($i = 0; $i < $limit; $i++) {
+            $targetMonth = $now->copy()->subMonths($i);
+            
+            // グループ作成日以降のみ
+            if ($targetMonth->lt($groupCreatedAt->startOfMonth())) {
+                continue;
+            }
+            
+            $yearMonth = $targetMonth->format('Y-m');
+            
+            $months[] = [
+                'year_month' => $yearMonth,
+                'year' => $targetMonth->format('Y'),
+                'month' => $targetMonth->format('m'),
+                'label' => $targetMonth->format('Y年n月'),
+                'has_report' => in_array($yearMonth, $existingYearMonths),
+                'is_accessible' => $this->canAccessReport($group, $yearMonth),
+            ];
+        }
+        
+        return $months;
+    }
 }

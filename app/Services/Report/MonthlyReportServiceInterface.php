@@ -72,4 +72,13 @@ interface MonthlyReportServiceInterface
      * @return int 削除されたレポート数
      */
     public function cleanupOldReports(): int;
+    
+    /**
+     * 選択可能な年月リストを取得
+     * 
+     * @param Group $group 対象グループ
+     * @param int $limit 最大件数（デフォルト: 12ヶ月）
+     * @return array ['year_month' => 'YYYY-MM', 'label' => 'YYYY年MM月', 'has_report' => bool]
+     */
+    public function getAvailableMonths(Group $group, int $limit = 12): array;
 }
