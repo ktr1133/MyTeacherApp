@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TaskImage>
+ * 
+ * タスク画像モデルのファクトリ - テストデータ生成用
  */
 class TaskImageFactory extends Factory
 {
