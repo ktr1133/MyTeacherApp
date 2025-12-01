@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Task>
+ * 
+ * タスクモデルのファクトリ - テストデータ生成用
  */
 class TaskFactory extends Factory
 {
