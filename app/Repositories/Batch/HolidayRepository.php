@@ -14,9 +14,14 @@ class HolidayRepository implements HolidayRepositoryInterface
     {
         $dateString = $date->format('Y-m-d');
         
-        // キャッシュを使用（1日間）
+        // テスト環境ではキャッシュをスキップ（RefreshDatabaseでDBはクリアされるがキャッシュは残るため）
+        if (app()->environment('testing')) {
+            return Holiday::whereDate('date', $dateString)->exists();
+        }
+        
+        // 本番環境ではキャッシュを使用（1日間）
         return Cache::remember("holiday:{$dateString}", 86400, function () use ($dateString) {
-            return Holiday::where('date', $dateString)->exists();
+            return Holiday::whereDate('date', $dateString)->exists();
         });
     }
 

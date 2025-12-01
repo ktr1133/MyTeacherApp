@@ -54,7 +54,6 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             ]);
         } else {
             Log::info('Scheduled tasks executed successfully', [
-                'execution_time' => microtime(true) - LARAVEL_START,
                 'results' => $results,
             ]);
         }
