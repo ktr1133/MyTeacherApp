@@ -77,6 +77,9 @@ jobs:
           # Composerの依存関係インストール
           composer install --no-interaction --prefer-dist --optimize-autoloader
           
+          # .envファイル作成（テスト用）
+          cp .env.example .env
+          
           # APP_KEYを生成（テスト用）
           php artisan key:generate --ansi
           
