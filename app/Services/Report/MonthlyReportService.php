@@ -7,6 +7,7 @@ use App\Models\MonthlyReport;
 use App\Models\Task;
 use App\Models\User;
 use App\Repositories\Report\MonthlyReportRepositoryInterface;
+use App\Services\AI\OpenAIService;
 use App\Services\Subscription\SubscriptionServiceInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -25,10 +26,12 @@ class MonthlyReportService implements MonthlyReportServiceInterface
      * 
      * @param MonthlyReportRepositoryInterface $repository レポートリポジトリ
      * @param SubscriptionServiceInterface $subscriptionService サブスクリプションサービス
+     * @param OpenAIService $openAIService OpenAIサービス
      */
     public function __construct(
         protected MonthlyReportRepositoryInterface $repository,
-        protected SubscriptionServiceInterface $subscriptionService
+        protected SubscriptionServiceInterface $subscriptionService,
+        protected OpenAIService $openAIService
     ) {}
     
     /**
@@ -77,6 +80,21 @@ class MonthlyReportService implements MonthlyReportServiceInterface
                 'group_task_count_previous_month' => $previousMonthData['group_task_count'],
                 'reward_previous_month' => $previousMonthData['reward'],
             ];
+            
+            // AIコメント生成（エラーがあっても続行）
+            try {
+                $aiComment = $this->generateAIComment($group, $reportData);
+                $reportData['ai_comment'] = $aiComment['comment'];
+                $reportData['ai_comment_tokens_used'] = $aiComment['tokens_used'];
+            } catch (\Exception $e) {
+                Log::warning('AI comment generation failed, continuing without comment', [
+                    'group_id' => $group->id,
+                    'year_month' => $yearMonth,
+                    'error' => $e->getMessage(),
+                ]);
+                $reportData['ai_comment'] = null;
+                $reportData['ai_comment_tokens_used'] = 0;
+            }
             
             // レポート保存または更新
             if ($existingReport) {
@@ -579,6 +597,39 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             'labels' => $labels,
             'datasets' => $datasets,
             'members' => array_map(fn($data) => $data['name'], $memberData),
+        ];
+    }
+    
+    /**
+     * AIコメント生成
+     *
+     * @param Group $group 対象グループ
+     * @param array $reportData レポートデータ
+     * @return array ['comment' => string, 'tokens_used' => int]
+     * @throws \RuntimeException AI生成失敗時
+     */
+    protected function generateAIComment(Group $group, array $reportData): array
+    {
+        // グループの教師アバター取得
+        $avatar = $group->owner->teacher_avatar;
+        
+        // アバター性格情報の抽出
+        $personality = null;
+        if ($avatar) {
+            $personality = [
+                'tone' => $avatar->tone ?? 'friendly',
+                'enthusiasm' => $avatar->enthusiasm ?? 'moderate',
+                'formality' => $avatar->formality ?? 'neutral',
+                'humor' => $avatar->humor ?? 'moderate',
+            ];
+        }
+        
+        // OpenAIサービスを使ってコメント生成
+        $result = $this->openAIService->generateMonthlyReportComment($reportData, $personality);
+        
+        return [
+            'comment' => $result['comment'],
+            'tokens_used' => $result['usage']['total_tokens'] ?? 0,
         ];
     }
 }

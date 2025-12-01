@@ -214,4 +214,153 @@ class OpenAIService
             throw $e;
         }
     }
+
+    /**
+     * 月次レポート用のAIコメント生成
+     *
+     * @param array $reportData レポートデータ
+     * @param array|null $avatarPersonality アバター性格情報 ['tone', 'enthusiasm', 'formality', 'humor']
+     * @return array ['comment' => string, 'usage' => array]
+     */
+    public function generateMonthlyReportComment(array $reportData, ?array $avatarPersonality = null): array
+    {
+        if (!$this->apiKey) {
+            throw new \RuntimeException('OpenAI API key is not configured.');
+        }
+
+        // アバター性格に基づいたシステムプロンプト生成
+        $systemPrompt = $this->buildReportCommentSystemPrompt($avatarPersonality);
+        
+        // レポートデータを要約
+        $normalTaskCount = 0;
+        $groupTaskCount = 0;
+        $totalReward = 0;
+        $memberCount = 0;
+        
+        if (isset($reportData['member_task_summary'])) {
+            $memberCount = count($reportData['member_task_summary']);
+            foreach ($reportData['member_task_summary'] as $member) {
+                $normalTaskCount += $member['completed_count'] ?? 0;
+            }
+        }
+        
+        if (isset($reportData['group_task_summary'])) {
+            foreach ($reportData['group_task_summary'] as $member) {
+                $groupTaskCount += $member['completed_count'] ?? 0;
+                $totalReward += $member['reward'] ?? 0;
+            }
+        }
+        
+        $previousNormalCount = $reportData['normal_task_count_previous_month'] ?? 0;
+        $previousGroupCount = $reportData['group_task_count_previous_month'] ?? 0;
+        $previousReward = $reportData['reward_previous_month'] ?? 0;
+        
+        // ユーザープロンプト作成
+        $userPrompt = <<<PROMPT
+            今月の実績:
+            - メンバー数: {$memberCount}人
+            - 通常タスク完了数: {$normalTaskCount}件 (前月: {$previousNormalCount}件)
+            - グループタスク完了数: {$groupTaskCount}件 (前月: {$previousGroupCount}件)
+            - 獲得報酬: {$totalReward}ポイント (前月: {$previousReward}ポイント)
+
+            上記の実績を踏まえ、グループメンバーへの励ましや改善提案を含む短いコメントを生成してください。
+            PROMPT;
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $userPrompt],
+        ];
+
+        $payload = [
+            'model' => $this->model,
+            'messages' => $messages,
+            'temperature' => 0.7,
+            'max_tokens' => 300,
+        ];
+
+        try {
+            $response = Http::withToken($this->apiKey)
+                ->timeout($this->timeout)
+                ->post("{$this->baseUrl}/chat/completions", $payload);
+
+            if (!$response->successful()) {
+                Log::error('OpenAI Monthly Report Comment API Error', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \RuntimeException("OpenAI API error: {$response->status()}");
+            }
+
+            $data = $response->json();
+            $content = $data['choices'][0]['message']['content'] ?? '';
+            $usage = $data['usage'] ?? [];
+
+            if (!$content) {
+                throw new \RuntimeException('No content in OpenAI response');
+            }
+
+            return [
+                'comment' => trim($content),
+                'usage' => [
+                    'prompt_tokens' => $usage['prompt_tokens'] ?? 0,
+                    'completion_tokens' => $usage['completion_tokens'] ?? 0,
+                    'total_tokens' => $usage['total_tokens'] ?? 0,
+                ],
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Monthly report comment generation failed', [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+    
+    /**
+     * アバター性格に基づいたシステムプロンプト構築
+     *
+     * @param array|null $personality アバター性格情報
+     * @return string
+     */
+    protected function buildReportCommentSystemPrompt(?array $personality): string
+    {
+        $basePrompt = "あなたは教師アバターとして、グループの月次タスク実績レポートにコメントを付けます。";
+        
+        if (!$personality) {
+            return $basePrompt . "励ましや建設的なアドバイスを含む、150文字程度の短いコメントを日本語で生成してください。";
+        }
+        
+        // 性格特性に応じたプロンプト調整
+        $toneMap = [
+            'friendly' => '親しみやすく温かい口調で',
+            'professional' => '丁寧でプロフェッショナルな口調で',
+            'casual' => 'カジュアルで気さくな口調で',
+            'strict' => '厳しくも愛情のある口調で',
+        ];
+        
+        $enthusiasmMap = [
+            'high' => '熱意を込めて',
+            'moderate' => '落ち着いて',
+            'low' => '冷静に',
+        ];
+        
+        $formalityMap = [
+            'formal' => '敬語を使い',
+            'neutral' => '適度な丁寧さで',
+            'informal' => 'フレンドリーな言葉遣いで',
+        ];
+        
+        $humorMap = [
+            'high' => 'ユーモアを交えて',
+            'moderate' => '時々軽い冗談を入れつつ',
+            'none' => '真面目に',
+        ];
+        
+        $tone = $toneMap[$personality['tone'] ?? 'friendly'] ?? '親しみやすく';
+        $enthusiasm = $enthusiasmMap[$personality['enthusiasm'] ?? 'moderate'] ?? '落ち着いて';
+        $formality = $formalityMap[$personality['formality'] ?? 'neutral'] ?? '適度な丁寧さで';
+        $humor = $humorMap[$personality['humor'] ?? 'moderate'] ?? '時々軽い冗談を入れつつ';
+        
+        return "{$basePrompt} {$tone}、{$enthusiasm}、{$formality}、{$humor}、励ましや建設的なアドバイスを含む150文字程度の短いコメントを日本語で生成してください。";
+    }
 }
