@@ -611,7 +611,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
     protected function generateAIComment(Group $group, array $reportData): array
     {
         // グループの教師アバター取得
-        $avatar = $group->owner->teacher_avatar;
+        $avatar = $group->master->teacher_avatar ?? null;
         
         // アバター性格情報の抽出
         $personality = null;
