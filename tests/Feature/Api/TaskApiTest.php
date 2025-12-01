@@ -313,7 +313,7 @@ class TaskApiTest extends TestCase
                     'image' => [
                         'id',
                         'task_id',
-                        'path',
+                        'file_path',
                         'url',
                     ],
                 ],
@@ -334,7 +334,7 @@ class TaskApiTest extends TestCase
         $task = Task::factory()->create(['user_id' => $this->user->id]);
         $taskImage = TaskImage::factory()->create([
             'task_id' => $task->id,
-            'path' => 'task_approvals/test-image.jpg',
+            'file_path' => 'task_approvals/test-image.jpg',
         ]);
 
         // Act
