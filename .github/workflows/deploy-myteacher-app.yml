@@ -88,7 +88,10 @@ jobs:
           # APP_KEYを生成（テスト用）
           php artisan key:generate --ansi
           
-          # テスト実行（phpunit.xmlでSQLite設定済み、キャッシュクリア不要）
+          # 設定キャッシュをクリア（テスト環境で正しい設定を読み込む）
+          php artisan config:clear
+          
+          # テスト実行（phpunit.xmlでSQLite設定済み）
           php artisan test --parallel || {
             echo "❌ Tests failed. Deployment aborted."
             exit 1
