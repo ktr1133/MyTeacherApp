@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\FreeTokenSetting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -12,7 +13,7 @@ use Laravel\Cashier\Billable;
 
 class Group extends Model
 {
-    use HasFactory, Billable;
+    use HasFactory, Billable, SoftDeletes;
 
     /**
      * Get the name of the column for the "billable" foreign key.

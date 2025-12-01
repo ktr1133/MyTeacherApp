@@ -95,6 +95,8 @@ use App\Services\Token\TokenPackageServiceInterface;
 use App\Services\Token\TokenPackageService;
 use App\Services\Timezone\TimezoneServiceInterface;
 use App\Services\Timezone\TimezoneService;
+use App\Services\User\UserDeletionServiceInterface;
+use App\Services\User\UserDeletionService;
 // Portal
 use App\Services\Portal\MaintenanceServiceInterface;
 use App\Services\Portal\MaintenanceService;
@@ -238,6 +240,9 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Timezone ---
         $this->app->bind(TimezoneServiceInterface::class, TimezoneService::class);
+
+        // --- User ---
+        $this->app->bind(UserDeletionServiceInterface::class, UserDeletionService::class);
 
         // --- Portal ---
         $this->app->bind(MaintenanceServiceInterface::class, MaintenanceService::class);

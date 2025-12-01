@@ -10,6 +10,7 @@ use App\Models\Group;
 use App\Models\FreeTokenSetting;
 use App\Models\Notification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,7 +22,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, Billable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, Billable, TwoFactorAuthenticatable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.

@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'admin.ip' => \App\Http\Middleware\AdminIpRestriction::class,
             'cognito' => \App\Http\Middleware\VerifyCognitoToken::class,
+            'dual.auth' => \App\Http\Middleware\DualAuthMiddleware::class,
         ]);
         // ★ Web ミドルウェアグループに追加
         $middleware->web(append: [

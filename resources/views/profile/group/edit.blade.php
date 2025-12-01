@@ -234,7 +234,7 @@
 
                     {{-- メンバー一覧 --}}
                     @if ($group)
-                        <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.15s;">
+                        <div id="member-list" class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.15s;">
                             <div class="px-6 py-4 border-b border-blue-500/20 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/5 to-purple-50/50 dark:from-blue-500/10 dark:to-purple-900/10">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow" style="background: linear-gradient(to bottom right, rgb(37 99 235), rgb(147 51 234));">
