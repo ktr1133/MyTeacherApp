@@ -334,12 +334,11 @@ jobs:
         run: |
           echo "⏳ Waiting for deployment to complete..."
           
-          # 最大15分待機（デフォルト: 10分）
+          # デフォルトタイムアウト（約10分）で待機
+          # AWS CLI v2ではwaiter-max-attempts/waiter-delayオプションは非サポート
           aws ecs wait services-stable \
             --cluster $ECS_CLUSTER \
-            --services $ECS_SERVICE \
-            --waiter-max-attempts 90 \
-            --waiter-delay 10 || {
+            --services $ECS_SERVICE || {
             echo "❌ Deployment failed or timed out"
             exit 1
           }
@@ -409,11 +408,10 @@ jobs:
           }
           
           echo "⏳ Waiting for rollback to complete..."
+          # デフォルトタイムアウトで待機
           aws ecs wait services-stable \
             --cluster $ECS_CLUSTER \
-            --services $ECS_SERVICE \
-            --waiter-max-attempts 60 \
-            --waiter-delay 10
+            --services $ECS_SERVICE
           
           echo "✅ Rollback completed successfully"
           echo "⚠️ Please investigate the deployment failure and fix issues before retrying"
