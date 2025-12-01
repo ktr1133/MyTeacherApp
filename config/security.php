@@ -11,6 +11,12 @@ return [
         // ClamAVコマンドのパス
         'path' => env('CLAMAV_PATH', '/usr/bin/clamscan'),
 
+        // ClamAVデーモンスキャンコマンドのパス（高速）
+        'daemon_path' => env('CLAMAV_DAEMON_PATH', '/usr/bin/clamdscan'),
+
+        // デーモンモードを使用（テスト環境で自動有効化）
+        'use_daemon' => env('CLAMAV_USE_DAEMON', false),
+
         // スキャンタイムアウト（秒）
         'timeout' => env('CLAMAV_TIMEOUT', 60),
 

@@ -6,6 +6,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
 /**
  * ClamAVウイルススキャンサービス
@@ -27,6 +28,16 @@ class ClamAVScanService implements VirusScanServiceInterface
     private string $clamScanPath;
 
     /**
+     * ClamAVデーモンスキャンコマンドパス
+     */
+    private string $clamdScanPath;
+
+    /**
+     * デーモンモード使用フラグ（テスト環境で高速化）
+     */
+    private bool $useDaemon;
+
+    /**
      * タイムアウト（秒）
      */
     private int $timeout;
@@ -34,6 +45,9 @@ class ClamAVScanService implements VirusScanServiceInterface
     public function __construct()
     {
         $this->clamScanPath = config('security.clamav.path', '/usr/bin/clamscan');
+        $this->clamdScanPath = config('security.clamav.daemon_path', '/usr/bin/clamdscan');
+        // テスト環境ではデーモンモードを優先（高速化）
+        $this->useDaemon = config('security.clamav.use_daemon', false) || app()->environment('testing');
         $this->timeout = config('security.clamav.timeout', 60);
     }
 
@@ -59,15 +73,25 @@ class ClamAVScanService implements VirusScanServiceInterface
         }
 
         try {
-            // ClamAVでスキャン実行
-            $process = new Process([
-                $this->clamScanPath,
-                '--no-summary',
-                '--infected',
-                $filePath
-            ]);
+            // デーモンモード or 通常モードでスキャン実行
+            if ($this->useDaemon && $this->isDaemonAvailable()) {
+                $process = new Process([
+                    $this->clamdScanPath,
+                    '--no-summary',
+                    '--infected',
+                    $filePath
+                ]);
+                $process->setTimeout(5); // デーモンモードは高速（5秒で十分）
+            } else {
+                $process = new Process([
+                    $this->clamScanPath,
+                    '--no-summary',
+                    '--infected',
+                    $filePath
+                ]);
+                $process->setTimeout($this->timeout);
+            }
 
-            $process->setTimeout($this->timeout);
             $process->run();
 
             $output = $process->getOutput();
@@ -168,13 +192,53 @@ class ClamAVScanService implements VirusScanServiceInterface
     public function isAvailable(): bool
     {
         try {
-            $process = new Process([$this->clamScanPath, '--version']);
-            $process->setTimeout(5);
+            $path = $this->useDaemon && $this->isDaemonAvailable() ? $this->clamdScanPath : $this->clamScanPath;
+            $process = new Process([$path, '--version']);
+            $process->setTimeout(2);
             $process->run();
 
-            return $process->isSuccessful();
+            if (!$process->isSuccessful()) {
+                Log::warning('ClamAV command failed', [
+                    'path' => $path,
+                    'exit_code' => $process->getExitCode(),
+                    'output' => $process->getOutput(),
+                    'error' => $process->getErrorOutput()
+                ]);
+                return false;
+            }
+
+            return true;
+        } catch (ProcessTimedOutException $e) {
+            Log::warning('ClamAV command timed out', ['error' => $e->getMessage()]);
+            return false;
         } catch (\Exception $e) {
             Log::warning('ClamAV is not available', ['error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    /**
+     * ClamAVデーモンが利用可能かチェック
+     * 
+     * @return bool
+     */
+    protected function isDaemonAvailable(): bool
+    {
+        static $available = null;
+        
+        if ($available !== null) {
+            return $available;
+        }
+        
+        try {
+            $process = new Process([$this->clamdScanPath, '--version']);
+            $process->setTimeout(1);
+            $process->run();
+            
+            $available = $process->isSuccessful();
+            return $available;
+        } catch (\Exception $e) {
+            $available = false;
             return false;
         }
     }

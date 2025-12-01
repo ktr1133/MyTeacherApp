@@ -22,9 +22,7 @@ class VirusScanServiceTest extends TestCase
      */
     public function test_clamav_is_available(): void
     {
-        $isAvailable = $this->scanService->isAvailable();
-
-        $this->assertTrue($isAvailable, 'ClamAV should be available on the system');
+        $this->assertTrue($this->scanService->isAvailable());
     }
 
     /**
@@ -54,11 +52,12 @@ class VirusScanServiceTest extends TestCase
      */
     public function test_eicar_test_file_detected(): void
     {
-        // EICARテストファイルを作成
+        // EICARテストファイルを作成（/tmpにclamdが読める権限で作成）
         // 注意: これは実際のウイルスではなく、アンチウイルスソフトのテスト用文字列
         $eicarString = 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*';
-        $testFilePath = storage_path('app/test_eicar.txt');
+        $testFilePath = '/tmp/test_eicar_' . uniqid() . '.txt';
         file_put_contents($testFilePath, $eicarString);
+        chmod($testFilePath, 0644); // clamdが読めるように設定
 
         try {
             // スキャン実行
@@ -100,9 +99,10 @@ class VirusScanServiceTest extends TestCase
         $uploadedFile = UploadedFile::fake()->create('test1.txt', 10);
         $result1 = $this->scanService->scan($uploadedFile);
 
-        // ファイルパスでスキャン
-        $testFilePath = storage_path('app/test2.txt');
+        // ファイルパスでスキャン（/tmpにclamdが読める権限で作成）
+        $testFilePath = '/tmp/test_scan_' . uniqid() . '.txt';
         file_put_contents($testFilePath, 'test content');
+        chmod($testFilePath, 0644);
         $result2 = $this->scanService->scan($testFilePath);
 
         // クリーンアップ
