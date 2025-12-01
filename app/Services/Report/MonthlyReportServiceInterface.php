@@ -81,4 +81,14 @@ interface MonthlyReportServiceInterface
      * @return array ['year_month' => 'YYYY-MM', 'label' => 'YYYY年MM月', 'has_report' => bool]
      */
     public function getAvailableMonths(Group $group, int $limit = 12): array;
+    
+    /**
+     * グループの直近N ヶ月のトレンドグラフデータを取得
+     * 
+     * @param Group $group 対象グループ
+     * @param string $yearMonth 基準年月（YYYY-MM形式）
+     * @param int $months 取得月数（デフォルト: 6ヶ月）
+     * @return array Chart.js用のデータセット ['labels' => [], 'datasets' => [], 'members' => []]
+     */
+    public function getTrendData(Group $group, string $yearMonth, int $months = 6): array;
 }

@@ -42,6 +42,9 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/css/sidebar.css', 'resources/js/app.js'])
         
+        <!-- Chart.js CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha256-HNylRkQjJuaF0S/kTuySU9KMRJJbDZphz6+L8o5u64A=" crossorigin="anonymous"></script>
+        
         {{-- サイドバー制御（Alpine.jsの代わり） --}}
         @vite(['resources/js/common/sidebar.js'])
 

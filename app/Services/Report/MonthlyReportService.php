@@ -435,4 +435,97 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         
         return $months;
     }
+    
+    /**
+     * @inheritDoc
+     */
+    public function getTrendData(Group $group, string $yearMonth, int $months = 6): array
+    {
+        $baseDate = Carbon::createFromFormat('Y-m', $yearMonth);
+        $labels = [];
+        $memberData = [];
+        
+        // 基準月から過去N-1ヶ月（合計Nヶ月）のレポートを取得
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $targetMonth = $baseDate->copy()->subMonths($i);
+            $targetYearMonth = $targetMonth->format('Y-m');
+            $labels[] = $targetMonth->format('n月');
+            
+            $report = $this->repository->findByGroupAndMonth($group->id, $targetYearMonth);
+            
+            if ($report && $report->member_task_summary) {
+                foreach ($report->member_task_summary as $userId => $summary) {
+                    if (!isset($memberData[$userId])) {
+                        $memberData[$userId] = [
+                            'name' => $summary['name'] ?? 'Unknown',
+                            'normal_tasks' => array_fill(0, $months, 0),
+                            'group_tasks' => array_fill(0, $months, 0),
+                        ];
+                    }
+                    
+                    $index = $months - 1 - $i;
+                    $memberData[$userId]['normal_tasks'][$index] = $summary['completed_count'] ?? 0;
+                }
+                
+                // グループタスク集計（group_task_summaryから）
+                if ($report->group_task_summary) {
+                    foreach ($report->group_task_summary as $userId => $summary) {
+                        if (!isset($memberData[$userId])) {
+                            $memberData[$userId] = [
+                                'name' => $summary['name'] ?? 'Unknown',
+                                'normal_tasks' => array_fill(0, $months, 0),
+                                'group_tasks' => array_fill(0, $months, 0),
+                            ];
+                        }
+                        
+                        $index = $months - 1 - $i;
+                        $memberData[$userId]['group_tasks'][$index] = $summary['completed_count'] ?? 0;
+                    }
+                }
+            }
+        }
+        
+        // Chart.js用のデータセット形式に変換
+        $datasets = [];
+        $colors = [
+            ['rgb(59, 130, 246)', 'rgba(59, 130, 246, 0.5)'],   // blue
+            ['rgb(16, 185, 129)', 'rgba(16, 185, 129, 0.5)'],   // green
+            ['rgb(251, 146, 60)', 'rgba(251, 146, 60, 0.5)'],   // orange
+            ['rgb(168, 85, 247)', 'rgba(168, 85, 247, 0.5)'],   // purple
+            ['rgb(236, 72, 153)', 'rgba(236, 72, 153, 0.5)'],   // pink
+            ['rgb(250, 204, 21)', 'rgba(250, 204, 21, 0.5)'],   // yellow
+        ];
+        
+        $colorIndex = 0;
+        foreach ($memberData as $userId => $data) {
+            $color = $colors[$colorIndex % count($colors)];
+            
+            // 通常タスク
+            $datasets[] = [
+                'label' => $data['name'] . ' (通常)',
+                'data' => $data['normal_tasks'],
+                'backgroundColor' => $color[1],
+                'borderColor' => $color[0],
+                'borderWidth' => 1,
+            ];
+            
+            // グループタスク
+            $datasets[] = [
+                'label' => $data['name'] . ' (グループ)',
+                'data' => $data['group_tasks'],
+                'backgroundColor' => $color[1],
+                'borderColor' => $color[0],
+                'borderWidth' => 1,
+                'borderDash' => [5, 5],
+            ];
+            
+            $colorIndex++;
+        }
+        
+        return [
+            'labels' => $labels,
+            'datasets' => $datasets,
+            'members' => array_map(fn($data) => $data['name'], $memberData),
+        ];
+    }
 }

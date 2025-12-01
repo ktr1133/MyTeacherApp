@@ -80,13 +80,19 @@ class ShowMonthlyReportAction
         // 選択可能な年月リスト（過去12ヶ月）
         $availableMonths = $this->reportService->getAvailableMonths($group, 12);
         
+        // グラフ用のトレンドデータ取得（直近6ヶ月）
+        $trendData = $this->reportService->getTrendData($group, $yearMonth, 6);
+        
         return view('reports.monthly.show', [
             'group' => $group,
             'report' => $report,
             'formatted' => $formatted,
             'targetMonth' => $targetMonth,
             'yearMonth' => $yearMonth,
-            'availableMonths' => $availableMonths,
+            'year' => $year,
+            'month' => $month,
+            'availableMonths' => collect($availableMonths),
+            'trendData' => $trendData,
         ]);
     }
 }
