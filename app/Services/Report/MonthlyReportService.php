@@ -57,6 +57,9 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             // グループタスク集計
             $groupTaskSummary = $this->calculateGroupTaskSummary($group, $startDate, $endDate);
             
+            // グループタスクのユーザー別集計（group_task_summary用）
+            $groupTaskSummaryByUser = $this->calculateGroupTaskSummaryByUser($group, $startDate, $endDate);
+            
             // 前月データ取得
             $previousMonthData = $this->getPreviousMonthData($group, $yearMonth);
             
@@ -69,6 +72,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
                 'group_task_completed_count' => $groupTaskSummary['completed_count'],
                 'group_task_total_reward' => $groupTaskSummary['total_reward'],
                 'group_task_details' => $groupTaskSummary['details'],
+                'group_task_summary' => $groupTaskSummaryByUser,
                 'normal_task_count_previous_month' => $previousMonthData['normal_task_count'],
                 'group_task_count_previous_month' => $previousMonthData['group_task_count'],
                 'reward_previous_month' => $previousMonthData['reward'],
@@ -158,7 +162,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             ->whereNotNull('group_task_id')
             ->whereNotNull('completed_at')
             ->whereBetween('completed_at', [$startDate, $endDate])
-            ->with(['user:id,name'])
+            ->with(['user:id,name', 'tags:id,name'])
             ->select('id', 'title', 'user_id', 'reward', 'completed_at')
             ->orderBy('completed_at', 'desc')
             ->get();
@@ -172,6 +176,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             'user_name' => $task->user->name ?? '不明',
             'reward' => $task->reward,
             'completed_at' => $task->completed_at->format('Y-m-d H:i:s'),
+            'tags' => $task->tags->pluck('name')->toArray(),
         ])->toArray();
         
         return [
@@ -179,6 +184,52 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             'total_reward' => $totalReward,
             'details' => $details,
         ];
+    }
+    
+    /**
+     * グループタスクをユーザー別に集計（group_task_summary用）
+     * 
+     * @param Group $group 対象グループ
+     * @param Carbon $startDate 開始日
+     * @param Carbon $endDate 終了日
+     * @return array ユーザー別グループタスク集計
+     */
+    protected function calculateGroupTaskSummaryByUser(Group $group, Carbon $startDate, Carbon $endDate): array
+    {
+        $userIds = $group->users->pluck('id')->toArray();
+        
+        $completedGroupTasks = Task::whereIn('user_id', $userIds)
+            ->whereNotNull('group_task_id')
+            ->whereNotNull('completed_at')
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->with(['user:id,name', 'tags:id,name'])
+            ->select('id', 'title', 'user_id', 'reward', 'completed_at')
+            ->orderBy('completed_at', 'desc')
+            ->get();
+        
+        $summary = [];
+        
+        foreach ($group->users as $user) {
+            $userTasks = $completedGroupTasks->where('user_id', $user->id);
+            
+            if ($userTasks->isEmpty()) {
+                continue;
+            }
+            
+            $summary[$user->id] = [
+                'name' => $user->name,
+                'completed_count' => $userTasks->count(),
+                'reward' => $userTasks->sum('reward'),
+                'tasks' => $userTasks->map(fn($task) => [
+                    'title' => $task->title,
+                    'reward' => $task->reward,
+                    'completed_at' => $task->completed_at->format('Y-m-d H:i:s'),
+                    'tags' => $task->tags->pluck('name')->toArray(),
+                ])->values()->toArray(),
+            ];
+        }
+        
+        return $summary;
     }
     
     /**
@@ -308,8 +359,9 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         
         return [
             'report_id' => $report->id,
-            'year_month' => Carbon::parse($report->report_month)->format('Y年m月'),
+            'report_month' => Carbon::parse($report->report_month)->format('Y年m月'),
             'generated_at' => $report->generated_at ? $report->generated_at->format('Y-m-d H:i') : null,
+            'ai_comment' => $report->ai_comment,
             'summary' => [
                 'normal_tasks' => [
                     'count' => $totalNormalTasks,
@@ -326,6 +378,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             ],
             'member_details' => $memberTaskSummary,
             'group_task_details' => $groupTaskDetails,
+            'group_task_summary' => $report->group_task_summary ?? [],
         ];
     }
     

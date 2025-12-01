@@ -138,23 +138,15 @@
                 @endif
             </div>
 
-            {{-- 明細テーブル（次のステップで実装） --}}
-            <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
-                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                        タスク明細
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <p class="text-gray-500 dark:text-gray-400 text-center py-8">
-                        明細テーブルは次のステップで実装予定
-                    </p>
-                </div>
-            </div>
+            {{-- 明細テーブル --}}
+            <x-reports.task-detail-table 
+                :member-details="$formatted['member_details']"
+                :group-task-summary="$formatted['group_task_summary']" 
+            />
         </div>
     </div>
 
-    {{-- JavaScript: 年月選択の動作 --}}
+    {{-- JavaScript: 年月選択とグラフ --}}
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
