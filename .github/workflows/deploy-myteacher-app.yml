@@ -77,6 +77,14 @@ jobs:
           # Composerの依存関係インストール
           composer install --no-interaction --prefer-dist --optimize-autoloader
           
+          # APP_KEYを生成（テスト用）
+          php artisan key:generate --ansi
+          
+          # ビューキャッシュとアプリケーションキャッシュをクリア
+          php artisan view:clear
+          php artisan cache:clear
+          php artisan config:clear
+          
           # テスト実行（phpunit.xmlでSQLite設定済み）
           php artisan test --parallel || {
             echo "❌ Tests failed. Deployment aborted."
