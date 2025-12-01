@@ -133,6 +133,11 @@ class ScheduledGroupTask extends Model
      */
     public function getTagNames(): array
     {
+        // tagsリレーションがロードされていない、またはnullの場合は空配列を返す
+        if (!$this->relationLoaded('tags') || $this->tags === null) {
+            return [];
+        }
+        
         return $this->tags->pluck('tag_name')->toArray();
     }
 
