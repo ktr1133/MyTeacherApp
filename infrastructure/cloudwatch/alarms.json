@@ -1,0 +1,67 @@
+{
+  "comment": "CloudWatch Alarms for MyTeacher Scheduled Tasks Monitoring",
+  "alarms": [
+    {
+      "alarmName": "MyTeacher-ScheduledTasks-Failures",
+      "alarmDescription": "スケジュールタスクの実行に失敗したタスクが存在する場合にアラート",
+      "metricName": "ScheduledTasksFailureCount",
+      "namespace": "MyTeacher/ScheduledTasks",
+      "statistic": "Sum",
+      "period": 300,
+      "evaluationPeriods": 1,
+      "threshold": 1,
+      "comparisonOperator": "GreaterThanOrEqualToThreshold",
+      "treatMissingData": "notBreaching",
+      "actionsEnabled": true,
+      "priority": "high",
+      "notificationChannels": [
+        "email",
+        "sns"
+      ]
+    },
+    {
+      "alarmName": "MyTeacher-ScheduledTasks-NoExecutions",
+      "alarmDescription": "スケジュールタスクが1時間以上実行されていない場合にアラート（スケジューラー停止検知）",
+      "metricName": "ScheduledTasksSuccessCount",
+      "namespace": "MyTeacher/ScheduledTasks",
+      "statistic": "Sum",
+      "period": 3600,
+      "evaluationPeriods": 1,
+      "threshold": 1,
+      "comparisonOperator": "LessThanThreshold",
+      "treatMissingData": "breaching",
+      "actionsEnabled": true,
+      "priority": "critical",
+      "notificationChannels": [
+        "email",
+        "sns",
+        "pagerduty"
+      ]
+    },
+    {
+      "alarmName": "MyTeacher-ScheduledTasks-HighFailureRate",
+      "alarmDescription": "スケジュールタスクの失敗率が50%を超えた場合にアラート",
+      "expression": "m1 / (m1 + m2) * 100",
+      "metrics": [
+        {
+          "id": "m1",
+          "metricName": "ScheduledTaskIndividualFailureCount",
+          "namespace": "MyTeacher/ScheduledTasks",
+          "statistic": "Sum",
+          "period": 300
+        },
+        {
+          "id": "m2",
+          "metricName": "ScheduledTasksSuccessCount",
+          "namespace": "MyTeacher/ScheduledTasks",
+          "statistic": "Sum",
+          "period": 300
+        }
+      ],
+      "threshold": 50,
+      "comparisonOperator": "GreaterThanThreshold",
+      "evaluationPeriods": 2,
+      "priority": "high"
+    }
+  ]
+}

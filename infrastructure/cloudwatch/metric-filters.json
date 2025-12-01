@@ -1,0 +1,47 @@
+{
+  "comment": "CloudWatch Logs Metric Filters for MyTeacher Scheduled Tasks Monitoring",
+  "filters": [
+    {
+      "filterName": "ScheduledTasksFailures",
+      "logGroupName": "/ecs/myteacher-production",
+      "filterPattern": "[time, request_id, level=ERROR*, msg=\"Scheduled tasks execution completed with failures*\"]",
+      "metricTransformations": [
+        {
+          "metricName": "ScheduledTasksFailureCount",
+          "metricNamespace": "MyTeacher/ScheduledTasks",
+          "metricValue": "1",
+          "defaultValue": 0,
+          "unit": "Count"
+        }
+      ]
+    },
+    {
+      "filterName": "ScheduledTaskIndividualFailures",
+      "logGroupName": "/ecs/myteacher-production",
+      "filterPattern": "[time, request_id, level=ERROR*, msg=\"Failed to execute scheduled task*\"]",
+      "metricTransformations": [
+        {
+          "metricName": "ScheduledTaskIndividualFailureCount",
+          "metricNamespace": "MyTeacher/ScheduledTasks",
+          "metricValue": "1",
+          "defaultValue": 0,
+          "unit": "Count"
+        }
+      ]
+    },
+    {
+      "filterName": "ScheduledTasksSuccess",
+      "logGroupName": "/ecs/myteacher-production",
+      "filterPattern": "[time, request_id, level=INFO*, msg=\"Scheduled tasks executed successfully*\"]",
+      "metricTransformations": [
+        {
+          "metricName": "ScheduledTasksSuccessCount",
+          "metricNamespace": "MyTeacher/ScheduledTasks",
+          "metricValue": "1",
+          "defaultValue": 0,
+          "unit": "Count"
+        }
+      ]
+    }
+  ]
+}

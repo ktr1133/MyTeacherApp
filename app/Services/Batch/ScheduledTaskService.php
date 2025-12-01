@@ -43,6 +43,22 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             $results[$result]++;
         }
 
+        // エラーがあった場合は明確にログに記録（CloudWatch Alarm用）
+        if ($results['failed'] > 0) {
+            Log::error('Scheduled tasks execution completed with failures', [
+                'date' => $date->format('Y-m-d'),
+                'success_count' => $results['success'],
+                'failed_count' => $results['failed'],
+                'skipped_count' => $results['skipped'],
+                'total_count' => count($scheduledTasks),
+            ]);
+        } else {
+            Log::info('Scheduled tasks executed successfully', [
+                'execution_time' => microtime(true) - LARAVEL_START,
+                'results' => $results,
+            ]);
+        }
+
         return $results;
     }
 
