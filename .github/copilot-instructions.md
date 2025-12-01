@@ -333,6 +333,49 @@ php artisan test --filter "..."  # 特定テスト
 php artisan test --coverage      # カバレッジレポート
 ```
 
+### テストデータ作成時の注意事項（重要）
+
+**原則**: テストコードやFactoryでモデルのデータを作成する際は、必ず対象モデルの実際のカラム構造を確認する。
+
+1. **カラムの存在確認**
+   - テストコード内で`Model::factory()->create(['column' => 'value'])`を使う前に、マイグレーションファイルまたはモデルの`$fillable`を確認
+   - 存在しないカラムを指定すると`SQLSTATE[HY000]: General error: table has no column named XXX`エラーが発生
+   - 例: `'status'`カラムが存在しないのに指定してエラー（TaskApiTestで発生）
+
+2. **Factoryのカラム定義**
+   - Factoryクラスの`definition()`メソッドは、モデルの`$fillable`プロパティから取得した実際のカラムのみを定義する
+   - マイグレーションファイルを参照し、存在するカラムのみを含める
+   - リフレクションを使用してモデルから動的にカラムを取得することを推奨:
+     ```php
+     // モデルのfillableプロパティから取得
+     $fillable = (new Task())->getFillable();
+     
+     // またはマイグレーションファイルを直接確認
+     // database/migrations/YYYY_MM_DD_*_tasks.php
+     ```
+
+3. **マイグレーションとの整合性確保**
+   - Factory作成前に必ず対象テーブルのマイグレーションファイルを読む
+   - `$table->string('column_name')`として定義されているカラムのみをFactoryに含める
+   - 仮想カラム（アクセサ/ミューテータ）やリレーションはFactoryに含めない
+
+4. **検証手順**
+   ```bash
+   # マイグレーションファイルでカラム確認
+   cat database/migrations/*_create_tasks_table.php | grep '\$table->'
+   
+   # モデルのfillableプロパティ確認
+   grep -A 20 'protected \$fillable' app/Models/Task.php
+   ```
+
+**禁止事項**:
+- ❌ モデルの構造を確認せずに推測でカラムを指定
+- ❌ 他のテストコードからコピーしたカラム名をそのまま使用
+- ❌ APIレスポンスに含まれる仮想属性をFactoryに含める
+- ❌ マイグレーション未実施のカラムをFactoryに定義
+
+この方針により、「カラムが存在しない」エラーを事前に防止し、テストの信頼性を向上させる。
+
 ## 2. ドメイン固有パターン
 
 ### グループタスク
