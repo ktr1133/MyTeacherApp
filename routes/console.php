@@ -45,6 +45,20 @@ Schedule::command('group:reset-monthly-task-count')
     });
 
 // ========================================
+// 毎月1日午前2時に月次レポートを自動生成
+// ========================================
+Schedule::command('reports:generate-monthly')
+    ->monthlyOn(1, '02:00')
+    ->timezone('Asia/Tokyo')
+    ->appendOutputTo(storage_path('logs/monthly-reports.log'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('月次レポート自動生成成功');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('月次レポート自動生成失敗');
+    });
+
+// ========================================
 // 毎週日曜日午前2時に古い課金履歴を削除
 // ========================================
 Schedule::command('payments:clean-old')

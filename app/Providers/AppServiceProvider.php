@@ -27,6 +27,8 @@ use App\Repositories\Profile\GroupUserRepositoryInterface;
 use App\Repositories\Profile\GroupUserRepository;
 use App\Repositories\Report\ReportRepositoryInterface;
 use App\Repositories\Report\ReportEloquentRepository;
+use App\Repositories\Report\MonthlyReportRepositoryInterface;
+use App\Repositories\Report\MonthlyReportEloquentRepository;
 use App\Repositories\Tag\TagRepositoryInterface;
 use App\Repositories\Tag\EloquentTagRepository;
 use App\Repositories\Task\TaskEloquentRepository;
@@ -75,6 +77,8 @@ use App\Services\Group\GroupTaskLimitServiceInterface;
 use App\Services\Group\GroupTaskLimitService;
 use App\Services\Report\PerformanceServiceInterface;
 use App\Services\Report\PerformanceService;
+use App\Services\Report\MonthlyReportServiceInterface;
+use App\Services\Report\MonthlyReportService;
 use App\Services\Tag\TagServiceInterface;
 use App\Services\Tag\TagService;
 use App\Services\Task\TaskApprovalServiceInterface;
@@ -162,6 +166,7 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Report ---
         $this->app->bind(ReportRepositoryInterface::class, ReportEloquentRepository::class);
+        $this->app->bind(MonthlyReportRepositoryInterface::class, MonthlyReportEloquentRepository::class);
 
         // --- Batch ---
         $this->app->bind(ScheduledTaskRepositoryInterface::class, ScheduledTaskRepository::class);
@@ -223,6 +228,7 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Report ---
         $this->app->bind(PerformanceServiceInterface::class, PerformanceService::class);
+        $this->app->bind(MonthlyReportServiceInterface::class, MonthlyReportService::class);
 
         // --- Batch ---
         $this->app->bind(ScheduledTaskServiceInterface::class, ScheduledTaskService::class);
