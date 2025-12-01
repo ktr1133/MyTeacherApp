@@ -17,6 +17,10 @@ return [
         // デーモンモードを使用（テスト環境で自動有効化）
         'use_daemon' => env('CLAMAV_USE_DAEMON', false),
 
+        // リモートデーモン接続設定（GitHub Actions Service Container用）
+        'daemon_host' => env('CLAMAV_DAEMON_HOST', null),
+        'daemon_port' => env('CLAMAV_DAEMON_PORT', 3310),
+
         // スキャンタイムアウト（秒）
         'timeout' => env('CLAMAV_TIMEOUT', 60),
 

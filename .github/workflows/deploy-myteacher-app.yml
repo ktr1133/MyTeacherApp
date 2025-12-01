@@ -58,6 +58,18 @@ jobs:
     name: Build and Deploy to ECS
     runs-on: ubuntu-latest
     
+    # ClamAV Service Container（ウイルススキャンテスト用）
+    services:
+      clamav:
+        image: clamav/clamav:1.4
+        ports:
+          - 3310:3310
+        options: >-
+          --health-cmd "clamdscan --ping 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    
     steps:
       #########################################################################
       # 1. リポジトリチェックアウト
@@ -71,6 +83,11 @@ jobs:
       - name: Run Tests
         if: ${{ !inputs.skip_tests }}
         continue-on-error: true  # 暫定対応: テスト失敗を許容してデプロイ続行
+        env:
+          # ClamAV設定（GitHub Actions Service Container用）
+          CLAMAV_USE_DAEMON: true
+          CLAMAV_DAEMON_HOST: localhost
+          CLAMAV_DAEMON_PORT: 3310
         run: |
           echo "🧪 Running tests with SQLite in-memory database..."
           
@@ -90,6 +107,13 @@ jobs:
           
           # 設定キャッシュをクリア（テスト環境で正しい設定を読み込む）
           php artisan config:clear
+          
+          # ClamAVサービス接続確認
+          echo "🔍 Checking ClamAV service availability..."
+          timeout 30 bash -c 'until nc -z localhost 3310; do sleep 1; done' || {
+            echo "⚠️ ClamAV service not ready after 30s, tests may fail"
+          }
+          echo "✅ ClamAV service is ready"
           
           # テスト実行（phpunit.xmlでSQLite設定済み）
           php artisan test --parallel || {

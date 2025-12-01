@@ -42,6 +42,16 @@ class ClamAVScanService implements VirusScanServiceInterface
      */
     private int $timeout;
 
+    /**
+     * リモートデーモンホスト（GitHub Actions Service Container用）
+     */
+    private ?string $daemonHost;
+
+    /**
+     * リモートデーモンポート
+     */
+    private ?int $daemonPort;
+
     public function __construct()
     {
         $this->clamScanPath = config('security.clamav.path', '/usr/bin/clamscan');
@@ -49,6 +59,10 @@ class ClamAVScanService implements VirusScanServiceInterface
         // テスト環境ではデーモンモードを優先（高速化）
         $this->useDaemon = config('security.clamav.use_daemon', false) || app()->environment('testing');
         $this->timeout = config('security.clamav.timeout', 60);
+        
+        // リモートデーモン設定（GitHub Actions Service Container用）
+        $this->daemonHost = config('security.clamav.daemon_host');
+        $this->daemonPort = config('security.clamav.daemon_port', 3310);
     }
 
     /**
@@ -73,6 +87,11 @@ class ClamAVScanService implements VirusScanServiceInterface
         }
 
         try {
+            // リモートデーモン（GitHub Actions Service Container）の場合
+            if ($this->daemonHost && $this->daemonPort) {
+                return $this->scanWithRemoteDaemon($filePath);
+            }
+            
             // デーモンモード or 通常モードでスキャン実行
             if ($this->useDaemon && $this->isDaemonAvailable()) {
                 $process = new Process([
@@ -231,6 +250,24 @@ class ClamAVScanService implements VirusScanServiceInterface
         }
         
         try {
+            // リモートデーモンの場合はポート接続チェック
+            if ($this->daemonHost && $this->daemonPort) {
+                $socket = @fsockopen($this->daemonHost, $this->daemonPort, $errno, $errstr, 2);
+                if ($socket) {
+                    fclose($socket);
+                    $available = true;
+                    return true;
+                }
+                Log::warning('ClamAV remote daemon not reachable', [
+                    'host' => $this->daemonHost,
+                    'port' => $this->daemonPort,
+                    'error' => "$errno: $errstr"
+                ]);
+                $available = false;
+                return false;
+            }
+            
+            // ローカルデーモンの場合はclamdscan --versionで確認
             $process = new Process([$this->clamdScanPath, '--version']);
             $process->setTimeout(1);
             $process->run();
@@ -241,6 +278,149 @@ class ClamAVScanService implements VirusScanServiceInterface
             $available = false;
             return false;
         }
+    }
+
+    /**
+     * リモートデーモンでINSTREAMプロトコルを使用してスキャン
+     * 
+     * @param string $filePath スキャン対象ファイルパス
+     * @return bool ウイルスが検出されなければtrue
+     */
+    private function scanWithRemoteDaemon(string $filePath): bool
+    {
+        $socket = @fsockopen($this->daemonHost, $this->daemonPort, $errno, $errstr, 5);
+        
+        if (!$socket) {
+            Log::error('ClamAV remote daemon connection failed', [
+                'host' => $this->daemonHost,
+                'port' => $this->daemonPort,
+                'error' => "$errno: $errstr"
+            ]);
+            
+            $this->scanResult = [
+                'status' => 'error',
+                'message' => 'Cannot connect to ClamAV daemon',
+                'file' => $filePath,
+                'error' => "$errno: $errstr",
+            ];
+            
+            return false;
+        }
+        
+        try {
+            // INSTREAMコマンド送信
+            if (!fwrite($socket, "zINSTREAM\0")) {
+                throw new \RuntimeException('Failed to send INSTREAM command');
+            }
+            
+            // ファイル内容を8KBチャンクで送信
+            $handle = fopen($filePath, 'rb');
+            if (!$handle) {
+                throw new \RuntimeException("Failed to open file: $filePath");
+            }
+            
+            while (!feof($handle)) {
+                $chunk = fread($handle, 8192);
+                if ($chunk === false) {
+                    break;
+                }
+                
+                // チャンク長をビッグエンディアン32bitで送信
+                $size = pack('N', strlen($chunk));
+                if (!fwrite($socket, $size . $chunk)) {
+                    throw new \RuntimeException('Failed to send chunk');
+                }
+            }
+            fclose($handle);
+            
+            // 終了マーカー（長さ0）
+            if (!fwrite($socket, pack('N', 0))) {
+                throw new \RuntimeException('Failed to send termination marker');
+            }
+            
+            // スキャン結果受信（例: "stream: OK" または "stream: Virus.Name FOUND"）
+            $response = trim(fgets($socket));
+            
+            Log::info('ClamAV remote scan result', [
+                'file' => basename($filePath),
+                'response' => $response,
+            ]);
+            
+            // 結果判定
+            if (strpos($response, ' OK') !== false) {
+                $this->scanResult = [
+                    'status' => 'clean',
+                    'message' => 'No virus detected',
+                    'file' => $filePath,
+                    'output' => $response,
+                ];
+                return true;
+            } elseif (strpos($response, ' FOUND') !== false) {
+                $virusName = $this->parseInstreamVirusName($response);
+                $this->scanResult = [
+                    'status' => 'infected',
+                    'message' => 'Virus detected',
+                    'file' => $filePath,
+                    'output' => $response,
+                    'details' => $virusName,
+                ];
+                
+                Log::warning('ClamAV remote scan: Infected', [
+                    'file' => $filePath,
+                    'virus' => $virusName,
+                ]);
+                
+                return false;
+            } else {
+                // エラーまたは不明な応答
+                $this->scanResult = [
+                    'status' => 'error',
+                    'message' => 'Unexpected scan result',
+                    'file' => $filePath,
+                    'output' => $response,
+                ];
+                
+                Log::error('ClamAV remote scan: Unexpected response', [
+                    'file' => $filePath,
+                    'response' => $response,
+                ]);
+                
+                return false;
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('ClamAV remote scan error', [
+                'file' => $filePath,
+                'error' => $e->getMessage(),
+            ]);
+            
+            $this->scanResult = [
+                'status' => 'error',
+                'message' => 'Scan error',
+                'file' => $filePath,
+                'error' => $e->getMessage(),
+            ];
+            
+            return false;
+        } finally {
+            fclose($socket);
+        }
+    }
+
+    /**
+     * INSTREAMプロトコルのレスポンスからウイルス名を抽出
+     * 
+     * @param string $response ClamAVレスポンス
+     * @return string ウイルス名
+     */
+    private function parseInstreamVirusName(string $response): string
+    {
+        // レスポンス例: "stream: Eicar-Signature FOUND"
+        if (preg_match('/stream: (.+) FOUND/', $response, $matches)) {
+            return $matches[1];
+        }
+        
+        return 'Unknown virus';
     }
 
     /**
