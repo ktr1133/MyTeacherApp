@@ -82,13 +82,38 @@ Route::prefix('v1/dual')->middleware(['dual.auth'])->group(function () {
     // Route::get('/tasks', ...)->name('api.v1.dual.tasks.index');
 });
 
-// レガシーAPI（Sanctum認証 - Phase 2以降削除予定）
-Route::prefix('api')->group(function () {
-    Route::middleware(['auth:sanctum'])->group(function () {
-        Route::get('/user', function () {
-            return auth()->user();
-        });
-
-        Route::post('/tasks/propose', ProposeTaskAction::class)->name('api.tasks.propose');
+// レガシーAPI（Sanctum認証 - テスト用に一時的に維持）
+Route::prefix('api')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/user', function () {
+        return auth()->user();
     });
+
+    // タスクAPI（テスト用 - Phase 2で削除予定）
+    Route::get('/tasks', IndexTaskApiAction::class)->name('api.tasks.index');
+    Route::post('/tasks', StoreTaskApiAction::class)->name('api.tasks.store');
+    Route::put('/tasks/{task}', UpdateTaskApiAction::class)->name('api.tasks.update');
+    Route::delete('/tasks/{task}', DestroyTaskApiAction::class)->name('api.tasks.destroy');
+    Route::patch('/tasks/{task}/toggle', ToggleTaskCompletionApiAction::class)->name('api.tasks.toggle');
+    
+    // タスク承認API
+    Route::post('/tasks/{task}/approve', ApproveTaskApiAction::class)->name('api.tasks.approve');
+    Route::post('/tasks/{task}/reject', RejectTaskApiAction::class)->name('api.tasks.reject');
+    
+    // タスク画像API
+    Route::post('/tasks/{task}/images', UploadTaskImageApiAction::class)->name('api.tasks.images.upload');
+    Route::delete('/task-images/{image}', DeleteTaskImageApiAction::class)->name('api.tasks.images.delete');
+    
+    // タスク一括完了/未完了
+    Route::patch('/tasks/bulk-complete', BulkCompleteTasksApiAction::class)->name('api.tasks.bulk-complete');
+    
+    // タスク完了申請
+    Route::post('/tasks/{task}/request-approval', RequestApprovalApiAction::class)->name('api.tasks.request-approval');
+    
+    // 承認待ち一覧取得
+    Route::get('/approvals/pending', ListPendingApprovalsApiAction::class)->name('api.approvals.pending');
+    
+    // タスク検索
+    Route::post('/tasks/search', SearchTasksApiAction::class)->name('api.tasks.search');
+
+    Route::post('/tasks/propose', ProposeTaskAction::class)->name('api.tasks.propose');
 });
