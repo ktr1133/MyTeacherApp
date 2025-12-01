@@ -1,5 +1,3 @@
-<!-- filepath: docs/TESTING.md -->
-
 # テスト実行ガイド
 
 ## テスト実行方法

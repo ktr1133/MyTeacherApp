@@ -3,7 +3,8 @@
 ## 更新履歴
 
 | 日付 | 更新者 | 更新内容 |
-|------|--------|---------|-----|
+|------|--------|---------|
+| 2025-12-01 | GitHub Copilot | 月次レポート画面の詳細仕様を追加（セクション13） |
 | 2025-12-01 | GitHub Copilot | アバター表示ロジックの詳細を追加（セクション2.5） |
 | 2025-12-01 | GitHub Copilot | Phase 1.1.8実装完了: サブスク制限機能・用語統一・デザイン統一 |
 | 2025-12-01 | GitHub Copilot | 初版作成: 実績画面の要件定義（既存機能+サブスク制限機能） |
@@ -1061,6 +1062,19 @@ Log::info('Performance data fetched', [
 
 ### C. 変更履歴の詳細
 
+#### 2025-12-01: 月次レポート画面の詳細仕様追加
+
+**追加理由**:
+- Phase 1.1.8-2実装における仕様の齟齬を解消
+- 質疑応答で明確化した月次レポート画面の詳細仕様をドキュメント化
+
+**追加内容**:
+- セクション13: 月次レポート画面の完全な要件定義
+- 画面構成（年月選択、グラフ、AIコメント、詳細テーブル）
+- データ構造（member_task_summary、group_task_details）
+- AIコメント生成仕様（OpenAI API統合、アバター性格反映）
+- アクセス制御（サブスクリプション制限）
+
 #### 2025-12-01: 初版作成
 
 **作成理由**:
@@ -1071,6 +1085,480 @@ Log::info('Performance data fetched', [
 - 既存機能の網羅的な要件定義
 - サブスク制限機能の詳細仕様
 - データフロー・画面レイアウト・技術仕様
+
+---
+
+## 13. 月次レポート画面
+
+### 13.1 概要
+
+#### 目的
+
+グループの月次実績を可視化し、メンバー別の達成状況、グラフによる推移、AI生成コメントを統合的に表示する。サブスクリプション加入者のみが過去レポートを閲覧可能とし、プレミアム機能としての価値を提供する。
+
+#### 対象ユーザー
+
+- **グループメンバー全員**: 自グループの月次レポート閲覧
+- **サブスク加入者**: 過去12ヶ月分のレポート閲覧可能
+- **無料ユーザー**: 当月（グループ作成後1ヶ月）のみ閲覧可能
+
+#### 画面パス
+
+- **ルート**: `/reports/monthly/{year}/{month}` または `/reports/monthly`（デフォルト: 前月）
+- **アクション**: `App\Http\Actions\Reports\ShowMonthlyReportAction`
+- **ビュー**: `resources/views/reports/monthly/show.blade.php`
+
+---
+
+### 13.2 画面構成
+
+#### 13.2.1 ヘッダー部
+
+**要素**:
+- ページタイトル「月次レポート」
+- 年月選択UI（スマホ対応）
+- 実績画面に戻るボタン
+
+**年月選択UI**:
+- **デスクトップ**: ドロップダウン形式（年・月別々）
+- **スマホ**: ネイティブ月選択ピッカー（`<input type="month">`）
+- **選択可能範囲**: 過去12ヶ月（グループ作成日以降）
+- **デフォルト**: 前月（`now()->subMonth()->format('Y-m')`）
+
+**レスポンシブ対応**:
+```html
+<!-- デスクトップ（768px以上） -->
+<select class="hidden md:block">
+  <option value="2025-11">2025年11月</option>
+</select>
+
+<!-- スマホ（767px以下） -->
+<input type="month" class="md:hidden" value="2025-11" min="2024-12" max="2025-11">
+```
+
+#### 13.2.2 サマリー統計
+
+**表示項目**:
+1. **通常タスク完了数**
+   - 当月の完了件数
+   - 前月比（例: 前月比 +15%）
+   - 色分け: 増加=緑、減少=赤
+
+2. **グループタスク完了数**
+   - 当月の完了件数
+   - 前月比
+   - 色分け: 増加=緑、減少=赤
+
+3. **獲得報酬合計**
+   - 当月の報酬合計（円）
+   - 前月比
+   - 色分け: 増加=緑、減少=赤
+
+**レイアウト**:
+- 3カラムグリッド（デスクトップ）
+- 1カラムスタック（スマホ）
+- カード形式、アイコン付き
+
+#### 13.2.3 グラフ表示
+
+**グラフ1: 通常タスク月別推移（メンバー別内訳）**
+
+**仕様**:
+- **種類**: 積み上げ棒グラフ（Chart.js `bar` type, `stacked: true`）
+- **データ範囲**: 直近6ヶ月
+- **X軸**: 月（例: 2025-06, 2025-07, ..., 2025-11）
+- **Y軸**: 完了タスク数
+- **色分け**: メンバーごとに異なる色
+- **凡例**: メンバー名リスト（クリックで表示/非表示切替）
+
+**データ構造**:
+```javascript
+{
+  labels: ['2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11'],
+  datasets: [
+    {
+      label: '太郎',
+      data: [5, 7, 3, 8, 6, 10],
+      backgroundColor: '#59B9C6',
+      stack: 'Stack 0'
+    },
+    {
+      label: '花子',
+      data: [3, 5, 6, 4, 7, 8],
+      backgroundColor: '#8B5CF6',
+      stack: 'Stack 0'
+    }
+  ]
+}
+```
+
+**グラフ2: グループタスク月別推移（メンバー別内訳）**
+
+**仕様**:
+- 通常タスクと同様の積み上げ棒グラフ
+- グループタスク専用データセット
+- 色分けは通常タスクと同じメンバー色を使用
+
+#### 13.2.4 AIコメント表示
+
+**アバターあり（グループ管理者がアバター登録済み）**:
+
+**レイアウト**:
+```
+┌─────────────────────────────────────────┐
+│  [アバター画像]  [吹き出し]             │
+│  （happy表情）   「今月はみんながんばっ│
+│                  たね！太郎くんは...」  │
+└─────────────────────────────────────────┘
+```
+
+**実装**:
+- アバター画像: `teacher_avatars.avatar_images` から `happy_bust` 取得
+- 吹き出し: CSS `border-radius`, `::before` で三角形
+- コメント: `monthly_reports.ai_comment` から取得
+
+**アバターなし（グループ管理者がアバター未登録）**:
+
+**レイアウト**:
+```
+┌─────────────────────────────────────────┐
+│  📊 今月の実績概況                      │
+│  ・太郎: 通常タスク10件、グループタスク│
+│    8件完了（前月比+15%）               │
+│  ・花子: 通常タスク8件、グループタスク │
+│    6件完了（前月比+20%）               │
+└─────────────────────────────────────────┘
+```
+
+**実装**:
+- カード形式、アイコン付き
+- テキストのみ、箇条書き
+- コメント: `monthly_reports.ai_comment` から取得
+
+**AIコメント生成仕様**:
+
+**アバター性格パラメータ**:
+```php
+$personality = [
+    'sex' => 'male',          // 性別（male/female）
+    'tone' => 'friendly',     // 口調（formal/friendly/casual）
+    'enthusiasm' => 'high',   // テンション（low/medium/high）
+    'formality' => 'medium',  // 丁寧さ（low/medium/high）
+    'humor' => 'medium'       // ユーモア（low/medium/high）
+];
+```
+
+**プロンプト構造**:
+```
+あなたは以下の性格を持つ教師アバターです：
+- 性別: {sex}
+- 口調: {tone}
+- テンション: {enthusiasm}
+- 丁寧さ: {formality}
+- ユーモア: {humor}
+
+以下のグループメンバーの月次実績を、あなたの性格に合わせたしゃべり口調でコメントしてください：
+
+【メンバー別実績】
+- 太郎: 通常タスク10件、グループタスク8件完了（前月比+15%）、報酬320円
+  完了した主なグループタスク: 「宿題を終わらせる」「部屋の掃除」
+- 花子: 通常タスク8件、グループタスク6件完了（前月比+20%）、報酬240円
+  完了した主なグループタスク: 「ピアノ練習」「お手伝い」
+
+コメントは3-5文程度で、メンバーの頑張りを称賛し、次月への励ましを含めてください。
+```
+
+**生成タイミング**:
+- `GenerateMonthlyReports` コマンド実行時
+- `MonthlyReportService::generateMonthlyReport()` 内で生成
+- `gpt-4o-mini` モデル使用
+- トークン消費記録（個人残高には影響なし、管理者統計のみ）
+
+#### 13.2.5 詳細データテーブル
+
+**メンバー選択**:
+- セレクトボックスで切り替え
+- デフォルト: 「全メンバー」
+- 選択肢: 全メンバー、太郎、花子、...
+
+**テーブルカラム**:
+
+| カラム | 説明 | 例 |
+|--------|------|-----|
+| 日時 | 完了日時 | 2025-11-15 10:30 |
+| タイトル | タスク名 | 宿題を終わらせる |
+| 種別 | 通常/グループ | グループ |
+| 報酬 | 獲得報酬額 | 50円 |
+| タグ | タスクタグ | 学習, 宿題 |
+
+**データソース**:
+- `member_task_summary`: 通常タスクデータ
+- `group_task_details`: グループタスクデータ
+- 両方をマージして日時順ソート
+
+**ページング**:
+- 1ページあたり20件
+- ページネーションUI（Laravel標準）
+- スマホ対応（簡略版ページャー）
+
+**レスポンシブ対応**:
+- デスクトップ: 全カラム表示
+- スマホ: タイトル+種別+報酬のみ表示（タグは省略）
+
+---
+
+### 13.3 データ構造
+
+#### 13.3.1 monthly_reports テーブル
+
+**スキーマ**:
+```sql
+CREATE TABLE monthly_reports (
+    id BIGINT PRIMARY KEY,
+    group_id BIGINT NOT NULL,
+    report_month DATE NOT NULL COMMENT 'YYYY-MM-01',
+    generated_at TIMESTAMP NULL,
+    
+    -- メンバー別通常タスク集計
+    member_task_summary JSON NULL COMMENT '{user_id: {name, completed_count, reward, tasks: [{title, completed_at}]}}',
+    
+    -- グループタスク集計
+    group_task_summary JSON NULL COMMENT '{user_id: {name, completed_count, reward, tasks: [{title, reward, completed_at, tags}]}}',
+    group_task_completed_count INT DEFAULT 0,
+    group_task_total_reward INT DEFAULT 0,
+    
+    -- 前月比データ
+    normal_task_count_previous_month INT DEFAULT 0,
+    group_task_count_previous_month INT DEFAULT 0,
+    reward_previous_month INT DEFAULT 0,
+    
+    -- AIコメント
+    ai_comment TEXT NULL COMMENT 'OpenAI生成コメント',
+    ai_comment_tokens_used INT DEFAULT 0 COMMENT '消費トークン数',
+    
+    -- PDFファイル
+    pdf_path VARCHAR(255) NULL,
+    
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    UNIQUE (group_id, report_month),
+    INDEX (report_month),
+    INDEX (generated_at)
+);
+```
+
+#### 13.3.2 member_task_summary 構造
+
+```json
+{
+  "14": {
+    "name": "太郎",
+    "completed_count": 10,
+    "reward": 320,
+    "tasks": [
+      {
+        "title": "宿題を終わらせる",
+        "completed_at": "2025-11-15 10:30:00"
+      },
+      {
+        "title": "部屋の掃除",
+        "completed_at": "2025-11-16 14:20:00"
+      }
+    ]
+  },
+  "15": {
+    "name": "花子",
+    "completed_count": 8,
+    "reward": 240,
+    "tasks": [...]
+  }
+}
+```
+
+#### 13.3.3 group_task_summary 構造
+
+```json
+{
+  "14": {
+    "name": "太郎",
+    "completed_count": 8,
+    "reward": 400,
+    "tasks": [
+      {
+        "title": "ピアノ練習",
+        "reward": 50,
+        "completed_at": "2025-11-17 16:00:00",
+        "tags": ["音楽", "練習"]
+      }
+    ]
+  },
+  "15": {
+    "name": "花子",
+    "completed_count": 6,
+    "reward": 300,
+    "tasks": [...]
+  }
+}
+```
+
+---
+
+### 13.4 アクセス制御
+
+#### サブスクリプション制限
+
+**無料ユーザー**:
+- ✅ 当月レポート閲覧可能（グループ作成後1ヶ月間）
+- ❌ 過去月レポート閲覧不可（ロック画面表示）
+
+**サブスク加入者**:
+- ✅ 過去12ヶ月分のレポート閲覧可能
+- ✅ 全機能利用可能
+
+**判定ロジック**:
+```php
+public function canAccessReport(Group $group, string $yearMonth): bool
+{
+    // サブスク加入者は全期間アクセス可能
+    if ($group->subscription_active === true) {
+        return true;
+    }
+    
+    // 無料ユーザーは初月のみ
+    $groupCreatedAt = Carbon::parse($group->created_at);
+    $firstMonthEnd = $groupCreatedAt->copy()->addMonth()->endOfMonth();
+    $targetMonth = Carbon::createFromFormat('Y-m', $yearMonth);
+    
+    return $targetMonth->lte($firstMonthEnd);
+}
+```
+
+**ロック画面**:
+- 半透明オーバーレイ
+- 🔒 アイコン + メッセージ「過去のレポートを見るにはサブスクリプションが必要です」
+- 「プランを見る」ボタン → `/subscriptions`
+
+---
+
+### 13.5 技術仕様
+
+#### 使用ライブラリ
+
+- **Chart.js**: グラフ描画（v4.x）
+- **OpenAI PHP SDK**: AIコメント生成
+- **Tailwind CSS**: スタイリング
+- **Vanilla JavaScript**: インタラクティブ機能
+
+#### パフォーマンス
+
+**最適化手法**:
+- レポートデータはJSON形式で事前集計済み
+- グラフデータは最大6ヶ月分のみ
+- 詳細テーブルはページングで20件ずつ表示
+- 画像遅延読み込み（アバター）
+
+**キャッシュ戦略**:
+- レポートデータは月次で静的（更新頻度低い）
+- `Cache::remember()` で1日キャッシュ
+- 手動再生成時はキャッシュクリア
+
+---
+
+### 13.6 エラーハンドリング
+
+#### レポート未生成の場合
+
+**表示内容**:
+```
+┌─────────────────────────────────────────┐
+│  📊 レポートが存在しません              │
+│                                         │
+│  選択された月のレポートはまだ生成され  │
+│  ていません。レポートは毎月1日の午前2  │
+│  時に自動生成されます。                │
+│                                         │
+│  [実績画面に戻る]                       │
+└─────────────────────────────────────────┘
+```
+
+#### アクセス権限エラー
+
+**表示内容**:
+- サブスク未加入者が過去月にアクセス → ロック画面表示
+- 他グループのレポートにアクセス → 404エラー
+
+---
+
+### 13.7 実装優先順位
+
+#### Phase 1.1.8-2（現在実装中）
+
+1. **データベースマイグレーション修正**
+   - `ai_comment` カラム追加
+   - `ai_comment_tokens_used` カラム追加
+   - `group_task_summary` カラム追加（`group_task_details` から変更）
+
+2. **一覧画面を詳細画面に変更**
+   - `IndexMonthlyReportAction` → `ShowMonthlyReportAction`
+   - ルート変更: `/reports/monthly/{year}/{month}`
+   - 年月選択UI実装
+
+3. **グラフ表示実装**
+   - Chart.js統合
+   - 通常タスク積み上げ棒グラフ
+   - グループタスク積み上げ棒グラフ
+   - 直近6ヶ月データ取得ロジック
+
+4. **AIコメント表示エリア**
+   - アバター画像+吹き出し
+   - アバターなしの場合のテキスト表示
+
+5. **詳細データテーブル**
+   - メンバー選択セレクトボックス
+   - ページング機能
+   - タグ表示
+
+6. **AIコメント生成機能**
+   - `MonthlyReportService::generateAIComment()`
+   - OpenAI API統合
+   - アバター性格パラメータ取得
+   - トークン消費記録
+
+#### Phase 1.1.8-3（次フェーズ）
+
+1. **PDF出力機能**
+   - Dompdf統合
+   - レポートPDF生成
+   - S3アップロード
+   - ダウンロードアクション
+
+---
+
+### 13.8 テスト要件
+
+#### 単体テスト
+
+**対象**:
+- `MonthlyReportService::generateMonthlyReport()`
+- `MonthlyReportService::generateAIComment()`
+- `MonthlyReportService::canAccessReport()`
+
+**テストケース**:
+- メンバー別データ集計
+- 前月比計算
+- AIコメント生成（モック使用）
+- アクセス権限判定（サブスク/無料）
+
+#### 統合テスト
+
+**シナリオ**:
+- レポート生成コマンド実行
+- 詳細画面表示（サブスク加入者）
+- ロック画面表示（無料ユーザー）
+- 年月選択・切り替え
+- メンバー別データ表示
 
 ---
 
