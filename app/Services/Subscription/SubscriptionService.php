@@ -46,8 +46,15 @@ class SubscriptionService implements SubscriptionServiceInterface
         }
 
         // データ整形（Serviceの責務）
+        $plan = $group->subscription_plan;
+        
+        // プラン名が空または無効な場合はnullを返す
+        if (empty($plan) || !isset(config('const.stripe.subscription_plans')[$plan])) {
+            return null;
+        }
+        
         return [
-            'plan' => $group->subscription_plan,
+            'plan' => $plan,
             'active' => $group->subscription_active,
             'stripe_status' => $subscription->stripe_status,
             'ends_at' => $subscription->ends_at,

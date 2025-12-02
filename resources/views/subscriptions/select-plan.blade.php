@@ -536,7 +536,7 @@
     <x-confirm-dialog />
 
     {{-- プラン変更モーダル --}}
-    @if($currentSubscription)
+    @if($currentSubscription && !empty($currentSubscription['plan']))
         <x-subscription-change-modal :currentPlan="$currentSubscription['plan']" :plans="$plans" />
     @endif
 

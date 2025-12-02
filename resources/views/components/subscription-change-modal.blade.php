@@ -33,7 +33,7 @@
                     {{-- メッセージ --}}
                     <div class="px-6 py-6">
                         <p class="text-base text-gray-700 dark:text-gray-300 mb-4">
-                            現在のプラン「<strong>{{ $plans[$currentPlan]['name'] }}</strong>」から<br>
+                            現在のプラン「<strong>{{ $plans[$currentPlan]['name'] ?? '不明' }}</strong>」から<br>
                             「<strong id="new-plan-name"></strong>」に変更しますか？
                         </p>
                         <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
