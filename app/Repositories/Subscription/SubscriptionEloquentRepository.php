@@ -45,16 +45,14 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
             }
 
             // チェックアウトセッションを作成
-            // subscription_data.metadataでSubscriptionオブジェクトにmetadataを設定
-            $checkoutSession = $subscription->checkout([
-                'success_url' => route('subscriptions.success') . '?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('subscriptions.cancel'),
-                'client_reference_id' => (string) $group->id,
-                'metadata' => $metadata,  // CheckoutSessionのmetadata
-                'subscription_data' => [
-                    'metadata' => $metadata,  // Subscriptionのmetadata（重要: webhookで受信される）
-                ],
-            ]);
+            // メタデータをSubscriptionに設定（Cashierの内部でsubscription_dataに変換される）
+            $checkoutSession = $subscription
+                ->metadata($metadata)  // これがsubscription_data.metadataとして送信される
+                ->checkout([
+                    'success_url' => route('subscriptions.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                    'cancel_url' => route('subscriptions.cancel'),
+                    'client_reference_id' => (string) $group->id,
+                ]);
 
             Log::info('Stripe Checkout Session created', [
                 'group_id' => $group->id,
