@@ -113,6 +113,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Billable Model
+    |--------------------------------------------------------------------------
+    |
+    | This is the model in your application that implements the Billable trait
+    | provided by Cashier. It will be used when interacting with Stripe to
+    | find the subscription owner and perform billing related actions.
+    |
+    */
+
+    'model' => env('CASHIER_MODEL', App\Models\Group::class),
+
+    /*
+    |--------------------------------------------------------------------------
     | Stripe Logger
     |--------------------------------------------------------------------------
     |
