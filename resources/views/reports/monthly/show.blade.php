@@ -144,11 +144,11 @@
             <div class="mb-6 space-y-6">
                 {{-- 合計タスクグラフ（メイン） --}}
                 <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                             📈 タスク完了数の推移（過去6ヶ月）
                         </h3>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                        <span class="text-sm text-gray-500 dark:text-gray-400 sm:whitespace-nowrap">
                             通常タスク + グループタスク
                         </span>
                     </div>
