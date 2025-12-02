@@ -17,10 +17,10 @@ $members = \App\Models\User::where('group_id', $groupId)->get();
 echo "対象グループ: {$groupId}\n";
 echo "メンバー数: {$members->count()}人\n\n";
 
-// 9月と10月のデータを作成
+// 9月と10月のデータを作成（2025年）
 $months = [
-    ['year' => 2024, 'month' => 9, 'label' => '9月'],
-    ['year' => 2024, 'month' => 10, 'label' => '10月'],
+    ['year' => 2025, 'month' => 9, 'label' => '9月'],
+    ['year' => 2025, 'month' => 10, 'label' => '10月'],
 ];
 
 foreach ($months as $monthData) {
@@ -180,17 +180,17 @@ echo "━━━━━━━━━━━━━━━━━━━━━━\n";
 echo "【トークン推定消費量算定】\n";
 echo "━━━━━━━━━━━━━━━━━━━━━━\n\n";
 
-// 9月→10月の変化を計算
+// 9月→10月の変化を計算（2025年）
 $septReport = \App\Models\MonthlyReport::where('group_id', $groupId)
-    ->where('report_month', '2024-09-01')
+    ->where('report_month', '2025-09-01')
     ->first();
 
 $octReport = \App\Models\MonthlyReport::where('group_id', $groupId)
-    ->where('report_month', '2024-10-01')
+    ->where('report_month', '2025-10-01')
     ->first();
 
 if ($septReport && $octReport) {
-    echo "【9月→10月のメンバー変化】\n";
+    echo "【2025年9月→10月のメンバー変化】\n";
     
     $septMembers = collect($septReport->member_task_summary);
     $octMembers = collect($octReport->member_task_summary);
