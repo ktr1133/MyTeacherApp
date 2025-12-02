@@ -222,14 +222,14 @@ class OpenAIService
      * @param array|null $avatarPersonality アバター性格情報 ['tone', 'enthusiasm', 'formality', 'humor']
      * @return array ['comment' => string, 'usage' => array]
      */
-    public function generateMonthlyReportComment(array $reportData, ?array $avatarPersonality = null): array
+    public function generateMonthlyReportComment(array $reportData, ?array $avatarPersonality = null, array $memberChanges = []): array
     {
         if (!$this->apiKey) {
             throw new \RuntimeException('OpenAI API key is not configured.');
         }
 
-        // アバター性格に基づいたシステムプロンプト生成
-        $systemPrompt = $this->buildReportCommentSystemPrompt($avatarPersonality);
+        // アバター性格に基づいたシステムプロンプト生成（変化情報を含める）
+        $systemPrompt = $this->buildReportCommentSystemPrompt($avatarPersonality, $memberChanges);
         
         // レポートデータを要約
         $normalTaskCount = 0;
@@ -322,12 +322,33 @@ class OpenAIService
      * @param array|null $personality アバター性格情報
      * @return string
      */
-    protected function buildReportCommentSystemPrompt(?array $personality): string
+    protected function buildReportCommentSystemPrompt(?array $personality, array $memberChanges = []): string
     {
         $basePrompt = "あなたは教師アバターとして、グループの月次タスク実績レポートにコメントを付けます。";
         
+        // メンバー変化情報をプロンプトに追加
+        $changesSection = '';
+        if (!empty($memberChanges)) {
+            $changesSection = "\n\n【特に注目すべきメンバー】\n";
+            foreach ($memberChanges as $change) {
+                $userName = $change['user_name'];
+                $percentage = abs($change['change_percentage']);
+                $current = $change['current'];
+                $previous = $change['previous'];
+                
+                if ($change['type'] === 'increase') {
+                    // 増加の場合は称賛
+                    $changesSection .= "- {$userName}さん: 前月{$previous}件→今月{$current}件（{$percentage}%増加）！素晴らしい成長です。この調子を称賛し、さらなる励みになる言葉をかけてあげてください。\n";
+                } else {
+                    // 減少の場合は心配と励まし
+                    $changesSection .= "- {$userName}さん: 前月{$previous}件→今月{$current}件（{$percentage}%減少）。心配な状況ですが、優しく励まし、前向きな言葉をかけてサポートしてください。\n";
+                }
+            }
+            $changesSection .= "\n※上記のメンバーの変化を必ずコメントに反映させ、具体的に名前を挙げて言及してください。";
+        }
+        
         if (!$personality) {
-            return $basePrompt . "励ましや建設的なアドバイスを含む、150文字程度の短いコメントを日本語で生成してください。";
+            return $basePrompt . $changesSection . "\n\n励ましや建設的なアドバイスを含む、150文字程度の短いコメントを日本語で生成してください。";
         }
         
         // 性格特性に応じたプロンプト調整
@@ -361,6 +382,6 @@ class OpenAIService
         $formality = $formalityMap[$personality['formality'] ?? 'neutral'] ?? '適度な丁寧さで';
         $humor = $humorMap[$personality['humor'] ?? 'moderate'] ?? '時々軽い冗談を入れつつ';
         
-        return "{$basePrompt} {$tone}、{$enthusiasm}、{$formality}、{$humor}、励ましや建設的なアドバイスを含む150文字程度の短いコメントを日本語で生成してください。";
+        return "{$basePrompt}{$changesSection}\n\n{$tone}、{$enthusiasm}、{$formality}、{$humor}、励ましや建設的なアドバイスを含む150文字程度の短いコメントを日本語で生成してください。";
     }
 }

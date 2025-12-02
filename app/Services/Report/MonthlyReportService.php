@@ -664,12 +664,98 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             ];
         }
         
-        // OpenAIサービスを使ってコメント生成
-        $result = $this->openAIService->generateMonthlyReportComment($reportData, $personality);
+        // 前月レポート取得
+        $reportMonth = Carbon::createFromFormat('Y-m-d', $reportData['report_month'] ?? now()->format('Y-m-d'));
+        $previousMonth = $reportMonth->copy()->subMonth();
+        $previousReport = $this->repository->findByGroupAndMonth($group->id, $previousMonth->format('Y-m'));
+        
+        // 著しい変化があったメンバーの情報を計算
+        $memberChanges = [];
+        if ($previousReport) {
+            $memberChanges = $this->calculateMemberChanges($reportData, $previousReport);
+        }
+        
+        // OpenAIサービスを使ってコメント生成（変化情報を含める）
+        $result = $this->openAIService->generateMonthlyReportComment($reportData, $personality, $memberChanges);
         
         return [
             'comment' => $result['comment'],
             'tokens_used' => $result['usage']['total_tokens'] ?? 0,
         ];
+    }
+    
+    /**
+     * メンバー別の前月比変化率を計算
+     * 
+     * @param array $currentReportData 当月レポートデータ
+     * @param MonthlyReport $previousReport 前月レポート
+     * @return array 著しい変化があったメンバーの情報
+     */
+    protected function calculateMemberChanges(array $currentReportData, MonthlyReport $previousReport): array
+    {
+        $changes = [];
+        $threshold = 30; // 30%以上の変化を「著しい変化」とする
+        
+        $currentMemberSummary = $currentReportData['member_task_summary'] ?? [];
+        $currentGroupSummary = $currentReportData['group_task_summary'] ?? [];
+        $previousMemberSummary = $previousReport->member_task_summary ?? [];
+        $previousGroupSummary = $previousReport->group_task_summary ?? [];
+        
+        // メンバーIDのリストを取得（当月と前月の両方）
+        $allUserIds = array_unique(array_merge(
+            array_keys($currentMemberSummary),
+            array_keys($currentGroupSummary),
+            array_keys($previousMemberSummary),
+            array_keys($previousGroupSummary)
+        ));
+        
+        foreach ($allUserIds as $userId) {
+            // 当月の集計
+            $currentNormal = $currentMemberSummary[$userId]['completed_count'] ?? 0;
+            $currentGroup = $currentGroupSummary[$userId]['completed_count'] ?? 0;
+            $currentTotal = $currentNormal + $currentGroup;
+            
+            // 前月の集計
+            $previousNormal = $previousMemberSummary[$userId]['completed_count'] ?? 0;
+            $previousGroup = $previousGroupSummary[$userId]['completed_count'] ?? 0;
+            $previousTotal = $previousNormal + $previousGroup;
+            
+            // ユーザー名取得
+            $userName = $currentMemberSummary[$userId]['user_name'] 
+                ?? $currentGroupSummary[$userId]['name']
+                ?? $previousMemberSummary[$userId]['user_name']
+                ?? $previousGroupSummary[$userId]['name']
+                ?? 'Unknown';
+            
+            // 前月データがない場合
+            if ($previousTotal == 0) {
+                if ($currentTotal > 0) {
+                    $changes[] = [
+                        'user_name' => $userName,
+                        'type' => 'increase',
+                        'change_percentage' => 100,
+                        'current' => $currentTotal,
+                        'previous' => 0,
+                    ];
+                }
+                continue;
+            }
+            
+            // 変化率計算
+            $changePercentage = round((($currentTotal - $previousTotal) / $previousTotal) * 100);
+            
+            // 閾値以上の変化があった場合
+            if (abs($changePercentage) >= $threshold) {
+                $changes[] = [
+                    'user_name' => $userName,
+                    'type' => $changePercentage > 0 ? 'increase' : 'decrease',
+                    'change_percentage' => $changePercentage,
+                    'current' => $currentTotal,
+                    'previous' => $previousTotal,
+                ];
+            }
+        }
+        
+        return $changes;
     }
 }
