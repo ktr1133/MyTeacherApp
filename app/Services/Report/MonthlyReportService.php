@@ -512,6 +512,12 @@ class MonthlyReportService implements MonthlyReportServiceInterface
      */
     public function getTrendData(Group $group, string $yearMonth, int $months = 6): array
     {
+        Log::debug('getTrendData called', [
+            'group_id' => $group->id,
+            'yearMonth' => $yearMonth,
+            'months' => $months,
+        ]);
+        
         $baseDate = Carbon::createFromFormat('Y-m', $yearMonth);
         $labels = [];
         $memberData = [];
@@ -523,6 +529,13 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             $labels[] = $targetMonth->format('n月');
             
             $report = $this->repository->findByGroupAndMonth($group->id, $targetYearMonth);
+            
+            Log::debug('Fetching report for month', [
+                'target' => $targetYearMonth,
+                'found' => $report !== null,
+                'member_count' => $report ? count($report->member_task_summary ?? []) : 0,
+                'group_task_count' => $report ? count($report->group_task_summary ?? []) : 0,
+            ]);
             
             if ($report && $report->member_task_summary) {
                 foreach ($report->member_task_summary as $userId => $summary) {
@@ -592,6 +605,13 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             
             $colorIndex++;
         }
+        
+        Log::debug('getTrendData result', [
+            'labels' => $labels,
+            'dataset_count' => count($datasets),
+            'member_count' => count($memberData),
+            'member_names' => array_map(fn($data) => $data['name'], $memberData),
+        ]);
         
         return [
             'labels' => $labels,

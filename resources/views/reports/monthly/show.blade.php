@@ -180,6 +180,16 @@
             if (ctx) {
                 const trendData = @json($trendData);
                 
+                console.log('Trend data loaded:', {
+                    labels: trendData.labels,
+                    datasetCount: trendData.datasets.length,
+                    datasets: trendData.datasets.map(ds => ({
+                        label: ds.label,
+                        data: ds.data,
+                        dataSum: ds.data.reduce((a, b) => a + b, 0)
+                    }))
+                });
+                
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -239,6 +249,11 @@
                     }
                 });
             }
+            @else
+            console.warn('No trend data available', {
+                trendDataExists: {{ !empty($trendData) ? 'true' : 'false' }},
+                datasetCount: {{ count($trendData['datasets'] ?? []) }}
+            });
             @endif
         });
     </script>
