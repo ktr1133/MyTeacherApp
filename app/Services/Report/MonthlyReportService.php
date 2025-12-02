@@ -483,23 +483,23 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             ->map(fn($date) => $date->format('Y-m'))
             ->toArray();
         
-        // 過去12ヶ月分のリストを生成
+        // 過去N ヶ月分のリストを生成（既存レポートがある月は作成日に関係なく含める）
         for ($i = 0; $i < $limit; $i++) {
             $targetMonth = $now->copy()->subMonths($i);
+            $yearMonth = $targetMonth->format('Y-m');
             
-            // グループ作成日以降のみ
-            if ($targetMonth->lt($groupCreatedAt->startOfMonth())) {
+            // 既存レポートがある場合は常に含める、ない場合はグループ作成日以降のみ
+            $hasReport = in_array($yearMonth, $existingYearMonths);
+            if (!$hasReport && $targetMonth->lt($groupCreatedAt->startOfMonth())) {
                 continue;
             }
-            
-            $yearMonth = $targetMonth->format('Y-m');
             
             $months[] = [
                 'year_month' => $yearMonth,
                 'year' => $targetMonth->format('Y'),
                 'month' => $targetMonth->format('m'),
                 'label' => $targetMonth->format('Y年n月'),
-                'has_report' => in_array($yearMonth, $existingYearMonths),
+                'has_report' => $hasReport,
                 'is_accessible' => $this->canAccessReport($group, $yearMonth),
             ];
         }
