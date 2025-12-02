@@ -1,5 +1,8 @@
 services:
   app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     image: mtdev-app:latest
     container_name: mtdev-app-1
     ports:
@@ -44,7 +47,7 @@ services:
       - mtdev-network
 
   s3:
-    image: mtdev-s3:latest
+    image: minio/minio:latest
     container_name: mtdev-s3-1
     ports:
       - "9100:9100"

@@ -30,6 +30,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Browsershot Configuration
+    |--------------------------------------------------------------------------
+    |
+    | These values configure the Browsershot library for PDF generation.
+    | Browsershot uses Puppeteer and Chromium to render HTML to PDF.
+    |
+    */
+
+    'browsershot_chrome_path' => env('BROWSERSHOT_CHROME_PATH', '/usr/bin/chromium'),
+    'browsershot_node_path' => env('BROWSERSHOT_NODE_PATH', '/usr/bin/node'),
+    'browsershot_npm_path' => env('BROWSERSHOT_NPM_PATH', '/usr/bin/npm'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |
