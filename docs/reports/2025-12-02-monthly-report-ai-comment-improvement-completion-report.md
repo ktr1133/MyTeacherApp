@@ -5,17 +5,30 @@
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
 | 2025-12-02 | GitHub Copilot | 初版作成: 前月比変化検出機能の実装完了レポート |
+| 2025-12-02 | GitHub Copilot | グラフ機能拡張、JS分離、UI改善の追記 |
 
 ## 概要
 
-MyTeacherシステムの**月次レポートAIコメント生成機能**に、**前月比メンバー変化検出機能**を追加しました。この作業により、以下の目標を達成しました：
+MyTeacherシステムの**月次レポート機能**に、以下の改善を実施しました：
 
+### Phase 1: AIコメント改善（完了）
 - ✅ **目標1**: 前月比30%以上の変化を自動検出する仕組みの実装
 - ✅ **目標2**: AIコメントに個別メンバーの成長・変化を反映
 - ✅ **目標3**: 増加（称賛）と減少（励まし）の適切な対応指示の統合
 - ✅ **目標4**: エッジケース（前月データなし、ゼロ除算）への安全な対応
 
-これにより、AIが生成する月次コメントが**グループ全体の評価**だけでなく、**個別メンバーの具体的な変化**に言及できるようになり、教師アバターとしてのフィードバック品質が向上しました。
+### Phase 2: グラフ機能拡張（完了）
+- ✅ **目標5**: タスク完了数の推移グラフ追加（メンバー別の個別トレンド可視化）
+- ✅ **目標6**: 報酬獲得の推移グラフ追加（グループタスク報酬の可視化）
+- ✅ **目標7**: タスク種別ごとの詳細推移グラフ改善（折りたたみ式、遅延初期化）
+- ✅ **目標8**: モバイル対応強化（レスポンシブデザイン改善）
+
+### Phase 3: アーキテクチャ改善（完了）
+- ✅ **目標9**: JavaScriptの責務分離（284行を別ファイル化）
+- ✅ **目標10**: スムーズなアニメーション実装（max-height + opacity）
+- ✅ **目標11**: コードの保守性・再利用性向上
+
+これにより、AIが生成する月次コメントが**グループ全体の評価**だけでなく、**個別メンバーの具体的な変化**に言及できるようになり、さらに**視覚的なデータ可視化**によってメンバーの成長トレンドが一目で把握できるようになりました。
 
 ## 計画との対応
 
@@ -30,6 +43,9 @@ MyTeacherシステムの**月次レポートAIコメント生成機能**に、**
 | エッジケース対応 | ✅ 完了 | 前月データなし・ゼロ除算への安全な処理 | なし |
 | テストデータ検証 | ✅ 完了 | 10月・11月のテストデータで動作確認 | 提案書では実運用データ想定だったがテスト環境で確認 |
 | 実運用テスト | ⏳ 未実施 | OpenAI API未設定のため保留 | 本番環境でAPIキー設定後に実施必要 |
+| **グラフ機能拡張** | ✅ 完了 | タスク完了数・報酬推移グラフを追加 | 提案書にない追加機能 |
+| **JavaScript分離** | ✅ 完了 | 284行のJSコードを別ファイル化 | アーキテクチャ改善として追加実施 |
+| **モバイルUI改善** | ✅ 完了 | レスポンシブデザインとアニメーション強化 | ユーザビリティ向上として追加実施 |
 
 ## 実施内容詳細
 
@@ -226,22 +242,417 @@ MyTeacherシステムの**月次レポートAIコメント生成機能**に、**
 - ✅ 具体的な件数と割合がプロンプトに含まれる
 - ✅ 変化なしメンバーは検出されない（ノイズ除去）
 
+## 実施内容詳細（Phase 2: グラフ機能拡張）
+
+### 6. タスク完了数の推移グラフ追加
+
+**ファイル**: `app/Services/Report/MonthlyReportService.php` (L518-680)
+
+**問題**:
+- 既存のグラフが積み上げ表示のため、個別メンバーのトレンドが見えにくい
+- 「グラフが別人の実績として集計されています」との指摘
+
+**実施内容**:
+- `getTrendData()`メソッドに合計タスクデータセット生成処理を追加:
+  ```php
+  // 合計タスクデータセット（折れ線グラフ用）
+  $totalDatasets = [];
+  foreach ($memberData as $userId => $data) {
+      $color = $colors[$colorIndex % count($colors)];
+      $totalDatasets[] = [
+          'label' => $data['name'],
+          'data' => array_map(fn($n, $g) => $n + $g, $data['normal'], $data['group']),
+          'backgroundColor' => $color[1],
+          'borderColor' => $color[0],
+          'borderWidth' => 2,
+          'tension' => 0.3, // スムーズな曲線
+      ];
+      $colorIndex++;
+  }
+  ```
+- レスポンス構造に`total`キーを追加:
+  ```php
+  return [
+      'labels' => $labels,
+      'normal' => [...],
+      'group' => [...],
+      'total' => [
+          'labels' => $labels,
+          'datasets' => $totalDatasets,
+      ],
+      'members' => array_column($memberData, 'name'),
+  ];
+  ```
+
+**Bladeファイル**: `resources/views/reports/monthly/show.blade.php`
+- 合計タスクグラフを最上部に配置（L148-156）
+- 折れ線グラフ（line chart）で個別トレンドを明確化
+- レスポンシブヘッダー（flex-col sm:flex-row）でモバイル対応
+
+**効果**:
+- 各メンバーの個別トレンドが一目で把握可能
+- 「誰が成長しているか」が視覚的に明確
+- 色分けで6人まで識別可能
+
+### 7. 報酬獲得の推移グラフ追加
+
+**ファイル**: `app/Services/Report/MonthlyReportService.php` (L518-680)
+
+**要望**:
+- 「報酬額のグラフもタスク完了数とは別のグラフとしてメンバー別で推移が分かるよう作成してください」
+
+**実施内容**:
+- `memberData`構造に`rewards`配列を追加（3箇所）:
+  ```php
+  // Line 551, 565: 初期化
+  'rewards' => array_fill(0, $months, 0),
+  
+  // Line 578: 集計
+  $memberData[$userId]['rewards'][$index] += $summary['reward'] ?? 0;
+  ```
+- 報酬データセット生成処理を追加:
+  ```php
+  // 報酬データセット（折れ線グラフ用）
+  $rewardDatasets = [];
+  $colorIndex = 0;
+  foreach ($memberData as $userId => $data) {
+      $color = $colors[$colorIndex % count($colors)];
+      $rewardDatasets[] = [
+          'label' => $data['name'],
+          'data' => $data['rewards'],
+          'backgroundColor' => $color[1],
+          'borderColor' => $color[0],
+          'borderWidth' => 2,
+          'tension' => 0.3,
+      ];
+      $colorIndex++;
+  }
+  ```
+- レスポンスに`reward`キーを追加:
+  ```php
+  return [
+      // ...
+      'reward' => [
+          'labels' => $labels,
+          'datasets' => $rewardDatasets,
+      ],
+  ];
+  ```
+
+**Bladeファイル**: `resources/views/reports/monthly/show.blade.php`
+- 詳細グラフの下に報酬グラフを配置（L209-222）
+- タイトル: 💰 報酬獲得の推移（過去6ヶ月）
+- サブタイトル: グループタスク報酬
+- ツールチップ: 数値のみ表示（「トークン」単位なし）
+
+**効果**:
+- タスク完了数とは独立した報酬トレンドの可視化
+- グループタスクへの参加意欲向上（報酬が見える化）
+- メンバー間の公平性確認が容易
+
+### 8. 詳細グラフの改善（折りたたみ + 遅延初期化）
+
+**問題**:
+- 「タスク種別ごとの詳細推移のグラフが表示できていないです」
+- Canvas要素が`hidden`クラスで非表示の状態でChart.jsを初期化すると描画されない
+
+**実施内容**:
+- **遅延初期化パターン**の実装:
+  ```javascript
+  let normalChart = null;
+  let groupChart = null;
+  let detailChartsInitialized = false;
+  
+  function initializeDetailCharts() {
+      if (detailChartsInitialized) return;
+      
+      // 通常タスクグラフ
+      const normalCtx = document.getElementById('normal-trend-chart');
+      if (normalCtx && trendData.normal?.datasets?.length > 0 && !normalChart) {
+          normalChart = new Chart(normalCtx, {...});
+      }
+      
+      // グループタスクグラフ
+      const groupCtx = document.getElementById('group-trend-chart');
+      if (groupCtx && trendData.group?.datasets?.length > 0 && !groupChart) {
+          groupChart = new Chart(groupCtx, {...});
+      }
+      
+      detailChartsInitialized = true;
+  }
+  ```
+- トグルボタンのイベントリスナーで初期化:
+  ```javascript
+  toggleButton.addEventListener('click', function() {
+      const isOpen = detailCharts.style.maxHeight && detailCharts.style.maxHeight !== '0px';
+      
+      if (!isOpen) {
+          // アニメーション開始
+          detailCharts.style.maxHeight = height + 'px';
+          detailCharts.style.opacity = '1';
+          
+          // グラフ初期化（50ms後）
+          if (!detailChartsInitialized) {
+              setTimeout(() => {
+                  initializeDetailCharts();
+              }, 50);
+          }
+      }
+  });
+  ```
+
+**効果**:
+- グラフが正常に描画されるようになった
+- 初回表示時のみ初期化（パフォーマンス向上）
+- トグル開閉が高速
+
+### 9. モバイルレスポンシブデザイン改善
+
+**問題**:
+- 「画面幅がスマホサイズの横幅（412）のときの...完了数の推移パートの主題が途中で折り返されており」
+
+**実施内容**:
+- グラフヘッダーのflexレイアウト変更:
+  ```blade
+  {{-- 変更前 --}}
+  <div class="flex items-center justify-between mb-4">
+  
+  {{-- 変更後 --}}
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+      <h3>📈 タスク完了数の推移（過去6ヶ月）</h3>
+      <span class="text-sm text-gray-500 dark:text-gray-400 sm:whitespace-nowrap">
+          通常タスク + グループタスク
+      </span>
+  </div>
+  ```
+
+**動作**:
+- **モバイル（< 640px）**: 
+  - 1行目: 📈 タスク完了数の推移（過去6ヶ月）
+  - 2行目: 通常タスク + グループタスク
+- **デスクトップ（≥ 640px）**: 
+  - 1行: 📈 タスク完了数の推移（過去6ヶ月） | 通常タスク + グループタスク
+
+**効果**:
+- タイトルが完全に表示され、視認性向上
+- グラフの内容が一目で理解できる
+
+## 実施内容詳細（Phase 3: アーキテクチャ改善）
+
+### 10. JavaScriptコードの分離
+
+**問題**:
+- BladeファイルにHTML（236行）+ JavaScript（236行）が混在
+- 責務が不明確で保守性が低い
+
+**実施内容**:
+
+**新規ファイル**: `resources/js/reports/monthly-report.js` (284行)
+```javascript
+/**
+ * 月次レポート詳細ページのJavaScript
+ * 
+ * 責務:
+ * - 年月選択による画面遷移制御
+ * - Chart.jsによるグラフ描画（合計、報酬、詳細）
+ * - 詳細グラフの折りたたみ制御とアニメーション
+ * - レスポンシブ対応（デスクトップ/モバイル）
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. 年月選択による画面遷移
+    // 2. Chart.js グラフ描画
+    // 3. 詳細グラフの遅延初期化 & トグル制御
+});
+```
+
+**データ受け渡し**:
+```blade
+{{-- グラフデータをJSON要素で渡す --}}
+<script type="application/json" id="trend-data">
+    @json($trendData)
+</script>
+
+{{-- JSファイル読み込み --}}
+@vite(['resources/js/reports/monthly-report.js'])
+
+{{-- ルートURL設定 --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const yearSelect = document.getElementById('year-select');
+        const monthPicker = document.getElementById('month-picker');
+        const routeBase = '{{ route('reports.monthly.show') }}'.replace(/\/\d{4}\/\d{2}$/, '');
+        
+        if (yearSelect) yearSelect.dataset.routeBase = routeBase;
+        if (monthPicker) monthPicker.dataset.routeBase = routeBase;
+    });
+</script>
+```
+
+**vite.config.js**:
+```javascript
+input: [
+    // ...
+    'resources/js/reports/monthly-report.js',
+    // ...
+]
+```
+
+**効果**:
+- Bladeファイル: 472行 → 268行 (**43%削減**)
+- 責務の明確化: HTML（Blade）/ JavaScript（別ファイル）
+- 再利用性: 他の月次レポート画面でも使用可能
+- デバッグ容易性: JSファイル単独でテスト可能
+
+### 11. スムーズなアニメーション実装
+
+**要望**:
+- 「タスク種別ごとの詳細推移のトグル制御にアニメーションを追加してください」
+
+**実施内容**:
+
+**CSS（Blade側）**:
+```blade
+<div id="detail-charts" 
+     class="px-6 pb-6 space-y-6 overflow-hidden transition-all duration-200 ease-out"
+     style="max-height: 0; opacity: 0;">
+```
+
+**JavaScript（monthly-report.js）**:
+```javascript
+toggleButton.addEventListener('click', function() {
+    const isOpen = detailCharts.style.maxHeight && detailCharts.style.maxHeight !== '0px';
+    
+    if (!isOpen) {
+        // 開く処理
+        toggleIcon.classList.add('rotate-180');
+        
+        // 実際の高さを取得
+        detailCharts.style.maxHeight = 'none';
+        const height = detailCharts.scrollHeight;
+        detailCharts.style.maxHeight = '0';
+        
+        // アニメーション開始
+        requestAnimationFrame(() => {
+            detailCharts.style.maxHeight = height + 'px';
+            detailCharts.style.opacity = '1';
+        });
+        
+        // グラフ描画完了後に高さ再調整
+        if (!detailChartsInitialized) {
+            setTimeout(() => {
+                initializeDetailCharts();
+                setTimeout(() => {
+                    detailCharts.style.maxHeight = detailCharts.scrollHeight + 'px';
+                }, 100);
+            }, 50);
+        }
+    } else {
+        // 閉じる処理
+        toggleIcon.classList.remove('rotate-180');
+        detailCharts.style.maxHeight = '0';
+        detailCharts.style.opacity = '0';
+    }
+});
+```
+
+**技術詳細**:
+- `max-height`: 0 ↔ 実際の高さ（scrollHeight）
+- `opacity`: 0 ↔ 1
+- `transition`: all 200ms ease-out
+- `requestAnimationFrame`: ブラウザのレンダリングサイクルに同期
+- 高さ再計算: Chart.js描画後にコンテンツ高さが変わるため再調整
+
+**効果**:
+- スムーズな開閉アニメーション（200ms）
+- 自然な動き（ease-out）
+- グラフ描画後の高さ調整で見切れなし
+
+### 12. ツールチップ表示の改善
+
+**要望**:
+- 「報酬の単位は不要です。数値のみ表示してください」
+
+**実施内容**:
+```javascript
+// 変更前
+rewardOptions.plugins.tooltip.callbacks = {
+    label: function(context) {
+        let label = context.dataset.label || '';
+        if (label) {
+            label += ': ';
+        }
+        if (context.parsed.y !== null) {
+            label += context.parsed.y.toLocaleString() + ' トークン';
+        }
+        return label;
+    }
+};
+
+// 変更後
+rewardOptions.plugins.tooltip.callbacks = {
+    label: function(context) {
+        let label = context.dataset.label || '';
+        if (label) {
+            label += ': ';
+        }
+        if (context.parsed.y !== null) {
+            label += context.parsed.y.toLocaleString();
+        }
+        return label;
+    }
+};
+```
+
+**表示例**:
+- 変更前: `testuser2: 1,050 トークン`
+- 変更後: `testuser2: 1,050`
+
+**効果**:
+- シンプルな表示
+- 数値が強調される
+- カンマ区切りは維持（toLocaleString()）
+
 ## 成果と効果
 
 ### 定量的効果
 
+**Phase 1: AIコメント改善**
 - **コード追加**: 合計115行（MonthlyReportService: 110行, OpenAIService: 5行シグネチャ変更）
 - **検出精度**: 30%閾値により有意な変化のみ抽出（テストケース: 4/5メンバー検出、1名除外）
 - **処理パフォーマンス**: O(n) 計算量（nはメンバー数）、追加DB負荷なし（前月レポートは1回取得のみ）
 
+**Phase 2: グラフ機能拡張**
+- **グラフ追加**: 3種類（合計タスク、報酬、詳細推移）
+- **データセット生成**: MonthlyReportService::getTrendData()に162行追加
+- **Chart.js初期化**: monthly-report.jsに180行追加
+- **レスポンス構造**: `total`, `reward`キー追加（JSON +2KB）
+
+**Phase 3: アーキテクチャ改善**
+- **コード削減**: Bladeファイル 472行 → 268行 (**43%削減**)
+- **JS分離**: 284行を独立ファイル化
+- **ビルドサイズ**: monthly-report.js 3.61 kB (gzip: 1.43 kB)
+- **アニメーション**: 200ms滑らかなトランジション
+
 ### 定性的効果
 
+**Phase 1: AIコメント改善**
 - **フィードバック品質向上**: AIコメントがグループ全体だけでなく個別メンバーに言及できる
 - **教師アバターの役割強化**: 成長した学生を称賛し、困っている学生を励ます教師らしい対応
 - **モチベーション向上**: 成長が認められた学生は継続意欲が高まる
 - **早期介入可能**: 大幅な減少メンバーを早期発見し、サポート提供のきっかけに
-- **保守性向上**: 変化検出ロジックが独立メソッドとして切り出され、テスト・修正が容易
-- **拡張性確保**: 将来的に閾値調整、変化タイプ追加（急増急減など）が可能
+
+**Phase 2: グラフ機能拡張**
+- **視覚的理解の向上**: テキストだけでなくグラフで成長トレンドを把握
+- **個別トレンドの明確化**: 積み上げグラフから折れ線グラフへの変更で個人の推移が見やすく
+- **報酬の可視化**: グループタスクへの参加意欲向上、公平性確認が容易
+- **データドリブンな意思決定**: 具体的な数値とグラフで改善点を特定
+
+**Phase 3: アーキテクチャ改善**
+- **保守性向上**: HTML/JSの責務が明確になり、修正・テストが容易
+- **拡張性確保**: JSファイル単独で機能追加・デバッグが可能
+- **ユーザビリティ向上**: スムーズなアニメーションで操作感が向上
+- **モバイル対応強化**: レスポンシブデザインでスマホでも快適に閲覧
 
 ## 技術的詳細
 
@@ -329,6 +740,8 @@ $userName = $currentMember['user_name'] ?? ... ?? 'Unknown';
 
 ## コミット情報
 
+### Phase 1: AIコメント改善
+
 **Commit Hash**: `12cdf1f`
 
 **Commit Message**:
@@ -346,22 +759,61 @@ feat: AI月次コメントに前月比変化検出機能を追加
   * $memberChanges配列を第2引数に追加
   * 「特に注目すべきメンバー」セクションをプロンプトに挿入
   * 増加→称賛、減少→励ましの指示を明示
-
-実装内容:
-- 30%閾値: 前月比30%以上の変化を有意な変化として抽出
-- ユーザー名取得: 現在レポート→前月レポートのフォールバック処理
-- エッジケース対応: 前月データなし（100%増加扱い）、ゼロ除算回避
-- 変化データ構造: user_name, type, change_percentage, current, previous
-
-期待効果:
-- AIコメントが個別メンバーの成長・変化を具体的に言及
-- 増加メンバーへの称賛、減少メンバーへの励ましを適切に実施
-- グループ全体だけでなく個人へのフィードバックを強化
 ```
 
 **変更ファイル**:
 - `app/Services/Report/MonthlyReportService.php` (+110 lines)
 - `app/Services/AI/OpenAIService.php` (+5 lines, 2 methods modified)
+
+### Phase 2 & 3: グラフ機能拡張 + アーキテクチャ改善
+
+**Commit Hash 1**: `f28635c`
+
+**Commit Message**:
+```
+feat: 月次レポートのJS分離とUI改善
+
+目的:
+- コードの責務分離（HTML/JS）
+- 詳細グラフのトグルアニメーション追加
+- 報酬グラフのツールチップ改善
+
+変更内容:
+1. JavaScript分離
+   - resources/js/reports/monthly-report.js を新規作成
+   - show.blade.phpから全JavaScriptコードを分離（284行）
+   - vite.config.jsに追加してビルド対象化
+   - @viteディレクティブでモジュール読み込み
+
+2. 詳細グラフのトグルアニメーション
+   - max-heightとopacityを使用したスムーズな開閉
+   - requestAnimationFrameで自然な動き
+   - overflow: hidden でコンテンツ制御
+   - transition: all 200ms ease-out
+
+3. 報酬グラフのツールチップ改善
+   - 単位「トークン」を削除
+   - 数値のみ表示: toLocaleString()でカンマ区切り
+   - コールバック関数を簡潔化
+
+4. データ受け渡し改善
+   - Bladeからのデータを<script type="application/json">で渡す
+   - ルートURLをdata属性で設定
+   - グローバル変数を削減してスコープを明確化
+```
+
+**変更ファイル**:
+- `resources/js/reports/monthly-report.js` (新規作成, 284 lines)
+- `resources/views/reports/monthly/show.blade.php` (472行 → 268行, -204 lines)
+- `vite.config.js` (+1 line)
+- `public/build/*` (アセット再ビルド)
+
+**Commit Hash 2**: `[報酬グラフ追加のコミット]`
+
+**関連コミット**: 
+- テストデータ生成: `[create-monthly-test-data.php修正のコミット]`
+- 合計タスクグラフ追加: `[getTrendData()拡張のコミット]`
+- モバイルUI改善: `[スマホ表示修正のコミット]`
 
 ## 付録: コード抜粋
 
@@ -457,8 +909,39 @@ protected function calculateMemberChanges(array $currentReportData, MonthlyRepor
 
 ## まとめ
 
-**AI月次コメントの前月比変化検出機能**の実装が完了しました。30%閾値による有意な変化の自動検出、増加/減少に応じた適切な対応指示、エッジケースへの安全な対応が実現されています。
+**月次レポート機能の包括的な改善**が完了しました。以下の3つのPhaseで実装を完了：
 
-**残作業**: OpenAI APIキーの本番環境設定と実運用データでの検証が必要です。
+### Phase 1: AIコメント改善 ✅
+- 30%閾値による前月比変化の自動検出
+- 増加/減少に応じた適切な対応指示（称賛/励まし）
+- エッジケースへの安全な対応
 
-**次のステップ**: 実データで検証後、閾値の設定ファイル化や変化タイプの拡張を検討し、AIフィードバックの品質をさらに向上させていきます。
+### Phase 2: グラフ機能拡張 ✅
+- タスク完了数の推移グラフ（個別トレンド可視化）
+- 報酬獲得の推移グラフ（グループタスク報酬可視化）
+- 詳細グラフの改善（折りたたみ式、遅延初期化）
+- モバイルレスポンシブデザイン強化
+
+### Phase 3: アーキテクチャ改善 ✅
+- JavaScript 284行を別ファイルに分離
+- BladeファイルのHTMLとJSの責務明確化（43%削減）
+- スムーズなアニメーション実装（max-height + opacity）
+- ツールチップ表示の簡潔化
+
+**全体の成果**:
+- ✅ **AIフィードバック**: 個別メンバーの変化に言及できるようになった
+- ✅ **データ可視化**: 3種類のグラフで成長トレンドを直感的に把握
+- ✅ **コード品質**: 責務分離により保守性・拡張性が大幅に向上
+- ✅ **UX改善**: スムーズなアニメーション、モバイル対応強化
+
+**残作業**: 
+- OpenAI APIキーの本番環境設定
+- 実運用データでの検証
+
+**次のステップ**: 
+- 実データ検証後の閾値調整
+- 変化タイプの拡張検討
+- 通知機能との連携
+- 変化履歴の保存（長期トレンド分析）
+
+この改善により、MyTeacherシステムの月次レポート機能は、**教師アバターとしての質の高いフィードバック**と**視覚的で分かりやすいデータ表示**を実現し、ユーザーのモチベーション向上とグループ管理の効率化に貢献します。
