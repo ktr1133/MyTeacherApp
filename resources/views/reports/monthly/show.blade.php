@@ -140,41 +140,71 @@
             </div>
 
             {{-- グラフエリア --}}
-            @if(!empty($trendData['normal']['datasets']) || !empty($trendData['group']['datasets']))
-            <div class="mb-6 space-y-6 hero-image">
-                {{-- 通常タスクグラフ --}}
-                @if(!empty($trendData['normal']['datasets']))
-                <div class="glass-card bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6 feature-card">
+            @if(!empty($trendData['total']['datasets']))
+            <div class="mb-6 space-y-6">
+                {{-- 合計タスクグラフ（メイン） --}}
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold gradient-text">
-                            📊 通常タスクの推移（過去6ヶ月）
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            📈 タスク完了数の推移（過去6ヶ月）
                         </h3>
                         <span class="text-sm text-gray-500 dark:text-gray-400">
-                            メンバー別完了数
+                            通常タスク + グループタスク
                         </span>
                     </div>
                     <div class="h-80">
-                        <canvas id="normal-trend-chart"></canvas>
+                        <canvas id="total-trend-chart"></canvas>
                     </div>
                 </div>
-                @endif
                 
-                {{-- グループタスクグラフ --}}
-                @if(!empty($trendData['group']['datasets']))
-                <div class="glass-card bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6 feature-card">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold gradient-text">
-                            👥 グループタスクの推移（過去6ヶ月）
-                        </h3>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">
-                            メンバー別完了数
-                        </span>
-                    </div>
-                    <div class="h-80">
-                        <canvas id="group-trend-chart"></canvas>
+                {{-- 詳細グラフ（折りたたみ可能） --}}
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                    <button id="toggle-detail-charts" 
+                            class="w-full px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-base font-semibold text-gray-900 dark:text-white">
+                                📊 タスク種別ごとの詳細推移
+                            </h4>
+                            <svg id="toggle-icon" 
+                                 class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </button>
+                    
+                    <div id="detail-charts" 
+                         class="hidden px-6 pb-6 space-y-6"
+                         style="transition: all 0.2s ease-out;">
+                        {{-- 通常タスクグラフ --}}
+                        @if(!empty($trendData['normal']['datasets']))
+                        <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between mb-4">
+                                <h5 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    通常タスク
+                                </h5>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="normal-trend-chart"></canvas>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        {{-- グループタスクグラフ --}}
+                        @if(!empty($trendData['group']['datasets']))
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h5 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    グループタスク
+                                </h5>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="group-trend-chart"></canvas>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
-                @endif
             </div>
             @else
             <div class="mb-6 bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
@@ -223,18 +253,19 @@
                 });
             }
             
-            // Chart.js: トレンドグラフ（2つに分離）
-            @if(!empty($trendData['normal']['datasets']) || !empty($trendData['group']['datasets']))
+            // Chart.js: トレンドグラフ（3種類: 合計、通常、グループ）
+            @if(!empty($trendData['total']['datasets']))
             const trendData = @json($trendData);
             
             console.log('Trend data loaded:', {
+                totalDatasetCount: trendData.total?.datasets?.length || 0,
                 normalDatasetCount: trendData.normal?.datasets?.length || 0,
                 groupDatasetCount: trendData.group?.datasets?.length || 0,
                 members: trendData.members
             });
             
-            // 共通のChartオプション
-            const commonOptions = {
+            // 共通のChartオプション（積み上げなし）
+            const lineOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
@@ -251,28 +282,9 @@
                             boxHeight: 12,
                             padding: 12,
                             usePointStyle: true,
-                            pointStyle: 'rectRounded',
-                            generateLabels: function(chart) {
-                                const datasets = chart.data.datasets;
-                                return datasets.map((dataset, i) => ({
-                                    text: dataset.label,
-                                    fillStyle: dataset.backgroundColor,
-                                    strokeStyle: dataset.borderColor,
-                                    lineWidth: dataset.borderWidth,
-                                    hidden: !chart.isDatasetVisible(i),
-                                    index: i,
-                                    pointStyle: 'rectRounded'
-                                }));
-                            }
+                            pointStyle: 'circle',
                         },
                         maxHeight: 80,
-                        onClick: function(e, legendItem, legend) {
-                            const index = legendItem.index;
-                            const chart = legend.chart;
-                            const meta = chart.getDatasetMeta(index);
-                            meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : null;
-                            chart.update();
-                        }
                     },
                     title: {
                         display: false
@@ -295,7 +307,6 @@
                 },
                 scales: {
                     x: {
-                        stacked: true,
                         grid: {
                             display: false
                         },
@@ -307,10 +318,9 @@
                         }
                     },
                     y: {
-                        stacked: true,
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1,
+                            stepSize: 2,
                             color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280',
                             font: {
                                 size: 11
@@ -328,29 +338,81 @@
                 }
             };
             
-            // 通常タスクグラフ
-            const normalCtx = document.getElementById('normal-trend-chart');
-            if (normalCtx && trendData.normal?.datasets?.length > 0) {
-                new Chart(normalCtx, {
-                    type: 'bar',
+            // 積み上げ棒グラフ用オプション
+            const barOptions = JSON.parse(JSON.stringify(lineOptions));
+            barOptions.scales.x.stacked = true;
+            barOptions.scales.y.stacked = true;
+            barOptions.scales.y.ticks.stepSize = 1;
+            barOptions.plugins.legend.labels.pointStyle = 'rectRounded';
+            
+            // 合計タスクグラフ（折れ線グラフ）
+            const totalCtx = document.getElementById('total-trend-chart');
+            if (totalCtx && trendData.total?.datasets?.length > 0) {
+                new Chart(totalCtx, {
+                    type: 'line',
                     data: {
-                        labels: trendData.normal.labels,
-                        datasets: trendData.normal.datasets
+                        labels: trendData.total.labels,
+                        datasets: trendData.total.datasets
                     },
-                    options: commonOptions
+                    options: lineOptions
                 });
             }
             
-            // グループタスクグラフ
-            const groupCtx = document.getElementById('group-trend-chart');
-            if (groupCtx && trendData.group?.datasets?.length > 0) {
-                new Chart(groupCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: trendData.group.labels,
-                        datasets: trendData.group.datasets
-                    },
-                    options: commonOptions
+            // 詳細グラフ初期化関数（遅延初期化）
+            let normalChart = null;
+            let groupChart = null;
+            let detailChartsInitialized = false;
+            
+            function initializeDetailCharts() {
+                if (detailChartsInitialized) return;
+                
+                // 通常タスクグラフ（積み上げ棒グラフ）
+                const normalCtx = document.getElementById('normal-trend-chart');
+                if (normalCtx && trendData.normal?.datasets?.length > 0 && !normalChart) {
+                    normalChart = new Chart(normalCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: trendData.normal.labels,
+                            datasets: trendData.normal.datasets
+                        },
+                        options: barOptions
+                    });
+                }
+                
+                // グループタスクグラフ（積み上げ棒グラフ）
+                const groupCtx = document.getElementById('group-trend-chart');
+                if (groupCtx && trendData.group?.datasets?.length > 0 && !groupChart) {
+                    groupChart = new Chart(groupCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: trendData.group.labels,
+                            datasets: trendData.group.datasets
+                        },
+                        options: barOptions
+                    });
+                }
+                
+                detailChartsInitialized = true;
+            }
+            
+            // 詳細グラフの折りたたみ時に初期化
+            const toggleButton = document.getElementById('toggle-detail-charts');
+            const detailCharts = document.getElementById('detail-charts');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            if (toggleButton && detailCharts && toggleIcon) {
+                toggleButton.addEventListener('click', function() {
+                    const isHidden = detailCharts.classList.contains('hidden');
+                    detailCharts.classList.toggle('hidden');
+                    toggleIcon.classList.toggle('rotate-180');
+                    
+                    // 開く時にグラフを初期化
+                    if (isHidden && !detailChartsInitialized) {
+                        // DOMが表示された後に初期化（レンダリング待ち）
+                        setTimeout(() => {
+                            initializeDetailCharts();
+                        }, 50);
+                    }
                 });
             }
             @else

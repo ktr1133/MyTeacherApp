@@ -577,9 +577,10 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             }
         }
         
-        // Chart.js用のデータセット形式に変換（通常タスクとグループタスクを分離）
+        // Chart.js用のデータセット形式に変換（通常タスク、グループタスク、合計タスク）
         $normalDatasets = [];
         $groupDatasets = [];
+        $totalDatasets = []; // 合計タスク用
         $colors = [
             ['rgb(59, 130, 246)', 'rgba(59, 130, 246, 0.5)'],   // blue
             ['rgb(16, 185, 129)', 'rgba(16, 185, 129, 0.5)'],   // green
@@ -615,6 +616,20 @@ class MonthlyReportService implements MonthlyReportServiceInterface
                 'borderWidth' => 1,
             ];
             
+            // 合計タスク（通常 + グループ）
+            $totalTasks = array_map(function($normal, $group) {
+                return $normal + $group;
+            }, $data['normal_tasks'], $data['group_tasks']);
+            
+            $totalDatasets[] = [
+                'label' => $data['name'],
+                'data' => $totalTasks,
+                'backgroundColor' => $color[1],
+                'borderColor' => $color[0],
+                'borderWidth' => 2,
+                'tension' => 0.3, // 滑らかな曲線
+            ];
+            
             $colorIndex++;
         }
         
@@ -622,6 +637,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             'labels' => $labels,
             'normal_dataset_count' => count($normalDatasets),
             'group_dataset_count' => count($groupDatasets),
+            'total_dataset_count' => count($totalDatasets),
             'member_count' => count($memberData),
             'member_names' => array_map(fn($data) => $data['name'], $memberData),
         ]);
@@ -635,6 +651,10 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             'group' => [
                 'labels' => $labels,
                 'datasets' => $groupDatasets,
+            ],
+            'total' => [
+                'labels' => $labels,
+                'datasets' => $totalDatasets,
             ],
             'members' => array_map(fn($data) => $data['name'], $memberData),
         ];

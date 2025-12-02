@@ -1,6 +1,6 @@
 @props(['memberDetails', 'groupTaskSummary'])
 
-<div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+<div class="mb-6 bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">

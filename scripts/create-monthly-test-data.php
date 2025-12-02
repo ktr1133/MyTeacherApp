@@ -8,7 +8,7 @@ require __DIR__ . '/../vendor/autoload.php';
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-echo "【9月・10月分テストデータ作成】\n\n";
+echo "【9月・10月・11月分テストデータ作成】\n\n";
 
 // グループID 1のメンバー取得
 $groupId = 1;
@@ -17,10 +17,11 @@ $members = \App\Models\User::where('group_id', $groupId)->get();
 echo "対象グループ: {$groupId}\n";
 echo "メンバー数: {$members->count()}人\n\n";
 
-// 9月と10月のデータを作成（2025年）
+// 9月・10月・11月のデータを作成（2025年）
 $months = [
     ['year' => 2025, 'month' => 9, 'label' => '9月'],
     ['year' => 2025, 'month' => 10, 'label' => '10月'],
+    ['year' => 2025, 'month' => 11, 'label' => '11月'],
 ];
 
 foreach ($months as $monthData) {
@@ -41,20 +42,26 @@ foreach ($months as $monthData) {
         echo "期間: {$startDate->format('Y-m-d')} 〜 {$endDate->format('Y-m-d')}\n\n";
         
         // メンバーごとにタスクデータを作成
-        $memberTaskSummary = [];
-        $groupTaskSummary = [];
+        $memberTaskSummary = []; // user_id => データ の連想配列
+        $groupTaskSummary = [];  // user_id => データ の連想配列
+        $groupTaskDetails = [];  // group_task_details用の配列
         $totalTasks = 0;
         $completedTasks = 0;
         $totalReward = 0;
+        $groupTaskCompletedCount = 0;
+        $groupTaskTotalReward = 0;
         
         foreach ($members as $index => $member) {
             // メンバーごとに異なる量のタスクを作成（前月比変化を演出）
             if ($month == 9) {
                 $normalTaskCounts = [8, 12, 10, 15, 6, 9];
                 $groupTaskCounts = [5, 8, 6, 10, 4, 6];
-            } else { // 10月
+            } elseif ($month == 10) {
                 $normalTaskCounts = [10, 15, 10, 8, 7, 12];
                 $groupTaskCounts = [8, 10, 7, 5, 8, 10];
+            } else { // 11月
+                $normalTaskCounts = [12, 14, 11, 9, 8, 13];
+                $groupTaskCounts = [9, 11, 8, 6, 9, 11];
             }
             
             $normalTaskCount = $normalTaskCounts[$index % 6];
@@ -66,7 +73,8 @@ foreach ($months as $monthData) {
             $normalReward = $normalCompleted * 100;
             $groupReward = $groupCompleted * 150;
             
-            // 通常タスク作成
+            // 通常タスク作成（完了済みのもののみmember_task_summaryに記録）
+            $completedNormalTasks = [];
             for ($i = 0; $i < $normalTaskCount; $i++) {
                 $taskDate = $startDate->copy()->addDays(rand(0, $endDate->day - 1));
                 $isCompleted = $i < $normalCompleted;
@@ -87,10 +95,16 @@ foreach ($months as $monthData) {
                 if ($isCompleted) {
                     $completedTasks++;
                     $totalReward += 100;
+                    $completedNormalTasks[] = [
+                        'task_id' => $task->id,
+                        'title' => $task->title,
+                        'completed_at' => $task->completed_at->format('Y-m-d H:i:s'),
+                    ];
                 }
             }
             
-            // グループタスク作成
+            // グループタスク作成（完了済みのもののみgroup_task_summaryに記録）
+            $completedGroupTasks = [];
             for ($i = 0; $i < $groupTaskCount; $i++) {
                 $taskDate = $startDate->copy()->addDays(rand(0, $endDate->day - 1));
                 $isCompleted = $i < $groupCompleted;
@@ -119,28 +133,70 @@ foreach ($months as $monthData) {
                 if ($isCompleted) {
                     $completedTasks++;
                     $totalReward += 150;
+                    $groupTaskCompletedCount++;
+                    $groupTaskTotalReward += 150;
+                    
+                    $completedGroupTasks[] = [
+                        'task_id' => $task->id,
+                        'title' => $task->title,
+                        'reward' => 150,
+                        'completed_at' => $task->completed_at->format('Y-m-d H:i:s'),
+                        'tags' => [],
+                    ];
+                    
+                    $groupTaskDetails[] = [
+                        'task_id' => $task->id,
+                        'title' => $task->title,
+                        'user_id' => $member->id,
+                        'user_name' => $member->name ?: $member->username,
+                        'reward' => 150,
+                        'completed_at' => $task->completed_at->format('Y-m-d H:i:s'),
+                        'tags' => [],
+                    ];
                 }
             }
             
-            // サマリーデータ作成
-            $memberTaskSummary[] = [
-                'user_id' => $member->id,
-                'user_name' => $member->username,
-                'completed_count' => $normalCompleted,
-                'reward' => $normalReward,
-            ];
+            // member_task_summary: user_idをキーにした連想配列
+            if (!empty($completedNormalTasks)) {
+                $memberTaskSummary[$member->id] = [
+                    'user_name' => $member->username,
+                    'completed_count' => $normalCompleted,
+                    'tasks' => $completedNormalTasks,
+                ];
+            }
             
-            $groupTaskSummary[] = [
-                'user_id' => $member->id,
-                'user_name' => $member->username,
-                'completed_count' => $groupCompleted,
-                'reward' => $groupReward,
-            ];
+            // group_task_summary: user_idをキーにした連想配列
+            if (!empty($completedGroupTasks)) {
+                $groupTaskSummary[$member->id] = [
+                    'name' => $member->name ?: $member->username,
+                    'completed_count' => $groupCompleted,
+                    'reward' => $groupReward,
+                    'tasks' => $completedGroupTasks,
+                ];
+            }
             
             echo "✅ {$member->username}: 通常 {$normalCompleted}/{$normalTaskCount}件, グループ {$groupCompleted}/{$groupTaskCount}件\n";
         }
         
         echo "\n";
+        
+        // 前月データ取得
+        $previousMonth = Carbon::create($year, $month, 1)->subMonth()->format('Y-m');
+        $previousReport = \App\Models\MonthlyReport::where('group_id', $groupId)
+            ->where('report_month', 'like', $previousMonth . '%')
+            ->first();
+        
+        $normalTaskCountPrevious = 0;
+        $groupTaskCountPrevious = 0;
+        $rewardPrevious = 0;
+        
+        if ($previousReport) {
+            foreach ($previousReport->member_task_summary ?? [] as $summary) {
+                $normalTaskCountPrevious += $summary['completed_count'] ?? 0;
+            }
+            $groupTaskCountPrevious = $previousReport->group_task_completed_count ?? 0;
+            $rewardPrevious = $previousReport->group_task_total_reward ?? 0;
+        }
         
         // 月次レポート作成
         $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0;
@@ -154,19 +210,23 @@ foreach ($months as $monthData) {
         $report = \App\Models\MonthlyReport::create([
             'group_id' => $groupId,
             'report_month' => $reportMonth,
-            'total_tasks' => $totalTasks,
-            'completed_tasks' => $completedTasks,
-            'completion_rate' => $completionRate,
-            'total_reward' => $totalReward,
+            'generated_at' => now(),
             'member_task_summary' => $memberTaskSummary,
+            'group_task_completed_count' => $groupTaskCompletedCount,
+            'group_task_total_reward' => $groupTaskTotalReward,
+            'group_task_details' => $groupTaskDetails,
             'group_task_summary' => $groupTaskSummary,
+            'normal_task_count_previous_month' => $normalTaskCountPrevious,
+            'group_task_count_previous_month' => $groupTaskCountPrevious,
+            'reward_previous_month' => $rewardPrevious,
         ]);
         
         echo "📊 月次レポート作成完了 (ID: {$report->id})\n";
         echo "   - 総タスク: {$totalTasks}件\n";
         echo "   - 完了タスク: {$completedTasks}件\n";
         echo "   - 完了率: {$completionRate}%\n";
-        echo "   - 総報酬: {$totalReward}トークン\n\n";
+        echo "   - グループタスク完了: {$groupTaskCompletedCount}件\n";
+        echo "   - グループタスク報酬: {$groupTaskTotalReward}トークン\n\n";
         
         DB::commit();
         
@@ -192,21 +252,20 @@ $octReport = \App\Models\MonthlyReport::where('group_id', $groupId)
 if ($septReport && $octReport) {
     echo "【2025年9月→10月のメンバー変化】\n";
     
-    $septMembers = collect($septReport->member_task_summary);
-    $octMembers = collect($octReport->member_task_summary);
+    $septMembers = $septReport->member_task_summary ?? [];
+    $octMembers = $octReport->member_task_summary ?? [];
     
-    $septGroup = collect($septReport->group_task_summary);
-    $octGroup = collect($octReport->group_task_summary);
+    $septGroup = $septReport->group_task_summary ?? [];
+    $octGroup = $octReport->group_task_summary ?? [];
     
     $changes = 0;
     
-    foreach ($octMembers as $octMember) {
-        $userId = $octMember['user_id'];
+    foreach ($octMembers as $userId => $octMember) {
         $userName = $octMember['user_name'];
         
-        $septMember = $septMembers->firstWhere('user_id', $userId);
-        $septGroupMember = $septGroup->firstWhere('user_id', $userId);
-        $octGroupMember = $octGroup->firstWhere('user_id', $userId);
+        $septMember = $septMembers[$userId] ?? null;
+        $septGroupMember = $septGroup[$userId] ?? null;
+        $octGroupMember = $octGroup[$userId] ?? null;
         
         $septTotal = ($septMember['completed_count'] ?? 0) + ($septGroupMember['completed_count'] ?? 0);
         $octTotal = ($octMember['completed_count'] ?? 0) + ($octGroupMember['completed_count'] ?? 0);
