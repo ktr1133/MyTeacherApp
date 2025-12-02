@@ -47,7 +47,7 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
             // チェックアウトセッションを作成
             // メタデータをSubscriptionに設定（Cashierの内部でsubscription_dataに変換される）
             $checkoutSession = $subscription
-                ->metadata($metadata)  // これがsubscription_data.metadataとして送信される
+                ->withMetadata($metadata)  // これがsubscription_data.metadataとして送信される
                 ->checkout([
                     'success_url' => route('subscriptions.success') . '?session_id={CHECKOUT_SESSION_ID}',
                     'cancel_url' => route('subscriptions.cancel'),

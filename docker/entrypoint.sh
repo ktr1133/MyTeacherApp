@@ -105,6 +105,34 @@ SCHEDULER_PID=$!
 echo "[Entrypoint] Scheduler started with PID: $SCHEDULER_PID"
 echo "[Entrypoint] Scheduler logs: $SCHEDULER_LOGFILE"
 
+# =============================================================================
+# 5. Laravel Queue Workerの起動（バックグラウンド）
+# =============================================================================
+echo "[Entrypoint] Step 5: Starting Laravel Queue Worker in background..."
+
+# キューワーカーログファイルの設定（日別ローテーション）
+QUEUE_LOGFILE="storage/logs/queue-$(date '+%Y%m%d').log"
+
+# キューワーカーをバックグラウンドで起動
+# --sleep=3: ジョブがない場合は3秒待機
+# --tries=3: 失敗時に最大3回リトライ
+# --max-time=3600: 1時間ごとにワーカー再起動（メモリリーク対策）
+# --timeout=300: ジョブのタイムアウトは5分
+(
+    while true; do
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting queue worker..." >> "$QUEUE_LOGFILE" 2>&1
+        php artisan queue:work database --sleep=3 --tries=3 --max-time=3600 --timeout=300 >> "$QUEUE_LOGFILE" 2>&1
+        
+        # ワーカーが終了した場合（エラーまたはmax-time到達）、5秒待機して再起動
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Queue worker stopped. Restarting in 5 seconds..." >> "$QUEUE_LOGFILE" 2>&1
+        sleep 5
+    done
+) &
+
+QUEUE_PID=$!
+echo "[Entrypoint] Queue Worker started with PID: $QUEUE_PID"
+echo "[Entrypoint] Queue Worker logs: $QUEUE_LOGFILE"
+
 echo "[Entrypoint] Initialization complete. Starting Apache..."
 echo "[Entrypoint] Executing command: $@"
 echo "========================================"
