@@ -7,3 +7,107 @@
     display: none !important;
 }
 
+/* ===================================
+   Welcome.css スタイルのインポート
+   月次レポート画面でも使用
+   =================================== */
+
+/* ヒーローセクションのアニメーション */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.hero-title {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-subtitle {
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.hero-cta {
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.hero-image {
+    animation: fadeIn 1s ease-out 0.6s both;
+}
+
+/* フローティングアイコン */
+.floating-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* グラデーションテキスト */
+.gradient-text {
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* グラスモーフィズム効果 */
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-card {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 機能カードのホバーエフェクト */
+.feature-card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.feature-card:hover::before {
+    left: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+

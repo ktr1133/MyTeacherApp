@@ -1,14 +1,18 @@
 <x-app-layout>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-12 bg-gradient-to-br from-[#F3F3F2] via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen relative">
+        {{-- 背景の装飾円 --}}
+        <div class="absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl floating-icon pointer-events-none"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl floating-icon pointer-events-none" style="animation-delay: 1.5s;"></div>
+        
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 relative z-10">
             {{-- ヘッダーと年月選択 --}}
-            <div class="mb-6">
+            <div class="mb-6 hero-title">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                            月次レポート
+                        <h2 class="text-3xl font-bold gradient-text mb-2">
+                            📈 月次レポート
                         </h2>
-                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        <p class="mt-1 text-base text-gray-600 dark:text-gray-400">
                             {{ $formatted['report_month'] }}の実績レポート
                         </p>
                     </div>
@@ -64,17 +68,17 @@
 
             {{-- AI教師コメント --}}
             @if(!empty($formatted['ai_comment']))
-                <div class="mb-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-6 shadow-sm">
+                <div class="mb-6 glass-card bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-2xl p-6 shadow-lg hero-subtitle feature-card">
                     <div class="flex items-start gap-4">
                         <div class="flex-shrink-0">
-                            <div class="w-16 h-16 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center shadow-md">
+                            <div class="w-16 h-16 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center shadow-md floating-icon">
                                 <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                                 </svg>
                             </div>
                         </div>
                         <div class="flex-1">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                            <h3 class="text-lg font-semibold gradient-text mb-2">
                                 アバターからのコメント
                             </h3>
                             <p class="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">{{ $formatted['ai_comment'] }}</p>
@@ -84,9 +88,9 @@
             @endif
 
             {{-- サマリーカード --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 shadow-sm">
-                    <p class="text-sm text-blue-600 dark:text-blue-400 font-medium mb-2">通常タスク</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 hero-cta">
+                <div class="glass-card bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 shadow-lg feature-card">
+                    <p class="text-sm text-blue-600 dark:text-blue-400 font-medium mb-2">📝 通常タスク</p>
                     <p class="text-3xl font-bold text-blue-900 dark:text-blue-100">{{ $formatted['summary']['normal_tasks']['count'] }}</p>
                     @if($formatted['summary']['normal_tasks']['change_percentage'] != 0)
                         <p class="mt-2 text-sm {{ $formatted['summary']['normal_tasks']['change_percentage'] > 0 ? 'text-green-600' : 'text-red-600' }}">
@@ -97,8 +101,8 @@
                     @endif
                 </div>
                 
-                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6 shadow-sm">
-                    <p class="text-sm text-purple-600 dark:text-purple-400 font-medium mb-2">グループタスク</p>
+                <div class="glass-card bg-purple-50 dark:bg-purple-900/20 rounded-2xl p-6 shadow-lg feature-card">
+                    <p class="text-sm text-purple-600 dark:text-purple-400 font-medium mb-2">👥 グループタスク</p>
                     <p class="text-3xl font-bold text-purple-900 dark:text-purple-100">{{ $formatted['summary']['group_tasks']['count'] }}</p>
                     @if($formatted['summary']['group_tasks']['change_percentage'] != 0)
                         <p class="mt-2 text-sm {{ $formatted['summary']['group_tasks']['change_percentage'] > 0 ? 'text-green-600' : 'text-red-600' }}">
@@ -109,8 +113,8 @@
                     @endif
                 </div>
                 
-                <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-6 shadow-sm">
-                    <p class="text-sm text-amber-600 dark:text-amber-400 font-medium mb-2">獲得報酬</p>
+                <div class="glass-card bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-6 shadow-lg feature-card">
+                    <p class="text-sm text-amber-600 dark:text-amber-400 font-medium mb-2">💰 獲得報酬</p>
                     <p class="text-3xl font-bold text-amber-900 dark:text-amber-100">{{ number_format($formatted['summary']['rewards']['total']) }}</p>
                     @if($formatted['summary']['rewards']['change_percentage'] != 0)
                         <p class="mt-2 text-sm {{ $formatted['summary']['rewards']['change_percentage'] > 0 ? 'text-green-600' : 'text-red-600' }}">
@@ -124,12 +128,12 @@
 
             {{-- グラフエリア --}}
             @if(!empty($trendData['normal']['datasets']) || !empty($trendData['group']['datasets']))
-            <div class="mb-6 space-y-6">
+            <div class="mb-6 space-y-6 hero-image">
                 {{-- 通常タスクグラフ --}}
                 @if(!empty($trendData['normal']['datasets']))
-                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                <div class="glass-card bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6 feature-card">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        <h3 class="text-lg font-semibold gradient-text">
                             📊 通常タスクの推移（過去6ヶ月）
                         </h3>
                         <span class="text-sm text-gray-500 dark:text-gray-400">
@@ -144,9 +148,9 @@
                 
                 {{-- グループタスクグラフ --}}
                 @if(!empty($trendData['group']['datasets']))
-                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                <div class="glass-card bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6 feature-card">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        <h3 class="text-lg font-semibold gradient-text">
                             👥 グループタスクの推移（過去6ヶ月）
                         </h3>
                         <span class="text-sm text-gray-500 dark:text-gray-400">
