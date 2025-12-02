@@ -282,6 +282,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Cashier設定: Groupモデルを課金対象として使用
+        \Laravel\Cashier\Cashier::useCustomerModel(\App\Models\Group::class);
+        
         // HTTPS強制設定（環境変数で制御可能）
         // 本番環境: デフォルトtrue（ALB経由でもHTTPSとして認識）
         // ローカル環境: デフォルトfalse（HTTP開発サーバーで動作）

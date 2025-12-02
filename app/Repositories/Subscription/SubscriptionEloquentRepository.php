@@ -77,11 +77,11 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
      */
     public function getCurrentSubscription(Group $group): ?Subscription
     {
-        // userリレーションをEager Loadingして取得
-        // Cashierの内部メソッドがuser->stripe()を呼び出すため必須
-        return Subscription::where('type', 'default')
-            ->where('user_id', $group->master_user_id)
-            ->with('user')
+        // Cashierの設計: Billableモデル（Group）のIDがuser_idに保存される
+        return $group->subscriptions()
+            ->where('type', 'default')
+            ->where('stripe_status', 'active')
+            ->latest()
             ->first();
     }
 

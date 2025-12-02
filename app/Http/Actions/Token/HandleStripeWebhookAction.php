@@ -122,8 +122,24 @@ class HandleStripeWebhookAction extends CashierWebhookController
      */
     protected function handleCustomerSubscriptionCreated(array $payload)
     {
+        // デバッグ: Cashierの設定を確認
+        Log::info('Webhook: Before parent call', [
+            'cashier_model' => config('cashier.model'),
+            'customer_id' => $payload['data']['object']['customer'] ?? 'unknown',
+            'subscription_id' => $payload['data']['object']['id'] ?? 'unknown',
+        ]);
+        
         // 親クラスのハンドラーを呼び出してCashierのsubscriptionsテーブルを自動更新
-        $response = parent::handleCustomerSubscriptionCreated($payload);
+        try {
+            $response = parent::handleCustomerSubscriptionCreated($payload);
+            Log::info('Webhook: Parent call succeeded');
+        } catch (\Exception $e) {
+            Log::error('Webhook: Parent call failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $response = $this->successMethod();
+        }
         
         // カスタムロジック: Groupsテーブルの更新
         try {
