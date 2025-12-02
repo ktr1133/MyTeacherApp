@@ -25,6 +25,7 @@ on:
       - 'resources/**'
       - 'routes/**'
       - 'public/**'
+      - 'docker/**'
       - 'composer.json'
       - 'composer.lock'
       - '.github/workflows/deploy-myteacher-app.yml'
