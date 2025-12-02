@@ -1,0 +1,29 @@
+/**
+ * 個人概況レポートPDF用スタイル（インラインスタイル版）
+ * mPDF対応: 最小限のグローバルスタイルのみ
+ */
+
+@page {
+    margin: 8mm;
+    size: A4 landscape;
+}
+
+body {
+    font-family: 'ipagothic', sans-serif;
+    font-size: 8pt;
+    line-height: 1.4;
+    color: #1F2937;
+    margin: 0;
+    padding: 0;
+}
+
+table {
+    font-family: 'ipagothic', sans-serif;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+

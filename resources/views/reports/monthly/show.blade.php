@@ -249,6 +249,115 @@
         </div>
     </div>
 
+    {{-- メンバー別概況レポート生成中モーダル --}}
+    <div id="member-summary-generating-modal" class="fixed inset-0 z-[9999] hidden" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="fixed inset-0 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-2xl w-full max-w-md p-8">
+                    <div class="text-center">
+                        <div class="mx-auto mb-4 w-16 h-16 border-4 border-[#59B9C6] border-t-transparent rounded-full animate-spin"></div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">概況レポート生成中</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">AIがメンバーの活動を分析しています...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- メンバー別概況レポート結果表示モーダル --}}
+    <div id="member-summary-result-modal" class="fixed inset-0 z-[9999] hidden" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" id="member-summary-result-overlay"></div>
+        <div class="fixed inset-0 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-2xl w-full max-w-4xl">
+                    {{-- ヘッダー --}}
+                    <div class="bg-gradient-to-r from-[#59B9C6]/10 to-purple-600/10 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#59B9C6] to-purple-600 flex items-center justify-center shadow-lg">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="member-summary-result-title">
+                                    メンバー別概況レポート
+                                </h3>
+                            </div>
+                            <button type="button" id="member-summary-result-close-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {{-- コンテンツ --}}
+                    <div class="px-6 py-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+                        {{-- AIコメント --}}
+                        <div class="mb-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-12 h-12 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center shadow-md">
+                                        <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-2">アバターからのコメント</h4>
+                                    <p id="member-summary-comment" class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words leading-relaxed"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {{-- グラフエリア --}}
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {{-- タスク傾向（円グラフ） --}}
+                            <div class="glass-card p-6">
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">タスク傾向</h4>
+                                <div class="h-64">
+                                    <canvas id="member-task-classification-chart"></canvas>
+                                </div>
+                            </div>
+                            
+                            {{-- 報酬推移（折れ線グラフ） --}}
+                            <div class="glass-card p-6">
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">報酬推移（過去6ヶ月）</h4>
+                                <div class="h-64">
+                                    <canvas id="member-reward-trend-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {{-- トークン消費情報 --}}
+                        <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                            消費トークン: <span id="member-summary-tokens-used" class="font-semibold">0</span>
+                        </div>
+                        
+                        {{-- 隠しフィールド（PDF生成用） --}}
+                        <input type="hidden" id="member-summary-result-user-id">
+                        <input type="hidden" id="member-summary-result-year-month">
+                        <textarea id="member-summary-result-comment" class="hidden"></textarea>
+                    </div>
+                    
+                    {{-- フッター --}}
+                    <div class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" id="download-member-summary-pdf-btn" class="inline-flex items-center px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition shadow-lg">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            PDFダウンロード
+                        </button>
+                        <button type="button" id="member-summary-result-close-btn-2" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4AA5B2] hover:to-purple-700 transition shadow-lg">
+                            閉じる
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- JavaScript: 年月選択とグラフ --}}
     @vite(['resources/js/reports/monthly-report.js'])
     
@@ -262,6 +371,14 @@
             
             if (yearSelect) yearSelect.dataset.routeBase = routeBase;
             if (monthPicker) monthPicker.dataset.routeBase = routeBase;
+            
+            // メンバー別概況レポート生成用のデータを設定
+            const generateBtn = document.getElementById('generate-member-summary-btn');
+            if (generateBtn) {
+                generateBtn.dataset.groupId = '{{ $group->id }}';
+                generateBtn.dataset.yearMonth = '{{ sprintf("%s-%s", $year, $month) }}';
+                generateBtn.dataset.apiUrl = '{{ route('reports.monthly.member-summary') }}';
+            }
         });
     </script>
 </x-app-layout>

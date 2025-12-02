@@ -7,16 +7,28 @@
                 タスク明細
             </h3>
             
-            {{-- メンバー選択 --}}
-            <div class="flex items-center gap-2">
-                <label for="member-filter" class="text-sm text-gray-600 dark:text-gray-400">メンバー:</label>
-                <select id="member-filter" 
-                        class="block rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">全員</option>
-                    @foreach($memberDetails as $userId => $member)
-                        <option value="{{ $userId }}">{{ $member['user_name'] ?? $member['name'] ?? 'Unknown' }}</option>
-                    @endforeach
-                </select>
+            {{-- メンバー選択と概況レポート生成ボタン --}}
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <label for="member-filter" class="text-sm text-gray-600 dark:text-gray-400">メンバー:</label>
+                    <select id="member-filter" 
+                            class="block rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">全員</option>
+                        @foreach($memberDetails as $userId => $member)
+                            <option value="{{ $userId }}" data-name="{{ $member['user_name'] ?? 'Unknown' }}">{{ $member['user_name'] ?? 'Unknown' }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <button id="generate-member-summary-btn" 
+                        type="button"
+                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4AA5B2] hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled>
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                    概況レポート生成
+                </button>
             </div>
         </div>
     </div>
@@ -88,7 +100,7 @@
                                 <div class="text-sm text-gray-900 dark:text-white">{{ $task['title'] }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900 dark:text-white">{{ $member['name'] }}</div>
+                                <div class="text-sm text-gray-900 dark:text-white">{{ $member['user_name'] ?? $member['name'] ?? 'Unknown' }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-wrap gap-1">
@@ -163,7 +175,7 @@
                             <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            <span>{{ $member['name'] }}</span>
+                            <span>{{ $member['user_name'] ?? $member['name'] ?? 'Unknown' }}</span>
                         </div>
                         <div class="flex items-center text-gray-600 dark:text-gray-400">
                             <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

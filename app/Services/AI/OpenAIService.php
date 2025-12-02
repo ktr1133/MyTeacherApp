@@ -173,7 +173,7 @@ class OpenAIService
             'model' => $model,
             'messages' => $messages,
             'temperature' => 0.7,
-            'max_tokens' => 200,
+            'max_tokens' => 600,  // 日本語で300-400文字程度のコメント生成に対応
         ];
 
         try {
@@ -275,7 +275,7 @@ class OpenAIService
             'model' => $this->model,
             'messages' => $messages,
             'temperature' => 0.7,
-            'max_tokens' => 300,
+            'max_tokens' => 600,  // 日本語で300-400文字程度のコメント生成に対応
         ];
 
         try {

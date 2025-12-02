@@ -82,7 +82,7 @@ class ShowMonthlyReportAction
         
         // グラフ用のトレンドデータ取得（直近6ヶ月）
         $trendData = $this->reportService->getTrendData($group, $yearMonth, 6);
-        
+
         return view('reports.monthly.show', [
             'group' => $group,
             'report' => $report,

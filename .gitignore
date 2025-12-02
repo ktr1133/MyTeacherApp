@@ -202,3 +202,12 @@ temp/
 
 # Environment variables documentation (contains sensitive patterns)
 definitions/environment-variables.md
+
+# Documentation files (maintained separately)
+docs/**/*.md
+!docs/README.md
+
+# Build artifacts
+public/build/assets/*.css
+public/build/assets/*.js
+public/build/manifest.json

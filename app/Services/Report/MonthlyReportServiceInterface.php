@@ -91,4 +91,26 @@ interface MonthlyReportServiceInterface
      * @return array Chart.js用のデータセット ['labels' => [], 'datasets' => [], 'members' => []]
      */
     public function getTrendData(Group $group, string $yearMonth, int $months = 6): array;
+    
+    /**
+     * メンバー別概況レポートPDF用データを生成
+     * 
+     * @param int $userId ユーザーID
+     * @param int $groupId グループID
+     * @param string $yearMonth 対象年月（YYYY-MM形式）
+     * @return array PDF生成用データ ['userName', 'yearMonth', 'comment', 'normalTaskCount', 'groupTaskCount', 'changePercentage', 'topCategory', 'chartImageBase64', 'rewardTrend']
+     * @throws \RuntimeException レポート生成失敗時
+     */
+    public function generateMemberSummaryPdfData(int $userId, int $groupId, string $yearMonth): array;
+    
+    /**
+     * メンバー別概況レポートを生成
+     * 
+     * @param int $userId ユーザーID
+     * @param int $groupId グループID
+     * @param string $yearMonth 対象年月（YYYY-MM形式）
+     * @return array ['comment' => string, 'task_classification' => array, 'reward_trend' => array, 'tokens_used' => int]
+     * @throws \RuntimeException レポート生成失敗時
+     */
+    public function generateMemberSummary(int $userId, int $groupId, string $yearMonth): array;
 }

@@ -79,6 +79,8 @@ use App\Services\Report\PerformanceServiceInterface;
 use App\Services\Report\PerformanceService;
 use App\Services\Report\MonthlyReportServiceInterface;
 use App\Services\Report\MonthlyReportService;
+use App\Services\Report\PdfGenerationServiceInterface;
+use App\Services\Report\PdfGenerationService;
 use App\Services\Tag\TagServiceInterface;
 use App\Services\Tag\TagService;
 use App\Services\Task\TaskApprovalServiceInterface;
@@ -229,6 +231,7 @@ class AppServiceProvider extends ServiceProvider
         // --- Report ---
         $this->app->bind(PerformanceServiceInterface::class, PerformanceService::class);
         $this->app->bind(MonthlyReportServiceInterface::class, MonthlyReportService::class);
+        $this->app->bind(PdfGenerationServiceInterface::class, PdfGenerationService::class);
 
         // --- Batch ---
         $this->app->bind(ScheduledTaskServiceInterface::class, ScheduledTaskService::class);

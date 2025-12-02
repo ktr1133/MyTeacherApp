@@ -143,11 +143,11 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             // 通常タスク（グループタスクでない）の完了タスクを取得
             $completedTasks = Task::where('user_id', $user->id)
                 ->whereNull('group_task_id')
+                ->where('is_completed', true)
                 ->whereNotNull('completed_at')
                 ->whereBetween('completed_at', [$startDate, $endDate])
-                ->select('id', 'title', 'completed_at')
                 ->orderBy('completed_at', 'desc')
-                ->get();
+                ->get(['id', 'title', 'completed_at']);
             
             $summary[$user->id] = [
                 'user_name' => $user->name,
@@ -178,12 +178,12 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         
         $completedGroupTasks = Task::whereIn('user_id', $userIds)
             ->whereNotNull('group_task_id')
+            ->where('is_completed', true)
             ->whereNotNull('completed_at')
             ->whereBetween('completed_at', [$startDate, $endDate])
             ->with(['user:id,name', 'tags:id,name'])
-            ->select('id', 'title', 'user_id', 'reward', 'completed_at')
             ->orderBy('completed_at', 'desc')
-            ->get();
+            ->get(['id', 'title', 'user_id', 'reward', 'completed_at']);
         
         $totalReward = $completedGroupTasks->sum('reward');
         
@@ -218,12 +218,12 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         
         $completedGroupTasks = Task::whereIn('user_id', $userIds)
             ->whereNotNull('group_task_id')
+            ->where('is_completed', true)
             ->whereNotNull('completed_at')
             ->whereBetween('completed_at', [$startDate, $endDate])
             ->with(['user:id,name', 'tags:id,name'])
-            ->select('id', 'title', 'user_id', 'reward', 'completed_at')
             ->orderBy('completed_at', 'desc')
-            ->get();
+            ->get(['id', 'title', 'user_id', 'reward', 'completed_at']);
         
         $summary = [];
         
@@ -235,10 +235,11 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             }
             
             $summary[$user->id] = [
-                'name' => $user->name,
+                'user_name' => $user->name,
                 'completed_count' => $userTasks->count(),
                 'reward' => $userTasks->sum('reward'),
                 'tasks' => $userTasks->map(fn($task) => [
+                    'task_id' => $task->id,
                     'title' => $task->title,
                     'reward' => $task->reward,
                     'completed_at' => $task->completed_at->format('Y-m-d H:i:s'),
@@ -796,5 +797,410 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         }
         
         return $changes;
+    }
+    
+    /**
+     * メンバー別概況レポートを生成
+     * 
+     * @param int $userId ユーザーID
+     * @param int $groupId グループID
+     * @param string $yearMonth 対象年月（YYYY-MM形式）
+     * @return array ['comment' => string, 'task_classification' => array, 'reward_trend' => array, 'tokens_used' => int]
+     * @throws \RuntimeException レポート生成失敗時
+     */
+    public function generateMemberSummary(int $userId, int $groupId, string $yearMonth): array
+    {
+        // ユーザー・グループの取得
+        $user = User::find($userId);
+        if (!$user) {
+            throw new \RuntimeException("ユーザーID {$userId} が見つかりません");
+        }
+        
+        $group = Group::find($groupId);
+        if (!$group) {
+            throw new \RuntimeException("グループID {$groupId} が見つかりません");
+        }
+        
+        // 対象月の範囲を計算
+        $startDate = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+        
+        // タスクデータ取得
+        $taskData = $this->getMemberTaskData($userId, $startDate, $endDate);
+        
+        // タスクタイトル取得（通常タスクとグループタスクを分離）
+        $normalTaskTitles = $this->getMemberNormalTaskTitles($userId, $startDate, $endDate);
+        $groupTaskTitles = $this->getMemberGroupTaskTitles($userId, $startDate, $endDate);
+        
+        // タスク傾向分析（円グラフ用データ - 全タスク）
+        $allTaskTitles = array_merge($normalTaskTitles, $groupTaskTitles);
+        $taskClassification = $this->classifyMemberTasks($allTaskTitles);
+        
+        // 報酬推移データ取得（6ヶ月、折れ線グラフ用）
+        $rewardTrend = $this->getMemberRewardTrend($userId, $groupId, $yearMonth, 6);
+        
+        // AIコメント生成
+        $commentResult = $this->generateMemberComment($user, $taskData, $normalTaskTitles, $groupTaskTitles, $taskClassification);
+        
+        return [
+            'comment' => $commentResult['comment'],
+            'task_classification' => $taskClassification,
+            'reward_trend' => $rewardTrend,
+            'tokens_used' => $commentResult['tokens_used'],
+        ];
+    }
+    
+    /**
+     * メンバーのタスクデータを取得
+     * 
+     * @param int $userId ユーザーID
+     * @param Carbon $startDate 開始日
+     * @param Carbon $endDate 終了日
+     * @return array タスクデータ
+     */
+    protected function getMemberTaskData(int $userId, Carbon $startDate, Carbon $endDate): array
+    {
+        // 通常タスク集計
+        $normalTasks = DB::table('tasks')
+            ->where('user_id', $userId)
+            ->where('is_completed', true)
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->whereNull('group_task_id')
+            ->whereNull('deleted_at')
+            ->count();
+        
+        // グループタスク集計（件数と報酬を別々に取得）
+        $groupTasksCount = DB::table('tasks')
+            ->where('user_id', $userId)
+            ->where('is_completed', true)
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->whereNotNull('group_task_id')
+            ->whereNull('deleted_at')
+            ->count();
+        
+        $groupTasksReward = DB::table('tasks')
+            ->where('user_id', $userId)
+            ->where('is_completed', true)
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->whereNotNull('group_task_id')
+            ->whereNull('deleted_at')
+            ->sum('reward');
+        
+        return [
+            'normal_tasks_count' => $normalTasks,
+            'group_tasks_count' => $groupTasksCount,
+            'total_reward' => $groupTasksReward ?? 0,
+        ];
+    }
+    
+    /**
+     * メンバーの通常タスクタイトル一覧を取得
+     * 
+     * @param int $userId ユーザーID
+     * @param Carbon $startDate 開始日
+     * @param Carbon $endDate 終了日
+     * @return array タスクタイトル配列
+     */
+    protected function getMemberNormalTaskTitles(int $userId, Carbon $startDate, Carbon $endDate): array
+    {
+        return DB::table('tasks')
+            ->where('user_id', $userId)
+            ->where('is_completed', true)
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->whereNull('group_task_id')
+            ->whereNull('deleted_at')
+            ->orderBy('completed_at', 'desc')
+            ->pluck('title')
+            ->toArray();
+    }
+    
+    /**
+     * メンバーのグループタスクタイトル一覧を取得
+     * 
+     * @param int $userId ユーザーID
+     * @param Carbon $startDate 開始日
+     * @param Carbon $endDate 終了日
+     * @return array タスクタイトル配列
+     */
+    protected function getMemberGroupTaskTitles(int $userId, Carbon $startDate, Carbon $endDate): array
+    {
+        return DB::table('tasks')
+            ->where('user_id', $userId)
+            ->where('is_completed', true)
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->whereNotNull('group_task_id')
+            ->whereNull('deleted_at')
+            ->orderBy('completed_at', 'desc')
+            ->pluck('title')
+            ->toArray();
+    }
+    
+    /**
+     * メンバーのタスクを分類（円グラフ用データ）
+     * 
+     * @param array $taskTitles タスクタイトル配列
+     * @return array ['labels' => [], 'data' => []]
+     */
+    protected function classifyMemberTasks(array $taskTitles): array
+    {
+        if (empty($taskTitles)) {
+            return [
+                'labels' => ['タスクなし'],
+                'data' => [1],
+            ];
+        }
+        
+        // 簡易的なキーワード分類
+        $categories = [
+            '学習' => ['学習', '勉強', '授業', '宿題', '練習'],
+            '作業' => ['作業', '作成', '制作', '実装', '開発'],
+            '確認' => ['確認', 'チェック', '検証', 'レビュー', '点検'],
+            '重要' => ['重要', '急ぎ', '緊急', '至急'],
+            'コミュニケーション' => ['連絡', '相談', '報告', '会議', 'ミーティング'],
+        ];
+        
+        $counts = array_fill_keys(array_keys($categories), 0);
+        $counts['その他'] = 0;
+        
+        foreach ($taskTitles as $title) {
+            $classified = false;
+            foreach ($categories as $category => $keywords) {
+                foreach ($keywords as $keyword) {
+                    if (mb_strpos($title, $keyword) !== false) {
+                        $counts[$category]++;
+                        $classified = true;
+                        break 2;
+                    }
+                }
+            }
+            if (!$classified) {
+                $counts['その他']++;
+            }
+        }
+        
+        // 0件のカテゴリを除外
+        $counts = array_filter($counts, fn($count) => $count > 0);
+        
+        return [
+            'labels' => array_keys($counts),
+            'data' => array_values($counts),
+        ];
+    }
+    
+    /**
+     * メンバーの報酬推移データを取得（折れ線グラフ用）
+     * 
+     * @param int $userId ユーザーID
+     * @param int $groupId グループID
+     * @param string $yearMonth 基準年月（YYYY-MM形式）
+     * @param int $months 取得月数
+     * @return array ['labels' => [], 'data' => []]
+     */
+    protected function getMemberRewardTrend(int $userId, int $groupId, string $yearMonth, int $months = 6): array
+    {
+        $endDate = Carbon::createFromFormat('Y-m', $yearMonth)->endOfMonth();
+        $startDate = $endDate->copy()->subMonths($months - 1)->startOfMonth();
+        
+        $labels = [];
+        $data = [];
+        
+        // 月ごとのデータを取得
+        $currentMonth = $startDate->copy();
+        while ($currentMonth <= $endDate) {
+            $monthStart = $currentMonth->copy()->startOfMonth();
+            $monthEnd = $currentMonth->copy()->endOfMonth();
+            
+            // 月次レポートからグループタスクサマリーを取得
+            $report = $this->repository->findByGroupAndMonth($groupId, $currentMonth->format('Y-m'));
+            
+            $reward = 0;
+            if ($report && isset($report->group_task_summary[$userId])) {
+                $reward = $report->group_task_summary[$userId]['reward'] ?? 0;
+            }
+            
+            $labels[] = $currentMonth->format('Y/m');
+            $data[] = $reward;
+            
+            $currentMonth->addMonth();
+        }
+        
+        return [
+            'labels' => $labels,
+            'data' => $data,
+        ];
+    }
+    
+    /**
+     * メンバー概況コメント生成
+     * 
+     * @param User $user ユーザー
+     * @param array $taskData タスクデータ
+     * @param array $normalTaskTitles 通常タスクタイトル一覧
+     * @param array $groupTaskTitles グループタスクタイトル一覧
+     * @param array $taskClassification タスク分類結果
+     * @return array ['comment' => string, 'tokens_used' => int]
+     */
+    protected function generateMemberComment(User $user, array $taskData, array $normalTaskTitles, array $groupTaskTitles, array $taskClassification): array
+    {
+        $normalCount = $taskData['normal_tasks_count'];
+        $groupCount = $taskData['group_tasks_count'];
+        $totalCount = $normalCount + $groupCount;
+        
+        // システムプロンプト
+        $systemPrompt = <<<PROMPT
+あなたは子どもの学習・生活習慣を支援する教師アバターです。
+
+以下の{$user->name}の月次実績データに基づいて、優先順位の高い情報から順にコメントしてください：
+
+【最優先: 報酬情報】
+- 獲得報酬: {$taskData['total_reward']}円
+※子どもにとって次のお小遣いに直結する最重要データです。最初に大きく称賛してください。
+
+【次点: タスク完了状況】
+- 通常タスク: {$normalCount}件完了（個人タスク）
+- グループタスク: {$groupCount}件完了（チームタスク）
+- 合計: {$totalCount}件完了
+
+PROMPT;
+
+        // タスク分類結果を追加
+        if (!empty($taskClassification['labels'])) {
+            $systemPrompt .= "\n【タスク傾向】";
+            foreach ($taskClassification['labels'] as $index => $label) {
+                $count = $taskClassification['data'][$index];
+                $systemPrompt .= "\n- {$label}: {$count}件";
+            }
+            // 最多カテゴリを明示
+            $maxIndex = array_keys($taskClassification['data'], max($taskClassification['data']))[0];
+            $topCategory = $taskClassification['labels'][$maxIndex];
+            $systemPrompt .= "\n※最も取り組んだカテゴリ: {$topCategory}";
+        }
+        
+        // 通常タスクの例を追加
+        if (!empty($normalTaskTitles)) {
+            $systemPrompt .= "\n\n【通常タスクの例】（{$normalCount}件中、最新5件）:";
+            foreach (array_slice($normalTaskTitles, 0, 5) as $index => $title) {
+                $systemPrompt .= "\n" . ($index + 1) . ". " . $title;
+            }
+        }
+        
+        // グループタスクの例を追加
+        if (!empty($groupTaskTitles)) {
+            $systemPrompt .= "\n\n【グループタスクの例】（{$groupCount}件中、最新5件）:";
+            foreach (array_slice($groupTaskTitles, 0, 5) as $index => $title) {
+                $systemPrompt .= "\n" . ($index + 1) . ". " . $title;
+            }
+        }
+        
+        $systemPrompt .= <<<PROMPT
+
+
+【コメント作成の重要ルール】
+1. コメントは3-5文程度で構成してください
+2. 以下の順序で必ず記述してください：
+   ① 最初に報酬を称賛（例: 「今月は{$taskData['total_reward']}円もがんばったね！」）
+   ② 次にタスク完了状況を評価（例: 「通常タスク{$normalCount}件、グループタスク{$groupCount}件も達成したね！」）
+   ③ 最後にタスク傾向へのコメント（例: 「特に{最多カテゴリ}をがんばっていたね」）
+3. 子どもが喜ぶ、励まされるトーンで記述してください
+4. 具体的な数値（報酬額、タスク件数）を必ず含めてください
+5. 200-300文字程度で簡潔にまとめてください
+PROMPT;
+
+        // ユーザープロンプト
+        $userPrompt = "このメンバーの月次活動について、上記のルール（報酬→タスク完了→タスク傾向の順）に従って、子どもが喜ぶ具体的なコメントを生成してください。";
+
+        // OpenAI APIコール
+        $result = $this->openAIService->chat($userPrompt, $systemPrompt, 'gpt-4o-mini');
+        
+        return [
+            'comment' => $result['content'] ?? '',
+            'tokens_used' => $result['usage']['total_tokens'] ?? 0,
+        ];
+    }
+    
+    /**
+     * メンバー別概況レポートPDF用データを生成
+     * 
+     * @param int $userId ユーザーID
+     * @param int $groupId グループID
+     * @param string $yearMonth 対象年月（YYYY-MM形式）
+     * @return array PDF生成用データ
+     * @throws \RuntimeException レポート生成失敗時
+     */
+    public function generateMemberSummaryPdfData(int $userId, int $groupId, string $yearMonth): array
+    {
+        // ユーザー・グループの取得
+        $user = User::find($userId);
+        if (!$user) {
+            throw new \RuntimeException("ユーザーID {$userId} が見つかりません");
+        }
+        
+        $group = Group::find($groupId);
+        if (!$group) {
+            throw new \RuntimeException("グループID {$groupId} が見つかりません");
+        }
+        
+        // 対象月の範囲を計算
+        $startDate = Carbon::createFromFormat('Y-m', $yearMonth)->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+        
+        // タスクデータ取得
+        $taskData = $this->getMemberTaskData($userId, $startDate, $endDate);
+        
+        // タスクタイトル取得（通常タスクとグループタスクを分離）
+        $normalTaskTitles = $this->getMemberNormalTaskTitles($userId, $startDate, $endDate);
+        $groupTaskTitles = $this->getMemberGroupTaskTitles($userId, $startDate, $endDate);
+        
+        // タスク傾向分析（円グラフ用データ - 全タスク）
+        $allTaskTitles = array_merge($normalTaskTitles, $groupTaskTitles);
+        $taskClassification = $this->classifyMemberTasks($allTaskTitles);
+        
+        // 報酬推移データ取得（6ヶ月、折れ線グラフ用）
+        $rewardTrendRaw = $this->getMemberRewardTrend($userId, $groupId, $yearMonth, 6);
+        
+        // AIコメント生成（トークン消費しない - 既存のコメントを使用する前提）
+        // ただし、生成する必要がある場合は呼び出し元で実施済みと仮定
+        // ここではgenerateMemberSummaryの結果を再利用する想定
+        
+        // 前月データ取得（前月比計算用）
+        $previousMonth = $startDate->copy()->subMonth();
+        $previousTaskData = $this->getMemberTaskData($userId, $previousMonth->startOfMonth(), $previousMonth->endOfMonth());
+        
+        $currentTotal = $taskData['normal_tasks_count'] + $taskData['group_tasks_count'];
+        $previousTotal = $previousTaskData['normal_tasks_count'] + $previousTaskData['group_tasks_count'];
+        
+        $changePercentage = 0;
+        if ($previousTotal > 0) {
+            $changePercentage = round((($currentTotal - $previousTotal) / $previousTotal) * 100);
+        } elseif ($currentTotal > 0) {
+            $changePercentage = 100;
+        }
+        
+        // トップカテゴリ取得
+        $topCategory = null;
+        if (!empty($taskClassification['labels']) && !empty($taskClassification['data'])) {
+            $maxIndex = array_keys($taskClassification['data'], max($taskClassification['data']))[0];
+            $topCategory = $taskClassification['labels'][$maxIndex];
+        }
+        
+        // 円グラフ画像生成（Base64）は実装せず、フロントエンドで生成した画像を受け取る想定
+        // または、ここでChart.jsをサーバーサイドで実行する必要がある
+        // 簡易実装として、データのみ返却し、PDF生成時にChart.jsで画像化する
+        
+        return [
+            'userName' => $user->name ?: $user->username,
+            'yearMonth' => $startDate->format('Y年n月'),
+            'comment' => '', // 呼び出し元で設定
+            'normalTaskCount' => $taskData['normal_tasks_count'],
+            'groupTaskCount' => $taskData['group_tasks_count'],
+            'totalTaskCount' => $currentTotal,
+            'totalReward' => $taskData['total_reward'],
+            'changePercentage' => $changePercentage,
+            'topCategory' => $topCategory,
+            'taskClassification' => $taskClassification, // 円グラフデータ
+            'rewardTrendLabels' => $rewardTrendRaw['labels'], // 折れ線グラフラベル（6ヶ月）
+            'rewardTrendData' => $rewardTrendRaw['data'], // 折れ線グラフデータ（6ヶ月）
+            'chartImageBase64' => null, // フロントエンド側で画像化して渡す
+        ];
     }
 }

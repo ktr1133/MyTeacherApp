@@ -21,6 +21,7 @@ export default defineConfig({
                 'resources/css/sidebar.css',
                 'resources/css/tags.css',
                 'resources/css/reports/performance.css',
+                'resources/css/reports/member-summary-pdf.css',
                 'resources/css/tasks/pending-approvals.css',
                 'resources/css/tasks/search-results.css',
                 'resources/css/tokens/history.css',
