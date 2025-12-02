@@ -5,6 +5,7 @@
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
 | 2025-12-02 | GitHub Copilot | 初版作成: ユーザー指摘事項の改善提案 |
+| 2025-12-02 | GitHub Copilot | メンバー別概況生成機能の設計更新: confirm-dialog使用、トークン消費量コンスト化、テストデータ作成方針追加、タスク傾向分析をOpenAI文書分類に変更、PDF生成を未着手事項化 |
 
 ## 概要
 
@@ -473,59 +474,84 @@ console.warn('No trend data available');
 <div class="flex items-center justify-between mb-4">
     <div class="flex items-center gap-4">
         <label for="member-filter">メンバー選択:</label>
-        <select id="member-filter" name="member_id">
-            <!-- 既存の選択肢 -->
+        <select id="member-filter" class="form-select rounded-lg border-gray-300 dark:border-gray-600">
+            <option value="">全員</option>
+            <!-- メンバー選択肢 -->
         </select>
     </div>
     
     <!-- ★新規追加 -->
     <button id="generate-summary-btn" 
-            class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4aa5b3] hover:to-purple-700 text-white font-medium rounded-lg transition shadow-lg">
+            data-member-id=""  {{-- 選択中のメンバーID --}}
+            data-token-cost="{{ config('const.token.consumption.member_summary_generation') }}"  {{-- トークン消費量 --}}
+            data-token-balance="{{ auth()->user()->token_balance }}"  {{-- 現在の残高 --}}
+            class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4aa5b3] hover:to-purple-700 text-white font-medium rounded-lg transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
         概況レポート生成
     </button>
 </div>
+
+{{-- 既存のconfirm-dialogコンポーネントを使用 --}}
+<x-confirm-dialog />
 ```
 
-**2. トークン警告モーダル**
-```html
-<!-- モーダル1: トークン消費警告 -->
-<div id="token-warning-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="glass-card rounded-2xl p-8 max-w-md w-full">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                    トークン消費の確認
-                </h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-4">
-                    この操作には約<strong class="text-amber-600">500トークン</strong>（推定50円）を消費します。
-                </p>
-                <p class="text-sm text-gray-500 dark:text-gray-500">
-                    現在の残高: <span id="current-token-balance">0</span>トークン
-                </p>
-            </div>
-            
-            <div class="flex gap-3">
-                <button id="cancel-generate-btn" 
-                        class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition">
-                    キャンセル
-                </button>
-                <button id="confirm-generate-btn" 
-                        class="flex-1 px-4 py-2 bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4aa5b3] hover:to-purple-700 text-white rounded-lg transition">
-                    生成する
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+**JavaScript（トークン警告とconfirm-dialog連携）**
+```javascript
+document.getElementById('generate-summary-btn')?.addEventListener('click', function() {
+    const btn = this;
+    const memberId = btn.dataset.memberId;
+    const tokenCost = parseInt(btn.dataset.tokenCost);
+    const tokenBalance = parseInt(btn.dataset.tokenBalance);
+    
+    // メンバー未選択チェック
+    if (!memberId) {
+        alert('メンバーを選択してください');
+        return;
+    }
+    
+    // トークン残高不足チェック
+    if (tokenBalance < tokenCost) {
+        showFlashMessage('error', `トークン残高が不足しています。\n必要: ${tokenCost.toLocaleString()}\n残高: ${tokenBalance.toLocaleString()}`);
+        return;
+    }
+    
+    // confirm-dialogで警告表示
+    const message = `この機能は約 ${tokenCost.toLocaleString()} トークンを消費します。\n\n現在の残高: ${tokenBalance.toLocaleString()} トークン\n\n実行しますか?`;
+    
+    window.showConfirmDialog(message, () => {
+        // 確認 → 生成処理開始
+        generateMemberSummary(memberId);
+    });
+});
 ```
+
+**トークン消費量の管理**
+- `config/const.php` に `token.consumption.member_summary_generation` として定義
+- 初期値: 50,000トークン（暫定値）
+- **テスト実施後に実績値から算出して更新**
+
+**トークン消費量の変動要因**
+- ✅ **プロンプト（入力）**: タスク件数により変動大
+- ✅ **レスポンス（出力）**: コメント生成のため変動中程度
+- ユーザー指摘通り、プロンプトのトークン量が主要な変動要因
+
+**テストデータ作成方針**
+
+1ユーザーあたりのタスク量（通常+グループの合計）:
+- **最小値**: 0件/日 × 30日 = 0件/月
+- **最大値**: 10件/日 × 30日 = 300件/月
+
+テストシナリオ:
+```
+ユーザーA: 0件/月（未活動）
+ユーザーB: 30件/月（1件/日ペース）
+ユーザーC: 150件/月（5件/日ペース）
+ユーザーD: 300件/月（10件/日ペース - 最大想定）
+```
+
+これらのパターンで3回ずつテストを実施し、平均消費トークン量を算出してコンストに反映。
 
 **3. 生成中モーダル**
 ```html
@@ -632,30 +658,118 @@ public function __invoke(Request $request): JsonResponse
         abort(403);
     }
     
-    // トークン残高チェック
-    $requiredTokens = 500; // 推定消費量
+    // トークン残高チェック（コンストから取得）
+    $requiredTokens = config('const.token.consumption.member_summary_generation');
     if ($user->token_balance < $requiredTokens) {
         return response()->json([
+            'success' => false,
             'error' => 'トークン残高が不足しています',
             'required' => $requiredTokens,
             'balance' => $user->token_balance,
         ], 400);
     }
     
-    // サマリー生成（Service経由）
-    $summary = $this->monthlyReportService->generateMemberSummary($report, $targetUser);
+    try {
+        // サマリー生成（Service経由）
+        $summary = $this->monthlyReportService->generateMemberSummary($report, $targetUser);
+        
+        // トークン消費
+        $this->tokenService->consumeTokens(
+            $user,
+            $summary['tokens_used'],
+            'メンバー別概況レポート生成'
+        );
+        
+        return response()->json([
+            'success' => true,
+            'data' => $summary,
+        ]);
+    } catch (\Exception $e) {
+        Log::error('メンバー別概況生成エラー', [
+            'user_id' => $user->id,
+            'target_user_id' => $targetUser->id,
+            'report_id' => $report->id,
+            'error' => $e->getMessage(),
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'error' => '概況レポート生成中にエラーが発生しました',
+        ], 500);
+    }
+}
+```
+
+**フラッシュメッセージ表示（JavaScript側）**
+```javascript
+function generateMemberSummary(memberId) {
+    // 生成中モーダル表示
+    showGeneratingModal();
     
-    // トークン消費
-    $this->tokenService->consumeTokens(
-        $user,
-        $summary['tokens_used'],
-        'メンバー別概況レポート生成'
-    );
+    fetch('/reports/monthly/member-summary', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+        body: JSON.stringify({
+            report_id: document.querySelector('[data-report-id]').dataset.reportId,
+            user_id: memberId,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideGeneratingModal();
+        
+        if (data.success) {
+            // 結果表示モーダル
+            showResultModal(data.data);
+        } else {
+            // エラーメッセージ（flash-messageと同じデザイン）
+            showFlashMessage('error', data.error);
+        }
+    })
+    .catch(error => {
+        hideGeneratingModal();
+        showFlashMessage('error', 'ネットワークエラーが発生しました');
+    });
+}
+
+/**
+ * フラッシュメッセージ表示（flash-message.blade.phpと同じデザイン）
+ */
+function showFlashMessage(type, message) {
+    const colors = {
+        success: { bg: 'bg-green-50', border: 'border-green-500', text: 'text-green-800' },
+        error: { bg: 'bg-red-50', border: 'border-red-500', text: 'text-red-800' },
+        warning: { bg: 'bg-yellow-50', border: 'border-yellow-500', text: 'text-yellow-800' },
+        info: { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-800' },
+    };
     
-    return response()->json([
-        'success' => true,
-        'data' => $summary,
-    ]);
+    const color = colors[type] || colors.info;
+    
+    const flashDiv = document.createElement('div');
+    flashDiv.className = `fixed top-4 right-4 z-50 max-w-sm w-full ${color.bg} ${color.border} ${color.text} border-l-4 p-4 rounded-lg shadow-lg`;
+    flashDiv.innerHTML = `
+        <div class="flex items-start">
+            <svg class="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="ml-3 flex-1">
+                <p class="text-sm font-medium">${message}</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 flex-shrink-0">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(flashDiv);
+    
+    // 5秒後に自動削除
+    setTimeout(() => flashDiv.remove(), 5000);
 }
 ```
 
@@ -690,22 +804,24 @@ public function generateMemberSummary(MonthlyReport $report, User $targetUser): 
         ? round((($currentCount - $previousCount) / $previousCount) * 100) 
         : ($currentCount > 0 ? 100 : 0);
     
-    // タスク傾向分析（タグ集計）
-    $tagCounts = [];
+    // タスク傾向分析（OpenAI文書分類）
+    $taskTitles = [];
     foreach (array_merge($normalTasks['tasks'] ?? [], $groupTasks['tasks'] ?? []) as $task) {
-        foreach ($task['tags'] ?? [] as $tag) {
-            $tagCounts[$tag] = ($tagCounts[$tag] ?? 0) + 1;
-        }
+        $taskTitles[] = $task['title'];
     }
-    arsort($tagCounts);
-    $topTags = array_slice(array_keys($tagCounts), 0, 3);
+    
+    // OpenAIで文書分類
+    $topCategory = null;
+    if (!empty($taskTitles)) {
+        $topCategory = $this->classifyTaskTitles($taskTitles);
+    }
     
     // AIコメント生成
     $comment = $this->generateMemberComment($targetUser, [
         'normal_count' => $normalCount,
         'group_count' => $groupCount,
         'change_percentage' => $changePercentage,
-        'top_tags' => $topTags,
+        'top_category' => $topCategory,  // タグ → カテゴリに変更
         'avatar' => $report->group->master->teacher_avatar ?? null,
     ]);
     
@@ -716,7 +832,7 @@ public function generateMemberSummary(MonthlyReport $report, User $targetUser): 
         'total_count' => $currentCount,
         'previous_count' => $previousCount,
         'change_percentage' => $changePercentage,
-        'top_tags' => $topTags,
+        'top_category' => $topCategory,  // タグ → カテゴリに変更
         'ai_comment' => $comment['comment'],
         'tokens_used' => $comment['tokens_used'],
         'chart_data' => [
@@ -725,11 +841,69 @@ public function generateMemberSummary(MonthlyReport $report, User $targetUser): 
         ],
     ];
 }
+
+/**
+ * タスク件名をOpenAIで文書分類
+ * 
+ * @param array $taskTitles タスク件名の配列
+ * @return string 最も傾向の強いカテゴリ
+ */
+protected function classifyTaskTitles(array $taskTitles): string
+{
+    $titlesText = implode("\n", $taskTitles);
+    
+    $prompt = <<<EOT
+以下のタスク件名を分析し、最も傾向の強いカテゴリを1つだけ返してください。
+
+タスク件名:
+{$titlesText}
+
+カテゴリ例: 学習、業務、プロジェクト、日常作業、コミュニケーション、その他
+
+最も傾向の強いカテゴリのみを回答してください（説明不要）。
+EOT;
+    
+    $result = $this->openAIService->requestCompletion($prompt, [
+        'max_tokens' => 50,
+        'temperature' => 0.3,
+    ]);
+    
+    return trim($result['content'] ?? 'その他');
+}
 ```
 
-**Phase 3: PDF生成**
+**Phase 3: PDF生成（未着手事項）**
 
-**ライブラリ**: `dompdf/dompdf` または `barryvdh/laravel-dompdf`
+**実装タイミング**: 別タスクでまとめて着手
+
+**理由**:
+- PDF生成処理は複数の機能（月次レポート、メンバー別概況等）で共通利用予定
+- PDFテンプレートの共通デザイン設計から始める必要がある
+- dompdf統合、Chart.js画像化、Base64エンコード等の基盤整備が必要
+
+**実装予定内容**:
+
+1. **ライブラリ導入**: `barryvdh/laravel-dompdf`
+2. **共通PDFテンプレート作成**: ヘッダー、フッター、スタイル定義
+3. **Chart.js画像化処理**: canvas.toDataURL()でBase64変換
+4. **メンバー別概況PDF**: グラフとコメントのみ記載
+5. **ダウンロードエンドポイント追加**: `/reports/monthly/member-summary/{reportId}/{userId}/pdf`
+
+**暫定対応**:
+- モーダル内の「PDFダウンロード」ボタンは非表示またはdisabled状態
+- 結果表示モーダルのみ実装（コメント、グラフ、統計サマリー）
+
+**TODO（別タスク）**:
+```
+[ ] dompdfライブラリ導入
+[ ] PDF共通テンプレート設計・実装
+[ ] Chart.js画像化ユーティリティ作成
+[ ] メンバー別概況PDF生成Action実装
+[ ] PDFダウンロードルート追加
+[ ] PDFダウンロードボタン有効化
+```
+
+**参考実装（将来用）**:
 
 ```php
 use Barryvdh\DomPDF\Facade\Pdf;

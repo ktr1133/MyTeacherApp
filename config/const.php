@@ -34,6 +34,10 @@ return [
             
             // 画像生成（将来用）
             'image_generation' => 150000,
+            
+            // メンバー別概況レポート生成
+            // ※テスト実施後に実績値から算出して更新予定
+            'member_summary_generation' => 50000,
         ],
 
         // 通知設定

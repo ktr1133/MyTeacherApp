@@ -540,8 +540,12 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             if ($report && $report->member_task_summary) {
                 foreach ($report->member_task_summary as $userId => $summary) {
                     if (!isset($memberData[$userId])) {
+                        // ユーザー情報を取得（表示名 or username）
+                        $user = \App\Models\User::find($userId);
+                        $displayName = $user ? ($user->name ?: $user->username) : 'Unknown';
+                        
                         $memberData[$userId] = [
-                            'name' => $summary['name'] ?? 'Unknown',
+                            'name' => $displayName,
                             'normal_tasks' => array_fill(0, $months, 0),
                             'group_tasks' => array_fill(0, $months, 0),
                         ];
@@ -555,8 +559,12 @@ class MonthlyReportService implements MonthlyReportServiceInterface
                 if ($report->group_task_summary) {
                     foreach ($report->group_task_summary as $userId => $summary) {
                         if (!isset($memberData[$userId])) {
+                            // ユーザー情報を取得（表示名 or username）
+                            $user = \App\Models\User::find($userId);
+                            $displayName = $user ? ($user->name ?: $user->username) : 'Unknown';
+                            
                             $memberData[$userId] = [
-                                'name' => $summary['name'] ?? 'Unknown',
+                                'name' => $displayName,
                                 'normal_tasks' => array_fill(0, $months, 0),
                                 'group_tasks' => array_fill(0, $months, 0),
                             ];
