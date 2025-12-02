@@ -140,7 +140,8 @@ class SubscriptionService implements SubscriptionServiceInterface
             return [
                 'id' => $invoice->id,
                 'date' => $invoice->date()->toDateTimeString(),
-                'total' => $invoice->total(),
+                'total' => $invoice->rawTotal(), // フォーマットなしの金額（整数、単位: 最小通貨単位）
+                'amount_paid' => $invoice->amount_paid, // 支払済み金額
                 'status' => $invoice->status,
                 'currency' => $invoice->currency,
                 'invoice_pdf' => $invoice->invoice_pdf,

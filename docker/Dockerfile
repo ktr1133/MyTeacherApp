@@ -72,7 +72,9 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     wget \
     xdg-utils \
-    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip \
+    libicu-dev \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip intl \
     && fc-cache -fv \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

@@ -5,9 +5,9 @@ namespace App\Http\Actions\Token;
 use App\Services\Payment\PaymentServiceInterface;
 use App\Services\Subscription\SubscriptionWebhookServiceInterface;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierWebhookController;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Stripe Webhook処理アクション
@@ -69,59 +69,123 @@ class HandleStripeWebhookAction extends CashierWebhookController
     }
 
     /**
+     * Handle checkout session completed event.
+     * 
+     * @param array $payload
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    protected function handleCheckoutSessionCompleted(array $payload)
+    {
+        try {
+            $sessionData = $payload['data']['object'];
+            
+            // Stripe CheckoutセッションからCustomer IDとSubscription IDを取得
+            $customerId = $sessionData['customer'] ?? null;
+            $subscriptionId = $sessionData['subscription'] ?? null;
+            
+            if (!$customerId || !$subscriptionId) {
+                Log::warning('Webhook: Checkout session completed but missing customer or subscription', [
+                    'session_id' => $sessionData['id'] ?? 'unknown',
+                    'customer_id' => $customerId,
+                    'subscription_id' => $subscriptionId,
+                ]);
+                return $this->successMethod();
+            }
+            
+            Log::info('Webhook: Checkout session completed', [
+                'session_id' => $sessionData['id'],
+                'customer_id' => $customerId,
+                'subscription_id' => $subscriptionId,
+                'mode' => $sessionData['mode'] ?? 'unknown',
+            ]);
+            
+            // Cashierは自動的にcustomer.subscription.createdイベントでsubscriptionsテーブルを更新
+            // ここではGroupsテーブルの更新のみ実行（subscription.createdハンドラーでも実行されるが冪等性確保）
+            // ※ 実際のsubscription作成はStripeが自動的にcustomer.subscription.createdイベントを発火
+            
+        } catch (\Exception $e) {
+            Log::error('Webhook: Checkout session completed handling failed', [
+                'session_id' => $payload['data']['object']['id'] ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+        
+        return $this->successMethod();
+    }
+
+    /**
      * Handle customer subscription created event.
      *
      * @param array $payload
-     * @return void
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function handleCustomerSubscriptionCreated(array $payload): void
+    protected function handleCustomerSubscriptionCreated(array $payload)
     {
+        // 親クラスのハンドラーを呼び出してCashierのsubscriptionsテーブルを自動更新
+        $response = parent::handleCustomerSubscriptionCreated($payload);
+        
+        // カスタムロジック: Groupsテーブルの更新
         try {
             $this->subscriptionWebhookService->handleSubscriptionCreated($payload);
         } catch (\Exception $e) {
-            Log::error('Webhook: Subscription created handling failed', [
+            Log::error('Webhook: Subscription created custom handling failed', [
                 'subscription_id' => $payload['data']['object']['id'] ?? 'unknown',
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
         }
+        
+        return $response;
     }
 
     /**
      * Handle customer subscription updated event.
      *
      * @param array $payload
-     * @return void
+     * @return \Symfony\Component\HttpFoundation\Response|null
      */
-    protected function handleCustomerSubscriptionUpdated(array $payload): void
+    protected function handleCustomerSubscriptionUpdated(array $payload)
     {
+        // 親クラスのハンドラーを呼び出してCashierのsubscriptionsテーブルを自動更新
+        $response = parent::handleCustomerSubscriptionUpdated($payload);
+        
+        // カスタムロジック: Groupsテーブルの更新
         try {
             $this->subscriptionWebhookService->handleSubscriptionUpdated($payload);
         } catch (\Exception $e) {
-            Log::error('Webhook: Subscription updated handling failed', [
+            Log::error('Webhook: Subscription updated custom handling failed', [
                 'subscription_id' => $payload['data']['object']['id'] ?? 'unknown',
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
         }
+        
+        return $response;
     }
 
     /**
      * Handle customer subscription deleted event.
      *
      * @param array $payload
-     * @return void
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function handleCustomerSubscriptionDeleted(array $payload): void
+    protected function handleCustomerSubscriptionDeleted(array $payload)
     {
+        // 親クラスのハンドラーを呼び出してCashierのsubscriptionsテーブルを自動更新
+        $response = parent::handleCustomerSubscriptionDeleted($payload);
+        
+        // カスタムロジック: Groupsテーブルの更新
         try {
             $this->subscriptionWebhookService->handleSubscriptionDeleted($payload);
         } catch (\Exception $e) {
-            Log::error('Webhook: Subscription deleted handling failed', [
+            Log::error('Webhook: Subscription deleted custom handling failed', [
                 'subscription_id' => $payload['data']['object']['id'] ?? 'unknown',
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
         }
+        
+        return $response;
     }
 }

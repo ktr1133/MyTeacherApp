@@ -25,34 +25,36 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
                 throw new \RuntimeException("Invalid subscription plan: {$plan}");
             }
 
-            $lineItems = [
-                [
-                    'price' => $planConfig['price_id'],
-                    'quantity' => 1,
-                ],
+            // メタデータを定義（CheckoutSessionとSubscriptionの両方に適用）
+            $metadata = [
+                'group_id' => (string) $group->id,
+                'plan' => $plan,  // SubscriptionWebhookServiceが期待するキー名
+                'subscription_plan' => $plan,  // 互換性のため両方設定
+                'additional_members' => (string) $additionalMembers,
             ];
 
-            // エンタープライズプランで追加メンバーがいる場合
+            // サブスクリプションビルダーを作成
+            $subscription = $group->newSubscription('default', $planConfig['price_id']);
+
+            // エンタープライズプランで追加メンバーがいる場合は追加価格を含める
             if ($plan === 'enterprise' && $additionalMembers > 0) {
-                $lineItems[] = [
-                    'price' => config('const.stripe.additional_member_price_id'),
-                    'quantity' => $additionalMembers,
-                ];
+                $additionalPriceId = config('const.stripe.additional_member_price_id');
+                if ($additionalPriceId) {
+                    $subscription->price($additionalPriceId, $additionalMembers);
+                }
             }
 
-            $checkoutSession = $group->newSubscription('default', $planConfig['price_id'])
-                ->checkout([
-                    'success_url' => route('subscriptions.success') . '?session_id={CHECKOUT_SESSION_ID}',
-                    'cancel_url' => route('subscriptions.cancel'),
-                    'line_items' => $lineItems,
-                    'mode' => 'subscription',
-                    'client_reference_id' => $group->id,
-                    'metadata' => [
-                        'group_id' => $group->id,
-                        'subscription_plan' => $plan,
-                        'additional_members' => $additionalMembers,
-                    ],
-                ]);
+            // チェックアウトセッションを作成
+            // subscription_data.metadataでSubscriptionオブジェクトにmetadataを設定
+            $checkoutSession = $subscription->checkout([
+                'success_url' => route('subscriptions.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('subscriptions.cancel'),
+                'client_reference_id' => (string) $group->id,
+                'metadata' => $metadata,  // CheckoutSessionのmetadata
+                'subscription_data' => [
+                    'metadata' => $metadata,  // Subscriptionのmetadata（重要: webhookで受信される）
+                ],
+            ]);
 
             Log::info('Stripe Checkout Session created', [
                 'group_id' => $group->id,
@@ -77,13 +79,12 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
      */
     public function getCurrentSubscription(Group $group): ?Subscription
     {
-        $subscription = $group->subscription('default');
-        
-        if (!$subscription) {
-            return null;
-        }
-
-        return $subscription;
+        // userリレーションをEager Loadingして取得
+        // Cashierの内部メソッドがuser->stripe()を呼び出すため必須
+        return Subscription::where('type', 'default')
+            ->where('user_id', $group->master_user_id)
+            ->with('user')
+            ->first();
     }
 
     /**
@@ -102,9 +103,13 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
         try {
             $subscription->cancel();
             
+            // Stripeから最新の情報を同期してends_atを更新
+            $subscription->refresh();
+            
             Log::info('Subscription canceled (end of period)', [
                 'subscription_id' => $subscription->id,
                 'stripe_id' => $subscription->stripe_id,
+                'ends_at' => $subscription->ends_at,
             ]);
             
             return true;

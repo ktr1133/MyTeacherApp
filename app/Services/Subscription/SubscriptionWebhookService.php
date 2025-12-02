@@ -29,6 +29,13 @@ class SubscriptionWebhookService implements SubscriptionWebhookServiceInterface
         $groupId = $subscription['metadata']['group_id'] ?? null;
         $plan = $subscription['metadata']['plan'] ?? null;
         
+        Log::info('Webhook: Processing subscription created for Groups table', [
+            'subscription_id' => $subscription['id'] ?? 'unknown',
+            'customer_id' => $subscription['customer'] ?? 'unknown',
+            'group_id' => $groupId,
+            'plan' => $plan,
+        ]);
+        
         if (!$groupId || !$plan) {
             Log::error('Subscription created: metadata missing', [
                 'subscription_id' => $subscription['id'] ?? 'unknown',
@@ -48,7 +55,7 @@ class SubscriptionWebhookService implements SubscriptionWebhookServiceInterface
                     'max_members' => $this->getMaxMembers($plan),
                 ]);
                 
-                Log::info('Subscription activated', [
+                Log::info('Subscription activated (Groups table updated)', [
                     'group_id' => $groupId,
                     'plan' => $plan,
                     'stripe_subscription_id' => $subscription['id'],

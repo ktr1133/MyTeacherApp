@@ -146,9 +146,15 @@
                                 @endif
                                 @if($currentSubscription['ends_at'])
                                     <div class="space-y-1">
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">有効期限</p>
-                                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        <p class="text-sm text-red-600 dark:text-red-400">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            サブスクリプション終了予定日
+                                        </p>
+                                        <p class="text-lg font-semibold text-red-600 dark:text-red-400">
                                             {{ \Carbon\Carbon::parse($currentSubscription['ends_at'])->format('Y年m月d日') }}
+                                        </p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                            この日まで引き続きご利用いただけます
                                         </p>
                                     </div>
                                 @endif
@@ -493,7 +499,7 @@
                                                     {{ \Carbon\Carbon::parse($invoice['date'])->format('Y年m月d日') }}
                                                 </td>
                                                 <td class="px-4 py-3 font-semibold">
-                                                    ¥{{ number_format($invoice['total']) }}
+                                                    ¥{{ number_format((int)$invoice['total']) }}
                                                 </td>
                                                 <td class="px-4 py-3">
                                                     @if($invoice['status'] === 'paid')
