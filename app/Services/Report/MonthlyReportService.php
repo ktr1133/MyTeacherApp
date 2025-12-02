@@ -569,8 +569,9 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             }
         }
         
-        // Chart.js用のデータセット形式に変換
-        $datasets = [];
+        // Chart.js用のデータセット形式に変換（通常タスクとグループタスクを分離）
+        $normalDatasets = [];
+        $groupDatasets = [];
         $colors = [
             ['rgb(59, 130, 246)', 'rgba(59, 130, 246, 0.5)'],   // blue
             ['rgb(16, 185, 129)', 'rgba(16, 185, 129, 0.5)'],   // green
@@ -578,6 +579,10 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             ['rgb(168, 85, 247)', 'rgba(168, 85, 247, 0.5)'],   // purple
             ['rgb(236, 72, 153)', 'rgba(236, 72, 153, 0.5)'],   // pink
             ['rgb(250, 204, 21)', 'rgba(250, 204, 21, 0.5)'],   // yellow
+            ['rgb(14, 165, 233)', 'rgba(14, 165, 233, 0.5)'],   // sky
+            ['rgb(249, 115, 22)', 'rgba(249, 115, 22, 0.5)'],   // orange-600
+            ['rgb(139, 92, 246)', 'rgba(139, 92, 246, 0.5)'],   // violet
+            ['rgb(236, 72, 153)', 'rgba(236, 72, 153, 0.5)'],   // fuchsia
         ];
         
         $colorIndex = 0;
@@ -585,8 +590,8 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             $color = $colors[$colorIndex % count($colors)];
             
             // 通常タスク
-            $datasets[] = [
-                'label' => $data['name'] . ' (通常)',
+            $normalDatasets[] = [
+                'label' => $data['name'],
                 'data' => $data['normal_tasks'],
                 'backgroundColor' => $color[1],
                 'borderColor' => $color[0],
@@ -594,13 +599,12 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             ];
             
             // グループタスク
-            $datasets[] = [
-                'label' => $data['name'] . ' (グループ)',
+            $groupDatasets[] = [
+                'label' => $data['name'],
                 'data' => $data['group_tasks'],
                 'backgroundColor' => $color[1],
                 'borderColor' => $color[0],
                 'borderWidth' => 1,
-                'borderDash' => [5, 5],
             ];
             
             $colorIndex++;
@@ -608,14 +612,22 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         
         Log::debug('getTrendData result', [
             'labels' => $labels,
-            'dataset_count' => count($datasets),
+            'normal_dataset_count' => count($normalDatasets),
+            'group_dataset_count' => count($groupDatasets),
             'member_count' => count($memberData),
             'member_names' => array_map(fn($data) => $data['name'], $memberData),
         ]);
         
         return [
             'labels' => $labels,
-            'datasets' => $datasets,
+            'normal' => [
+                'labels' => $labels,
+                'datasets' => $normalDatasets,
+            ],
+            'group' => [
+                'labels' => $labels,
+                'datasets' => $groupDatasets,
+            ],
             'members' => array_map(fn($data) => $data['name'], $memberData),
         ];
     }

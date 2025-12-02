@@ -123,20 +123,52 @@
             </div>
 
             {{-- グラフエリア --}}
+            @if(!empty($trendData['normal']['datasets']) || !empty($trendData['group']['datasets']))
+            <div class="mb-6 space-y-6">
+                {{-- 通常タスクグラフ --}}
+                @if(!empty($trendData['normal']['datasets']))
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            📊 通常タスクの推移（過去6ヶ月）
+                        </h3>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                            メンバー別完了数
+                        </span>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="normal-trend-chart"></canvas>
+                    </div>
+                </div>
+                @endif
+                
+                {{-- グループタスクグラフ --}}
+                @if(!empty($trendData['group']['datasets']))
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            👥 グループタスクの推移（過去6ヶ月）
+                        </h3>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                            メンバー別完了数
+                        </span>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="group-trend-chart"></canvas>
+                    </div>
+                </div>
+                @endif
+            </div>
+            @else
             <div class="mb-6 bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                     過去6ヶ月の推移
                 </h3>
-                @if(!empty($trendData['datasets']))
-                    <div class="h-80">
-                        <canvas id="trend-chart"></canvas>
-                    </div>
-                @else
-                    <p class="text-gray-500 dark:text-gray-400 text-center py-8">
-                        グラフ表示に必要なデータがありません
-                    </p>
-                @endif
+                <p class="text-gray-500 dark:text-gray-400 text-center py-8">
+                    グラフ表示に必要なデータがありません
+                </p>
             </div>
+            @endif
 
             {{-- 明細テーブル --}}
             <x-reports.task-detail-table 
@@ -174,85 +206,139 @@
                 });
             }
             
-            // Chart.js: トレンドグラフ
-            @if(!empty($trendData['datasets']))
-            const ctx = document.getElementById('trend-chart');
-            if (ctx) {
-                const trendData = @json($trendData);
-                
-                console.log('Trend data loaded:', {
-                    labels: trendData.labels,
-                    datasetCount: trendData.datasets.length,
-                    datasets: trendData.datasets.map(ds => ({
-                        label: ds.label,
-                        data: ds.data,
-                        dataSum: ds.data.reduce((a, b) => a + b, 0)
-                    }))
-                });
-                
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: trendData.labels,
-                        datasets: trendData.datasets
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
-                                    font: {
-                                        size: 12
-                                    },
-                                    boxWidth: 12,
-                                    padding: 10
-                                }
+            // Chart.js: トレンドグラフ（2つに分離）
+            @if(!empty($trendData['normal']['datasets']) || !empty($trendData['group']['datasets']))
+            const trendData = @json($trendData);
+            
+            console.log('Trend data loaded:', {
+                normalDatasetCount: trendData.normal?.datasets?.length || 0,
+                groupDatasetCount: trendData.group?.datasets?.length || 0,
+                members: trendData.members
+            });
+            
+            // 共通のChartオプション
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'start',
+                        labels: {
+                            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+                            font: {
+                                size: 12,
+                                weight: '500'
                             },
-                            title: {
-                                display: false
-                            },
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false,
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.dataset.label + ': ' + context.parsed.y + '件';
-                                    }
-                                }
+                            boxWidth: 20,
+                            boxHeight: 12,
+                            padding: 12,
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded',
+                            generateLabels: function(chart) {
+                                const datasets = chart.data.datasets;
+                                return datasets.map((dataset, i) => ({
+                                    text: dataset.label,
+                                    fillStyle: dataset.backgroundColor,
+                                    strokeStyle: dataset.borderColor,
+                                    lineWidth: dataset.borderWidth,
+                                    hidden: !chart.isDatasetVisible(i),
+                                    index: i,
+                                    pointStyle: 'rectRounded'
+                                }));
                             }
                         },
-                        scales: {
-                            x: {
-                                stacked: true,
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
-                                }
-                            },
-                            y: {
-                                stacked: true,
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
-                                },
-                                grid: {
-                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
-                                }
+                        maxHeight: 80,
+                        onClick: function(e, legendItem, legend) {
+                            const index = legendItem.index;
+                            const chart = legend.chart;
+                            const meta = chart.getDatasetMeta(index);
+                            meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : null;
+                            chart.update();
+                        }
+                    },
+                    title: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: document.documentElement.classList.contains('dark') ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        titleColor: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827',
+                        bodyColor: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + '件';
                             }
                         }
                     }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280',
+                            font: {
+                                size: 11
+                            }
+                        },
+                        grid: {
+                            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            };
+            
+            // 通常タスクグラフ
+            const normalCtx = document.getElementById('normal-trend-chart');
+            if (normalCtx && trendData.normal?.datasets?.length > 0) {
+                new Chart(normalCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: trendData.normal.labels,
+                        datasets: trendData.normal.datasets
+                    },
+                    options: commonOptions
+                });
+            }
+            
+            // グループタスクグラフ
+            const groupCtx = document.getElementById('group-trend-chart');
+            if (groupCtx && trendData.group?.datasets?.length > 0) {
+                new Chart(groupCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: trendData.group.labels,
+                        datasets: trendData.group.datasets
+                    },
+                    options: commonOptions
                 });
             }
             @else
             console.warn('No trend data available', {
-                trendDataExists: {{ !empty($trendData) ? 'true' : 'false' }},
-                datasetCount: {{ count($trendData['datasets'] ?? []) }}
+                trendDataExists: {{ !empty($trendData) ? 'true' : 'false' }}
             });
             @endif
         });
