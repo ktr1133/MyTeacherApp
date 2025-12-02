@@ -1,9 +1,9 @@
 <x-app-layout>
-    <x-slot name="header">
+    @push('styles')
         @vite(['resources/css/reports/performance.css'])
-    </x-slot>
+    @endpush
 
-    <div class="py-12 bg-gradient-to-br from-[#F3F3F2] via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen relative">
+    <div class="pb-12 pt-5 bg-gradient-to-br from-[#F3F3F2] via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen relative">
         {{-- 背景の装飾円 --}}
         <div class="absolute top-20 left-10 w-72 h-72 bg-[#59B9C6]/10 rounded-full blur-3xl floating-icon pointer-events-none"></div>
         <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl floating-icon pointer-events-none" style="animation-delay: 1.5s;"></div>
