@@ -118,10 +118,12 @@ QUEUE_LOGFILE="storage/logs/queue-$(date '+%Y%m%d').log"
 # --tries=3: 失敗時に最大3回リトライ
 # --max-time=3600: 1時間ごとにワーカー再起動（メモリリーク対策）
 # --timeout=300: ジョブのタイムアウトは5分
+QUEUE_DRIVER="${QUEUE_CONNECTION:-database}"
+echo "[Entrypoint] Queue driver: $QUEUE_DRIVER" >> "$QUEUE_LOGFILE" 2>&1
 (
     while true; do
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting queue worker..." >> "$QUEUE_LOGFILE" 2>&1
-        php artisan queue:work database --sleep=3 --tries=3 --max-time=3600 --timeout=300 >> "$QUEUE_LOGFILE" 2>&1
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting queue worker with driver: $QUEUE_DRIVER..." >> "$QUEUE_LOGFILE" 2>&1
+        php artisan queue:work "$QUEUE_DRIVER" --sleep=3 --tries=3 --max-time=3600 --timeout=300 >> "$QUEUE_LOGFILE" 2>&1
         
         # ワーカーが終了した場合（エラーまたはmax-time到達）、5秒待機して再起動
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] Queue worker stopped. Restarting in 5 seconds..." >> "$QUEUE_LOGFILE" 2>&1
