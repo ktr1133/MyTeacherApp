@@ -53,6 +53,7 @@ export default defineConfig({
                 'resources/js/notifications/admin-notifications.js',
                 'resources/js/notifications/notification-search.js',
                 'resources/js/reports/performance.js',
+                'resources/js/reports/monthly-report.js',
                 'resources/js/profile/profile-validation.js',
                 // 'resources/js/sidebar/sidebar-store.js',
                 'resources/js/tags/tags.js',

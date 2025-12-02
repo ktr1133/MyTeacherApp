@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-DAFhxFL1.css",
+    "file": "assets/app-BcBPuR_r.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -340,6 +340,12 @@
     "imports": [
       "resources/js/common/validation-core.js"
     ]
+  },
+  "resources/js/reports/monthly-report.js": {
+    "file": "assets/monthly-report-nQvtvM2W.js",
+    "name": "monthly-report",
+    "src": "resources/js/reports/monthly-report.js",
+    "isEntry": true
   },
   "resources/js/reports/performance.js": {
     "file": "assets/performance-D_CfxajU.js",

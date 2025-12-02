@@ -548,6 +548,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
                             'name' => $displayName,
                             'normal_tasks' => array_fill(0, $months, 0),
                             'group_tasks' => array_fill(0, $months, 0),
+                            'rewards' => array_fill(0, $months, 0),
                         ];
                     }
                     
@@ -567,20 +568,23 @@ class MonthlyReportService implements MonthlyReportServiceInterface
                                 'name' => $displayName,
                                 'normal_tasks' => array_fill(0, $months, 0),
                                 'group_tasks' => array_fill(0, $months, 0),
+                                'rewards' => array_fill(0, $months, 0),
                             ];
                         }
                         
                         $index = $months - 1 - $i;
                         $memberData[$userId]['group_tasks'][$index] = $summary['completed_count'] ?? 0;
+                        $memberData[$userId]['rewards'][$index] += $summary['reward'] ?? 0;
                     }
                 }
             }
         }
         
-        // Chart.js用のデータセット形式に変換（通常タスク、グループタスク、合計タスク）
+        // Chart.js用のデータセット形式に変換（通常タスク、グループタスク、合計タスク、報酬）
         $normalDatasets = [];
         $groupDatasets = [];
         $totalDatasets = []; // 合計タスク用
+        $rewardDatasets = []; // 報酬用
         $colors = [
             ['rgb(59, 130, 246)', 'rgba(59, 130, 246, 0.5)'],   // blue
             ['rgb(16, 185, 129)', 'rgba(16, 185, 129, 0.5)'],   // green
@@ -630,6 +634,16 @@ class MonthlyReportService implements MonthlyReportServiceInterface
                 'tension' => 0.3, // 滑らかな曲線
             ];
             
+            // 報酬（グループタスクのみ）
+            $rewardDatasets[] = [
+                'label' => $data['name'],
+                'data' => $data['rewards'],
+                'backgroundColor' => $color[1],
+                'borderColor' => $color[0],
+                'borderWidth' => 2,
+                'tension' => 0.3, // 滑らかな曲線
+            ];
+            
             $colorIndex++;
         }
         
@@ -638,6 +652,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             'normal_dataset_count' => count($normalDatasets),
             'group_dataset_count' => count($groupDatasets),
             'total_dataset_count' => count($totalDatasets),
+            'reward_dataset_count' => count($rewardDatasets),
             'member_count' => count($memberData),
             'member_names' => array_map(fn($data) => $data['name'], $memberData),
         ]);
@@ -655,6 +670,10 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             'total' => [
                 'labels' => $labels,
                 'datasets' => $totalDatasets,
+            ],
+            'reward' => [
+                'labels' => $labels,
+                'datasets' => $rewardDatasets,
             ],
             'members' => array_map(fn($data) => $data['name'], $memberData),
         ];

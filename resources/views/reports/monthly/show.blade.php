@@ -174,8 +174,8 @@
                     </button>
                     
                     <div id="detail-charts" 
-                         class="hidden px-6 pb-6 space-y-6"
-                         style="transition: all 0.2s ease-out;">
+                         class="px-6 pb-6 space-y-6 overflow-hidden transition-all duration-200 ease-out"
+                         style="max-height: 0; opacity: 0;">
                         {{-- 通常タスクグラフ --}}
                         @if(!empty($trendData['normal']['datasets']))
                         <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -205,6 +205,23 @@
                         @endif
                     </div>
                 </div>
+                
+                {{-- 報酬獲得の推移グラフ --}}
+                @if(!empty($trendData['reward']['datasets']))
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            💰 報酬獲得の推移（過去6ヶ月）
+                        </h3>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 sm:whitespace-nowrap">
+                            グループタスク報酬
+                        </span>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="reward-trend-chart"></canvas>
+                    </div>
+                </div>
+                @endif
             </div>
             @else
             <div class="mb-6 bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
@@ -216,6 +233,13 @@
                 </p>
             </div>
             @endif
+            
+            {{-- グラフデータ（JavaScriptから参照） --}}
+            @if(!empty($trendData['total']['datasets']))
+            <script type="application/json" id="trend-data">
+                @json($trendData)
+            </script>
+            @endif
 
             {{-- 明細テーブル --}}
             <x-reports.task-detail-table 
@@ -226,201 +250,18 @@
     </div>
 
     {{-- JavaScript: 年月選択とグラフ --}}
-    @push('scripts')
+    @vite(['resources/js/reports/monthly-report.js'])
+    
+    {{-- ルートURLをdata属性で渡す --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // デスクトップ: 年月プルダウン
+            // ルートURL設定
             const yearSelect = document.getElementById('year-select');
-            const monthSelect = document.getElementById('month-select');
-            
-            if (yearSelect && monthSelect) {
-                const handleNavigation = () => {
-                    const year = yearSelect.value;
-                    const month = monthSelect.value.padStart(2, '0');
-                    window.location.href = `{{ route('reports.monthly.show') }}/${year}/${month}`;
-                };
-                
-                yearSelect.addEventListener('change', handleNavigation);
-                monthSelect.addEventListener('change', handleNavigation);
-            }
-            
-            // モバイル: input[type=month]
             const monthPicker = document.getElementById('month-picker');
-            if (monthPicker) {
-                monthPicker.addEventListener('change', function() {
-                    const [year, month] = this.value.split('-');
-                    window.location.href = `{{ route('reports.monthly.show') }}/${year}/${month}`;
-                });
-            }
+            const routeBase = '{{ route('reports.monthly.show') }}'.replace(/\/\d{4}\/\d{2}$/, '');
             
-            // Chart.js: トレンドグラフ（3種類: 合計、通常、グループ）
-            @if(!empty($trendData['total']['datasets']))
-            const trendData = @json($trendData);
-            
-            console.log('Trend data loaded:', {
-                totalDatasetCount: trendData.total?.datasets?.length || 0,
-                normalDatasetCount: trendData.normal?.datasets?.length || 0,
-                groupDatasetCount: trendData.group?.datasets?.length || 0,
-                members: trendData.members
-            });
-            
-            // 共通のChartオプション（積み上げなし）
-            const lineOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        align: 'start',
-                        labels: {
-                            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
-                            font: {
-                                size: 12,
-                                weight: '500'
-                            },
-                            boxWidth: 20,
-                            boxHeight: 12,
-                            padding: 12,
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                        },
-                        maxHeight: 80,
-                    },
-                    title: {
-                        display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: document.documentElement.classList.contains('dark') ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        titleColor: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#111827',
-                        bodyColor: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
-                        borderColor: document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db',
-                        borderWidth: 1,
-                        padding: 12,
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ' + context.parsed.y + '件';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 2,
-                            color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280',
-                            font: {
-                                size: 11
-                            }
-                        },
-                        grid: {
-                            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
-                        }
-                    }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
-                }
-            };
-            
-            // 積み上げ棒グラフ用オプション
-            const barOptions = JSON.parse(JSON.stringify(lineOptions));
-            barOptions.scales.x.stacked = true;
-            barOptions.scales.y.stacked = true;
-            barOptions.scales.y.ticks.stepSize = 1;
-            barOptions.plugins.legend.labels.pointStyle = 'rectRounded';
-            
-            // 合計タスクグラフ（折れ線グラフ）
-            const totalCtx = document.getElementById('total-trend-chart');
-            if (totalCtx && trendData.total?.datasets?.length > 0) {
-                new Chart(totalCtx, {
-                    type: 'line',
-                    data: {
-                        labels: trendData.total.labels,
-                        datasets: trendData.total.datasets
-                    },
-                    options: lineOptions
-                });
-            }
-            
-            // 詳細グラフ初期化関数（遅延初期化）
-            let normalChart = null;
-            let groupChart = null;
-            let detailChartsInitialized = false;
-            
-            function initializeDetailCharts() {
-                if (detailChartsInitialized) return;
-                
-                // 通常タスクグラフ（積み上げ棒グラフ）
-                const normalCtx = document.getElementById('normal-trend-chart');
-                if (normalCtx && trendData.normal?.datasets?.length > 0 && !normalChart) {
-                    normalChart = new Chart(normalCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: trendData.normal.labels,
-                            datasets: trendData.normal.datasets
-                        },
-                        options: barOptions
-                    });
-                }
-                
-                // グループタスクグラフ（積み上げ棒グラフ）
-                const groupCtx = document.getElementById('group-trend-chart');
-                if (groupCtx && trendData.group?.datasets?.length > 0 && !groupChart) {
-                    groupChart = new Chart(groupCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: trendData.group.labels,
-                            datasets: trendData.group.datasets
-                        },
-                        options: barOptions
-                    });
-                }
-                
-                detailChartsInitialized = true;
-            }
-            
-            // 詳細グラフの折りたたみ時に初期化
-            const toggleButton = document.getElementById('toggle-detail-charts');
-            const detailCharts = document.getElementById('detail-charts');
-            const toggleIcon = document.getElementById('toggle-icon');
-            
-            if (toggleButton && detailCharts && toggleIcon) {
-                toggleButton.addEventListener('click', function() {
-                    const isHidden = detailCharts.classList.contains('hidden');
-                    detailCharts.classList.toggle('hidden');
-                    toggleIcon.classList.toggle('rotate-180');
-                    
-                    // 開く時にグラフを初期化
-                    if (isHidden && !detailChartsInitialized) {
-                        // DOMが表示された後に初期化（レンダリング待ち）
-                        setTimeout(() => {
-                            initializeDetailCharts();
-                        }, 50);
-                    }
-                });
-            }
-            @else
-            console.warn('No trend data available', {
-                trendDataExists: {{ !empty($trendData) ? 'true' : 'false' }}
-            });
-            @endif
+            if (yearSelect) yearSelect.dataset.routeBase = routeBase;
+            if (monthPicker) monthPicker.dataset.routeBase = routeBase;
         });
     </script>
-    @endpush
 </x-app-layout>
