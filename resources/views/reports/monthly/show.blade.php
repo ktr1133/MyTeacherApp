@@ -12,13 +12,22 @@
             {{-- ヘッダーと年月選択 --}}
             <div class="mb-6 hero-title">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h2 class="text-3xl font-bold gradient-text mb-2">
-                            📈 月次レポート
-                        </h2>
-                        <p class="mt-1 text-base text-gray-600 dark:text-gray-400">
-                            {{ $formatted['report_month'] }}の実績レポート
-                        </p>
+                    <div class="flex items-center gap-3">
+                        {{-- アイコン --}}
+                        <div class="w-12 h-12 bg-gradient-to-br from-[#59B9C6] to-blue-500 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
+                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        
+                        <div>
+                            <h2 class="text-3xl font-bold gradient-text">
+                                月次レポート
+                            </h2>
+                            <p class="mt-1 text-base text-gray-600 dark:text-gray-400">
+                                {{ $formatted['report_month'] }}の実績レポート
+                            </p>
+                        </div>
                     </div>
                     
                     <div class="flex items-center gap-3">
