@@ -78,10 +78,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
-# Node.js 20.x インストール（Browsershot用）
+# Node.js 20.x + Puppeteer インストール（Browsershot用）
 # =============================================================================
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
+    && npm install -g puppeteer@24.31.0 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
