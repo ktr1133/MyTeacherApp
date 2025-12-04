@@ -25,6 +25,8 @@
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_SYNCHRONOUS" value="2"/>  <!-- FULL -->
+        <env name="DB_JOURNAL_MODE" value="MEMORY"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

@@ -133,12 +133,13 @@ class ScheduledGroupTask extends Model
      */
     public function getTagNames(): array
     {
-        // tagsリレーションがロードされていない、またはnullの場合は空配列を返す
-        if (!$this->relationLoaded('tags') || $this->tags === null) {
-            return [];
-        }
-        
-        return $this->tags->pluck('tag_name')->toArray();
+        // ⚠️ 一時的な対応: リレーションキャッシュを使わず、常にDBから取得
+        // 理由: テスト環境でwith(['tags'])が機能しない問題を回避
+        // TODO: 原因究明後、Eloquentリレーション経由に変更
+        return \DB::table('scheduled_task_tags')
+            ->where('scheduled_task_id', $this->id)
+            ->pluck('tag_name')
+            ->toArray();
     }
 
     /**

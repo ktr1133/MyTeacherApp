@@ -18,7 +18,7 @@ class ScheduledTaskRepository implements ScheduledTaskRepositoryInterface
     {
         $date = $date ?? now();
         
-        return ScheduledGroupTask::with([
+        $tasks = ScheduledGroupTask::with([
                 'group',           // グループ情報
                 'group.users',     // グループメンバー（ランダム割り当て用）
                 'tags',            // タグ情報
@@ -32,6 +32,8 @@ class ScheduledTaskRepository implements ScheduledTaskRepositoryInterface
                       ->orWhere('end_date', '>=', $date);
             })
             ->get();
+        
+        return $tasks;
     }
 
     /**

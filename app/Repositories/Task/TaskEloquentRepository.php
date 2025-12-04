@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * TaskRepositoryInterface および TaskManagementService で使用されるデータアクセス操作を
@@ -334,19 +335,29 @@ class TaskEloquentRepository implements TaskRepositoryInterface
             return;
         }
 
-        $now = now();
-        $insertData = [];
-
-        foreach ($tagNames as $tagName) {
-            $insertData[] = [
-                'task_id' => $taskId,
-                'tag_name' => $tagName,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
+        // タスクを取得
+        $task = Task::find($taskId);
+        if (!$task) {
+            return;
         }
 
-        DB::table('task_tags')->insert($insertData);
+        $tagIds = [];
+
+        foreach ($tagNames as $tagName) {
+            // タグを取得または作成（user_idはタスクの所有者）
+            $tag = Tag::firstOrCreate(
+                [
+                    'name' => $tagName,
+                    'user_id' => $task->user_id
+                ]
+            );
+            $tagIds[] = $tag->id;
+        }
+
+        // タグIDを紐付け（重複を避けるためsyncWithoutDetachingを使用）
+        if (!empty($tagIds)) {
+            $task->tags()->syncWithoutDetaching($tagIds);
+        }
     }
 
     /**
@@ -354,9 +365,10 @@ class TaskEloquentRepository implements TaskRepositoryInterface
      */
     public function getGroupMemberIds(int $groupId): array
     {
-        return DB::table('group_user')
+        return DB::table('users')
             ->where('group_id', $groupId)
-            ->pluck('user_id')
+            ->where('group_edit_flg', false) // 編集権限なし = タスク受取側
+            ->pluck('id')
             ->toArray();
     }
 
@@ -372,5 +384,15 @@ class TaskEloquentRepository implements TaskRepositoryInterface
         }
 
         return $task->delete();
+    }
+
+    /**
+     * 指定されたgroup_task_idを持つすべてのタスクを取得
+     */
+    public function findTasksByGroupTaskId(string $groupTaskId): Collection
+    {
+        return Task::where('group_task_id', $groupTaskId)
+            ->with(['user', 'tags'])
+            ->get();
     }
 }

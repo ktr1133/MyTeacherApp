@@ -78,7 +78,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                     'scheduled_task_id' => $scheduledTask->id,
                     'created_task_id' => null,
                     'deleted_task_id' => null,
-                    'executed_at' => now(),
+                    'executed_at' => $date,
                     'status' => 'skipped',
                     'note' => '祝日のためスキップ',
                 ]);
@@ -103,18 +103,21 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
             // 新しいタスクを作成（通知データも取得）
             $result = $this->createTaskFromSchedule($scheduledTask, $date);
-            $newTask = $result['task'];
+            $newTasks = $result['tasks'];  // 複数のタスクを取得
             $notificationData = $result['notification_data'];
 
-            // 実行履歴を記録
-            $this->scheduledTaskRepository->recordExecution([
-                'scheduled_task_id' => $scheduledTask->id,
-                'created_task_id' => $newTask->id,
-                'deleted_task_id' => $deletedTaskId,
-                'executed_at' => now(),
-                'status' => 'success',
-                'note' => null,
-            ]);
+            // 実行履歴を記録（最初のタスクIDを記録）
+            $firstTask = $newTasks[0] ?? null;
+            if ($firstTask) {
+                $this->scheduledTaskRepository->recordExecution([
+                    'scheduled_task_id' => $scheduledTask->id,
+                    'created_task_id' => $firstTask->id,
+                    'deleted_task_id' => $deletedTaskId,
+                    'executed_at' => $date,
+                    'status' => 'success',
+                    'note' => null,
+                ]);
+            }
 
             DB::commit();
 
@@ -132,7 +135,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                 'scheduled_task_id' => $scheduledTask->id,
                 'created_task_id' => null,
                 'deleted_task_id' => null,
-                'executed_at' => now(),
+                'executed_at' => $date,
                 'status' => 'failed',
                 'note' => null,
                 'error_message' => $e->getMessage(),
@@ -299,6 +302,9 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
     /**
      * 前回の未完了タスクを処理
+     * 
+     * 新しいタスクを作成する際、前回作成した未完了タスクを削除します
+     * グループメンバー全員分のタスクを削除します
      */
     protected function handlePreviousIncompleteTask(ScheduledGroupTask $scheduledTask): ?int
     {
@@ -313,21 +319,42 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             return null;
         }
 
+        // 前回作成されたタスクのgroup_task_idを取得
         $lastTask = $this->taskRepository->findTaskById($lastExecution->created_task_id);
-
-        // タスクが存在し、未完了の場合のみ論理削除
-        if ($lastTask && !$lastTask->is_completed && !$lastTask->trashed()) {
-            $this->taskRepository->softDeleteById($lastTask->id);
-            
-            Log::info("Previous incomplete task deleted", [
-                'task_id' => $lastTask->id,
-                'scheduled_task_id' => $scheduledTask->id,
-            ]);
-
-            return $lastTask->id;
+        
+        if (!$lastTask || !$lastTask->group_task_id) {
+            return null;
         }
 
-        return null;
+        // group_task_idが同じすべての未完了タスクを取得
+        $incompleteTasks = $this->taskRepository->findTasksByGroupTaskId($lastTask->group_task_id)
+            ->filter(function ($task) {
+                return !$task->is_completed && !$task->trashed();
+            });
+
+        if ($incompleteTasks->isEmpty()) {
+            return null;
+        }
+
+        // すべての未完了タスクを論理削除
+        $deletedCount = 0;
+        $deletedTaskIds = [];
+        
+        foreach ($incompleteTasks as $task) {
+            $this->taskRepository->softDeleteById($task->id);
+            $deletedTaskIds[] = $task->id;
+            $deletedCount++;
+        }
+        
+        Log::info("Previous incomplete tasks deleted", [
+            'deleted_count' => $deletedCount,
+            'deleted_task_ids' => $deletedTaskIds,
+            'group_task_id' => $lastTask->group_task_id,
+            'scheduled_task_id' => $scheduledTask->id,
+        ]);
+
+        // 最初のタスクIDを返す（実行履歴記録用）
+        return $deletedTaskIds[0] ?? null;
     }
 
     /**
@@ -357,11 +384,17 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
         ];
 
         $notificationData = null;
-        $task = null;
+        $tasks = [];  // 作成したタスクを保存
 
         // 担当者が未設定の場合は編集権限のないメンバ全員向けのタスクを作成
         if (!$assignedUserId) {
             $groupMembers = $this->profileUserRepository->getGroupMembersByGroupId($scheduledTask->group_id);
+            
+            // メンバーが0人の場合はエラー
+            if ($groupMembers->isEmpty()) {
+                throw new \RuntimeException('Group has no members without edit permission');
+            }
+            
             $memberIds = [];
             
             foreach ($groupMembers as $member) {
@@ -369,6 +402,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
                 // タスク作成
                 $task = $this->taskRepository->create($taskData);
+                $tasks[] = $task;  // 配列に追加
 
                 // タグの紐付け
                 $tagNames = $scheduledTask->getTagNames();
@@ -392,11 +426,22 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
 
             // タスク作成
             $task = $this->taskRepository->create($taskData);
+            $tasks[] = $task;  // 配列に追加
 
             // タグの紐付け
             $tagNames = $scheduledTask->getTagNames();
             if (!empty($tagNames)) {
-                $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
+                try {
+                    $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
+                } catch (\Exception $e) {
+                    Log::error('タグ紐付けエラー', [
+                        'task_id' => $task->id,
+                        'tag_names' => $tagNames,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    throw $e; // トランザクションをロールバックするため再スロー
+                }
             }
             
             // 通知データを準備（トランザクション外で送信）
@@ -409,7 +454,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
         }
 
         return [
-            'task' => $task,
+            'tasks' => $tasks,  // 複数のタスクを返す
             'notification_data' => $notificationData,
         ];
     }

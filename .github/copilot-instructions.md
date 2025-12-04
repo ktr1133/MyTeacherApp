@@ -47,8 +47,10 @@ Laravel 12 + Docker構成。**Action-Service-Repositoryパターン**（従来�
 
 1. **ログ・エラー情報の収集**
    ```bash
-   # アプリケーションログ確認
-   tail -f storage/logs/laravel.log
+   # アプリケーションログ確認（日次ローテーション形式）
+   tail -f storage/logs/laravel-$(date +%Y-%m-%d).log
+   # または最新のログファイルを自動取得
+   tail -f storage/logs/$(ls -t storage/logs/laravel-*.log | head -1)
    
    # GitHub Actionsログ確認  
    gh run view [ID] --log
@@ -630,14 +632,14 @@ TOKEN_LOW_THRESHOLD=200000     # 警告閾値
 # リアルタイムログ監視（Pail）
 composer dev  # 自動でpail起動
 
-# 個別確認
-tail -f storage/logs/laravel.log                 # アプリケーション
-tail -f /var/log/laravel-scheduler.log           # スケジューラー（要root）
-tail -f storage/logs/scheduled-tasks.log         # バッチ実行
+# 個別確認（日次ローテーション形式）
+tail -f storage/logs/laravel-$(date +%Y-%m-%d).log  # アプリケーション
+tail -f /var/log/laravel-scheduler.log              # スケジューラー（要root）
+tail -f storage/logs/scheduled-tasks.log            # バッチ実行
 
 # キューログ
-php artisan queue:failed                         # 失敗ジョブ一覧
-php artisan queue:retry {job-id}                 # ジョブ再実行
+php artisan queue:failed                            # 失敗ジョブ一覧
+php artisan queue:retry {job-id}                    # ジョブ再実行
 ```
 
 ### よくあるエラー

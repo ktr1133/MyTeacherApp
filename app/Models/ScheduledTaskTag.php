@@ -10,6 +10,8 @@ class ScheduledTaskTag extends Model
 {
     use HasFactory;
 
+    protected $table = 'scheduled_task_tags';
+
     protected $fillable = [
         'scheduled_task_id',
         'tag_name',

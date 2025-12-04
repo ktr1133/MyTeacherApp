@@ -78,7 +78,8 @@ class ProfileUserEloquentRepository implements ProfileUserRepositoryInterface
      */
     public function getGroupMembersByGroupId(int $groupId): Collection
     {
-        return User::where('group_id', $groupId)
+        return User::query()  // 新しいクエリビルダーを明示的に作成
+            ->where('group_id', $groupId)
             ->where('group_edit_flg', false)
             ->orderBy('username')
             ->get();

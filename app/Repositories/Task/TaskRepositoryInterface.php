@@ -171,4 +171,12 @@ interface TaskRepositoryInterface
      * @return bool
      */
     public function softDeleteById(int $taskId): bool;
+
+    /**
+     * 指定されたgroup_task_idを持つすべてのタスクを取得
+     *
+     * @param string $groupTaskId
+     * @return Collection
+     */
+    public function findTasksByGroupTaskId(string $groupTaskId): Collection;
 }
