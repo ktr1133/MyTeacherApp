@@ -1,6 +1,6 @@
 @props(['buckets', 'tags', 'prefix' => 'default'])
 
-<div class="bento-grid grid grid-cols-1 sm:grid-cols-2 md:landscape:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 bento-auto-rows">
+<div class="bento-grid grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 bento-auto-rows">
     @foreach($buckets as $bucket)
         @php
             $count = $bucket['tasks']->count();
@@ -9,7 +9,7 @@
             // XL (1280px以上) - 4カラムグリッド
             // ========================================
             if ($count >= 12) {
-                $xlClass = 'xl:col-span-2 xl:row-span-2';  // 超大 (2x2)
+                $xlClass = 'xl:col-span-4 xl:row-span-2';  // 超大 (4x2)
                 $xlPreview = 6;
             } elseif ($count >= 9) {
                 $xlClass = 'xl:col-span-2 xl:row-span-2';  // 大 (2x2)
@@ -26,7 +26,7 @@
             // LG (1024px以上) - 3カラムグリッド
             // ========================================
             if ($count >= 12) {
-                $lgClass = 'lg:col-span-2 lg:row-span-2';  // 超大 (2x2)
+                $lgClass = 'lg:col-span-3 lg:row-span-2';  // 超大 (3x2)
                 $lgPreview = 6;
             } elseif ($count >= 9) {
                 $lgClass = 'lg:col-span-2 lg:row-span-2';  // 大 (2x2)
@@ -57,23 +57,6 @@
             }
 
             // ========================================
-            // SM (640px以上) - 2カラムグリッド
-            // ========================================
-            if ($count >= 12) {
-                $smClass = 'sm:col-span-2 sm:row-span-2';  // 超大 (2x2)
-                $smPreview = 6;
-            } elseif ($count >= 9) {
-                $smClass = 'sm:col-span-2 sm:row-span-2';  // 大 (2x2)
-                $smPreview = 6;
-            } elseif ($count >= 5) {
-                $smClass = 'sm:col-span-1 sm:row-span-2';  // 中 (1x2)
-                $smPreview = 4;
-            } else {
-                $smClass = 'sm:col-span-1 sm:row-span-1';  // 小 (1x1)
-                $smPreview = 3;
-            }
-
-            // ========================================
             // モバイル (640px未満) - 1カラム
             // ========================================
             if ($count >= 12) {
@@ -91,7 +74,7 @@
             }
 
             // 最終的なクラスを結合
-            $sizeClass = "{$mobileClass} {$smClass} {$mdLandscapeClass} {$lgClass} {$xlClass}";
+            $sizeClass = "{$mobileClass} {$mdLandscapeClass} {$lgClass} {$xlClass}";
             
             // プレビュー数はXLサイズ基準（最大の画面サイズを想定）
             $preview = $bucket['tasks']->take($xlPreview);
@@ -112,7 +95,7 @@
                             <path d="M5 3a2 2 0 00-2 2v3a2 2 0 002 2h3a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 12a2 2 0 00-2 2v3a2 2 0 002 2h3a2 2 0 002-2v-3a2 2 0 00-2-2H5zM12 5a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2h-3a2 2 0 01-2-2V5zM12 14a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2h-3a2 2 0 01-2-2v-3z"/>
                         </svg>
                     </span>
-                    <h3 class="text-base lg:text-lg font-bold text-gray-900 dark:text-white truncate">{{ $bucket['name'] }}</h3>
+                    <h3 class="text-base lg:text-lg font-bold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">{{ $bucket['name'] }}</h3>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0 ml-2">
                     <span class="tag-badge-gradient inline-flex items-center justify-center min-w-[2rem] lg:min-w-[2.5rem] h-6 lg:h-7 px-2 lg:px-3 rounded-full text-xs font-bold shadow-md">

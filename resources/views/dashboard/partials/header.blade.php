@@ -42,10 +42,13 @@
                 </div>
                 <div class="ml-2">
                     @if (!$isChildTheme)
+                        {{-- 幅342px以下で「ToDo」に切り替え (xs = 343px) --}}
                         <h1 class="dashboard-header-title text-base font-bold">
-                            タスクリスト
+                            <span class="hidden xs:inline">タスクリスト</span>
+                            <span class="inline xs:hidden">ToDo</span>
                         </h1>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">タスクの登録と管理</p>
+                        {{-- 幅372px以下で副題を非表示 (xxs = 373px) --}}
+                        <p class="text-xs text-gray-600 dark:text-gray-400 hidden xxs:block">タスクの登録と管理</p>
                     @else
                         <h1 class="dashboard-header-title text-base font-bold">
                             ToDo

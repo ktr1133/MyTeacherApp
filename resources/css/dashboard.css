@@ -13,6 +13,31 @@
     display: none !important;
 }
 
+/* 弁当箱グリッドでのhidden要素の表示制御 */
+/* 1カラム時（768px未満）: hidden要素を非表示 */
+@media (max-width: 767px) {
+    .bento-grid > div.hidden,
+    .bento-grid > div[style*="display: none"] {
+        display: none !important;
+    }
+}
+
+/* 3カラム時（768px以上1280px未満）: 3の倍数個目以降のhidden要素を非表示 */
+@media (min-width: 768px) and (max-width: 1279px) {
+    .bento-grid > div.hidden:nth-child(n+4),
+    .bento-grid > div[style*="display: none"]:nth-child(n+4) {
+        display: none !important;
+    }
+}
+
+/* 4カラム時（1280px以上）: 4の倍数個目以降のhidden要素を非表示 */
+@media (min-width: 1280px) {
+    .bento-grid > div.hidden:nth-child(n+5),
+    .bento-grid > div[style*="display: none"]:nth-child(n+5) {
+        display: none !important;
+    }
+}
+
 /* 弁当箱グリッド専用に限定（修正） */
 .bento-grid > div > * {
     flex: 1;
