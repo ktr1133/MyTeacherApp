@@ -89,7 +89,7 @@ class GenerateMyTeacherWelcomeImagesCommand extends Command
     }
 
     /**
-     * ヒーローセクション画像を生成（ユーザー＋アバター）
+     * ヒーローセクション画像を生成（お手伝いする子ども＋見守る家族＋応援するアバター）
      *
      * @param OpenAIService $openAIService
      * @param StableDiffusionService $sdService
@@ -98,18 +98,15 @@ class GenerateMyTeacherWelcomeImagesCommand extends Command
     private function generateHeroImage(OpenAIService $openAIService, StableDiffusionService $sdService): ?string
     {
         $prompt = 
-            'chibi style illustration, simple white mannequin-like character ' .
-            '(completely featureless smooth white surface, no face, no facial features, no eyes, no mouth, ' .
-            'no clothes, no texture, no details, blank rounded head and body like a plain white sculpture, ' .
-            'gender-neutral, age-neutral, minimalist white figure) sitting at a simple wooden desk ' .
-            'working hard on studies or tasks with books and papers on desk, ' .
-            'behind the student stands a cheerful chibi teacher character with graduation cap ' .
-            'looking over their shoulder with encouraging smile and supportive gesture, ' .
-            'warm friendly atmosphere, soft pastel colors for teacher only, ' .
-            'super deformed proportions with big heads and small bodies, ' .
-            'solid plain light green background (easy to remove with chroma key), ' .
-            'educational theme, clean composition, white mannequin contrast against green background, ' .
-            'simple flat design, no shadows, even lighting';
+            'anime style illustration, overhead bird\'s eye view composition, ' .
+            'four characters: father, mother, elementary school child, and female teacher avatar, ' .
+            'all characters in chibi design with super deformed proportions (big heads, small bodies), ' .
+            'center: one chibi elementary school child with happy smile doing victory pose (guts pose with raised fist), ' .
+            'distance behind child: chibi father and chibi mother standing slightly apart from child, looking at child with joyful happy expressions, ' .
+            'beside child: one female chibi teacher avatar character wearing cheerleading uniform, ' .
+            'teacher holding cheerleading megaphone and cheering for child with sweat drops showing effort, ' .
+            'bright solid blue background (#0000FF blue screen), ' .
+            'no shadows on background, clean flat design, kawaii anime style';
 
         try {
             // DALL-E 3で画像生成
