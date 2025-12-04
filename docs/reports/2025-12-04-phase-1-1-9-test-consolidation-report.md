@@ -8,6 +8,8 @@
 | 2025-12-04 | GitHub Copilot | TokenService実装完了の確認とTokenBalanceテスト修正完了 |
 | 2025-12-04 | GitHub Copilot | SubscriptionManagementTest削除（不要な画面）、CheckoutSessionTest修正完了 |
 | 2025-12-04 | GitHub Copilot | 本番環境でのWebhook動作確認完了、テストスクリプト作成 |
+| 2025-12-04 | GitHub Copilot | 本番環境での実トークン購入テスト完了、全機能正常動作を確認 |
+| 2025-12-04 | GitHub Copilot | 本番データベースでのトークン残高・トランザクション最終確認完了 |
 
 ## 概要
 
@@ -458,24 +460,109 @@ php artisan test \
 | 署名検証 | ✅ 成功 | Stripe Dashboardの署名シークレットで検証通過 |
 | トークン付与 | ✅ 成功 | 購入したトークンが正確に残高に追加 |
 | トランザクション記録 | ✅ 成功 | `token_transactions`テーブルに正確に記録 |
+| ユーザー確認 | ✅ 成功 | ダッシュボードでトークン残高増加を確認 |
+
+### 実施テストの詳細
+
+**実施日時**: 2025-12-04 13:44-13:45 (JST)
+
+**テスト内容**:
+1. ブラウザで https://my-teacher-app.com/tokens/packages にアクセス
+2. トークンパッケージ（Package ID: 1, 500,000トークン, $400）を選択
+3. Stripe Checkoutで決済実行
+4. 決済完了後、成功ページにリダイレクト
+5. ダッシュボードでトークン残高を確認
+
+**CloudWatch Logsで確認した処理フロー**:
+```
+[2025-12-04 04:44:13] Checkout Session created
+  session_id: cs_live_a1R0bZpxF0JveewO1PXex54ACI5hRbnHFt4cg3I5ONG0oRCPRIsxuw4h7V
+  user_id: 2
+  package_id: 1
+
+[2025-12-04 04:45:13] Webhook: Checkout session completed
+  mode: payment
+  metadata: {token_amount: 500000, package_id: 1, user_id: 2}
+
+[2025-12-04 04:45:13] Webhook: Processing token purchase
+  session_id: cs_live_a1R0bZpxF0JveewO1PXex54ACI5hRbnHFt4cg3I5ONG0oRCPRIsxuw4h7V
+
+[2025-12-04 04:45:13] [PaymentHistoryRepository] Creating payment history
+  payable_type: App\Models\User
+  payable_id: 2
+  amount: 400
+
+[2025-12-04 04:45:13] トークン購入処理が完了しました。
+  user_id: 2
+  package_id: 1
+  token_amount: 500000
+  price: 400
+  payment_method_type: stripe_card
+
+[2025-12-04 04:45:13] Webhook: Token purchase completed
+  payment_intent_id: pi_3SaUP7CPYj0shj9p0ZqfDJTy
+
+[2025-12-04 04:45:16] GET /tokens/purchase/success?session_id=... HTTP/1.1 200
+```
+
+**処理時間**: Checkout Session作成から成功ページ表示まで約63秒（Stripe Checkoutでの決済時間含む）
 
 ### 検証内容
 
-```sql
--- トランザクション確認
-SELECT 
-    id,
-    type,
-    amount,
-    stripe_payment_intent_id,
-    created_at
-FROM token_transactions
-WHERE user_id = [購入ユーザーID]
-ORDER BY created_at DESC
-LIMIT 1;
-
--- 結果: type='purchase', amount=[購入トークン数], stripe_payment_intent_id が正しく記録
+**データベース確認（CloudWatch Logs + Tinker検証）**:
 ```
+=== 最新トランザクション（tinkerで確認）===
+Type: purchase
+Amount: 500000
+Payment Intent: pi_3SaUP7CPYj0shj9p0ZqfDJTy
+Created: 2025-12-04 04:45:13
+
+=== トークン残高（tinkerで確認）===
+User ID: 2
+Balance: 500000 (総残高)
+Free Balance: 0 (無料枠)
+Paid Balance: 500000 (有料枠)
+
+=== トランザクション記録詳細 ===
+- user_id: 2
+- type: purchase
+- amount: 500000
+- price: 400
+- payment_method_type: stripe_card
+- payment_intent_id: pi_3SaUP7CPYj0shj9p0ZqfDJTy
+
+=== 決済履歴 ===
+- payable_type: App\Models\User
+- payable_id: 2
+- amount: 400 (USD)
+- Stripe Checkoutセッション: cs_live_a1R0bZpxF0JveewO1PXex54ACI5hRbnHFt4cg3I5ONG0oRCPRIsxuw4h7V
+```
+
+**ユーザー確認**:
+- ブラウザでログイン後、ダッシュボードを表示
+- トークン残高が500,000増加していることを確認
+- トランザクション履歴に購入記録が表示されることを確認
+- **確認結果**: ✅ すべて正常に表示・記録
+
+**データベース直接確認（tinker）**:
+```bash
+DB_HOST=localhost DB_PORT=5432 php artisan tinker
+
+# User ID: 2のトークン残高確認
+$user = App\Models\User::find(2);
+echo $user->tokenBalance->balance;      // 500000
+echo $user->tokenBalance->free_balance;  // 0
+echo $user->tokenBalance->paid_balance;  // 500000
+
+# 最新トランザクション確認
+$tx = App\Models\TokenTransaction::where('user_id', 2)->latest()->first();
+echo $tx->type;                    // purchase
+echo $tx->amount;                  // 500000
+echo $tx->stripe_payment_intent_id; // pi_3SaUP7CPYj0shj9p0ZqfDJTy
+echo $tx->created_at;              // 2025-12-04 04:45:13
+```
+
+**確認結果**: ✅ データベース上の値が完全に一致、全データが正確に記録されている
 
 ### 結論
 
@@ -484,8 +571,10 @@ LIMIT 1;
 - ✅ Stripe Checkout → 決済 → Webhook → トークン付与の全フローが正常動作
 - ✅ Webhookエンドポイントが正常に動作
 - ✅ 署名検証が正常に動作（Stripe Dashboard登録済みシークレット使用）
-- ✅ トークン付与ロジックが正常に動作
-- ✅ トランザクション記録が正確に動作
+- ✅ トークン付与ロジックが正常に動作（500,000トークン付与確認）
+- ✅ トランザクション記録が正確に動作（type=purchase, payment_intent正常記録）
+- ✅ データベース整合性が完全に保持（tinkerで直接確認済み）
+- ✅ 有料枠・無料枠の分離が正確に機能（paid_balance=500000, free_balance=0）
 
 **skippedテスト4件について**:
 - テストコード内で`skip()`されている理由: Stripe APIモック・署名検証の実装が困難
@@ -518,12 +607,14 @@ LIMIT 1;
 
 **本番環境のWebhookテスト手順**:
 
-1. **ブラウザで実際に購入**（推奨）
+1. **ブラウザで実際に購入**（推奨 - ✅ 実施済み）
    ```
    https://my-teacher-app.com/tokens/packages
    → トークンパッケージを選択
    → Stripe Checkoutで決済（テストモード: 4242 4242 4242 4242）
    → トークン残高を確認
+   
+   結果: ✅ 完璧に動作（2025-12-04実施）
    ```
 
 2. **Stripe Dashboardから「Send test webhook」**（代替案）
@@ -537,14 +628,36 @@ LIMIT 1;
 3. **CloudWatch Logsで確認**
    ```bash
    aws logs tail /ecs/myteacher-production --since 5m --follow --region ap-northeast-1
+   
+   確認ポイント:
+   - Webhook受信ログ
+   - 署名検証成功ログ
+   - トークン付与完了ログ
+   - エラーログの有無
+   ```
+
+4. **定期的なヘルスチェック**（推奨頻度: 月1回）
+   ```bash
+   # 作成済みテストスクリプトを使用
+   cd /home/ktr/mtdev/scripts
+   ./test-production-webhook.sh
+   
+   # または設定確認のみ
+   php check-webhook-setup.php
    ```
 
 **避けるべき方法**:
 - ❌ `stripe listen --forward-to [本番URL]` で本番環境にテストイベントを送信
-  - 理由: シークレット不一致により常に失敗する
-  - 代替: 開発環境でのみ使用する
+  - 理由: シークレット不一致により常に失敗する（stripe listenは開発環境専用）
+  - 代替: 開発環境でのみ使用する（./test-local-webhook.sh）
 
-**次のステップ**: Phase 1.2（トークン購入システム）は既に完璧に実装済みのため、Phase 1.3以降の実装に進むことができます。
+**次のステップ**: Phase 1.2（トークン購入システム）は既に完璧に実装・検証済みのため、Phase 1.3以降の実装に進むことができます。
+
+**テスト用スクリプト（作成済み）**:
+- `scripts/test-production-webhook.sh` - 本番環境テストガイド
+- `scripts/test-local-webhook.sh` - 開発環境テスト自動化
+- `scripts/check-webhook-setup.php` - 設定確認ツール
+- `scripts/README-webhook-tests.md` - 完全なドキュメント
 
 ---
 
