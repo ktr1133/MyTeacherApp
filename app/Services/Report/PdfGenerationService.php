@@ -217,9 +217,9 @@ class PdfGenerationService implements PdfGenerationServiceInterface
             $currentMonthLabel = \Carbon\Carbon::createFromFormat('Y-m', $yearMonth)->format('Y年n月');
             $currentMonthIndex = array_search($currentMonthLabel, $labels);
             
-            // QuickChart.io API呼び出し（サイズを350x150に縮小）
+            // QuickChart.io API呼び出し（サイズを350x188に変更）
             $chartConfig = $this->buildChartConfig($labels, $data, $currentMonthIndex);
-            $imageContent = $this->fetchChartImage($chartConfig, 350, 150);
+            $imageContent = $this->fetchChartImage($chartConfig, 350, 188);
             
             return base64_encode($imageContent);
             
@@ -245,40 +245,84 @@ class PdfGenerationService implements PdfGenerationServiceInterface
      */
     protected function buildChartConfig(array $labels, array $data, int|false $currentMonthIndex): array
     {
+        // 年月ラベルをYY/MM形式に変換（例: "2025年10月" → "25/10"）
+        $simplifiedLabels = array_map(function($label) {
+            if (preg_match('/^(\d{4})年(\d{1,2})月$/', $label, $matches)) {
+                $year = substr($matches[1], -2); // 下2桁
+                $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT); // 2桁ゼロ埋め
+                return $year . '/' . $month;
+            }
+            return $label;
+        }, $labels);
+        
         return [
             'type' => 'line',
             'data' => [
-                'labels' => $labels,
+                'labels' => $simplifiedLabels,
                 'datasets' => [[
                     'label' => '報酬額',
                     'data' => $data,
-                    'borderColor' => '#FFD700',
-                    'backgroundColor' => 'rgba(255, 215, 0, 0.1)',
+                    'borderColor' => '#FF8C00',
+                    'backgroundColor' => 'rgba(255, 140, 0, 0.2)',
                     'borderWidth' => 3,
                     'tension' => 0.3,
                     'fill' => true,
-                    'pointRadius' => 5,
-                    'pointBackgroundColor' => '#FFD700',
+                    'pointRadius' => 6,
+                    'pointBackgroundColor' => '#FF8C00',
                     'pointBorderColor' => '#FFFFFF',
                     'pointBorderWidth' => 2,
+                    'pointStyle' => 'circle',
                 ]],
             ],
             'options' => [
                 'responsive' => true,
                 'maintainAspectRatio' => false,
                 'plugins' => [
-                    'legend' => ['display' => false],
-                    'title' => [
+                    'legend' => [
                         'display' => true,
-                        'text' => '報酬額の推移（6ヶ月）',
-                        'font' => ['size' => 16, 'weight' => 'bold'],
-                        'color' => '#1F2937',
+                        'position' => 'top',
+                        'labels' => [
+                            'fontFamily' => 'M PLUS Rounded 1c',
+                            'fontSize' => 12,
+                            'fontStyle' => 'bold',
+                            'fontColor' => '#FF6B00',
+                            'padding' => 10,
+                            'usePointStyle' => true,
+                            'boxWidth' => 12,
+                        ],
+                    ],
+                    'title' => [
+                        'display' => false,
                     ],
                 ],
                 'scales' => [
-                    'y' => [
-                        'beginAtZero' => true,
-                    ],
+                    'xAxes' => [[
+                        'display' => true,
+                        'position' => 'bottom',
+                        'offset' => true,
+                        'gridLines' => [
+                            'display' => false,
+                            'drawBorder' => false,
+                            'drawOnChartArea' => false,
+                            'drawTicks' => false,
+                        ],
+                        'ticks' => [
+                            'fontFamily' => 'M PLUS Rounded 1c',
+                            'fontSize' => 11,
+                            'fontColor' => '#666666',
+                            'padding' => 5,
+                        ],
+                    ]],
+                    'yAxes' => [[
+                        'display' => false,
+                        'gridLines' => [
+                            'display' => false,
+                            'drawOnChartArea' => false,
+                        ],
+                        'ticks' => [
+                            'beginAtZero' => true,
+                        ],
+                    ]],
                 ],
             ],
         ];
@@ -301,6 +345,7 @@ class PdfGenerationService implements PdfGenerationServiceInterface
             'height' => $height,
             'chart' => json_encode($chartConfig),
             'format' => 'png',
+            'version' => '2',  // Chart.js v2を明示的に指定（doughnutlabelプラグイン対応）
         ];
         
         $queryString = http_build_query($params);
@@ -368,7 +413,11 @@ class PdfGenerationService implements PdfGenerationServiceInterface
             
             $labels = $taskClassification['labels'];
             $data = $taskClassification['data'];
-            $colors = $taskClassification['colors'] ?? ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444'];
+            // 暖色系カラーパレット（オレンジ、ピンク、イエロー、コーラル、ピーチ）
+            $colors = $taskClassification['colors'] ?? ['#FF6B00', '#FF1493', '#FFD700', '#FF8C00', '#FF69B4', '#FFA500', '#FF6347'];
+            
+            // 中央に表示する合計値を計算
+            $totalCount = array_sum($data);
             
             // QuickChart.io API呼び出し
             $chartConfig = [
@@ -385,14 +434,31 @@ class PdfGenerationService implements PdfGenerationServiceInterface
                 'options' => [
                     'responsive' => true,
                     'maintainAspectRatio' => true,
+                    'layout' => [
+                        'padding' => [
+                            'top' => 5,
+                            'bottom' => 5,
+                            'left' => 5,
+                            'right' => 5,
+                        ],
+                    ],
                     'plugins' => [
                         'legend' => [
                             'display' => true,
-                            'position' => 'bottom',
+                            'position' => 'right',
+                            'align' => 'center',
                             'labels' => [
-                                'font' => ['size' => 10],
-                                'padding' => 6,
+                                'font' => [
+                                    'size' => 11,
+                                    'weight' => 'bold',
+                                    'family' => 'M PLUS Rounded 1c',
+                                ],
+                                'color' => '#333333',
+                                'padding' => 8,
                                 'usePointStyle' => true,
+                                'pointStyle' => 'circle',
+                                'boxWidth' => 12,
+                                'boxHeight' => 12,
                             ],
                         ],
                         'title' => [
@@ -401,8 +467,25 @@ class PdfGenerationService implements PdfGenerationServiceInterface
                         'datalabels' => [
                             'display' => true,
                             'color' => '#FFFFFF',
-                            'font' => ['size' => 12, 'weight' => 'bold'],
-                            'formatter' => 'function(value, context) { return value + "件"; }',
+                            'font' => [
+                                'size' => 18,
+                                'weight' => 'bold',
+                                'family' => 'M PLUS Rounded 1c',
+                            ],
+                            'formatter' => 'function(value, context) { return value; }',
+                        ],
+                        'doughnutlabel' => [
+                            'labels' => [
+                                [
+                                    'text' => (string)$totalCount,
+                                    'font' => [
+                                        'size' => 60,
+                                        'weight' => 'bold',
+                                        'family' => 'M PLUS Rounded 1c',
+                                    ],
+                                    'color' => '#FF6B00',
+                                ],
+                            ],
                         ],
                     ],
                     'cutout' => '65%',
