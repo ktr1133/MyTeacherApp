@@ -124,6 +124,16 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 COPY . .
 
 # =============================================================================
+# フロントエンドアセットビルド
+# =============================================================================
+RUN echo "[Docker Build] Building frontend assets with Vite..." \
+    && npm ci --production=false \
+    && npm run build \
+    && rm -rf node_modules \
+    && npm cache clean --force \
+    && echo "[Docker Build] Frontend assets built successfully"
+
+# =============================================================================
 # storage構造の作成（.dockerignoreで除外されたディレクトリを復元）
 # =============================================================================
 RUN mkdir -p storage/logs \
