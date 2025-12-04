@@ -88,14 +88,14 @@
              onclick="window.TagTasksModalController?.open('{{ $prefix }}-{{ $bucket['id'] }}');">
             
             {{-- ヘッダー --}}
-            <div class="flex items-start justify-between mb-3 lg:mb-4">
-                <div class="flex items-center gap-2 lg:gap-3 min-w-0 flex-1">
+            <div class="flex items-start justify-between mb-3 lg:mb-4 gap-2">
+                <div class="flex items-center gap-2 lg:gap-3 min-w-0 flex-1 overflow-hidden">
                     <span class="inline-flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl bg-gradient-to-br from-[#59B9C6] to-purple-600 text-white shadow-lg flex-shrink-0">
                         <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M5 3a2 2 0 00-2 2v3a2 2 0 002 2h3a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 12a2 2 0 00-2 2v3a2 2 0 002 2h3a2 2 0 002-2v-3a2 2 0 00-2-2H5zM12 5a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2h-3a2 2 0 01-2-2V5zM12 14a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2h-3a2 2 0 01-2-2v-3z"/>
                         </svg>
                     </span>
-                    <h3 class="text-base lg:text-lg font-bold text-gray-900 dark:text-white overflow-hidden text-ellipsis whitespace-nowrap">{{ $bucket['name'] }}</h3>
+                    <h3 class="text-base lg:text-lg font-bold text-gray-900 dark:text-white truncate min-w-0">{{ $bucket['name'] }}</h3>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0 ml-2">
                     <span class="tag-badge-gradient inline-flex items-center justify-center min-w-[2rem] lg:min-w-[2.5rem] h-6 lg:h-7 px-2 lg:px-3 rounded-full text-xs font-bold shadow-md">

@@ -40,18 +40,18 @@
 
             {{-- スパンフィルタータブ --}}
             <div class="px-4 sm:px-6 py-2 sm:py-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-900/50 shrink-0">
-                <div class="flex gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide">
+                <div class="flex gap-1 sm:gap-2 max-[345px]:justify-between overflow-x-auto scrollbar-hide">
                     <button 
                         data-span-filter="all"
                         aria-pressed="true"
-                        class="tag-modal-filter tag-modal-filter-active px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                        class="tag-modal-filter tag-modal-filter-active px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
                         すべて
                         <span class="ml-1.5 opacity-75" data-filter-count>({{ $tasksOfTag->count() }})</span>
                     </button>
                     <button 
                         data-span-filter="{{ config('const.task_spans.short') }}"
                         aria-pressed="false"
-                        class="tag-modal-filter tag-modal-filter-inactive px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                        class="tag-modal-filter tag-modal-filter-inactive px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
                         <span class="inline-block w-2 h-2 rounded-full bg-[#9DD9C0] mr-1.5"></span>
                         短期
                         <span class="ml-1.5 opacity-75" data-filter-count>({{ $tasksOfTag->where('span', config('const.task_spans.short'))->count() }})</span>
@@ -59,7 +59,7 @@
                     <button 
                         data-span-filter="{{ config('const.task_spans.mid') }}"
                         aria-pressed="false"
-                        class="tag-modal-filter tag-modal-filter-inactive px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                        class="tag-modal-filter tag-modal-filter-inactive px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
                         <span class="inline-block w-2 h-2 rounded-full bg-[#7BC9A8] mr-1.5"></span>
                         中期
                         <span class="ml-1.5 opacity-75" data-filter-count>({{ $tasksOfTag->where('span', config('const.task_spans.mid'))->count() }})</span>
@@ -67,7 +67,7 @@
                     <button 
                         data-span-filter="{{ config('const.task_spans.long') }}"
                         aria-pressed="false"
-                        class="tag-modal-filter tag-modal-filter-inactive px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
+                        class="tag-modal-filter tag-modal-filter-inactive px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap">
                         <span class="inline-block w-2 h-2 rounded-full bg-[#59B9C6] mr-1.5"></span>
                         長期
                         <span class="ml-1.5 opacity-75" data-filter-count>({{ $tasksOfTag->where('span', config('const.task_spans.long'))->count() }})</span>

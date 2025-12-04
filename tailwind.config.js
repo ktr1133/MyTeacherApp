@@ -19,6 +19,7 @@ export default {
             screens: {
                 'xs': '661px',    // 660px以下でタイトル切り替え
                 'xxs': '681px',   // 680px以下で副題非表示
+                'mobile-sm': {'max': '345px'}, // 345px以下でモバイル最適化
             },
         },
     },
