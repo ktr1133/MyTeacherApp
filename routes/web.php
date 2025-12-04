@@ -121,12 +121,15 @@ use App\Http\Actions\Task\UpdateTaskDescriptionAction;
 use App\Http\Actions\Task\UploadTaskImageAction;
 use App\Http\Actions\Token\ApproveTokenPurchaseRequestAction;
 use App\Http\Actions\Token\CancelTokenPurchaseRequestAction;
+use App\Http\Actions\Token\CreateTokenCheckoutSessionAction;
 use App\Http\Actions\Token\HandleStripeWebhookAction;
 use App\Http\Actions\Token\IndexPendingTokenPurchaseRequestsAction;
 use App\Http\Actions\Token\IndexTokenHistoryAction;
 use App\Http\Actions\Token\IndexTokenPurchaseAction;
 use App\Http\Actions\Token\ProcessTokenPurchaseAction;
 use App\Http\Actions\Token\RejectTokenPurchaseRequestAction;
+use App\Http\Actions\Token\ShowPurchaseCancelAction;
+use App\Http\Actions\Token\ShowPurchaseSuccessAction;
 use App\Http\Actions\Subscription\BillingPortalAction;
 use App\Http\Actions\Subscription\CancelSubscriptionAction;
 use App\Http\Actions\Subscription\CreateCheckoutSessionAction;
@@ -286,6 +289,12 @@ Route::middleware(['auth'])->group(function () {
     // トークン購入
     Route::get('/tokens/purchase', IndexTokenPurchaseAction::class)->name('tokens.purchase');
     Route::post('/tokens/purchase', ProcessTokenPurchaseAction::class)->name('tokens.purchase.process');
+    
+    // Stripe Checkout（都度決済）
+    Route::post('/tokens/purchase/checkout', CreateTokenCheckoutSessionAction::class)->name('tokens.purchase.checkout');
+    Route::get('/tokens/purchase/success', ShowPurchaseSuccessAction::class)->name('tokens.purchase.success');
+    Route::get('/tokens/purchase/cancel', ShowPurchaseCancelAction::class)->name('tokens.purchase.cancel');
+    
     // トークン購入リクエスト承認・却下・取り下げ
     Route::post('/tokens/requests/{purchaseRequest}/approve', ApproveTokenPurchaseRequestAction::class)->name('tokens.requests.approve');
     Route::post('/tokens/requests/{purchaseRequest}/reject', RejectTokenPurchaseRequestAction::class)->name('tokens.requests.reject');

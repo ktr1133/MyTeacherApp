@@ -16,6 +16,12 @@ use App\Http\Actions\Api\Task\BulkCompleteTasksApiAction;
 use App\Http\Actions\Api\Task\RequestApprovalApiAction;
 use App\Http\Actions\Api\Task\ListPendingApprovalsApiAction;
 use App\Http\Actions\Api\Task\SearchTasksApiAction;
+use App\Http\Actions\Token\HandleTokenPurchaseWebhookAction;
+
+// ============================================================
+// Stripe Webhook（認証不要）
+// ============================================================
+Route::post('/webhooks/stripe/token-purchase', HandleTokenPurchaseWebhookAction::class)->name('webhooks.stripe.token-purchase');
 
 // ============================================================
 // Phase 1.5: 並行運用期間のAPI設定

@@ -180,7 +180,7 @@ coverage/
 .phpunit.cache/
 
 # ============================================================================
-# 8. その他
+# その他
 # ============================================================================
 
 # 一時ファイル
@@ -199,6 +199,10 @@ temp/
 *.tar.gz
 *.rar
 *.7z
+
+# Shellスクリプト (機密情報を含む可能性あり)
+*.sh
+!scripts/*.example.sh
 
 # Environment variables documentation (contains sensitive patterns)
 definitions/environment-variables.md

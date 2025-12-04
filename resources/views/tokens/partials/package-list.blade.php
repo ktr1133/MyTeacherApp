@@ -135,27 +135,35 @@
                 @endif
 
                 {{-- 購入ボタン --}}
-                <form action="{{ route('tokens.purchase.process') }}" method="POST" class="mt-auto">
-                    @csrf
-                    <input type="hidden" name="package_id" value="{{ $package->id }}">
-                    <button type="submit" class="btn-purchase {{ $isChildTheme ? 'child-theme' : '' }}">
-                        @if($isChildTheme)
-                            @if($user->requiresPurchaseApproval())
+                @if($user->requiresPurchaseApproval())
+                    {{-- 子どもで承認が必要な場合は従来のフロー --}}
+                    <form action="{{ route('tokens.purchase.process') }}" method="POST" class="mt-auto">
+                        @csrf
+                        <input type="hidden" name="package_id" value="{{ $package->id }}">
+                        <button type="submit" class="btn-purchase {{ $isChildTheme ? 'child-theme' : '' }}">
+                            @if($isChildTheme)
                                 <span class="emoji">🙏</span>
                                 <span>お願いする</span>
                             @else
+                                リクエストを送る
+                            @endif
+                        </button>
+                    </form>
+                @else
+                    {{-- 通常購入（Stripe Checkout） --}}
+                    <form action="{{ route('tokens.purchase.checkout') }}" method="POST" class="mt-auto">
+                        @csrf
+                        <input type="hidden" name="package_id" value="{{ $package->id }}">
+                        <button type="submit" class="btn-purchase {{ $isChildTheme ? 'child-theme' : '' }}">
+                            @if($isChildTheme)
                                 <span class="emoji">🪙</span>
                                 <span>買う</span>
-                            @endif
-                        @else
-                            @if($user->requiresPurchaseApproval())
-                                リクエストを送る
                             @else
                                 購入する
                             @endif
-                        @endif
-                    </button>
-                </form>
+                        </button>
+                    </form>
+                @endif
             </div>
         @empty
             <div class="col-span-full text-center py-12">

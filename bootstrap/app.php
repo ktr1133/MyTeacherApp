@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Stripe WebhookをCSRF検証から除外
         $middleware->validateCsrfTokens(except: [
             'stripe/*',
+            'api/webhooks/stripe/*',
         ]);
         
         $middleware->alias([

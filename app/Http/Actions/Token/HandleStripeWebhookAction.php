@@ -4,6 +4,7 @@ namespace App\Http\Actions\Token;
 
 use App\Services\Payment\PaymentServiceInterface;
 use App\Services\Subscription\SubscriptionWebhookServiceInterface;
+use App\Services\Token\TokenPurchaseServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierWebhookController;
@@ -18,7 +19,8 @@ class HandleStripeWebhookAction extends CashierWebhookController
 {
     public function __construct(
         private PaymentServiceInterface $paymentService,
-        private SubscriptionWebhookServiceInterface $subscriptionWebhookService
+        private SubscriptionWebhookServiceInterface $subscriptionWebhookService,
+        private TokenPurchaseServiceInterface $tokenPurchaseService
     ) {}
 
     /**
@@ -78,25 +80,48 @@ class HandleStripeWebhookAction extends CashierWebhookController
     {
         try {
             $sessionData = $payload['data']['object'];
+            $mode = $sessionData['mode'] ?? 'unknown';
+            $sessionId = $sessionData['id'] ?? 'unknown';
             
-            // Stripe CheckoutセッションからCustomer IDとSubscription IDを取得
+            Log::info('Webhook: Checkout session completed', [
+                'session_id' => $sessionId,
+                'mode' => $mode,
+                'metadata' => $sessionData['metadata'] ?? [],
+            ]);
+            
+            // mode='payment' かつ metadata.purchase_type='token_purchase' → トークン購入
+            if ($mode === 'payment' && ($sessionData['metadata']['purchase_type'] ?? null) === 'token_purchase') {
+                Log::info('Webhook: Processing token purchase', [
+                    'session_id' => $sessionId,
+                ]);
+                
+                $this->tokenPurchaseService->handleCheckoutSessionCompleted($sessionId);
+                
+                Log::info('Webhook: Token purchase completed', [
+                    'session_id' => $sessionId,
+                ]);
+                
+                return $this->successMethod();
+            }
+            
+            // mode='subscription' → サブスクリプション処理
             $customerId = $sessionData['customer'] ?? null;
             $subscriptionId = $sessionData['subscription'] ?? null;
             
             if (!$customerId || !$subscriptionId) {
                 Log::warning('Webhook: Checkout session completed but missing customer or subscription', [
-                    'session_id' => $sessionData['id'] ?? 'unknown',
+                    'session_id' => $sessionId,
                     'customer_id' => $customerId,
                     'subscription_id' => $subscriptionId,
+                    'mode' => $mode,
                 ]);
                 return $this->successMethod();
             }
             
-            Log::info('Webhook: Checkout session completed', [
-                'session_id' => $sessionData['id'],
+            Log::info('Webhook: Subscription checkout completed', [
+                'session_id' => $sessionId,
                 'customer_id' => $customerId,
                 'subscription_id' => $subscriptionId,
-                'mode' => $sessionData['mode'] ?? 'unknown',
             ]);
             
             // Cashierは自動的にcustomer.subscription.createdイベントでsubscriptionsテーブルを更新

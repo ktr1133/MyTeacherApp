@@ -95,6 +95,8 @@ use App\Services\Task\TaskSearchServiceInterface;
 use App\Services\Task\TaskSearchService;
 use App\Services\Token\TokenPurchaseApprovalServiceInterface;
 use App\Services\Token\TokenPurchaseApprovalService;
+use App\Services\Token\TokenPurchaseServiceInterface;
+use App\Services\Token\TokenPurchaseService;
 use App\Services\Token\TokenServiceInterface;
 use App\Services\Token\TokenService;
 use App\Services\Token\TokenPackageServiceInterface;
@@ -244,6 +246,7 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Token ---
         $this->app->bind(TokenPurchaseApprovalServiceInterface::class, TokenPurchaseApprovalService::class);
+        $this->app->bind(TokenPurchaseServiceInterface::class, TokenPurchaseService::class);
         $this->app->bind(TokenServiceInterface::class, TokenService::class);
         $this->app->bind(TokenPackageServiceInterface::class, TokenPackageService::class);
 
