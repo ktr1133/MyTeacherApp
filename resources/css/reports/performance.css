@@ -367,6 +367,55 @@
     }
 }
 
+/* iPhone SEサイズ対応（427px未満）: 期間ボタンをアイコンのみに */
+@media (max-width: 426px) {
+    /* 期間ボタンをコンパクトに */
+    .period-button {
+        @apply px-2 py-2 min-w-0;
+    }
+    
+    /* ボタン内のテキストを非表示 */
+    .period-button-text {
+        display: none;
+    }
+    
+    /* アイコンのみ表示 */
+    .period-button svg {
+        margin: 0;
+    }
+    
+    /* アクティブボタンのスケール調整 */
+    .period-button.active {
+        transform: scale(1.1);
+    }
+    
+    /* タイトルエリアの調整 */
+    .performance-header-icon {
+        width: 2rem;
+        height: 2rem;
+    }
+    
+    .performance-header-icon svg {
+        width: 1rem;
+        height: 1rem;
+    }
+    
+    .performance-header-title {
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+    
+    /* 月次レポートボタンをコンパクトに */
+    .monthly-report-btn {
+        @apply px-2 py-1.5;
+    }
+    
+    .monthly-report-btn svg {
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
 /* ========================================
    実績画面専用アバター表示スタイル
    ======================================== */
@@ -847,4 +896,51 @@
 .feature-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ========================================
+   レスポンシブデザイン（月次レポート）
+   ======================================== */
+
+/* タブレット以下: サマリーカードの余白削減 */
+@media (max-width: 767px) {
+    /* サマリーカードグリッド（通常タスク・グループタスク・獲得報酬） */
+    .hero-cta.grid {
+        gap: 0.5rem; /* gap-4 (1rem) → gap-2 (0.5rem) */
+    }
+    
+    /* サマリーカードの内側余白削減 */
+    .hero-cta .glass-card {
+        padding: 1rem; /* p-6 (1.5rem) → p-4 (1rem) */
+    }
+}
+
+/* 小型モバイル: 概況レポート生成ボタンをアイコンのみに */
+@media (max-width: 410px) {
+    /* ボタンテキストを非表示 */
+    #generate-member-summary-btn .button-text {
+        display: none;
+    }
+    
+    /* ボタンの水平padding削減（アイコンのみ表示用） */
+    #generate-member-summary-btn {
+        padding-left: 0.5rem !important; /* px-4 (1rem) → px-2 (0.5rem) */
+        padding-right: 0.5rem !important;
+    }
+    
+    /* SVGアイコンのmarginを削除（テキスト非表示のため） */
+    #generate-member-summary-btn svg {
+        margin-right: 0;
+    }
+    
+    /* メンバーフィルターラベルを非表示 */
+    .member-filter-label {
+        display: none;
+    }
+    
+    /* セレクトボックスの幅を最大限に */
+    #member-filter {
+        width: 100%;
+        max-width: none;
+    }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class ScheduledGroupTask extends Model
 {
@@ -136,7 +137,7 @@ class ScheduledGroupTask extends Model
         // ⚠️ 一時的な対応: リレーションキャッシュを使わず、常にDBから取得
         // 理由: テスト環境でwith(['tags'])が機能しない問題を回避
         // TODO: 原因究明後、Eloquentリレーション経由に変更
-        return \DB::table('scheduled_task_tags')
+        return DB::table('scheduled_task_tags')
             ->where('scheduled_task_id', $this->id)
             ->pluck('tag_name')
             ->toArray();

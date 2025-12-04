@@ -10,7 +10,7 @@
             {{-- メンバー選択と概況レポート生成ボタン --}}
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2">
-                    <label for="member-filter" class="text-sm text-gray-600 dark:text-gray-400">メンバー:</label>
+                    <label for="member-filter" class="member-filter-label text-sm text-gray-600 dark:text-gray-400">メンバー:</label>
                     <select id="member-filter" 
                             class="block rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">全員</option>
@@ -23,11 +23,12 @@
                 <button id="generate-member-summary-btn" 
                         type="button"
                         class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4AA5B2] hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="概況レポート生成"
                         disabled>
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
                     </svg>
-                    概況レポート生成
+                    <span class="button-text">概況レポート生成</span>
                 </button>
             </div>
         </div>

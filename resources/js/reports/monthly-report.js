@@ -45,17 +45,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // データ取得（Bladeから渡される）
     const trendDataElement = document.getElementById('trend-data');
-    if (!trendDataElement) {
+    if (trendDataElement) {
+        const trendData = JSON.parse(trendDataElement.textContent);
+        
+        if (trendData && trendData.total?.datasets?.length) {
+            initializeCharts(trendData);
+        } else {
+            console.warn('No trend data available');
+        }
+    } else {
         console.warn('Trend data element not found');
-        return;
     }
     
-    const trendData = JSON.parse(trendDataElement.textContent);
+    // ========================================
+    // 4. メンバー別概況レポート生成機能
+    // ========================================
     
-    if (!trendData || !trendData.total?.datasets?.length) {
-        console.warn('No trend data available');
-        return;
-    }
+    initializeMemberSummary();
+});
+
+/**
+ * グラフを初期化する
+ */
+function initializeCharts(trendData) {
     
     console.log('Trend data loaded:', {
         totalDatasetCount: trendData.total?.datasets?.length || 0,
@@ -280,11 +292,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // ========================================
-    // 4. メンバー別概況レポート生成機能
-    // ========================================
-    
+}
+
+/**
+ * メンバー別概況レポート機能を初期化
+ */
+function initializeMemberSummary() {
     const memberFilter = document.getElementById('member-filter');
     const generateBtn = document.getElementById('generate-member-summary-btn');
     const generatingModal = document.getElementById('member-summary-generating-modal');
@@ -295,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let memberTaskChart = null;
     let memberRewardChart = null;
+    const isDarkMode = document.documentElement.classList.contains('dark');
     
     // メンバー選択時にボタンを有効化
     if (memberFilter && generateBtn) {
@@ -816,4 +830,4 @@ document.addEventListener('DOMContentLoaded', function() {
         // 5秒後に自動削除
         setTimeout(() => flashDiv.remove(), 5000);
     }
-});
+}

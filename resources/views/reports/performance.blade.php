@@ -87,72 +87,88 @@
                             </div>
                         </div>
 
-                        {{-- 期間区分選択（Weekly/Monthly/Yearly） --}}
+                        {{-- 期間区分選択(Weekly/Monthly/Yearly) --}}
                         <div class="flex gap-2 shrink-0 flex-wrap">
                             <a href="?tab={{ $tab }}&period=week&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                            class="period-button {{ $period === 'week' ? 'active' : '' }}">
+                            class="period-button {{ $period === 'week' ? 'active' : '' }}"
+                            title="{{ !$isChildTheme ? '週間' : 'Weekly' }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
-                                @if(!$isChildTheme)
-                                    週間
-                                @else
-                                    Weekly
-                                @endif
+                                <span class="period-button-text">
+                                    @if(!$isChildTheme)
+                                        週間
+                                    @else
+                                        Weekly
+                                    @endif
+                                </span>
                             </a>
                             
                             @if($hasSubscription)
                                 {{-- サブスク加入者: 月間・年間選択可能 --}}
                                 <a href="?tab={{ $tab }}&period=month&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                                class="period-button {{ $period === 'month' ? 'active' : '' }}">
+                                class="period-button {{ $period === 'month' ? 'active' : '' }}"
+                                title="{{ !$isChildTheme ? '月間' : 'Monthly' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    @if(!$isChildTheme)
-                                        月間
-                                    @else
-                                        Monthly
-                                    @endif
+                                    <span class="period-button-text">
+                                        @if(!$isChildTheme)
+                                            月間
+                                        @else
+                                            Monthly
+                                        @endif
+                                    </span>
                                 </a>
                                 <a href="?tab={{ $tab }}&period=year&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                                class="period-button {{ $period === 'year' ? 'active' : '' }}">
+                                    class="period-button {{ $period === 'year' ? 'active' : '' }}"
+                                    title="{{ !$isChildTheme ? '年間' : 'Yearly' }}"
+                                >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    @if(!$isChildTheme)
-                                        年間
-                                    @else
-                                        Yearly
-                                    @endif
+                                    <span class="period-button-text">
+                                        @if(!$isChildTheme)
+                                            年間
+                                        @else
+                                            Yearly
+                                        @endif
+                                    </span>
                                 </a>
                             @else
                                 {{-- 無料ユーザー: 月間・年間はロック --}}
                                 <button type="button"
                                         class="period-button opacity-60 hover:opacity-100 relative show-subscription-alert"
-                                        data-feature="period">
+                                        data-feature="period"
+                                        title="{{ !$isChildTheme ? '月間(サブスク限定)' : 'Monthly (Premium)' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    @if(!$isChildTheme)
-                                        月間
-                                    @else
-                                        Monthly
-                                    @endif
+                                    <span class="period-button-text">
+                                        @if(!$isChildTheme)
+                                            月間
+                                        @else
+                                            Monthly
+                                        @endif
+                                    </span>
                                     <svg class="w-3 h-3 ml-1 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
                                     </svg>
                                 </button>
                                 <button type="button"
                                         class="period-button opacity-60 hover:opacity-100 relative show-subscription-alert"
-                                        data-feature="period">
+                                        data-feature="period"
+                                        title="{{ !$isChildTheme ? '年間(サブスク限定)' : 'Yearly (Premium)' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    @if(!$isChildTheme)
-                                        年間
-                                    @else
-                                        Yearly
-                                    @endif
+                                    <span class="period-button-text">
+                                        @if(!$isChildTheme)
+                                            年間
+                                        @else
+                                            Yearly
+                                        @endif
+                                    </span>
                                     <svg class="w-3 h-3 ml-1 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
                                     </svg>
@@ -161,9 +177,10 @@
                         </div>
 
                         {{-- 月次レポートボタン --}}
-                        <div class="shrink-0">
+                        <div class="shrink-0 ml-auto">
                             <a href="{{ route('reports.monthly.show') }}"
-                               class="inline-flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4AA5B2] hover:to-purple-700 text-white text-xs lg:text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap">
+                               class="monthly-report-btn inline-flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4AA5B2] hover:to-purple-700 text-white text-xs lg:text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap"
+                               title="{{ !$isChildTheme ? '月次レポート' : 'レポート' }}">
                                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>

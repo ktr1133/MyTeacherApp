@@ -713,6 +713,44 @@
 }
 
 /* ===================================
+   子ども向けレスポンシブ: iPhone SE対応（427px未満）
+   =================================== */
+@media (max-width: 426px) {
+    /* 期間ボタンをコンパクトに */
+    .child-theme .period-button {
+        padding: 0.5rem;
+        min-width: 0;
+        font-size: 0.875rem;
+    }
+    
+    /* ボタン内のテキストを非表示 */
+    .child-theme .period-button-text {
+        display: none;
+    }
+    
+    /* アイコンのみ表示 */
+    .child-theme .period-button svg {
+        margin: 0;
+    }
+    
+    /* タイトルを小さく */
+    .child-theme .performance-header-title {
+        font-size: 1rem;
+        white-space: nowrap;
+    }
+    
+    /* 月次レポートボタンをコンパクトに */
+    .child-theme .monthly-report-btn {
+        padding: 0.375rem 0.5rem;
+    }
+    
+    .child-theme .monthly-report-btn svg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+}
+
+/* ===================================
    モバイル最適化
    =================================== */
 @media (max-width: 767px) {
