@@ -23,12 +23,17 @@ interface TokenPurchaseServiceInterface
     
     /**
      * Checkout Session完了時の処理
+     * 
+     * Webhookペイロードから直接データを取得してトークンを付与
+     * Stripe API呼び出し不要（パフォーマンス向上、コスト削減）
      *
-     * @param string $sessionId Checkout Session ID
+     * @param array $sessionData Checkout Session data from Webhook payload
+     *                           Reference: https://docs.stripe.com/api/checkout/sessions/object
+     *                           Expected keys: 'id', 'metadata', 'client_reference_id', 'payment_intent'
      * @return bool
      * @throws \Exception
      */
-    public function handleCheckoutSessionCompleted(string $sessionId): bool;
+    public function handleCheckoutSessionCompleted(array $sessionData): bool;
     
     /**
      * Payment Intent成功時の処理

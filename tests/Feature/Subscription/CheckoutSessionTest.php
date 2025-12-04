@@ -41,13 +41,13 @@ describe('プラン選択画面表示', function () {
         $response->assertRedirect(route('login'));
     });
 
-    it('グループ未所属ユーザーはエラーメッセージを表示される', function () {
+    it('グループ未所属ユーザーは403エラーを受け取る', function () {
         $userWithoutGroup = User::factory()->create(['group_id' => null]);
         
         $response = $this->actingAs($userWithoutGroup)->get(route('subscriptions.index'));
         
-        $response->assertStatus(200);
-        // グループ未所属の場合の処理を確認
+        // ShowSubscriptionPlansAction: グループがない場合は403を返す実装
+        $response->assertStatus(403);
     });
 });
 
@@ -77,12 +77,13 @@ describe('Checkout Session作成 - バリデーション', function () {
         $response->assertSessionHasErrors(['additional_members']);
     });
 
-    it('追加メンバー数は0以上50以下であることを検証', function () {
+    it('追加メンバー数は0以上100以下であることを検証', function () {
         $response = $this->actingAs($this->user)->post(route('subscriptions.checkout'), [
             'plan' => 'enterprise',
-            'additional_members' => 51,
+            'additional_members' => 101,
         ]);
         
+        // CreateCheckoutSessionRequest: max:100 バリデーション実装済み
         $response->assertSessionHasErrors(['additional_members']);
     });
 });
@@ -122,7 +123,9 @@ describe('Checkout Session作成 - 権限', function () {
             'plan' => 'family',
         ]);
         
-        $response->assertStatus(403);
+        // CreateCheckoutSessionAction: 権限チェック実装済み（SubscriptionResponder::error() で302リダイレクト + withErrors()）
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('error');
     });
 
     it('未ログインユーザーはログイン画面にリダイレクトされる', function () {

@@ -95,7 +95,9 @@ class HandleStripeWebhookAction extends CashierWebhookController
                     'session_id' => $sessionId,
                 ]);
                 
-                $this->tokenPurchaseService->handleCheckoutSessionCompleted($sessionId);
+                // Webhookペイロードを直接渡す（Stripe API呼び出し不要）
+                // Reference: https://docs.stripe.com/api/checkout/sessions/object
+                $this->tokenPurchaseService->handleCheckoutSessionCompleted($sessionData);
                 
                 Log::info('Webhook: Token purchase completed', [
                     'session_id' => $sessionId,

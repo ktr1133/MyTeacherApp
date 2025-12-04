@@ -58,15 +58,36 @@ describe('checkout.session.completed - トークン購入', function () {
         $sessionId = 'cs_test_completed';
         $paymentIntentId = 'pi_test_succeeded';
         
-        // TokenPurchaseService をモック
-        $this->mock(\App\Services\Token\TokenPurchaseServiceInterface::class, function ($mock) use ($sessionId) {
+        // モックペイロード（実際のStripe Webhookの構造）
+        $payload = [
+            'type' => 'checkout.session.completed',
+            'data' => [
+                'object' => [
+                    'id' => $sessionId,
+                    'mode' => 'payment',
+                    'payment_status' => 'paid',
+                    'customer' => $this->user->stripe_id ?? 'cus_test',
+                    'client_reference_id' => (string) $this->user->id,
+                    'payment_intent' => $paymentIntentId,
+                    'metadata' => [
+                        'user_id' => (string) $this->user->id,
+                        'package_id' => (string) $this->package->id,
+                        'token_amount' => (string) $this->package->token_amount,
+                        'purchase_type' => 'token_purchase',
+                    ],
+                ],
+            ],
+        ];
+        
+        // TokenPurchaseService をモック（シグネチャ変更: array $sessionData）
+        $this->mock(\App\Services\Token\TokenPurchaseServiceInterface::class, function ($mock) use ($payload) {
             $mock->shouldReceive('handleCheckoutSessionCompleted')
                 ->once()
-                ->with($sessionId)
+                ->with($payload['data']['object']) // ✅ sessionData全体を渡す
                 ->andReturnUsing(function () {
                     // トークン付与処理を実際に実行
                     $user = User::where('email', 'webhook-test@example.com')->first();
-                    $package = TokenPackage::where('stripe_price_id', 'price_test_500k')->first();
+                    $package = TokenPackage::where('stripe_price_id', 'price_test_webhook')->first();
                     
                     DB::transaction(function () use ($user, $package) {
                         $tokenBalance = TokenBalance::where('tokenable_type', User::class)
@@ -90,27 +111,6 @@ describe('checkout.session.completed - トークン購入', function () {
                     return true;
                 });
         });
-        
-        // モックペイロード（実際のStripe Webhookの構造）
-        $payload = [
-            'type' => 'checkout.session.completed',
-            'data' => [
-                'object' => [
-                    'id' => $sessionId,
-                    'mode' => 'payment',
-                    'payment_status' => 'paid',
-                    'customer' => $this->user->stripe_id ?? 'cus_test',
-                    'client_reference_id' => (string) $this->user->id,
-                    'payment_intent' => $paymentIntentId,
-                    'metadata' => [
-                        'user_id' => (string) $this->user->id,
-                        'package_id' => (string) $this->package->id,
-                        'token_amount' => (string) $this->package->token_amount,
-                        'purchase_type' => 'token_purchase',
-                    ],
-                ],
-            ],
-        ];
         
         $initialBalance = 50000; // beforeEachで設定した初期残高
         
@@ -199,15 +199,35 @@ describe('トークン付与のトランザクション整合性', function () {
         $sessionId = 'cs_test_transaction_integrity';
         $paymentIntentId = 'pi_test_integrity';
         
-        // TokenPurchaseService をモック
-        $this->mock(\App\Services\Token\TokenPurchaseServiceInterface::class, function ($mock) use ($sessionId) {
+        // Checkout Session完了でトークンが付与されることをテスト
+        $payload = [
+            'type' => 'checkout.session.completed',
+            'data' => [
+                'object' => [
+                    'id' => $sessionId,
+                    'mode' => 'payment',
+                    'payment_status' => 'paid',
+                    'payment_intent' => $paymentIntentId,
+                    'client_reference_id' => (string) $this->user->id,
+                    'metadata' => [
+                        'user_id' => (string) $this->user->id,
+                        'package_id' => (string) $this->package->id,
+                        'token_amount' => (string) $this->package->token_amount,
+                        'purchase_type' => 'token_purchase',
+                    ],
+                ],
+            ],
+        ];
+        
+        // TokenPurchaseService をモック（シグネチャ変更: array $sessionData）
+        $this->mock(\App\Services\Token\TokenPurchaseServiceInterface::class, function ($mock) use ($payload) {
             $mock->shouldReceive('handleCheckoutSessionCompleted')
                 ->once()
-                ->with($sessionId)
+                ->with($payload['data']['object']) // ✅ sessionData全体を渡す
                 ->andReturnUsing(function () {
                     // トークン付与処理を実際に実行
                     $user = User::where('email', 'webhook-test@example.com')->first();
-                    $package = TokenPackage::where('stripe_price_id', 'price_test_500k')->first();
+                    $package = TokenPackage::where('stripe_price_id', 'price_test_webhook')->first();
                     
                     DB::transaction(function () use ($user, $package) {
                         $tokenBalance = TokenBalance::where('tokenable_type', User::class)
@@ -231,26 +251,6 @@ describe('トークン付与のトランザクション整合性', function () {
                     return true;
                 });
         });
-        
-        // Checkout Session完了でトークンが付与されることをテスト
-        $payload = [
-            'type' => 'checkout.session.completed',
-            'data' => [
-                'object' => [
-                    'id' => $sessionId,
-                    'mode' => 'payment',
-                    'payment_status' => 'paid',
-                    'payment_intent' => $paymentIntentId,
-                    'client_reference_id' => (string) $this->user->id,
-                    'metadata' => [
-                        'user_id' => (string) $this->user->id,
-                        'package_id' => (string) $this->package->id,
-                        'token_amount' => (string) $this->package->token_amount,
-                        'purchase_type' => 'token_purchase',
-                    ],
-                ],
-            ],
-        ];
         
         $response = $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
             ->postJson('/stripe/webhook', $payload);

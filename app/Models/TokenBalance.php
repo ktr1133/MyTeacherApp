@@ -21,11 +21,17 @@ class TokenBalance extends Model
         'balance',
         'free_balance',
         'paid_balance',
+        'total_consumed',           // 追加: トークン消費で更新
+        'monthly_consumed',         // 追加: トークン消費で更新
+        'free_balance_reset_at',    // 追加: 月次リセットで更新
+        'monthly_consumed_reset_at', // 追加: 月次リセットで更新
         'last_free_reset_at',
     ];
 
     protected $casts = [
         'last_free_reset_at' => 'datetime',
+        'free_balance_reset_at' => 'datetime',
+        'monthly_consumed_reset_at' => 'datetime',
     ];
 
     /**

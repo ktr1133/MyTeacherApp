@@ -54,11 +54,7 @@
 
                 {{-- サポート情報 --}}
                 <div class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                    <p>ご不明な点がございましたら、</p>
-                    <a href="{{ route('portal.contact.create') }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                        お問い合わせ
-                    </a>
-                    <span>ください。</span>
+                    <p>ご不明な点がございましたら、お問い合わせください。</p>
                 </div>
             </div>
         </div>

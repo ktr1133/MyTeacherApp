@@ -70,28 +70,50 @@ class TokenPurchaseService implements TokenPurchaseServiceInterface
 
     /**
      * {@inheritdoc}
+     * 
+     * Webhookペイロードから直接データを取得（Stripe API呼び出し不要）
+     * 
+     * Stripe Checkout Session Object Reference:
+     * https://docs.stripe.com/api/checkout/sessions/object
+     * 
+     * Expected payload structure (Stripe API version 2023-10-16+):
+     * [
+     *   'id' => 'cs_test_...',                      // Session ID (string)
+     *   'metadata' => [                             // Custom metadata (object)
+     *     'user_id' => '123',                       // User ID (string)
+     *     'package_id' => '456',                    // Package ID (string)
+     *     'token_amount' => '100000',               // Token amount (string)
+     *     'purchase_type' => 'token_purchase',      // Purchase type (string)
+     *   ],
+     *   'client_reference_id' => '123',             // Alternative user ID (nullable string)
+     *   'payment_intent' => 'pi_test_...',          // PaymentIntent ID (string or expandable object)
+     *   'mode' => 'payment',                        // Session mode (enum: payment, subscription, setup)
+     * ]
      */
-    public function handleCheckoutSessionCompleted(string $sessionId): bool
+    public function handleCheckoutSessionCompleted(array $sessionData): bool
     {
         DB::beginTransaction();
         
         try {
-            // Checkout Sessionを取得
-            $session = CheckoutSession::retrieve([
-                'id' => $sessionId,
-                'expand' => ['payment_intent'],
-            ]);
+            // Stripe公式ドキュメント: https://docs.stripe.com/api/checkout/sessions/object#checkout_session_object-id
+            $sessionId = $sessionData['id'] ?? null;
             
+            // Stripe公式ドキュメント: https://docs.stripe.com/api/checkout/sessions/object#checkout_session_object-metadata
             // メタデータからユーザー・パッケージ情報取得
-            $userId = $session->metadata->user_id ?? $session->client_reference_id;
-            $packageId = $session->metadata->package_id;
+            // Fallback: client_reference_id (https://docs.stripe.com/api/checkout/sessions/object#checkout_session_object-client_reference_id)
+            $userId = $sessionData['metadata']['user_id'] 
+                ?? $sessionData['client_reference_id'] 
+                ?? null;
+            $packageId = $sessionData['metadata']['package_id'] ?? null;
             
-            if (!$userId || !$packageId) {
-                Log::error('Missing metadata in Checkout Session', [
+            if (!$sessionId || !$userId || !$packageId) {
+                Log::error('Missing required fields in Checkout Session payload', [
                     'session_id' => $sessionId,
-                    'metadata' => $session->metadata->toArray(),
+                    'user_id' => $userId,
+                    'package_id' => $packageId,
+                    'payload_keys' => array_keys($sessionData),
                 ]);
-                throw new \Exception('Checkout Session metadata incomplete');
+                throw new \Exception('Checkout Session payload incomplete');
             }
             
             $user = User::findOrFail($userId);
@@ -101,10 +123,15 @@ class TokenPurchaseService implements TokenPurchaseServiceInterface
                 throw new \Exception("Package not found: {$packageId}");
             }
             
-            // Payment Intent ID取得
-            $paymentIntentId = is_string($session->payment_intent) 
-                ? $session->payment_intent 
-                : $session->payment_intent->id;
+            // Stripe公式ドキュメント: https://docs.stripe.com/api/checkout/sessions/object#checkout_session_object-payment_intent
+            // Payment Intent ID取得（stringまたは展開済みオブジェクト）
+            $paymentIntentId = is_string($sessionData['payment_intent'] ?? null)
+                ? $sessionData['payment_intent']
+                : ($sessionData['payment_intent']['id'] ?? null);
+            
+            if (!$paymentIntentId) {
+                throw new \Exception('Payment Intent ID not found in session data');
+            }
             
             // トークン付与処理
             $this->tokenService->purchaseTokens(
@@ -117,11 +144,12 @@ class TokenPurchaseService implements TokenPurchaseServiceInterface
             
             DB::commit();
             
-            Log::info('Checkout Session completed', [
+            Log::info('Checkout Session completed (Webhook payload direct processing)', [
                 'session_id' => $sessionId,
                 'user_id' => $userId,
                 'package_id' => $packageId,
                 'tokens' => $package->token_amount,
+                'payment_intent_id' => $paymentIntentId,
             ]);
             
             return true;
@@ -130,7 +158,7 @@ class TokenPurchaseService implements TokenPurchaseServiceInterface
             DB::rollBack();
             
             Log::error('Failed to handle Checkout Session completed', [
-                'session_id' => $sessionId,
+                'session_id' => $sessionData['id'] ?? 'unknown',
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
