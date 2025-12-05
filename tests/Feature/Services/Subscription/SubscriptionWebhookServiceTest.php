@@ -3,13 +3,16 @@
 use App\Models\Group;
 use App\Models\User;
 use App\Services\Subscription\SubscriptionWebhookService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 
-uses(RefreshDatabase::class);
+// RefreshDatabaseは Pest.php で既に設定済みのため不要
 
 beforeEach(function () {
     $this->service = app(SubscriptionWebhookService::class);
+    
+    // Logモック（デフォルトは全て許可、各テストで上書き可能）
+    Log::shouldReceive('info')->byDefault()->andReturnNull();
+    Log::shouldReceive('error')->byDefault()->andReturnNull();
     
     // テスト用のユーザーとグループを作成
     $this->user = User::factory()->create();
@@ -93,6 +96,11 @@ describe('handleSubscriptionCreated', function () {
     });
 
     it('存在しないグループIDの場合は例外をスローする', function () {
+        // Log::infoは呼ばれるが、その後ModelNotFoundExceptionがスローされる
+        Log::shouldReceive('info')
+            ->once()
+            ->with('Webhook: Processing subscription created for Groups table', \Mockery::any());
+        
         $payload = [
             'data' => [
                 'object' => [
@@ -295,6 +303,7 @@ describe('handleSubscriptionDeleted', function () {
     });
 
     it('存在しないグループIDの場合は例外をスローする', function () {
+        // handleSubscriptionDeletedは最初にLog::infoを呼ばないため、モック不要
         $payload = [
             'data' => [
                 'object' => [

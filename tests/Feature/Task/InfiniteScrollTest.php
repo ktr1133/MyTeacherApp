@@ -29,7 +29,7 @@ class InfiniteScrollTest extends TestCase
         ]);
 
         // 1ページ目取得（50件）
-        $response = $this->actingAs($user)->getJson('/api/api/tasks/paginated?page=1&per_page=50');
+        $response = $this->actingAs($user)->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -74,7 +74,7 @@ class InfiniteScrollTest extends TestCase
         ]);
 
         // 2ページ目取得
-        $response = $this->actingAs($user)->getJson('/api/api/tasks/paginated?page=2&per_page=50');
+        $response = $this->actingAs($user)->getJson('/api/tasks/paginated?page=2&per_page=50');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -99,7 +99,7 @@ class InfiniteScrollTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->getJson('/api/api/tasks/paginated?page=1&per_page=50');
+        $response = $this->actingAs($user)->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -124,7 +124,7 @@ class InfiniteScrollTest extends TestCase
         $user = User::factory()->create();
 
         // 101件は範囲外
-        $response = $this->actingAs($user)->getJson('/api/api/tasks/paginated?page=1&per_page=101');
+        $response = $this->actingAs($user)->getJson('/api/tasks/paginated?page=1&per_page=101');
 
         $response->assertStatus(422)
             ->assertJson([
@@ -140,7 +140,7 @@ class InfiniteScrollTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->getJson('/api/api/tasks/paginated?page=0&per_page=50');
+        $response = $this->actingAs($user)->getJson('/api/tasks/paginated?page=0&per_page=50');
 
         $response->assertStatus(422)
             ->assertJson([
@@ -154,7 +154,7 @@ class InfiniteScrollTest extends TestCase
      */
     public function test_未認証ユーザーはアクセスできない(): void
     {
-        $response = $this->getJson('/api/api/tasks/paginated?page=1&per_page=50');
+        $response = $this->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(401);
     }
@@ -182,7 +182,7 @@ class InfiniteScrollTest extends TestCase
         ]);
 
         // 優先度1でフィルタリング
-        $response = $this->actingAs($user)->getJson('/api/api/tasks/paginated?page=1&per_page=20&priority=1');
+        $response = $this->actingAs($user)->getJson('/api/tasks/paginated?page=1&per_page=20&priority=1');
 
         $response->assertStatus(200);
         
@@ -216,7 +216,7 @@ class InfiniteScrollTest extends TestCase
             'span' => 1,
         ]);
 
-        $response = $this->actingAs($user)->getJson('/api/api/tasks/paginated?page=1&per_page=50');
+        $response = $this->actingAs($user)->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(200);
         
@@ -243,7 +243,7 @@ class InfiniteScrollTest extends TestCase
             'span' => 1,
         ]);
 
-        $response = $this->actingAs($user)->getJson('/api/api/tasks/paginated?page=1&per_page=50');
+        $response = $this->actingAs($user)->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(200)
             ->assertJsonStructure([

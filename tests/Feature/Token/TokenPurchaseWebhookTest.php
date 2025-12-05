@@ -4,10 +4,9 @@ use App\Models\User;
 use App\Models\TokenPackage;
 use App\Models\TokenTransaction;
 use App\Models\TokenBalance;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
+// RefreshDatabaseは Pest.php で既に設定済みのため不要
 
 beforeEach(function () {
     // テスト用ユーザー作成

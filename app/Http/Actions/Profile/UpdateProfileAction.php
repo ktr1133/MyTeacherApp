@@ -17,6 +17,7 @@ class UpdateProfileAction
     /**
      * プロフィール更新処理
      * - username, email, name を更新（email, username は自分以外と重複不可）
+     * - メールアドレス変更時はemail_verified_atをnullにする
      * - 任意で avatar 画像を保存（public/avatars）
      * - 成功/失敗に応じて元画面へリダイレクト
      */
@@ -33,6 +34,11 @@ class UpdateProfileAction
             }
             $path = $request->file('avatar')->store('avatars', 'public');
             $validated['avatar_path'] = $path;
+        }
+
+        // メールアドレスが変更された場合は検証状態をリセット
+        if ($user->email !== $validated['email']) {
+            $user->email_verified_at = null;
         }
 
         // 反映（存在するカラムだけ代入する想定）

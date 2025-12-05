@@ -79,11 +79,11 @@ jobs:
         uses: actions/checkout@v4
 
       #########################################################################
-      # 2. テスト実行（オプション: 緊急時はスキップ可能）
+      # 2. テスト実行（必須: テスト失敗時はデプロイを中断）
       #########################################################################
       - name: Run Tests
         if: ${{ !inputs.skip_tests }}
-        continue-on-error: true  # 暫定対応: テスト失敗を許容してデプロイ続行
+        # continue-on-error: true を削除してテスト失敗時にデプロイを中断
         env:
           # ClamAV設定（GitHub Actions Service Container用）
           CLAMAV_USE_DAEMON: true
@@ -117,13 +117,10 @@ jobs:
           echo "✅ ClamAV service is ready"
           
           # テスト実行（phpunit.xmlでSQLite設定済み）
-          php artisan test --parallel || {
-            echo "⚠️ Tests failed but continuing deployment (continue-on-error: true)"
-            echo "⚠️ Please check test results: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            echo "⚠️ Failed tests should be fixed in subsequent deployment"
-          }
+          # 失敗時はデプロイを中断（continue-on-error削除により実現）
+          php artisan test --parallel
           
-          echo "✅ Test execution completed"
+          echo "✅ All tests passed successfully"
 
       #########################################################################
       # 3. アセットビルド検証

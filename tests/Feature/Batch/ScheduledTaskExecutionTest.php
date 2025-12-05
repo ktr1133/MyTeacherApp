@@ -486,11 +486,12 @@ test('グループメンバー全員へのタスクを自動作成できる（CI
     // 管理者は編集権限あり
     $this->admin->update(['group_edit_flg' => true]);
     
-    // グループ全員へのスケジュールタスク作成（assigned_user_id = null）
+    // グループ全員へのスケジュールタスク作成（assigned_user_id = null, auto_assign = false）
     $scheduledTask = ScheduledGroupTask::factory()->create([
         'group_id' => $this->group->id,
         'created_by' => $this->admin->id,
         'assigned_user_id' => null, // グループ全員
+        'auto_assign' => false, // ランダム割り当てなし
         'title' => 'グループタスク自動作成テスト',
         'description' => 'テスト説明',
         'reward' => 100,
@@ -577,6 +578,7 @@ test('delete_incomplete_previous が true の場合、前回の未完了タス�
         'group_id' => $this->group->id,
         'created_by' => $this->admin->id,
         'assigned_user_id' => null,
+        'auto_assign' => false, // ランダム割り当て無効
         'schedules' => [['type' => 'daily', 'time' => '09:00']],
         'delete_incomplete_previous' => true,
         'is_active' => true,
@@ -792,6 +794,7 @@ test('グループメンバー全員に通知が送信される（CI/CD必須）
         'group_id' => $this->group->id,
         'created_by' => $this->admin->id,
         'assigned_user_id' => null, // 全員
+        'auto_assign' => false, // ランダム割り当て無効
         'schedules' => [['type' => 'daily', 'time' => '09:00']],
         'is_active' => true,
         'start_date' => Carbon::parse('2025-01-01'),

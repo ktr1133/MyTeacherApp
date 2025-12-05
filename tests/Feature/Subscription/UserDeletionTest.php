@@ -2,7 +2,8 @@
 
 use App\Models\User;
 use App\Models\Group;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
+// RefreshDatabaseは Pest.php で既に設定済みのため不要
 
 /**
  * ユーザー削除テスト（Pest形式）
@@ -18,8 +19,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
  * - database/migrations/*_create_subscriptions_table.php
  *   - subscriptions.user_id (foreign key to users.id)
  */
-
-uses(RefreshDatabase::class);
 
 describe('User Deletion', function () {
     test('グループマスターを削除すると、グループのmaster_user_idがnullになる（SQLite制限あり）', function () {

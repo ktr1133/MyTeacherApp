@@ -529,7 +529,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             return $groupMembers[array_rand($groupMembers)];
         }
 
-        // 指定された担当者
+        // 指定された担当者を返す（nullの場合は全員に割り当て）
         return $scheduledTask->assigned_user_id;
     }
 

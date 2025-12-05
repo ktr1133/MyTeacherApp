@@ -2,9 +2,8 @@
 
 use App\Models\Group;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+// RefreshDatabaseは Pest.php で既に設定済みのため不要
 
 beforeEach(function () {
     // テスト用のユーザーとグループを作成

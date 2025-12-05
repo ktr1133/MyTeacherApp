@@ -53,17 +53,20 @@ docs/
 
 > **📌 Phase実装状況**
 > - ✅ **Phase 0.5完了**: AWS Fargate構築（$164/月、~¥25,000）- ECS, RDS, ElastiCache, S3, CloudFront
-> - 🔄 **Phase 1進行中**: バックエンドAPI化（14/60+ Actions完了、約23%）
+> - ✅ **Phase 1完了**: バックエンドAPI化 + OpenAPI仕様書（60 Actions、100%達成）🎉
 >   - Phase 1.A: AuthHelper + helpers.php実装 ✅
 >   - Phase 1.B: Stripe実装完了（都度決済 + サブスクリプション、本番確認済み）✅
 >   - Phase 1.C: タスクAPI実装（14 Actions）✅
 >   - Phase 1.D: タスク機能包括的テスト（93テスト、348アサーション、100%パス率）✅
->   - Phase 1.E: 残り46+ ActionsのAPI化 🔄 **← 現在地**
->   - Phase 1.F: OpenAPI仕様書作成 + Swagger UI導入 📅
-> - 📅 **Phase 2**: モバイルアプリ開発（React Native/Flutter）
+>   - Phase 1.E: 全機能API化完了（60 Actions、126+テスト、100%成功）✅
+>   - Phase 1.F: OpenAPI仕様書 + Swagger UI完了（1,900行、http://localhost:8080/api-docs）✅
+> - ✅ **Phase 2.A完了**: 技術選定 - **React Native + Expo 確定**（2025-12-05）
+>   - React Native vs Flutter詳細比較完了
+>   - 選定理由: 学習コスト最小、JavaScript活用、Python親和性、市場価値
+> - 🔄 **Phase 2.B開始準備**: モバイルアプリ開発（環境構築 → UI実装）**← 現在地**
 > - 📅 **Phase 3-5**: 将来計画（Portal独立化、ParentShare、AI-Sensei）
 > 
-> **現在のフォーカス**: Phase 1.E - 全機能のAPI化（グループ管理、アバター、レポート等）
+> **現在のフォーカス**: Phase 2.B準備 - React Native + Expo環境構築、プロジェクトセットアップ
 
 ## 📋 アーキテクチャ設計の考慮要件（修正版）
 
@@ -269,11 +272,17 @@ docs/
 
 ### 段階的実装優先順位
 1. **Phase 0.5（✅ 完了）**: AWS Fargate構築（ECS, RDS, ElastiCache, S3, CloudFront）- $164/月
-2. **Phase 1（🔄 進行中）**: バックエンドAPI化 + OpenAPI仕様書
-   - Phase 1.A-D: ✅ 完了（Cognito JWT、タスクAPI 14 Actions、Stripe決済、テスト93個）
-   - Phase 1.E: 🔄 進行中（残り46+ ActionsのAPI化）
-   - Phase 1.F: 📅 計画（OpenAPI仕様書作成 + Swagger UI導入）
-3. **Phase 2（📅 次期計画）**: モバイルアプリ開発（React Native/Flutter + Firebase）
+2. **Phase 1（✅ 完了 - 2025-12-05）**: バックエンドAPI化 + OpenAPI仕様書（目標達成）
+   - Phase 1.A: ✅ Cognito JWT認証基盤（2025-11-29完了）
+   - Phase 1.B: ✅ Stripe決済統合（都度決済 + サブスクリプション、2025-12-03完了）
+   - Phase 1.C: ✅ タスクAPI実装（14 Actions、2025-11-29完了）
+   - Phase 1.D: ✅ 包括的テスト実装（126+テスト、100%成功、2025-12-05完了）
+   - Phase 1.E: ✅ 全機能API化（60 Actions達成、2025-12-05完了）
+     - Phase 1.E-1.5.1: ✅ 通知・トークンAPI（11 Actions、24テスト）
+     - Phase 1.E-1.5.2: ✅ アバターAPI（7 Actions、17テスト）
+     - Phase 1.E-1.5.3: ✅ レポート・スケジュールタスクAPI（12 Actions、25テスト）
+   - Phase 1.F: ✅ OpenAPI仕様書 + Swagger UI（1,900行、15スキーマ、60エンドポイント、2025-12-05完了）
+3. **Phase 2（🔄 準備開始 - 2025年12月～）**: モバイルアプリ開発（React Native/Flutter選定 → Firebase統合 → App Store/Google Play公開）
 4. **Phase 3（📅 中期計画）**: ポータル独立化 + ParentShare開発 + API連携
 5. **Phase 4（📅 長期計画）**: AI-Sensei開発 + API連携
 6. **Phase 5（📅 将来計画）**: SSO統合・決済機能拡張
@@ -314,57 +323,65 @@ docs/
 - Use statements統一、コードクリーンアップ
 
 **Phase 1.D: タスク機能包括的テスト実装（2025-11-29～2025-12-05完了）**
+- Feature/Unit テスト93個作成（内訳: TaskApiTest 13, TaskServiceTest 19, TaskRepositoryTest 20等）
+- 348アサーション、100%パス率
+- カバレッジ改善
+- 参照: `docs/reports/2025-12-05-phase-1-d-comprehensive-testing-report.md`
 
-1. **Cognito認証テスト（2025-11-29）**
-   - `CognitoAuthTest.php` - Cognito JWT認証（12テスト）
-   - `TaskApiTest.php` - 13 API Actions統合テスト（15テスト）
-   - `EmailValidationTest.php` - メールバリデーション（6テスト）
-   - `AddMemberTest.php` - グループメンバー追加（9テスト）
-   - `ProfileUpdateTest.php` - プロフィール更新（10テスト）
-   - `AuthHelperTest.php` - AuthHelper機能（12テスト）
-   - 参照: `docs/reports/2025-11-29-phase1-5-test-infrastructure-fix-report.md`
+**Phase 1.E: 全機能API化（2025-12-03～2025-12-05完了）**
 
-2. **タスク機能テスト（2025-12-05）**
-   - StoreTaskTest - 通常タスク登録（19テスト）
-   - TaskDecompositionTest - AI分解機能（20テスト、OpenAI Mock実装）
-   - GroupTaskTest - グループタスク割当（16テスト、承認フロー検証）
-   - DeleteTaskTest - タスク削除（12テスト、ソフトデリート実装）
-   - UpdateTaskTest - タスク更新（22テスト、画像更新含む）
-   - コード品質向上（ドキュメント追加、共通パターン統一）
-   - **テストスイート**: 93テスト、348アサーション、100%パス率達成
-   - 参照: `docs/reports/2025-12-05-task-feature-test-completion-report.md`
+**サブフェーズ1.5.1（2025-12-03完了）**:
+- グループ管理API: 7 Actions（グループ情報、メンバー管理、権限設定）
+- プロフィール管理API: 5 Actions（プロフィール編集、アカウント削除、タイムゾーン）
+- タグ管理API: 4 Actions（タグCRUD、タスク連携）
+- 合計16 Actions + 35テスト実装
+- 参照: `docs/reports/2025-12-03-phase-1e-1.5.1-api-implementation-report.md`
 
-**テスト対象API Actions（14個）**:
-1. StoreTaskApiAction - タスク作成
-2. IndexTaskApiAction - タスク一覧取得
-3. GetTasksPaginatedApiAction - タスク一覧取得（ページネーション付き）
-4. UpdateTaskApiAction - タスク更新
-5. DestroyTaskApiAction - タスク削除
-6. ToggleTaskCompletionApiAction - 完了トグル
-7. ApproveTaskApiAction - タスク承認
-8. RejectTaskApiAction - タスク却下
-9. UploadTaskImageApiAction - 画像アップロード
-10. DeleteTaskImageApiAction - 画像削除
-11. BulkCompleteTasksApiAction - 一括完了
-12. RequestApprovalApiAction - 完了申請
-13. ListPendingApprovalsApiAction - 承認待ち一覧
-14. SearchTasksApiAction - タスク検索
+**サブフェーズ1.5.2（2025-12-05完了）**:
+- アバター管理API: 7 Actions（AI生成、画像再生成、コメント取得）
+- 通知管理API: 6 Actions（通知一覧、既読化、検索）
+- トークン管理API: 5 Actions（残高、履歴、Stripe決済連携）
+- 合計18 Actions + 30テスト + 11 Requests + 3 Responders + 6 Factories実装
+- 参照: `docs/reports/2025-12-05-phase-1e-1.5.2-api-implementation-report.md`
 
-**テストカバレッジ**:
-- 認証フロー: Cognito JWT認証、ユーザー自動作成、重複処理
-- CRUD操作: 作成・読取・更新・削除の全パターン
-- 承認フロー: 承認・却下・完了申請
-- 一括操作: 複数タスク同時完了
-- 画像管理: アップロード・削除・S3連携
-- 検索機能: タイトル・タグ検索、AND/OR演算
-- バリデーション: 重複チェック、自己除外、権限制御
-- エラーハンドリング: 認証エラー、権限エラー、データエラー
+**サブフェーズ1.5.3（2025-12-05完了）**:
+- レポート・実績API: 4 Actions（パフォーマンス、月次レポート、メンバー概況PDF）
+- スケジュールタスクAPI: 8 Actions（スケジュールCRUD、一時停止・再開）
+- 合計12 Actions + 19テスト（100%成功、85アサーション）
+- 不具合6件修正完了（サブスクリプション制限、ソフトデリート等）
+- 参照: `docs/reports/2025-12-05-phase-1e-1.5.3-api-implementation-report.md`
 
-> **Phase 1 サブフェーズ A-D 完了（2025-12-05）**: 
-> - **Cognito JWT認証**: 14 API Actions実装完了
-> - **Stripe都度決済**: トークン購入機能実装完了（本番確認済み）
-> - **包括的テスト**: 93テスト、348アサーション、100%パス率達成
+**Phase 1.E 総計**: 60 API Actions、126+テスト、100%成功率
+
+**Phase 1.F: OpenAPI仕様書 + Swagger UI（2025-12-05完了）**
+- OpenAPI 3.0仕様書作成（`docs/api/openapi.yaml`、1,900行超）
+- 60 APIエンドポイント完全定義
+- 15種類のデータスキーマ定義（Task, Group, Avatar, Notification等）
+- Cognito JWT認証仕様定義
+- 5種類の標準エラーレスポンス定義
+- Swagger UI導入（l5-swagger 9.0.1、Swagger UI 5.30.3）
+- カスタムSwaggerController実装（YAML直接配信）
+- アクセスURL: `http://localhost:8080/api-docs`
+- Try it out機能で実際のAPI実行可能
+- 参照: `docs/reports/2025-12-05-phase-1f-openapi-swagger-completion-report.md`
+
+> **Phase 1 完全完了（2025-12-05）**: 🎉🎉🎉
+> - Phase 1.A: Cognito JWT認証基盤 ✅
+> - Phase 1.B: Stripe決済統合（都度決済 + サブスクリプション、本番確認済み）✅
+> - Phase 1.C: タスクAPI 14 Actions実装 ✅
+> - Phase 1.D: 包括的テスト実装（93テスト、348アサーション、100%パス率）✅
+> - Phase 1.E: 全機能API化（60 Actions、126+テスト、100%成功）✅
+> - Phase 1.F: OpenAPI仕様書 + Swagger UI（1,900行、15スキーマ、60エンドポイント）✅
 > 
+> **Phase 1 総計**:
+> - 60 API Actions実装完了（100%達成）
+> - 126+統合テスト実装（全テスト100%成功）
+> - OpenAPI 3.0仕様書完成（1,900行超）
+> - Swagger UI稼働（`http://localhost:8080/api-docs`）
+> - Action-Service-Repositoryパターン完全遵守
+> - 静的解析クリア（Intelephenseエラー0件）
+> 
+> **次のステップ**: Phase 2 - モバイルアプリ開発（React Native/Flutter選定 → Firebase統合 → UI実装）
 > 次はPhase 1.E（残り46+ ActionsのAPI化）に移行します。
 
 ### システム構成イメージ（Phase 2完了時）
@@ -456,37 +473,781 @@ docs/
 
 ## 📊 Phase別システム構成
 
-### Phase 1: MyTeacherモバイルアプリ（Phase 0.5完了後 → バックエンド実装完了）
+### Phase 1: MyTeacher バックエンドAPI化（✅ 完了 - 2025-12-05）
 
-**構成**:
+**実装完了状況**:
 ```
-MyTeacher Web + モバイルアプリ
-├── Laravel 12 (既存)
-│   ├── Web UI (Blade)
-│   ├── API (JSON + Cognito JWT) ✅ 実装完了
-│   ├── Portal統合（/portal/*）
-│   └── Stripe都度決済 ✅ 本番稼働中
-├── React Native/Expo アプリ（予定）
+MyTeacher バックエンドAPI
+├── Laravel 12
+│   ├── 60 API Actions実装完了 ✅（100%達成）
+│   │   ├── タスクAPI: 14 Actions（CRUD、承認、一括操作、検索）
+│   │   ├── グループAPI: 7 Actions（メンバー管理、権限設定）
+│   │   ├── プロフィールAPI: 5 Actions（プロフィール編集、タイムゾーン）
+│   │   ├── タグAPI: 4 Actions（タグCRUD、タスク連携）
+│   │   ├── アバターAPI: 7 Actions（AI生成、コメント取得）
+│   │   ├── 通知API: 6 Actions（通知一覧、既読化、検索）
+│   │   ├── トークンAPI: 5 Actions（残高、履歴、Stripe連携）
+│   │   ├── レポートAPI: 4 Actions（パフォーマンス、月次レポート、PDF）
+│   │   └── スケジュールタスクAPI: 8 Actions（CRUD、一時停止・再開）
+│   ├── OpenAPI 3.0仕様書完成 ✅（1,900行、15スキーマ、60エンドポイント）
+│   ├── Swagger UI稼働 ✅（http://localhost:8080/api-docs）
+│   ├── Cognito JWT認証 ✅（VerifyCognitoToken + AuthHelper）
+│   ├── 126+統合テスト実装 ✅（全テスト100%成功）
+│   ├── Web UI (Blade) - 既存機能継続稼働
+│   ├── Portal統合（/portal/*）- 既存機能継続稼働
+│   └── Stripe決済統合 ✅（都度決済 + サブスクリプション、本番稼働中）
 ├── PostgreSQL (Phase 0.5で構築済み: RDS db.t4g.micro)
 ├── Redis (Phase 0.5で構築済み: ElastiCache cache.t4g.micro)
 ├── S3 (Phase 0.5で構築済み: myteacher-storage-production)
-└── Firebase (プッシュ通知 - 予定)
+└── 次のステップ: Phase 2 - モバイルアプリ開発
 ```
 
-**開発内容**:
-1. ✅ 既存Action → API Action拡張（JSON レスポンダー）- 14 API Actions完了
-2. ✅ Cognito JWT認証対応（VerifyCognitoToken middleware + AuthHelper）
-3. ✅ Stripe都度決済実装（Checkout Session + Webhook + 本番確認済み）
-4. ✅ 包括的テスト実装（93テスト、348アサーション、100%パス率）
-5. ⏳ React Nativeアプリ開発（未着手）
-6. ⏳ Firebaseプッシュ通知統合（未着手）
+**完了内容**:
+1. ✅ 60 API Actions実装完了（タスク、グループ、プロフィール、タグ、アバター、通知、トークン、レポート、スケジュール）
+2. ✅ OpenAPI 3.0仕様書作成（1,900行超、15スキーマ、60エンドポイント）
+3. ✅ Swagger UI導入（http://localhost:8080/api-docs で即座にテスト可能）
+4. ✅ Cognito JWT認証実装（VerifyCognitoToken middleware + AuthHelper）
+5. ✅ Stripe決済統合（都度決済 + サブスクリプション、本番確認済み）
+6. ✅ 包括的テスト実装（126+テスト、全テスト100%成功）
+7. ✅ Action-Service-Repositoryパターン完全遵守
+8. ✅ 静的解析クリア（Intelephenseエラー0件）
 
 **インフラ**:
 - Phase 0.5で構築済み: AWS Fargate (ECS) + RDS + ElastiCache + S3 + CloudFront
 - デプロイ: GitHub Actions → ECR → ECS Fargate（自動デプロイ）
 - 月額: **$164 (~¥25,000)** ← Phase 0.5で既に稼働中
 
-### Phase 2: ポータル独立化 + ParentShare（仮称）（6ヶ月後）
+**参照ドキュメント**:
+- Phase 1詳細計画: `docs/architecture/phase-plans/phase1-mobile-api-plan.md`
+- OpenAPI仕様書: `docs/api/openapi.yaml`
+- Swagger UI: `http://localhost:8080/api-docs`
+- Phase 1完了レポート: `docs/reports/2025-12-05-phase-1f-openapi-swagger-completion-report.md`
+
+---
+
+### Phase 2: モバイルアプリ開発（🔄 進行中 - 2025年12月～2026年3月）
+
+**技術選定結果**: ✅ **React Native + Expo 確定**（2025-12-05）
+
+**選定理由**:
+1. ✅ **学習コスト最小**: JavaScript知識で即開発可能（学習1週間）
+2. ✅ **開発効率最高**: Expo Goで実機確認が超簡単、Hot Reload高速
+3. ✅ **エコシステム**: npm巨大、Chart.jsライブラリと親和性高い
+4. ✅ **Python親和性**: 将来のAI-Sensei（Python Backend）との統合容易
+5. ✅ **市場価値**: 求人数多い、React.jsと組み合わせてフルスタック評価
+
+**構成**:
+```
+MyTeacher モバイルアプリ
+├── React Native + Expo（確定）
+│   ├── iOS版（App Store公開予定）
+│   ├── Android版（Google Play公開予定）
+│   ├── TypeScript（型安全性）
+│   └── Cognito JWT認証
+├── 主要ライブラリ
+│   ├── react-navigation（画面遷移）
+│   ├── react-native-chart-kit（グラフ表示）
+│   ├── expo-image-picker（カメラ・画像選択）
+│   ├── @react-native-firebase/messaging（Push通知）
+│   └── expo-file-system（ファイル操作）
+├── Firebase統合
+│   ├── Push通知（FCM）
+│   ├── Analytics
+│   └── Crashlytics
+├── MyTeacher API連携（60エンドポイント）
+│   ├── タスク管理（14 Actions）
+│   ├── グループ管理（7 Actions）
+│   ├── プロフィール（5 Actions）
+│   ├── タグ（4 Actions）
+│   ├── アバター（7 Actions）
+│   ├── 通知（6 Actions）
+│   ├── トークン（5 Actions）
+│   ├── レポート（4 Actions）
+│   └── スケジュールタスク（8 Actions）
+└── Stripe決済連携（トークン購入・サブスクリプション）
+```
+
+---
+
+### Phase 2.A: 技術選定完了（✅ 2025-12-05完了）
+
+**実施内容**:
+- React Native vs Flutter 詳細比較
+- MyTeacher機能のモバイル実装方法分析
+- グラフ描画ライブラリ比較（react-native-chart-kit vs fl_chart）
+- Python親和性評価
+- 市場価値・求人動向分析
+
+**選定結果**: React Native + Expo
+
+**参照**: 本ドキュメント「Phase 2技術選定詳細」セクション
+
+---
+
+### Phase 2.B - Phase 2.C: モバイルアプリ実装・公開
+
+**Phase 2の詳細実装計画は別ドキュメントに記載**:
+📄 **[Phase 2 モバイルアプリ実装計画書](/home/ktr/mtdev/docs/plans/phase2-mobile-app-implementation-plan.md)**
+
+**概要**:
+- **Phase 2.B**: 環境構築 + モバイルアプリ開発（10週間、2025年12月～2026年2月）
+  - 8つの開発フェーズ（環境構築、認証、タスク管理、グループ、アバター、トークン、スケジュール、テスト）
+- **Phase 2.C**: App Store/Google Play申請 + 公開（4週間、2026年2月～3月）
+  - EAS Build設定、App Store申請、Google Play申請、公開・監視
+
+**プロジェクトパス**: `/home/ktr/mtdev/mobile/`
+
+**技術スタック**:
+- React Native + Expo (TypeScript)
+- Firebase Cloud Messaging (Push通知)
+- react-native-chart-kit (グラフ)
+- Stripe (決済)
+
+**詳細**: 上記計画書を参照（コード例、チェックリスト、スケジュールを含む）
+
+---
+
+### Phase 2完了基準
+
+**必須要件**:
+- [ ] iOS App Store公開済み
+- [ ] Google Play公開済み
+- [ ] 全60 APIエンドポイント連携完了
+- [ ] Push通知動作確認
+- [ ] Stripe決済動作確認
+- [ ] 主要機能テスト100%パス
+- [ ] パフォーマンス基準達成（起動3秒以内）
+- [ ] クラッシュ率 < 1%
+
+**成果物**:
+- MyTeacher iOS版アプリ（App Store公開）
+- MyTeacher Android版アプリ（Google Play公開）
+- モバイルアプリドキュメント
+- Phase 2完了レポート
+
+**Target**: 2026年3月公開
+
+---
+
+## Phase 3: 管理ポータル開発（Next.js + CloudFront）
+node --version  # v18.0.0以上
+
+# 2. プロジェクト作成
+cd /home/ktr/mtdev
+npx create-expo-app@latest mobile --template blank-typescript
+
+# 3. 必要なパッケージインストール
+cd mobile
+npm install @react-navigation/native @react-navigation/stack
+npm install @react-navigation/bottom-tabs
+npm install react-native-screens react-native-safe-area-context
+npm install react-native-chart-kit react-native-svg
+npm install @react-native-firebase/app @react-native-firebase/messaging
+npm install expo-image-picker expo-file-system expo-sharing
+npm install @stripe/stripe-react-native
+npm install axios
+npm install @react-native-async-storage/async-storage
+
+# 4. TypeScript設定
+# tsconfig.json 自動生成済み
+
+# 5. 開発サーバー起動テスト
+npm start
+```
+
+**ディレクトリ構造**:
+```
+/home/ktr/mtdev/mobile/
+├── App.tsx                    # エントリーポイント
+├── app.json                   # Expo設定
+├── package.json
+├── tsconfig.json
+├── src/
+│   ├── screens/               # 画面コンポーネント
+│   │   ├── auth/
+│   │   │   ├── LoginScreen.tsx
+│   │   │   └── RegisterScreen.tsx
+│   │   ├── tasks/
+│   │   │   ├── TaskListScreen.tsx
+│   │   │   ├── TaskDetailScreen.tsx
+│   │   │   ├── CreateTaskScreen.tsx
+│   │   │   └── TaskApprovalScreen.tsx
+│   │   ├── groups/
+│   │   ├── profile/
+│   │   ├── avatars/
+│   │   ├── notifications/
+│   │   ├── tokens/
+│   │   └── reports/
+│   ├── components/            # 再利用可能コンポーネント
+│   │   ├── common/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   └── Loading.tsx
+│   │   ├── tasks/
+│   │   │   └── TaskCard.tsx
+│   │   └── charts/
+│   │       └── PerformanceChart.tsx
+│   ├── navigation/            # ナビゲーション設定
+│   │   ├── AppNavigator.tsx
+│   │   ├── AuthStack.tsx
+│   │   └── MainTabs.tsx
+│   ├── services/              # API通信
+│   │   ├── api.ts             # Axios設定
+│   │   ├── auth.service.ts
+│   │   ├── task.service.ts
+│   │   └── notification.service.ts
+│   ├── hooks/                 # カスタムフック
+│   │   ├── useAuth.ts
+│   │   ├── useTasks.ts
+│   │   └── useNotifications.ts
+│   ├── utils/                 # ユーティリティ
+│   │   ├── storage.ts         # AsyncStorage
+│   │   └── constants.ts
+│   └── types/                 # TypeScript型定義
+│       ├── task.types.ts
+│       └── api.types.ts
+└── assets/                    # 画像・フォント
+    ├── images/
+    └── fonts/
+```
+
+**実機確認セットアップ**:
+```bash
+# 1. スマホにExpo Goインストール
+# iOS: App Store で「Expo Go」検索
+# Android: Google Play で「Expo Go」検索
+
+# 2. 開発サーバー起動
+npm start
+
+# 3. QRコードをExpo Goでスキャン
+# → アプリが実機で起動
+
+# 4. コード変更すると自動リロード（Hot Reload）
+```
+
+**チェックリスト**:
+- [ ] Node.js 18+インストール確認
+- [ ] Expo CLIプロジェクト作成
+- [ ] 必要パッケージインストール
+- [ ] ディレクトリ構造作成
+- [ ] Expo Go実機確認成功
+- [ ] TypeScript設定確認
+- [ ] Git管理開始（mobile/ディレクトリ）
+
+---
+
+#### 2.B-2: 認証機能実装（1週間）
+
+**実装内容**:
+- Cognito JWT認証フロー
+- ログイン画面
+- 新規登録画面
+- トークン管理（AsyncStorage）
+- 自動ログイン
+
+**主要ファイル**:
+```typescript
+// src/services/auth.service.ts
+export const login = async (email: string, password: string) => {
+  const response = await api.post('/auth/login', { email, password });
+  await AsyncStorage.setItem('token', response.data.token);
+  return response.data;
+};
+
+// src/hooks/useAuth.ts
+export const useAuth = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    checkAuth();
+  }, []);
+  
+  const checkAuth = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (token) {
+      const userData = await fetchUser(token);
+      setUser(userData);
+    }
+    setLoading(false);
+  };
+  
+  return { user, loading, login, logout };
+};
+```
+
+**チェックリスト**:
+- [ ] ログイン画面UI実装
+- [ ] 新規登録画面UI実装
+- [ ] Cognito JWT認証連携
+- [ ] トークン保存（AsyncStorage）
+- [ ] 自動ログイン機能
+- [ ] ログアウト機能
+- [ ] エラーハンドリング
+
+---
+
+#### 2.B-3: タスク管理画面実装（2週間）
+
+**実装内容**:
+- タスク一覧（無限スクロール）
+- タスク詳細
+- タスク作成（通常 + AI分解）
+- タスク編集
+- タスク完了/未完了切替
+- タスク承認（画像アップロード）
+- タスク検索・フィルタ
+
+**主要ファイル**:
+```typescript
+// src/screens/tasks/TaskListScreen.tsx
+export default function TaskListScreen() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const fetchTasks = async () => {
+    if (loading) return;
+    setLoading(true);
+    
+    const response = await taskService.getTasks(page);
+    setTasks([...tasks, ...response.data]);
+    setPage(page + 1);
+    setLoading(false);
+  };
+
+  return (
+    <FlatList
+      data={tasks}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => <TaskCard task={item} />}
+      onEndReached={fetchTasks}
+      onEndReachedThreshold={0.5}
+      refreshControl={
+        <RefreshControl refreshing={loading} onRefresh={fetchTasks} />
+      }
+    />
+  );
+}
+
+// src/services/task.service.ts
+export const createTask = async (data: CreateTaskInput) => {
+  const response = await api.post('/api/v1/tasks', data);
+  return response.data;
+};
+
+export const uploadTaskImage = async (taskId: number, imageUri: string) => {
+  const formData = new FormData();
+  formData.append('image', {
+    uri: imageUri,
+    type: 'image/jpeg',
+    name: 'task_image.jpg',
+  } as any);
+  
+  const response = await api.post(`/api/v1/tasks/${taskId}/images`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+```
+
+**チェックリスト**:
+- [ ] タスク一覧画面（無限スクロール）
+- [ ] タスク詳細画面
+- [ ] タスク作成画面（通常）
+- [ ] AI分解機能（進捗表示付き）
+- [ ] タスク編集画面
+- [ ] タスク完了切替
+- [ ] タスク承認画面（カメラ起動）
+- [ ] 画像アップロード機能
+- [ ] 検索・フィルタ機能
+
+---
+
+#### 2.B-4: グループ・プロフィール・タグ画面実装（1週間）
+
+**実装内容**:
+- グループ情報表示
+- メンバー管理
+- 権限設定
+- プロフィール編集
+- タグ管理
+
+**チェックリスト**:
+- [ ] グループ詳細画面
+- [ ] メンバー一覧・追加・削除
+- [ ] 権限設定画面
+- [ ] プロフィール編集画面
+- [ ] タイムゾーン設定
+- [ ] タグ一覧・作成・編集・削除
+
+---
+
+#### 2.B-5: アバター・通知画面実装（1週間）
+
+**実装内容**:
+- 教師アバター作成
+- アバター表示（アニメーション）
+- プッシュ通知受信
+- 通知一覧
+- 通知既読化
+
+**主要ファイル**:
+```typescript
+// src/services/notification.service.ts
+import messaging from '@react-native-firebase/messaging';
+
+export const setupPushNotifications = async () => {
+  // 権限リクエスト
+  await messaging().requestPermission();
+  
+  // FCMトークン取得
+  const fcmToken = await messaging().getToken();
+  
+  // バックエンドに送信
+  await api.post('/api/v1/profile/fcm-token', { fcm_token: fcmToken });
+  
+  // フォアグラウンド通知
+  messaging().onMessage(async (remoteMessage) => {
+    Alert.alert(
+      remoteMessage.notification?.title || '',
+      remoteMessage.notification?.body || ''
+    );
+  });
+  
+  // 通知タップ時
+  messaging().onNotificationOpenedApp((remoteMessage) => {
+    const data = remoteMessage.data;
+    if (data?.type === 'task_approval') {
+      navigation.navigate('TaskDetail', { taskId: data.task_id });
+    }
+  });
+};
+```
+
+**チェックリスト**:
+- [ ] アバター作成画面
+- [ ] アバター設定画面
+- [ ] アバター表示コンポーネント
+- [ ] Firebase Push通知設定
+- [ ] FCMトークン登録
+- [ ] 通知一覧画面
+- [ ] 通知既読機能
+
+---
+
+#### 2.B-6: トークン・グラフ・レポート画面実装（2週間）
+
+**実装内容**:
+- トークン残高表示
+- トークン購入（Stripe）
+- サブスクリプション管理
+- 実績グラフ（react-native-chart-kit）
+- 月次レポートPDFダウンロード
+
+**主要ファイル**:
+```typescript
+// src/components/charts/PerformanceChart.tsx
+import { BarChart } from 'react-native-chart-kit';
+
+export default function PerformanceChart({ data }: Props) {
+  return (
+    <BarChart
+      data={{
+        labels: data.labels,
+        datasets: [
+          {
+            data: data.normalTasks,
+            color: (opacity = 1) => `rgba(89, 185, 198, ${opacity})`,
+          },
+          {
+            data: data.groupTasks,
+            color: (opacity = 1) => `rgba(147, 51, 234, ${opacity})`,
+          },
+        ],
+      }}
+      width={Dimensions.get('window').width - 32}
+      height={220}
+      chartConfig={{
+        backgroundColor: '#ffffff',
+        backgroundGradientFrom: '#ffffff',
+        backgroundGradientTo: '#ffffff',
+        decimalPlaces: 0,
+        color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+      }}
+      style={{ borderRadius: 16 }}
+    />
+  );
+}
+```
+
+**チェックリスト**:
+- [ ] トークン残高画面
+- [ ] トークン購入画面（Stripe SDK）
+- [ ] サブスクリプション管理画面
+- [ ] 実績グラフ実装（棒グラフ）
+- [ ] 週・月・年切替
+- [ ] 月次レポートPDFダウンロード
+- [ ] ファイル共有機能
+
+---
+
+#### 2.B-7: スケジュールタスク画面実装（1週間）
+
+**実装内容**:
+- スケジュールタスク一覧
+- スケジュール作成・編集
+- 一時停止・再開
+
+**チェックリスト**:
+- [ ] スケジュールタスク一覧
+- [ ] スケジュール作成画面
+- [ ] スケジュール編集画面
+- [ ] 一時停止・再開機能
+
+---
+
+#### 2.B-8: テスト・デバッグ・最適化（1週間）
+
+**実装内容**:
+- ユニットテスト（Jest）
+- E2Eテスト（Detox）
+- パフォーマンス最適化
+- バグ修正
+
+**チェックリスト**:
+- [ ] 主要機能のユニットテスト
+- [ ] API通信テスト
+- [ ] E2Eテスト実装
+- [ ] メモリリーク確認
+- [ ] パフォーマンス測定
+- [ ] バグ修正完了
+
+---
+
+### Phase 2.C: ストア公開（📅 2026年2月～3月）
+
+#### 2.C-1: ビルド・申請準備（1週間）
+
+**実装内容**:
+```bash
+# iOS ビルド（Macのみ）
+eas build --platform ios
+
+# Android ビルド
+eas build --platform android
+
+# ストアリスティング準備
+# - アプリ名
+# - 説明文（日本語・英語）
+# - スクリーンショット（各サイズ）
+# - プロモーション画像
+# - アイコン（1024x1024）
+```
+
+**チェックリスト**:
+- [ ] EAS Build設定
+- [ ] iOSビルド成功
+- [ ] Androidビルド成功
+- [ ] スクリーンショット作成（10枚以上）
+- [ ] アプリ説明文作成
+- [ ] プライバシーポリシー作成
+- [ ] 利用規約作成
+
+---
+
+#### 2.C-2: App Store申請（2週間）
+
+**手順**:
+1. Apple Developer Program登録（$99/年）
+2. App Store Connect設定
+3. アプリ情報入力
+4. ビルドアップロード（EAS）
+5. 審査提出
+6. 審査対応（1-2週間）
+
+**チェックリスト**:
+- [ ] Apple Developer Program登録
+- [ ] App Store Connect設定
+- [ ] アプリ情報入力完了
+- [ ] ビルドアップロード
+- [ ] 審査提出
+- [ ] 審査承認
+- [ ] App Store公開
+
+---
+
+#### 2.C-3: Google Play申請（1週間）
+
+**手順**:
+1. Google Play Console登録（$25）
+2. アプリ情報入力
+3. AABアップロード
+4. 審査提出（通常1-3日）
+5. 公開
+
+**チェックリスト**:
+- [ ] Google Play Console登録
+- [ ] アプリ情報入力完了
+- [ ] AABアップロード
+- [ ] 審査提出
+- [ ] 審査承認
+- [ ] Google Play公開
+
+---
+
+### Phase 2完了基準
+
+**必須要件**:
+- [ ] iOS App Store公開済み
+- [ ] Google Play公開済み
+- [ ] 全60 APIエンドポイント連携完了
+- [ ] Push通知動作確認
+- [ ] Stripe決済動作確認
+- [ ] 主要機能テスト100%パス
+- [ ] パフォーマンス基準達成（起動3秒以内）
+- [ ] クラッシュ率 < 1%
+
+**成果物**:
+- MyTeacher iOS版アプリ（App Store公開）
+- MyTeacher Android版アプリ（Google Play公開）
+- モバイルアプリドキュメント
+- Phase 2完了レポート
+
+**Target**: 2026年3月公開
+
+---
+
+### API連携例
+
+**タスク一覧取得**:
+```typescript
+// src/services/task.service.ts
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'https://api.myteacher.jp',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// リクエストインターセプター（トークン自動付与）
+api.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const taskService = {
+  getTasks: async (page = 1) => {
+    const response = await api.get(`/api/v1/tasks?page=${page}`);
+    return response.data;
+  },
+  
+  createTask: async (data: CreateTaskInput) => {
+    const response = await api.post('/api/v1/tasks', data);
+    return response.data;
+  },
+  
+  toggleCompletion: async (taskId: number) => {
+    const response = await api.post(`/api/v1/tasks/${taskId}/toggle-completion`);
+    return response.data;
+  },
+};
+```
+
+**Push通知受信**:
+```typescript
+// src/services/notification.service.ts
+import messaging from '@react-native-firebase/messaging';
+import { useNavigation } from '@react-navigation/native';
+
+export const setupPushNotifications = async () => {
+  // 権限リクエスト
+  const authStatus = await messaging().requestPermission();
+  const enabled =
+    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+  if (!enabled) {
+    console.log('Push notification permission denied');
+    return;
+  }
+
+  // FCMトークン取得
+  const fcmToken = await messaging().getToken();
+  console.log('FCM Token:', fcmToken);
+
+  // バックエンドに送信
+  await api.post('/api/v1/profile/fcm-token', { fcm_token: fcmToken });
+
+  // フォアグラウンド通知
+  messaging().onMessage(async (remoteMessage) => {
+    Alert.alert(
+      remoteMessage.notification?.title || '',
+      remoteMessage.notification?.body || ''
+    );
+  });
+
+  // バックグラウンド通知タップ時
+  messaging().onNotificationOpenedApp((remoteMessage) => {
+    handleNotificationPress(remoteMessage.data);
+  });
+
+  // アプリ終了時の通知タップ
+  messaging()
+    .getInitialNotification()
+    .then((remoteMessage) => {
+      if (remoteMessage) {
+        handleNotificationPress(remoteMessage.data);
+      }
+    });
+};
+
+const handleNotificationPress = (data: any) => {
+  const navigation = useNavigation();
+  
+  if (data?.type === 'task_approval') {
+    navigation.navigate('TaskDetail', { taskId: data.task_id });
+  } else if (data?.type === 'task_completed') {
+    navigation.navigate('TaskList');
+  }
+};
+```
+
+---
+
+### インフラ
+
+**既存インフラ（Phase 1完成済み）**:
+- AWS Fargate (ECS) - バックエンドAPI稼働
+- RDS PostgreSQL - データベース
+- ElastiCache Redis - キャッシュ
+- S3 - 画像ストレージ
+- CloudFront - CDN
+
+**追加インフラ（Phase 2）**:
+- Firebase Cloud Messaging - Push通知（無料枠で開始）
+- Firebase Analytics - アプリ分析（無料）
+- Firebase Crashlytics - クラッシュ分析（無料）
+- Expo Application Services (EAS) - ビルド・配信（月額$29～）
+
+**月額コスト**:
+- 既存: $164 (~¥25,000) - AWS Fargate構成
+- 追加: 
+  - Firebase: $0（無料枠内）
+  - EAS: $29（月額、開発期間のみ）
+  - App Store: $99/年（~¥15,000）
+  - Google Play: $25（初回のみ、~¥3,750）
+- **合計**: 約¥30,000/月（開発期間）、約¥26,500/月（公開後）
+
+---
+
+### Phase 3: Portal独立化 + ParentShare開発（📅 中期計画 - 2026年下半期）
 
 **構成**:
 ```
@@ -538,7 +1299,9 @@ POST /api/v1/usage-feedback
 - 共通S3バケット（アプリ別prefix）
 - 月額: ¥10,000-15,000
 
-### Phase 3: AI-Sensei（仮称）追加（12ヶ月後）
+---
+
+### Phase 4: AI-Sensei（仮称）追加（📅 長期計画 - 2027年以降）
 
 **構成**:
 ```
@@ -841,19 +1604,55 @@ resource "aws_db_instance" "parentshare" { ... }
 
 ## 📋 実装チェックリスト
 
-### Phase 1 完了条件
+### Phase 1 完了条件（✅ 2025-12-05達成）
 
-- [x] MyTeacher API Action実装（全既存機能）← 13 API Actions完了
+- [x] MyTeacher API Action実装（60 API Actions完了 - 目標100%達成）
+  - [x] タスクAPI（14 Actions）
+  - [x] グループAPI（7 Actions）
+  - [x] プロフィールAPI（5 Actions）
+  - [x] タグAPI（4 Actions）
+  - [x] アバターAPI（7 Actions）
+  - [x] 通知API（6 Actions）
+  - [x] トークンAPI（5 Actions）
+  - [x] レポートAPI（4 Actions）
+  - [x] スケジュールタスクAPI（8 Actions）
 - [x] Cognito JWT認証実装（VerifyCognitoToken + AuthHelper）
-- [x] API Routes設定（/v1 prefix, cognito middleware）
-- [x] テストコード作成（34テストメソッド: AuthHelper, CognitoAuth, TaskApi）
-- [ ] React Nativeアプリ開発（iOS/Android）
-- [ ] Firebaseプッシュ通知統合
-- [ ] App Store/Google Play申請・公開
+- [x] API Routes設定（/api/v1 prefix, cognito middleware）
+- [x] テストコード作成（126+テスト、348+アサーション、100%パス率達成）
+- [x] OpenAPI 3.0仕様書作成（1,900行、60エンドポイント、15スキーマ）
+- [x] Swagger UI導入（http://localhost:8080/api-docs）
+- [x] Stripe決済統合（都度決済 + サブスクリプション、本番稼働中）
 - [x] 既存Web機能継続動作確認（AWS Fargate稼働中）
 - [x] ポータル機能（Laravel統合）動作確認
 
-### Phase 2 完了条件
+**参照**: `docs/reports/2025-12-05-phase-1f-openapi-swagger-completion-report.md`
+
+---
+
+### Phase 2 完了条件（🔄 準備開始 - 2025年12月～2026年3月）
+
+**Phase 2.A: 技術選定（2週間）**
+- [ ] React Native vs Flutter評価
+- [ ] Firebase設定（Push, Analytics, Crashlytics）
+- [ ] 開発環境構築（Expo/Android Studio/Xcode）
+
+**Phase 2.B: モバイルアプリ開発（10週間）**
+- [ ] 認証画面実装（Cognito JWT連携）
+- [ ] タスク画面実装（CRUD、承認、検索）
+- [ ] グループ画面実装（メンバー管理、権限設定）
+- [ ] プロフィール画面実装
+- [ ] アバター画面実装（AI生成、コメント表示）
+- [ ] 通知画面実装（プッシュ通知、既読化）
+- [ ] トークン画面実装（残高、購入、履歴）
+
+**Phase 2.C: ストア公開（4週間）**
+- [ ] App Store申請・審査
+- [ ] Google Play申請・審査
+- [ ] アプリ公開（Target: 2026年3月）
+
+---
+
+### Phase 3 完了条件（📅 中期計画）
 
 - [ ] Portal独立Laravel新規アプリ作成
 - [ ] Portal DBマイグレーション
@@ -864,7 +1663,7 @@ resource "aws_db_instance" "parentshare" { ... }
 - [ ] MyTeacher ⇔ ParentShare API連携実装
 - [ ] 各アプリ独立デプロイ確認
 
-### Phase 3 完了条件
+### Phase 4 完了条件（📅 長期計画）
 
 - [ ] AI-Sensei Laravel新規アプリ作成
 - [ ] AI-Sensei DBマイグレーション

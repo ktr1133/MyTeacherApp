@@ -1,0 +1,1916 @@
+openapi: 3.0.3
+info:
+  title: MyTeacher Mobile API
+  version: 1.0.0
+  description: |
+    MyTeacherモバイルアプリ用バックエンドAPI
+    
+    ## 認証方式
+    AWS Cognito JWT認証を使用します。
+    すべてのエンドポイントは以下のヘッダーが必要です：
+    ```
+    Authorization: Bearer {cognito_jwt_token}
+    ```
+    
+    ## ベースURL
+    - 本番環境: `https://my-teacher-app.com/api/v1`
+    - ローカル開発: `http://localhost:8080/api/v1`
+    
+    ## レスポンス形式
+    すべてのレスポンスは以下の形式を持ちます：
+    
+    **成功時**:
+    ```json
+    {
+      "success": true,
+      "message": "処理が完了しました",
+      "data": { ... }
+    }
+    ```
+    
+    **エラー時**:
+    ```json
+    {
+      "success": false,
+      "message": "エラーメッセージ",
+      "errors": {
+        "field_name": ["エラー詳細"]
+      }
+    }
+    ```
+    
+  contact:
+    name: MyTeacher Development Team
+    email: famicoapp@gmail.com
+  license:
+    name: Proprietary
+    url: https://my-teacher-app.com/license
+
+servers:
+  - url: https://my-teacher-app.com/api/v1
+    description: 本番環境
+  - url: http://localhost:8080/api/v1
+    description: ローカル開発環境
+
+tags:
+  - name: Authentication
+    description: 認証API（モバイルアプリ用 - Sanctum）
+  - name: Tasks
+    description: タスク管理API（14エンドポイント）
+  - name: Groups
+    description: グループ管理API（7エンドポイント）
+  - name: Profile
+    description: プロフィール管理API（5エンドポイント）
+  - name: Tags
+    description: タグ管理API（4エンドポイント）
+  - name: Avatars
+    description: アバター管理API（7エンドポイント）
+  - name: Notifications
+    description: 通知API（6エンドポイント）
+  - name: Tokens
+    description: トークン管理API（5エンドポイント）
+  - name: Reports
+    description: レポート・実績API（4エンドポイント）
+  - name: ScheduledTasks
+    description: スケジュールタスクAPI（8エンドポイント）
+
+security:
+  - CognitoAuth: []
+  - SanctumAuth: []
+
+components:
+  securitySchemes:
+    CognitoAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: AWS Cognito JWTトークン（Web版用）
+    SanctumAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: Laravel Sanctumトークン（モバイル版用）
+
+  schemas:
+    # ============================================================
+    # 共通スキーマ
+    # ============================================================
+    
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "処理が完了しました"
+        data:
+          type: object
+          additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "エラーが発生しました"
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        from:
+          type: integer
+          example: 1
+        last_page:
+          type: integer
+          example: 10
+        per_page:
+          type: integer
+          example: 20
+        to:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 200
+
+    # ============================================================
+    # Task関連スキーマ
+    # ============================================================
+    
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 123
+        user_id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "宿題をする"
+        description:
+          type: string
+          nullable: true
+          example: "数学の問題集p.20-25"
+        due_date:
+          type: string
+          format: date
+          nullable: true
+          example: "2025-12-10"
+        is_completed:
+          type: boolean
+          example: false
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 3
+        group_task_id:
+          type: string
+          format: uuid
+          nullable: true
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        assigned_by_user_id:
+          type: integer
+          nullable: true
+          example: 2
+        requires_approval:
+          type: boolean
+          example: false
+        approval_status:
+          type: string
+          enum: [pending, approved, rejected]
+          nullable: true
+          example: "pending"
+        approved_by_user_id:
+          type: integer
+          nullable: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskImage'
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-12-05T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-12-05T15:30:00Z"
+
+    TaskImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 456
+        task_id:
+          type: integer
+          example: 123
+        file_path:
+          type: string
+          example: "task_approvals/1/abc123.jpg"
+        file_url:
+          type: string
+          format: uri
+          example: "https://s3.amazonaws.com/bucket/task_approvals/1/abc123.jpg"
+        created_at:
+          type: string
+          format: date-time
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        user_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "宿題"
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          example: "#3B82F6"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ============================================================
+    # Group関連スキーマ
+    # ============================================================
+
+    Group:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        user_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "田中家"
+        invite_code:
+          type: string
+          example: "ABC123XYZ"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    GroupMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 20
+        group_id:
+          type: integer
+          example: 5
+        user_id:
+          type: integer
+          example: 2
+        can_assign_tasks:
+          type: boolean
+          example: true
+        theme:
+          type: string
+          example: "blue"
+        user:
+          $ref: '#/components/schemas/User'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ============================================================
+    # User関連スキーマ
+    # ============================================================
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "田中太郎"
+        email:
+          type: string
+          format: email
+          example: "taro@example.com"
+        timezone:
+          type: string
+          example: "Asia/Tokyo"
+        cognito_sub:
+          type: string
+          example: "abc123-def456-ghi789"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ============================================================
+    # Avatar関連スキーマ
+    # ============================================================
+
+    TeacherAvatar:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "さくら先生"
+        seed:
+          type: integer
+          example: 123456
+        is_active:
+          type: boolean
+          example: true
+        is_transparent:
+          type: boolean
+          example: false
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvatarImage'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AvatarImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        teacher_avatar_id:
+          type: integer
+          example: 1
+        pose_type:
+          type: string
+          enum: [full, bust]
+          example: "bust"
+        expression:
+          type: string
+          enum: [smile, normal, angry, sad]
+          example: "smile"
+        file_path:
+          type: string
+          example: "avatars/1/smile_bust_123456.png"
+        file_url:
+          type: string
+          format: uri
+          example: "https://s3.amazonaws.com/bucket/avatars/1/smile_bust_123456.png"
+        created_at:
+          type: string
+          format: date-time
+
+    AvatarComment:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [task_created, task_completed, task_failed, login, achievement]
+          example: "task_completed"
+        comment:
+          type: string
+          example: "よくできました！"
+        image_url:
+          type: string
+          format: uri
+          example: "https://s3.amazonaws.com/bucket/avatars/1/smile_bust_123456.png"
+
+    # ============================================================
+    # Notification関連スキーマ
+    # ============================================================
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 100
+        user_id:
+          type: integer
+          example: 1
+        template_key:
+          type: string
+          example: "task_assigned"
+        title:
+          type: string
+          example: "新しいタスクが割り当てられました"
+        body:
+          type: string
+          example: "「宿題をする」が割り当てられました"
+        data:
+          type: object
+          additionalProperties: true
+          example:
+            task_id: 123
+            assigned_by: "田中花子"
+        read_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ============================================================
+    # Token関連スキーマ
+    # ============================================================
+
+    TokenBalance:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        balance:
+          type: integer
+          example: 500000
+        last_free_reset:
+          type: string
+          format: date
+          example: "2025-12-01"
+        token_mode:
+          type: string
+          enum: [personal, group]
+          example: "personal"
+        updated_at:
+          type: string
+          format: date-time
+
+    TokenTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 200
+        user_id:
+          type: integer
+          example: 1
+        amount:
+          type: integer
+          example: -1000
+        balance_after:
+          type: integer
+          example: 499000
+        type:
+          type: string
+          enum: [consume, purchase, grant, free_reset, admin_adjust, ai_usage, refund]
+          example: "ai_usage"
+        description:
+          type: string
+          example: "AI機能: タスク分解"
+        created_at:
+          type: string
+          format: date-time
+
+    TokenPackage:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "prod_ABC123"
+        name:
+          type: string
+          example: "500万トークンパック"
+        tokens:
+          type: integer
+          example: 5000000
+        price:
+          type: integer
+          example: 500
+        currency:
+          type: string
+          example: "jpy"
+        stripe_price_id:
+          type: string
+          example: "price_XYZ789"
+
+    # ============================================================
+    # Report関連スキーマ
+    # ============================================================
+
+    PerformanceData:
+      type: object
+      properties:
+        period:
+          type: string
+          enum: [week, month, year]
+          example: "month"
+        tasks_completed:
+          type: integer
+          example: 50
+        tasks_total:
+          type: integer
+          example: 75
+        completion_rate:
+          type: number
+          format: float
+          example: 66.67
+        trend_data:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              completed:
+                type: integer
+
+    MonthlyReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 300
+        user_id:
+          type: integer
+          example: 1
+        year:
+          type: integer
+          example: 2025
+        month:
+          type: integer
+          example: 12
+        tasks_completed:
+          type: integer
+          example: 50
+        tasks_total:
+          type: integer
+          example: 75
+        completion_rate:
+          type: number
+          format: float
+          example: 66.67
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ============================================================
+    # ScheduledTask関連スキーマ
+    # ============================================================
+
+    ScheduledTask:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 400
+        group_id:
+          type: integer
+          example: 5
+        title:
+          type: string
+          example: "定期タスク: 掃除"
+        description:
+          type: string
+          nullable: true
+        schedule_type:
+          type: string
+          enum: [daily, weekly, monthly, custom]
+          example: "weekly"
+        schedule_config:
+          type: object
+          additionalProperties: true
+          example:
+            day_of_week: [1, 3, 5]
+            time: "09:00"
+        is_active:
+          type: boolean
+          example: true
+        last_executed_at:
+          type: string
+          format: date-time
+          nullable: true
+        next_execution_at:
+          type: string
+          format: date-time
+          example: "2025-12-08T09:00:00Z"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+  # ============================================================
+  # 共通レスポンステンプレート
+  # ============================================================
+
+  responses:
+    UnauthorizedError:
+      description: 認証エラー - JWT/Sanctumトークンが無効または期限切れ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "認証が必要です"
+
+    ForbiddenError:
+      description: 権限エラー - リソースへのアクセス権限がない
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "権限がありません"
+
+    NotFoundError:
+      description: リソースが見つからない
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "リソースが見つかりません"
+
+    ValidationError:
+      description: バリデーションエラー - 入力内容に誤りがある
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "入力内容に誤りがあります"
+            errors:
+              title: ["タイトルは必須です"]
+              due_date: ["日付形式が正しくありません"]
+
+    ServerError:
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "サーバーエラーが発生しました"
+
+# ============================================================
+# パス定義（認証 + 60エンドポイント）
+# ============================================================
+
+paths:
+  # ============================================================
+  # Authentication API（モバイルアプリ用 - Sanctum）
+  # ============================================================
+
+  /auth/login:
+    post:
+      summary: ログイン（モバイル用）
+      description: |
+        usernameとpasswordでログインし、Sanctumトークンを取得します。
+        
+        **注意**: Web版はCognito JWT認証、モバイル版はSanctum認証を使用します。
+      tags: [Authentication]
+      security: []  # 認証不要
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  description: ユーザー名（メールアドレスではない）
+                  example: "taro_tanaka"
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: "password123"
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Laravel Sanctumトークン（有効期限30日）
+                    example: "1|abcdefghijklmnopqrstuvwxyz123456"
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: "田中太郎"
+                      email:
+                        type: string
+                        format: email
+                        example: "taro@example.com"
+                      username:
+                        type: string
+                        example: "taro_tanaka"
+                      avatar_url:
+                        type: string
+                        nullable: true
+                        example: "https://s3.amazonaws.com/avatars/123.png"
+                      created_at:
+                        type: string
+                        format: date-time
+        '401':
+          description: 認証失敗 - usernameまたはpasswordが間違っている
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "認証に失敗しました"
+                  errors:
+                    type: object
+                    properties:
+                      username:
+                        type: array
+                        items:
+                          type: string
+                        example: ["ユーザー名またはパスワードが間違っています"]
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/logout:
+    post:
+      summary: ログアウト（モバイル用）
+      description: 現在のSanctumトークンを無効化します。
+      tags: [Authentication]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: ログアウト成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ログアウトしました"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ============================================================
+  # Tasks API（14エンドポイント）
+  # ============================================================
+
+  /tasks:
+    get:
+      summary: タスク一覧取得
+      description: ユーザーの全タスクを取得します。
+      tags: [Tasks]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      summary: タスク作成
+      description: 新しいタスクを作成します。
+      tags: [Tasks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  example: "宿題をする"
+                description:
+                  type: string
+                  example: "数学の問題集p.20-25"
+                due_date:
+                  type: string
+                  format: date
+                  example: "2025-12-10"
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 3
+                tags:
+                  type: array
+                  items:
+                    type: integer
+                  example: [1, 2]
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Task'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /tasks/paginated:
+    get:
+      summary: タスク一覧取得（ページネーション付き）
+      description: 無限スクロール用のページネーション付きタスク一覧を取得します。
+      tags: [Tasks]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+  /tasks/{task}:
+    put:
+      summary: タスク更新
+      description: 既存のタスクを更新します。
+      tags: [Tasks]
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                due_date:
+                  type: string
+                  format: date
+                priority:
+                  type: integer
+                tags:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      summary: タスク削除
+      description: タスクを削除します。
+      tags: [Tasks]
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 削除成功
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /tasks/{task}/toggle:
+    patch:
+      summary: タスク完了状態切り替え
+      description: タスクの完了/未完了を切り替えます。
+      tags: [Tasks]
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /tasks/{task}/approve:
+    post:
+      summary: タスク承認
+      description: グループタスクを承認します。
+      tags: [Tasks]
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 承認成功
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /tasks/{task}/reject:
+    post:
+      summary: タスク却下
+      description: グループタスクを却下します。
+      tags: [Tasks]
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  example: "もう一度確認してください"
+      responses:
+        '200':
+          description: 却下成功
+
+  /tasks/{task}/request-approval:
+    post:
+      summary: タスク完了申請
+      description: タスクの完了を申請します（承認が必要な場合）。
+      tags: [Tasks]
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 申請成功
+
+  /tasks/{task}/images:
+    post:
+      summary: タスク画像アップロード
+      description: タスクに画像を添付します。
+      tags: [Tasks]
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: アップロード成功
+
+  /task-images/{image}:
+    delete:
+      summary: タスク画像削除
+      description: タスクに添付された画像を削除します。
+      tags: [Tasks]
+      parameters:
+        - name: image
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 削除成功
+
+  /tasks/bulk-complete:
+    patch:
+      summary: タスク一括完了
+      description: 複数のタスクを一括で完了/未完了にします。
+      tags: [Tasks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task_ids, completed]
+              properties:
+                task_ids:
+                  type: array
+                  items:
+                    type: integer
+                  example: [1, 2, 3]
+                completed:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: 成功
+
+  /tasks/search:
+    post:
+      summary: タスク検索
+      description: キーワードでタスクを検索します。
+      tags: [Tasks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                keyword:
+                  type: string
+                  example: "宿題"
+                tags:
+                  type: array
+                  items:
+                    type: integer
+                completed:
+                  type: boolean
+      responses:
+        '200':
+          description: 成功
+
+  /approvals/pending:
+    get:
+      summary: 承認待ちタスク一覧
+      description: 承認待ち状態のタスク一覧を取得します。
+      tags: [Tasks]
+      responses:
+        '200':
+          description: 成功
+
+  # ============================================================
+  # Groups API（7エンドポイント）
+  # ============================================================
+
+  /groups/edit:
+    get:
+      summary: グループ情報取得
+      description: ユーザーのグループ情報を取得します。
+      tags: [Groups]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Group'
+
+  /groups:
+    patch:
+      summary: グループ情報更新
+      description: グループ名を更新します。
+      tags: [Groups]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: "田中家"
+      responses:
+        '200':
+          description: 更新成功
+
+  /groups/members:
+    post:
+      summary: メンバー追加
+      description: 招待コードでグループにメンバーを追加します。
+      tags: [Groups]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "member@example.com"
+      responses:
+        '201':
+          description: 追加成功
+
+  /groups/members/{member}/permission:
+    patch:
+      summary: メンバー権限更新
+      description: メンバーのタスク割り当て権限を更新します。
+      tags: [Groups]
+      parameters:
+        - name: member
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [can_assign_tasks]
+              properties:
+                can_assign_tasks:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: 更新成功
+
+  /groups/members/{member}/theme:
+    patch:
+      summary: メンバーテーマ切り替え
+      description: メンバーのテーマを変更します。
+      tags: [Groups]
+      parameters:
+        - name: member
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 変更成功
+
+  /groups/transfer/{newMaster}:
+    post:
+      summary: グループマスター譲渡
+      description: グループのマスター権限を他のメンバーに譲渡します。
+      tags: [Groups]
+      parameters:
+        - name: newMaster
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 譲渡成功
+
+  /groups/members/{member}:
+    delete:
+      summary: メンバー削除
+      description: グループからメンバーを削除します。
+      tags: [Groups]
+      parameters:
+        - name: member
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 削除成功
+
+  # ============================================================
+  # Profile API（5エンドポイント）
+  # ============================================================
+
+  /profile/edit:
+    get:
+      summary: プロフィール情報取得
+      description: ユーザーのプロフィール情報を取得します。
+      tags: [Profile]
+      responses:
+        '200':
+          description: 成功
+
+  /profile:
+    patch:
+      summary: プロフィール更新
+      description: ユーザーのプロフィール情報を更新します。
+      tags: [Profile]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "田中太郎"
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: 更新成功
+
+    delete:
+      summary: アカウント削除
+      description: ユーザーアカウントを削除します。
+      tags: [Profile]
+      responses:
+        '200':
+          description: 削除成功
+
+  /profile/timezone:
+    get:
+      summary: タイムゾーン取得
+      description: ユーザーのタイムゾーン設定を取得します。
+      tags: [Profile]
+      responses:
+        '200':
+          description: 成功
+
+    put:
+      summary: タイムゾーン更新
+      description: ユーザーのタイムゾーンを更新します。
+      tags: [Profile]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [timezone]
+              properties:
+                timezone:
+                  type: string
+                  example: "Asia/Tokyo"
+      responses:
+        '200':
+          description: 更新成功
+
+  # ============================================================
+  # Tags API（4エンドポイント）
+  # ============================================================
+
+  /tags:
+    get:
+      summary: タグ一覧取得
+      description: ユーザーの全タグを取得します。
+      tags: [Tags]
+      responses:
+        '200':
+          description: 成功
+
+    post:
+      summary: タグ作成
+      description: 新しいタグを作成します。
+      tags: [Tags]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, color]
+              properties:
+                name:
+                  type: string
+                  example: "宿題"
+                color:
+                  type: string
+                  pattern: '^#[0-9A-Fa-f]{6}$'
+                  example: "#3B82F6"
+      responses:
+        '201':
+          description: 作成成功
+
+  /tags/{id}:
+    put:
+      summary: タグ更新
+      description: タグの名前または色を更新します。
+      tags: [Tags]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                color:
+                  type: string
+                  pattern: '^#[0-9A-Fa-f]{6}$'
+      responses:
+        '200':
+          description: 更新成功
+
+    delete:
+      summary: タグ削除
+      description: タグを削除します。
+      tags: [Tags]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 削除成功
+
+  # ============================================================
+  # Avatars API（7エンドポイント）
+  # ============================================================
+
+  /avatar:
+    get:
+      summary: アバター情報取得
+      description: ユーザーのアバター情報を取得します。
+      tags: [Avatars]
+      responses:
+        '200':
+          description: 成功
+
+    post:
+      summary: アバター作成
+      description: 新しいアバターを作成します（AI生成）。
+      tags: [Avatars]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: "さくら先生"
+                is_transparent:
+                  type: boolean
+                  example: false
+      responses:
+        '201':
+          description: 作成成功（非同期処理）
+
+    put:
+      summary: アバター更新
+      description: アバターの設定を更新します。
+      tags: [Avatars]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                is_transparent:
+                  type: boolean
+      responses:
+        '200':
+          description: 更新成功
+
+    delete:
+      summary: アバター削除
+      description: アバターを削除します。
+      tags: [Avatars]
+      responses:
+        '200':
+          description: 削除成功
+
+  /avatar/regenerate:
+    post:
+      summary: アバター画像再生成
+      description: アバター画像を再生成します（AI）。
+      tags: [Avatars]
+      responses:
+        '200':
+          description: 再生成開始（非同期処理）
+
+  /avatar/visibility:
+    patch:
+      summary: アバター表示切り替え
+      description: アバターの表示/非表示を切り替えます。
+      tags: [Avatars]
+      responses:
+        '200':
+          description: 切り替え成功
+
+  /avatar/comment/{event}:
+    get:
+      summary: アバターコメント取得
+      description: イベントに応じたアバターコメントを取得します。
+      tags: [Avatars]
+      parameters:
+        - name: event
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [task_created, task_completed, task_failed, login, achievement]
+          example: "task_completed"
+      responses:
+        '200':
+          description: 成功
+
+  # ============================================================
+  # Notifications API（6エンドポイント）
+  # ============================================================
+
+  /notifications:
+    get:
+      summary: 通知一覧取得
+      description: ユーザーの全通知を取得します。
+      tags: [Notifications]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+
+  /notifications/{id}:
+    get:
+      summary: 通知詳細取得
+      description: 特定の通知の詳細を取得します。
+      tags: [Notifications]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+
+  /notifications/{id}/read:
+    patch:
+      summary: 通知既読化
+      description: 通知を既読にします。
+      tags: [Notifications]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 既読化成功
+
+  /notifications/read-all:
+    post:
+      summary: 全通知既読化
+      description: 全ての通知を既読にします。
+      tags: [Notifications]
+      responses:
+        '200':
+          description: 既読化成功
+
+  /notifications/unread-count:
+    get:
+      summary: 未読件数取得
+      description: 未読通知の件数を取得します。
+      tags: [Notifications]
+      responses:
+        '200':
+          description: 成功
+
+  /notifications/search:
+    get:
+      summary: 通知検索
+      description: キーワードで通知を検索します。
+      tags: [Notifications]
+      parameters:
+        - name: keyword
+          in: query
+          schema:
+            type: string
+        - name: unread_only
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: 成功
+
+  # ============================================================
+  # Tokens API（5エンドポイント）
+  # ============================================================
+
+  /tokens/balance:
+    get:
+      summary: トークン残高取得
+      description: ユーザーのトークン残高を取得します。
+      tags: [Tokens]
+      responses:
+        '200':
+          description: 成功
+
+  /tokens/history:
+    get:
+      summary: トークン履歴取得
+      description: トークンの取引履歴を取得します。
+      tags: [Tokens]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+
+  /tokens/packages:
+    get:
+      summary: トークンパッケージ一覧
+      description: 購入可能なトークンパッケージを取得します。
+      tags: [Tokens]
+      responses:
+        '200':
+          description: 成功
+
+  /tokens/create-checkout-session:
+    post:
+      summary: Stripe決済セッション作成
+      description: トークン購入用のStripe決済セッションを作成します。
+      tags: [Tokens]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [package_id]
+              properties:
+                package_id:
+                  type: string
+                  example: "prod_ABC123"
+      responses:
+        '200':
+          description: セッション作成成功
+
+  /tokens/toggle-mode:
+    patch:
+      summary: トークンモード切り替え
+      description: 個人/グループトークンモードを切り替えます。
+      tags: [Tokens]
+      responses:
+        '200':
+          description: 切り替え成功
+
+  # ============================================================
+  # Reports API（4エンドポイント）
+  # ============================================================
+
+  /reports/performance:
+    get:
+      summary: パフォーマンス実績取得
+      description: タスク完了実績を取得します。
+      tags: [Reports]
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, year]
+            default: week
+      responses:
+        '200':
+          description: 成功
+
+  /reports/monthly/{year}/{month}:
+    get:
+      summary: 月次レポート取得
+      description: 指定月の月次レポートを取得します。
+      tags: [Reports]
+      parameters:
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 2025
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+          example: 12
+      responses:
+        '200':
+          description: 成功
+
+  /reports/monthly/member-summary:
+    post:
+      summary: メンバー別概況生成
+      description: グループメンバーの月次概況を生成します。
+      tags: [Reports]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [year, month]
+              properties:
+                year:
+                  type: integer
+                month:
+                  type: integer
+      responses:
+        '200':
+          description: 生成成功
+
+  /reports/monthly/member-summary/pdf:
+    post:
+      summary: メンバー別概況PDF
+      description: メンバー別概況をPDFでダウンロードします。
+      tags: [Reports]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [year, month]
+              properties:
+                year:
+                  type: integer
+                month:
+                  type: integer
+      responses:
+        '200':
+          description: PDF生成成功
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  # ============================================================
+  # ScheduledTasks API（8エンドポイント）
+  # ============================================================
+
+  /scheduled-tasks:
+    get:
+      summary: スケジュールタスク一覧
+      description: 定期実行タスクの一覧を取得します。
+      tags: [ScheduledTasks]
+      responses:
+        '200':
+          description: 成功
+
+    post:
+      summary: スケジュールタスク作成
+      description: 新しい定期実行タスクを作成します。
+      tags: [ScheduledTasks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, schedule_type, schedule_config]
+              properties:
+                title:
+                  type: string
+                  example: "定期タスク: 掃除"
+                description:
+                  type: string
+                schedule_type:
+                  type: string
+                  enum: [daily, weekly, monthly, custom]
+                schedule_config:
+                  type: object
+      responses:
+        '201':
+          description: 作成成功
+
+  /scheduled-tasks/create:
+    get:
+      summary: スケジュールタスク作成フォーム
+      description: スケジュールタスク作成に必要な情報を取得します。
+      tags: [ScheduledTasks]
+      responses:
+        '200':
+          description: 成功
+
+  /scheduled-tasks/{id}:
+    put:
+      summary: スケジュールタスク更新
+      description: 定期実行タスクの設定を更新します。
+      tags: [ScheduledTasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                schedule_type:
+                  type: string
+                schedule_config:
+                  type: object
+      responses:
+        '200':
+          description: 更新成功
+
+    delete:
+      summary: スケジュールタスク削除
+      description: 定期実行タスクを削除します（ソフトデリート）。
+      tags: [ScheduledTasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 削除成功
+
+  /scheduled-tasks/{id}/edit:
+    get:
+      summary: スケジュールタスク編集フォーム
+      description: スケジュールタスク編集に必要な情報を取得します。
+      tags: [ScheduledTasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+
+  /scheduled-tasks/{id}/pause:
+    post:
+      summary: スケジュールタスク一時停止
+      description: 定期実行タスクを一時停止します。
+      tags: [ScheduledTasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 一時停止成功
+
+  /scheduled-tasks/{id}/resume:
+    post:
+      summary: スケジュールタスク再開
+      description: 一時停止中の定期実行タスクを再開します。
+      tags: [ScheduledTasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 再開成功

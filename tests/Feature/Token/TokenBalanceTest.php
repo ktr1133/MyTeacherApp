@@ -4,10 +4,9 @@ use App\Models\User;
 use App\Models\TokenBalance;
 use App\Models\TokenTransaction;
 use App\Services\Token\TokenServiceInterface;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
+// RefreshDatabaseは Pest.php で既に設定済みのため不要
 
 /**
  * トークン残高管理テスト

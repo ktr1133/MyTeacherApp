@@ -215,3 +215,4 @@ docs/**/*.md
 public/build/assets/*.css
 public/build/assets/*.js
 public/build/manifest.json
+/mobile

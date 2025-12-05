@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SwaggerController;
 
 // 管理者用 - 認証
 use App\Http\Actions\Admin\Auth\AdminLoginAction;
@@ -164,6 +165,13 @@ Route::get('/health', function () {
 | 全てのルートは 'web' ミドルウェアグループ内にあり、セッション、CSRF保護などが提供されます。
 |
 */
+
+// ============================================================
+// Swagger UI（API仕様書）
+// ============================================================
+Route::get('/api-docs', [SwaggerController::class, 'index'])->name('api-docs');
+Route::get('/api-docs.yaml', [SwaggerController::class, 'yaml'])->name('api-docs.yaml');
+
 Route::get('/', function () {
     return view('welcome');
 });

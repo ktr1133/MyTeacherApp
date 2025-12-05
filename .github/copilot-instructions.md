@@ -71,10 +71,23 @@ Laravel 12 + Docker構成。**Action-Service-Repositoryパターン**（従来�
    - 関連するコンポーネントを1つずつ検証
    - 依存関係やデータフローを詳細に追跡
 
-4. **修正後の検証**
+4. **修正後の検証（必須）**
    - ログベースでの動作確認
+   - **修正部分に関連する統合テストの実行**（必須）
    - 同様の問題を防ぐためのテスト追加
    - ドキュメント・手順書の更新
+
+   **テスト実行例**:
+   ```bash
+   # 特定のテストクラスのみ実行（修正に関連するテスト）
+   CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test --filter="AuthenticationTest|ProfileTest"
+   
+   # 修正に関連するディレクトリ全体のテスト実行
+   CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test tests/Feature/Auth/
+   
+   # 全テスト実行（重大な修正の場合）
+   CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test
+   ```
 
 ### 禁止事項
 
@@ -82,6 +95,7 @@ Laravel 12 + Docker構成。**Action-Service-Repositoryパターン**（従来�
 - ❌ ログを確認せずに設定値を推測で変更
 - ❌ Stack Overflowの解決策をそのまま適用
 - ❌ 「動いたからOK」で根本原因を放置
+- ❌ **修正後にテストを実行せずにコミット**
 
 この方針により、確実で持続可能な問題解決を実現し、同様の問題の再発を防止する。
 

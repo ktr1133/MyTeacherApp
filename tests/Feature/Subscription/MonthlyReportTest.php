@@ -3,7 +3,8 @@
 use App\Models\User;
 use App\Models\Group;
 use App\Models\MonthlyReport;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
+// RefreshDatabaseは Pest.php で既に設定済みのため不要
 
 /**
  * 月次レポートテスト（Pest形式）
@@ -30,8 +31,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
  * - 2025_11_30_111950_add_subscription_fields_to_groups_table.php
  *   - groups.report_enabled_until (date, nullable)
  */
-
-uses(RefreshDatabase::class);
 
 describe('Monthly Report', function () {
     test('月次レポートを作成できる', function () {

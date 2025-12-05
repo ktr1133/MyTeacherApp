@@ -59,6 +59,40 @@ use App\Http\Actions\Api\Token\GetTokenPackagesApiAction;
 use App\Http\Actions\Api\Token\CreateCheckoutSessionApiAction;
 use App\Http\Actions\Api\Token\ToggleTokenModeApiAction;
 
+// Phase 1.E-1.5.3: Report API
+use App\Http\Actions\Api\Report\IndexPerformanceApiAction;
+use App\Http\Actions\Api\Report\ShowMonthlyReportApiAction;
+use App\Http\Actions\Api\Report\GenerateMemberSummaryApiAction;
+use App\Http\Actions\Api\Report\DownloadMemberSummaryPdfApiAction;
+
+// Phase 1.E-1.5.3: ScheduledTask API
+use App\Http\Actions\Api\ScheduledTask\IndexScheduledTaskApiAction;
+use App\Http\Actions\Api\ScheduledTask\CreateScheduledTaskApiAction;
+use App\Http\Actions\Api\ScheduledTask\StoreScheduledTaskApiAction;
+use App\Http\Actions\Api\ScheduledTask\EditScheduledTaskApiAction;
+use App\Http\Actions\Api\ScheduledTask\UpdateScheduledTaskApiAction;
+use App\Http\Actions\Api\ScheduledTask\DeleteScheduledTaskApiAction;
+use App\Http\Actions\Api\ScheduledTask\PauseScheduledTaskApiAction;
+use App\Http\Actions\Api\ScheduledTask\ResumeScheduledTaskApiAction;
+
+// ============================================================
+// 認証API（モバイルアプリ用 - Sanctum）
+// ============================================================
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
+Route::prefix('auth')->group(function () {
+    // ログイン（username + password → Sanctum token）
+    Route::post('/login', [AuthenticatedSessionController::class, 'apiLogin'])->name('api.auth.login');
+    
+    // ログアウト（Sanctum token削除）
+    Route::post('/logout', [AuthenticatedSessionController::class, 'apiLogout'])
+        ->middleware('auth:sanctum')
+        ->name('api.auth.logout');
+    
+    // 登録は現在停止中（RegisterAction::store で abort(404)）
+    // Route::post('/register', [RegisterAction::class, 'apiStore'])->name('api.auth.register');
+});
+
 // ============================================================
 // Stripe Webhook（認証不要）
 // ============================================================
@@ -162,6 +196,26 @@ Route::prefix('v1')->middleware(['cognito'])->group(function () {
     Route::get('/tokens/packages', GetTokenPackagesApiAction::class)->name('api.v1.tokens.packages');
     Route::post('/tokens/create-checkout-session', CreateCheckoutSessionApiAction::class)->name('api.v1.tokens.create-checkout-session');
     Route::patch('/tokens/toggle-mode', ToggleTokenModeApiAction::class)->name('api.v1.tokens.toggle-mode');
+
+    // ============================================================
+    // Phase 1.E-1.5.3: 低優先度API（レポート・実績、スケジュールタスク）
+    // ============================================================
+
+    // レポート・実績API
+    Route::get('/reports/performance', IndexPerformanceApiAction::class)->name('api.v1.reports.performance');
+    Route::get('/reports/monthly/{year?}/{month?}', ShowMonthlyReportApiAction::class)->name('api.v1.reports.monthly.show');
+    Route::post('/reports/monthly/member-summary', GenerateMemberSummaryApiAction::class)->name('api.v1.reports.monthly.member-summary');
+    Route::post('/reports/monthly/member-summary/pdf', DownloadMemberSummaryPdfApiAction::class)->name('api.v1.reports.monthly.member-summary.pdf');
+
+    // スケジュールタスクAPI
+    Route::get('/scheduled-tasks', IndexScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.index');
+    Route::get('/scheduled-tasks/create', CreateScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.create');
+    Route::post('/scheduled-tasks', StoreScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.store');
+    Route::get('/scheduled-tasks/{id}/edit', EditScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.edit');
+    Route::put('/scheduled-tasks/{id}', UpdateScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.update');
+    Route::delete('/scheduled-tasks/{id}', DeleteScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.destroy');
+    Route::post('/scheduled-tasks/{id}/pause', PauseScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.pause');
+    Route::post('/scheduled-tasks/{id}/resume', ResumeScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.resume');
 });
 
 // Breeze + Cognito 並行運用ルート（Phase 1.5 期間限定）

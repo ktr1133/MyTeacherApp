@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
 
 class AuthenticatedSessionController extends Controller
@@ -71,5 +72,50 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * API版ログイン（モバイルアプリ用）
+     * 
+     * @param LoginRequest $request
+     * @return JsonResponse
+     */
+    public function apiLogin(LoginRequest $request): JsonResponse
+    {
+        $request->authenticate();
+        
+        $user = Auth::user();
+        
+        // 最終ログイン日時更新
+        $user->update(['last_login_at' => now()]);
+        
+        // Sanctumトークン発行（モバイルアプリ用）
+        $token = $user->createToken('mobile-app', ['*'], now()->addDays(30))->plainTextToken;
+        
+        return response()->json([
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'username' => $user->username,
+                'avatar_url' => $user->avatar_url,
+                'created_at' => $user->created_at,
+            ]
+        ]);
+    }
+
+    /**
+     * API版ログアウト（モバイルアプリ用）
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function apiLogout(Request $request): JsonResponse
+    {
+        // 現在のトークンを削除
+        $request->user()->currentAccessToken()->delete();
+        
+        return response()->json(['message' => 'ログアウトしました']);
     }
 }

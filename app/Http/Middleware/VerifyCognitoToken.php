@@ -69,7 +69,9 @@ class VerifyCognitoToken
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // テスト環境で既に認証済みの場合はバイパス
+        // テスト環境でセッション認証済みの場合はバイパス
+        // 理由: APIテストで actingAs() を使用するため
+        // 本番環境では必ずJWTトークンが必要
         if (app()->environment('testing') && $request->user()) {
             return $next($request);
         }

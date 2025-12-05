@@ -19,10 +19,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, Billable, TwoFactorAuthenticatable, SoftDeletes;
+    use HasFactory, Notifiable, Billable, TwoFactorAuthenticatable, SoftDeletes, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
