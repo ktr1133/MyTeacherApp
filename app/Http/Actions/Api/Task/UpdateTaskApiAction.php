@@ -3,10 +3,11 @@
 namespace App\Http\Actions\Api\Task;
 
 use App\Models\Task;
-use App\Http\Requests\Task\StoreTaskRequest;
+use Illuminate\Http\Request;
 use App\Services\Task\TaskManagementServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * API: タスク更新アクション
@@ -26,11 +27,11 @@ class UpdateTaskApiAction
     /**
      * タスクを更新
      *
-     * @param StoreTaskRequest $request バリデーション済みリクエスト
+     * @param Request $request リクエスト
      * @param Task $task ルートモデルバインディング
      * @return JsonResponse
      */
-    public function __invoke(StoreTaskRequest $request, Task $task): JsonResponse
+    public function __invoke(Request $request, Task $task): JsonResponse
     {
         try {
             // 認証済みユーザーを取得（VerifyCognitoTokenで注入済み）
@@ -50,9 +51,29 @@ class UpdateTaskApiAction
                     'message' => 'このタスクを更新する権限がありません。',
                 ], 403);
             }
+            
+            // バリデーション（spanは任意）
+            $validator = Validator::make($request->all(), [
+                'title' => 'sometimes|string|max:255',
+                'description' => 'nullable|string',
+                'span' => 'nullable|integer|min:1',
+                'due_date' => 'nullable|date',
+                'priority' => 'sometimes|integer|min:1|max:5',
+                'reward' => 'nullable|integer|min:0',
+                'requires_approval' => 'sometimes|boolean',
+                'requires_image' => 'sometimes|boolean',
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
 
             // タスクを更新
-            $updatedTask = $this->taskService->updateTask($task, $request->validated());
+            $updatedTask = $this->taskService->updateTask($task, $validator->validated());
 
             // レスポンス
             return response()->json([

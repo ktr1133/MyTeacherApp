@@ -4,7 +4,7 @@ namespace App\Services\Token;
 
 use App\Models\TokenPurchaseRequest;
 use App\Models\User;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * トークン購入承認サービスのインターフェース

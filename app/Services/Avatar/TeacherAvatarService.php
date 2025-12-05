@@ -61,8 +61,10 @@ class TeacherAvatarService implements TeacherAvatarServiceInterface
      */
     public function updateAvatar(TeacherAvatar $avatar, array $data): bool
     {
-        // 推定使用トークン量設定
-        $data['estimated_token_usage'] = config('services.estimated_token_usages')[$data['draw_model_version']] ?? 0;
+        // 推定使用トークン量設定（draw_model_versionが含まれている場合のみ）
+        if (isset($data['draw_model_version'])) {
+            $data['estimated_token_usage'] = config('services.estimated_token_usages')[$data['draw_model_version']] ?? 0;
+        }
 
         $result = $this->repository->update($avatar, $data);
 

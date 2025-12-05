@@ -7,7 +7,7 @@ use App\Models\Task;
 use App\Models\TaskImage;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 
 interface TaskApprovalServiceInterface
 {

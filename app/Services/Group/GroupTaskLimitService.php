@@ -87,11 +87,13 @@ class GroupTaskLimitService implements GroupTaskLimitServiceInterface
     {
         // 月次カウントが期限切れの場合は0として扱う
         $current = $this->shouldResetCount($group) ? 0 : $group->group_task_count_current_month;
+        $isUnlimited = $group->subscription_active;
 
         return [
             'current' => $current,
             'limit' => $group->free_group_task_limit,
-            'remaining' => max(0, $group->free_group_task_limit - $current),
+            'remaining' => $isUnlimited ? null : max(0, $group->free_group_task_limit - $current),
+            'is_unlimited' => $isUnlimited,
             'has_subscription' => $group->subscription_active,
             'reset_at' => $group->group_task_count_reset_at,
         ];

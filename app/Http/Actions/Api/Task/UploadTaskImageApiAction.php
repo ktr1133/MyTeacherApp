@@ -99,7 +99,7 @@ class UploadTaskImageApiAction
             // TaskImageレコード作成
             $taskImage = TaskImage::create([
                 'task_id' => $task->id,
-                'path' => $path,
+                'file_path' => $path,
             ]);
 
             // レスポンス
@@ -109,9 +109,9 @@ class UploadTaskImageApiAction
                 'data' => [
                     'image' => [
                         'id' => $taskImage->id,
-                        'path' => $taskImage->path,
-                        'url' => Storage::disk('s3')->url($taskImage->path),
-                        'created_at' => $taskImage->created_at->toIso8601String(),
+                        'task_id' => $taskImage->task_id,
+                        'file_path' => $taskImage->file_path,
+                        'url' => Storage::disk('s3')->url($taskImage->file_path),
                     ]
                 ]
             ], 201);

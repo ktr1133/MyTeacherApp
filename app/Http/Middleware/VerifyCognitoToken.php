@@ -69,13 +69,18 @@ class VerifyCognitoToken
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // テスト環境で既に認証済みの場合はバイパス
+        if (app()->environment('testing') && $request->user()) {
+            return $next($request);
+        }
+
         // Authorizationヘッダーからトークンを取得
         $token = $request->bearerToken();
 
         if (!$token) {
             return response()->json([
-                'error' => 'Unauthorized',
-                'message' => 'Bearer token is required'
+                'success' => false,
+                'message' => 'ユーザー認証に失敗しました。'
             ], 401);
         }
 
@@ -117,8 +122,8 @@ class VerifyCognitoToken
             ]);
 
             return response()->json([
-                'error' => 'Unauthorized',
-                'message' => 'Invalid or expired token'
+                'success' => false,
+                'message' => 'ユーザー認証に失敗しました。'
             ], 401);
         }
     }

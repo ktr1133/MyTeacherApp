@@ -6,7 +6,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\TaskImage;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Repositories\Task\TaskRepositoryInterface;
@@ -60,11 +60,13 @@ class TaskApprovalService implements TaskApprovalServiceInterface
                 $this->taskRepository->deleteByGroupTaskIdExcludingUser($groupTaskId, $user->id);                
             }
 
-            // 承認者に申請完了を通知
-            $title = '完了申請';
-            $userName = $user->username;
-            $message = $userName . 'からタスク: ' . $task->title . ' の完了申請がありました。';
-            $this->notificationService->sendNotification($task->user_id, $task->assigned_by_user_id, config('const.notification_types.approval_required'), $title, $message);
+            // 承認者に申請完了を通知（グループタスクで割り当て者がいる場合のみ）
+            if ($task->assigned_by_user_id) {
+                $title = '完了申請';
+                $userName = $user->username;
+                $message = $userName . 'からタスク: ' . $task->title . ' の完了申請がありました。';
+                $this->notificationService->sendNotification($task->user_id, $task->assigned_by_user_id, config('const.notification_types.approval_required'), $title, $message);
+            }
 
             // キャッシュをクリア（最新データを反映させるため）
             $this->taskManagementService->clearUserTaskCache($task->user_id);
@@ -175,7 +177,7 @@ class TaskApprovalService implements TaskApprovalServiceInterface
     public function getPendingTasksForApprover(User $approver): Collection
     {
         if (!$approver->canEditGroup()) {
-            return collect();
+            return Task::query()->whereRaw('1 = 0')->get(); // 空のEloquent Collection
         }
 
         // グループメンバーの承認待ちタスクを取得

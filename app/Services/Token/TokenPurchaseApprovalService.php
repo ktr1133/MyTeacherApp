@@ -8,7 +8,7 @@ use App\Repositories\Payment\PaymentHistoryRepositoryInterface;
 use App\Repositories\Token\TokenPurchaseRequestRepositoryInterface;
 use App\Services\Notification\NotificationService;
 use App\Services\Token\TokenServiceInterface;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

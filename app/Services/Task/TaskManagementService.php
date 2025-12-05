@@ -218,7 +218,8 @@ class TaskManagementService implements TaskManagementServiceInterface
      */
     public function makeTaskBaseData(array $data): array
     {
-        if ($data['span'] == config('const.task_spans.mid')) {
+        // spanが存在し、中期の場合のみdue_date処理
+        if (isset($data['span']) && $data['span'] == config('const.task_spans.mid')) {
             // due_dateが存在する場合のみ処理
             if (isset($data['due_date'])) {
                 try {
@@ -232,12 +233,26 @@ class TaskManagementService implements TaskManagementServiceInterface
             }
         }
 
-        return [
-            'title'        => $data['title'],
-            'description'  => $data['description'] ?? null,
-            'span'         => $data['span'],
-            'due_date'     => $data['due_date'] ?? null,
-        ];
+        // 更新時に存在するフィールドのみを含める
+        $result = [];
+        
+        if (isset($data['title'])) {
+            $result['title'] = $data['title'];
+        }
+        
+        if (array_key_exists('description', $data)) {
+            $result['description'] = $data['description'];
+        }
+        
+        if (isset($data['span'])) {
+            $result['span'] = $data['span'];
+        }
+        
+        if (array_key_exists('due_date', $data)) {
+            $result['due_date'] = $data['due_date'];
+        }
+
+        return $result;
     } 
 
     /**

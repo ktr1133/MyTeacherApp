@@ -74,10 +74,18 @@ class StoreTaskApiAction
                 }
             }
 
+            // リクエストデータ取得
+            $data = $request->validated();
+            
+            // グループタスクの場合、共通識別子を生成
+            if ($isGroupTask) {
+                $data['group_task_id'] = (string) \Illuminate\Support\Str::uuid();
+            }
+
             // タスクを作成（グループタスクフラグを渡す）
             $task = $this->taskService->createTask(
                 $user,
-                $request->validated(),
+                $data,
                 $isGroupTask
             );
 
@@ -124,6 +132,10 @@ class StoreTaskApiAction
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $request->user()?->id,
             ]);
+
+            if (app()->environment('testing')) {
+                throw $e;
+            }
 
             return response()->json([
                 'success' => false,

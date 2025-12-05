@@ -37,12 +37,13 @@ class StoreTaskApiActionTest extends TestCase
         $group->save();
 
         // 3回目の作成（成功するはず）
-        $response = $this->actingAs($user, 'sanctum')
+        $response = $this->actingAs($user)
             ->postJson('/api/tasks', [
                 'title' => 'API Test Group Task',
                 'description' => 'Test content',
                 'span' => 1,
                 'reward' => 100,
+                'requires_approval' => true,
                 'is_group_task' => true,
                 'assigned_user_id' => $user->id,
             ]);
@@ -78,12 +79,13 @@ class StoreTaskApiActionTest extends TestCase
         $group->save();
 
         // 4回目の作成（失敗するはず）
-        $response = $this->actingAs($user, 'sanctum')
+        $response = $this->actingAs($user)
             ->postJson('/api/tasks', [
                 'title' => 'API Test Group Task',
                 'description' => 'Test content',
                 'span' => 1,
                 'reward' => 100,
+                'requires_approval' => true,
                 'is_group_task' => true,
                 'assigned_user_id' => $user->id,
             ]);
@@ -129,12 +131,13 @@ class StoreTaskApiActionTest extends TestCase
         $group->save();
 
         // サブスクリプション契約者は無制限で作成可能
-        $response = $this->actingAs($user, 'sanctum')
+        $response = $this->actingAs($user)
             ->postJson('/api/tasks', [
                 'title' => 'API Test Group Task',
                 'description' => 'Test content',
                 'span' => 1,
                 'reward' => 100,
+                'requires_approval' => true,
                 'is_group_task' => true,
                 'assigned_user_id' => $user->id,
             ]);
@@ -150,26 +153,28 @@ class StoreTaskApiActionTest extends TestCase
      */
     public function test_api_non_editor_cannot_create_group_task(): void
     {
+        // 別のユーザーをマスターとして設定
+        $masterUser = User::factory()->create();
+        
         $group = Group::factory()->create([
             'free_group_task_limit' => 5,
             'group_task_count_current_month' => 0,
             'subscription_active' => false,
+            'master_user_id' => $masterUser->id, // 別のユーザーをマスターに
         ]);
         
         $user = User::factory()->create([
             'group_id' => $group->id,
             'group_edit_flg' => false, // 編集権限なし
         ]);
-        
-        $group->master_user_id = $user->id;
-        $group->save();
 
-        $response = $this->actingAs($user, 'sanctum')
+        $response = $this->actingAs($user)
             ->postJson('/api/tasks', [
                 'title' => 'API Test Group Task',
                 'description' => 'Test content',
                 'span' => 1,
                 'reward' => 100,
+                'requires_approval' => true,
                 'is_group_task' => true,
                 'assigned_user_id' => $user->id,
             ]);
@@ -188,7 +193,7 @@ class StoreTaskApiActionTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user, 'sanctum')
+        $response = $this->actingAs($user)
             ->postJson('/api/tasks', [
                 'title' => 'API Test Normal Task',
                 'description' => 'Test content',

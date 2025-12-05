@@ -73,7 +73,7 @@ class ListPendingApprovalsApiAction
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'approvals' => $approvals->items()->map(function ($approval) {
+                    'approvals' => collect($approvals->items())->map(function ($approval) {
                         return [
                             'type' => $approval->type, // 'task' or 'token_purchase'
                             'id' => $approval->id,

@@ -173,7 +173,7 @@ class TaskApiTest extends TestCase
 
         // Assert
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+        $this->assertSoftDeleted('tasks', ['id' => $task->id]);
     }
 
     /**
@@ -275,6 +275,8 @@ class TaskApiTest extends TestCase
             'user_id' => $this->user->id,
             'assigned_by_user_id' => $this->approver->id,
             'requires_approval' => true,
+            'is_completed' => true,  // 完了状態にしてから却下
+            'completed_at' => now(),
         ]);
 
         // Act
@@ -294,9 +296,18 @@ class TaskApiTest extends TestCase
      */
     public function test_can_upload_task_image(): void
     {
+        // S3ストレージをフェイク
+        Storage::fake('s3');
+        
+        // VirusScanServiceをモック
+        $virusScanMock = \Mockery::mock(\App\Services\Security\VirusScanServiceInterface::class);
+        $virusScanMock->shouldReceive('isAvailable')->andReturn(false);
+        $this->app->instance(\App\Services\Security\VirusScanServiceInterface::class, $virusScanMock);
+
         // Arrange
         $task = Task::factory()->create(['user_id' => $this->user->id]);
-        $image = UploadedFile::fake()->image('test-image.jpg', 800, 600);
+        // GD拡張がない環境でも動作するように通常のファイルを使用
+        $image = UploadedFile::fake()->create('test-image.jpg', 100, 'image/jpeg');
 
         // Act
         $response = $this->actingAs($this->user)
@@ -322,6 +333,9 @@ class TaskApiTest extends TestCase
         $this->assertDatabaseHas('task_images', [
             'task_id' => $task->id,
         ]);
+        
+        // S3にファイルがアップロードされたことを確認
+        Storage::disk('s3')->assertExists($response->json('data.image.file_path'));
     }
 
     /**

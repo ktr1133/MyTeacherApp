@@ -111,6 +111,32 @@ Laravel 12 + Docker構成。**Action-Service-Repositoryパターン**（従来�
    - null/空値/境界値などのエッジケースが考慮されているか検証
    - タイムアウト、リトライ、ロールバックなどの例外処理が実装されているか確認
 
+5. **静的解析ツールによる検証（必須）**
+   - **Intelephense**: IDEの静的解析ツールで警告やエラーがないか確認
+   - **未使用変数・インポート**: 不要なuse文、未使用の変数を削除
+   - **未定義メソッド・プロパティ**: 存在しないメソッドやプロパティへの参照を修正
+   - **型不一致**: 引数・戻り値の型が一致しているか検証
+   - **名前空間エラー**: use文の漏れ、誤った名前空間参照を修正
+   - **DocBlock検証**: PHPDocの型定義が実装と一致しているか確認
+   
+   **チェック手順**:
+   ```bash
+   # VSCodeのProblemsパネルで警告・エラーを確認
+   # または静的解析ツールを実行
+   vendor/bin/phpstan analyse app/ --level=5
+   ```
+   
+   **対応すべき警告・エラー**:
+   - ❌ Undefined method/property
+   - ❌ Type mismatch in parameter/return
+   - ❌ Unused variable/import
+   - ❌ Missing use statement
+   - ⚠️ PHPDoc type mismatch（推奨）
+   
+   **無視してよいケース**:
+   - ✅ Laravelのマジックメソッド（`Model::factory()`等）でfalse positive
+   - ✅ 動的プロパティ（`$model->dynamic_property`）で意図的な場合
+
 ### 全体チェックの具体例
 
 **NG例（チェック不足）**:
@@ -159,6 +185,7 @@ vendor/bin/phpstan analyse
 - ❌ ステップ番号や命名規則の不整合を放置
 - ❌ 重複コードや矛盾する実装を見逃す
 - ❌ 「動いたからOK」で構造的な問題を放置
+- ❌ Intelephenseの警告・エラーを確認せずにコミット
 
 この方針により、品質の高いコード変更を実現し、レビュー・デバッグコストを削減する。
 

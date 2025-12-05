@@ -153,10 +153,10 @@ class GroupService implements GroupServiceInterface
     {
         $group = $actor->group;
         if (!$group || !$this->isGroupMaster($actor)) {
-            abort(403, 'グループマスターを譲渡する権限がありません。');
+            throw new \Illuminate\Auth\Access\AuthorizationException('グループマスターを譲渡する権限がありません。');
         }
         if ($newMaster->group_id !== $group->id) {
-            abort(403, '他のグループのメンバーには譲渡できません。');
+            throw new \Illuminate\Auth\Access\AuthorizationException('他のグループのメンバーには譲渡できません。');
         }
 
         $this->groups->update($group, ['master_user_id' => $newMaster->id]);
@@ -174,13 +174,13 @@ class GroupService implements GroupServiceInterface
     {
         $group = $actor->group;
         if (!$group || !$this->canEditGroup($actor)) {
-            abort(403, 'グループメンバーを削除する権限がありません。');
+            throw new \Illuminate\Auth\Access\AuthorizationException('グループメンバーを削除する権限がありません。');
         }
         if ($member->group_id !== $group->id) {
-            abort(403, '他のグループのメンバーは削除できません。');
+            throw new \Illuminate\Auth\Access\AuthorizationException('他のグループのメンバーは削除できません。');
         }
         if ($this->isGroupMaster($member)) {
-            abort(403, 'グループマスターは削除できません。');
+            throw new \Illuminate\Auth\Access\AuthorizationException('グループマスターは削除できません。');
         }
 
         $this->groupUsers->update($member, [

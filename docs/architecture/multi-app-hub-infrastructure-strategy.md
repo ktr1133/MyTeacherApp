@@ -1,11 +1,69 @@
 # 個人開発者向け シンプル統合アーキテクチャ（要件確定版）
 
+## 📁 ドキュメント構造と位置づけ
+
+このドキュメントは **MyTeacherプロジェクトのマスタープラン** であり、全Phase（0.5～4）の概要を記載しています。
+
+### ドキュメント階層
+
+```
+docs/
+├── architecture/
+│   ├── multi-app-hub-infrastructure-strategy.md  ← 本ドキュメント（マスタープラン）
+│   └── phase-plans/                              ← 各Phase詳細計画
+│       ├── phase1-mobile-api-plan.md             Phase 1詳細: API化計画
+│       ├── phase1.5-mobile-app-plan.md           Phase 1.5詳細: モバイルアプリ開発
+│       ├── phase2-portal-parentshare-plan.md     Phase 2詳細: Portal独立化
+│       └── phase3-ai-sensei-plan.md              Phase 3詳細: AI-Sensei開発
+├── plans/                                        ← 技術詳細計画
+│   ├── api-design-guidelines.md                  API設計ガイドライン
+│   ├── openapi-specification-plan.md             OpenAPI仕様書作成計画
+│   ├── phase1-b-1-stripe-subscription-plan.md   Phase 1.B詳細: Stripeサブスクリプション
+│   └── phase1-b-2-stripe-one-time-payment-plan.md Phase 1.B詳細: Stripe都度決済
+└── reports/                                      ← 実装完了レポート
+    └── YYYY-MM-DD-{phase}-completion-report.md   Phase完了レポート
+```
+
+### マスタープランの役割
+
+- **Phase別の概要**: 各Phaseの目的、主要成果物、期間、コストを記載
+- **アーキテクチャ全体像**: システム構成、データフロー、認証方式の全体設計
+- **実装優先順位**: Phase間の依存関係、移行戦略
+- **進捗管理**: 各Phaseの実装状況（✅完了、🔄進行中、📅計画）
+
+### 詳細計画（phase-plans/）の役割
+
+- **実装手順**: ステップバイステップの作業内容
+- **技術詳細**: API仕様、データベース設計、コード例
+- **タスク分解**: チェックリスト形式の細分化タスク
+- **見積もり**: 工数、スケジュール、リスク
+
+### 用語統一
+
+| 用語 | 説明 | 使用例 |
+|------|------|--------|
+| **Phase 0.5** | AWS Fargate基盤構築 | マスタープラン、レポート |
+| **Phase 1** | バックエンドAPI化 | phase1-mobile-api-plan.md |
+| **Phase 2** | モバイルアプリ開発 | phase2-mobile-app-plan.md |
+| **Phase 3** | Portal独立化 + ParentShare | phase3-portal-parentshare-plan.md |
+| **Phase 4** | AI-Sensei開発 | phase4-ai-sensei-plan.md |
+| **Phase 5** | SSO統合・機能拡張 | 将来作成 |
+
+---
+
 > **📌 Phase実装状況**
 > - ✅ **Phase 0.5完了**: AWS Fargate構築（$164/月、~¥25,000）- ECS, RDS, ElastiCache, S3, CloudFront
-> - ✅ **Phase 1完了**: Cognito JWT認証 + Mobile API（13 API Actions実装完了、64テスト実装完了）
-> - 📅 **Phase 2-4**: 将来計画（Portal独立化、ParentShare、AI-Sensei）
+> - 🔄 **Phase 1進行中**: バックエンドAPI化（14/60+ Actions完了、約23%）
+>   - Phase 1.A: AuthHelper + helpers.php実装 ✅
+>   - Phase 1.B: Stripe実装完了（都度決済 + サブスクリプション、本番確認済み）✅
+>   - Phase 1.C: タスクAPI実装（14 Actions）✅
+>   - Phase 1.D: タスク機能包括的テスト（93テスト、348アサーション、100%パス率）✅
+>   - Phase 1.E: 残り46+ ActionsのAPI化 🔄 **← 現在地**
+>   - Phase 1.F: OpenAPI仕様書作成 + Swagger UI導入 📅
+> - 📅 **Phase 2**: モバイルアプリ開発（React Native/Flutter）
+> - 📅 **Phase 3-5**: 将来計画（Portal独立化、ParentShare、AI-Sensei）
 > 
-> Phase 1は**サブフェーズ1.1-1.5**を経て完了しました。現在は**Phase 2準備**段階です。
+> **現在のフォーカス**: Phase 1.E - 全機能のAPI化（グループ管理、アバター、レポート等）
 
 ## 📋 アーキテクチャ設計の考慮要件（修正版）
 
@@ -24,9 +82,11 @@
 - **主要機能**:
   - タスク管理（グループタスク、スケジュールタスク、承認フロー）
   - AI統合（OpenAI タスク分解、Stable Diffusion アバター生成）
-  - トークンシステム（**Stripe未実装**、トークン消費管理のみ稼働）
+  - トークンシステム（**Stripe実装済み**: 都度決済 + サブスクリプション）
   - アバターシステム（AI生成教師キャラクター、コンテキスト別コメント）
   - スケジュール機能（Cron実行、祝日対応、ランダム割当）
+  - 実績・レポート機能（月次レポート、メンバーサマリーPDF）
+  - 通知システム（お知らせ、承認待ち通知）
 
 #### ポータルサイト（現在Laravel統合、将来独立予定）
 - **現在の実装**: Laravel内に完全実装済み（`/portal/*` ルート）
@@ -46,17 +106,18 @@
 
 #### インフラ構成
 - **開発環境**: Docker Compose（PostgreSQL 16 + Redis + MinIO）
+- **本番環境**: AWS Fargate (ECS) + RDS + ElastiCache + S3 + CloudFront
 - **ファイルストレージ**: 
-  - 開発: MinIO
-  - 本番: S3（想定）
-  - 用途: タスク画像、アバター画像
+  - 開発: MinIO (ローカル)
+  - 本番: S3 ✅ **運用中**（myteacher-storage-production）
+  - 用途: タスク画像、アバター画像、月次レポートPDF
 - **対応環境**: PCブラウザ、スマホブラウザ（レスポンシブ対応済み）
 
 #### 外部API連携状況
-- ✅ **OpenAI API**: 実装済み（タスク分解、DALL-E）
-- ✅ **Replicate API**: 実装済み（Stable Diffusion）
-- ⚠️ **Stripe API**: 環境変数設定あり、未実装
-- ❌ **Firebase**: 未実装（環境変数設定なし）
+- ✅ **OpenAI API**: 実装済み（タスク分解、DALL-E、月次レポートコメント生成）
+- ✅ **Replicate API**: 実装済み（Stable Diffusion - アバター生成）
+- ✅ **Stripe API**: 実装済み（都度決済 + サブスクリプション、Webhook処理、Billing Portal）
+- 📅 **Firebase**: 未実装（Phase 1.5でプッシュ通知用に導入予定）
 
 ### 3. ユーザー要望・機能要件
 
@@ -208,46 +269,86 @@
 
 ### 段階的実装優先順位
 1. **Phase 0.5（✅ 完了）**: AWS Fargate構築（ECS, RDS, ElastiCache, S3, CloudFront）- $164/月
-2. **Phase 1（✅ 完了）**: Cognito JWT認証 + Mobile API + テスト実装完了
-3. **Phase 2（📅 次期計画）**: ポータル独立化 + ParentShare開発 + API連携
-4. **Phase 3（📅 中期計画）**: AI-Sensei開発 + API連携
-5. **Phase 4（📅 長期計画）**: SSO統合・Stripe決済統合
+2. **Phase 1（🔄 進行中）**: バックエンドAPI化 + OpenAPI仕様書
+   - Phase 1.A-D: ✅ 完了（Cognito JWT、タスクAPI 14 Actions、Stripe決済、テスト93個）
+   - Phase 1.E: 🔄 進行中（残り46+ ActionsのAPI化）
+   - Phase 1.F: 📅 計画（OpenAPI仕様書作成 + Swagger UI導入）
+3. **Phase 2（📅 次期計画）**: モバイルアプリ開発（React Native/Flutter + Firebase）
+4. **Phase 3（📅 中期計画）**: ポータル独立化 + ParentShare開発 + API連携
+5. **Phase 4（📅 長期計画）**: AI-Sensei開発 + API連携
+6. **Phase 5（📅 将来計画）**: SSO統合・決済機能拡張
 
-### Phase 1実装完了サマリー（サブフェーズ1.1-1.5）
-- **Phase 1.1（✅ 完了）**: AuthHelper + helpers.php実装
-- **Phase 1.2（✅ 完了）**: 13 API Actions実装（Task CRUD, Approval, Image, Search）
-- **Phase 1.3（✅ 完了）**: Routes設定（/api/v1 prefix, cognito middleware）
-- **Phase 1.4（✅ 完了）**: Use statements統一、コードクリーンアップ
-- **Phase 1.5（✅ 完了）**: テストインフラ整備完了（64テストメソッド実装）
+### Phase 1実装完了サマリー
 
-#### Phase 1.5 テスト実装詳細（2025-11-29完了）
-**Feature Tests（統合テスト）**:
-- `CognitoAuthTest.php` - Cognito JWT認証（12テスト）
-- `TaskApiTest.php` - 13 API Actions全体（15テスト）
-- `EmailValidationTest.php` - メールバリデーション（6テスト）
-- `AddMemberTest.php` - グループメンバー追加（9テスト）
-- `ProfileUpdateTest.php` - プロフィール更新（10テスト）
+#### Phase 1 実装済みサブフェーズ（A-D）
 
-**Unit Tests**:
-- `AuthHelperTest.php` - AuthHelper機能（12テスト）
+**Phase 1.A: AuthHelper + helpers.php実装（2025-11-29完了）**
+- Cognito JWT認証基盤構築
+- `AuthHelper::getOrCreateCognitoUser()` 実装
+- `VerifyCognitoToken` ミドルウェア実装
+- 参照: Cognito認証設計書
 
-**フロントエンドバリデーション**:
-- `profile-edit-validation.js` - 自己除外付きバリデーション実装
+**Phase 1.B: Stripe実装完了（都度決済 + サブスクリプション、2025-12-03完了）**
 
-**テスト対象API Actions**:
+**計画書**: 
+- Phase 1.B-1: `docs/plans/phase1-b-1-stripe-subscription-plan.md` (サブスクリプション実装計画)
+- Phase 1.B-2: `docs/plans/phase1-b-2-stripe-one-time-payment-plan.md` (都度決済実装計画)
+
+- **都度決済（Checkout Session）**: TokenPurchaseService、CreateTokenCheckoutSessionAction（7ファイル、782行）
+  - Webhook処理: 統合WebhookハンドラーでCheckout完了時にトークン自動付与
+  - 本番確認: 3パッケージ（100万/300万/500万トークン）購入成功確認済み
+  - 参照: `docs/reports/2025-12-04-phase-1-2-status-and-next-steps.md`
+- **サブスクリプション（Laravel Cashier + 管理画面統合）**: 2プラン実装 + 統合管理機能
+  - 2プラン実装: Family（月額¥1,980）、Enterprise（月額¥9,800 + メンバー課金）
+  - 統合管理画面: プラン選択・変更・キャンセル・請求履歴を1画面に統合（657行）
+  - プラン変更・キャンセル時の確認モーダル実装（誤操作防止）
+  - Stripe Billing Portal統合（支払い情報管理）
+  - トライアル期間動的表示（残り日数自動計算）
+  - 参照: `docs/reports/2025-12-01-phase1-1-5-subscription-management-completion-report.md`
+- **テスト**: 21テスト実装（63%パス率 - 一部修正中）
+
+**Phase 1.C: タスクAPI実装（2025-11-29完了）**
+- 14 API Actions実装（Task CRUD, Approval, Image, Search, Pagination）
+- routes/api.phpに/api/v1 prefix設定
+- cognitoミドルウェア適用
+- Use statements統一、コードクリーンアップ
+
+**Phase 1.D: タスク機能包括的テスト実装（2025-11-29～2025-12-05完了）**
+
+1. **Cognito認証テスト（2025-11-29）**
+   - `CognitoAuthTest.php` - Cognito JWT認証（12テスト）
+   - `TaskApiTest.php` - 13 API Actions統合テスト（15テスト）
+   - `EmailValidationTest.php` - メールバリデーション（6テスト）
+   - `AddMemberTest.php` - グループメンバー追加（9テスト）
+   - `ProfileUpdateTest.php` - プロフィール更新（10テスト）
+   - `AuthHelperTest.php` - AuthHelper機能（12テスト）
+   - 参照: `docs/reports/2025-11-29-phase1-5-test-infrastructure-fix-report.md`
+
+2. **タスク機能テスト（2025-12-05）**
+   - StoreTaskTest - 通常タスク登録（19テスト）
+   - TaskDecompositionTest - AI分解機能（20テスト、OpenAI Mock実装）
+   - GroupTaskTest - グループタスク割当（16テスト、承認フロー検証）
+   - DeleteTaskTest - タスク削除（12テスト、ソフトデリート実装）
+   - UpdateTaskTest - タスク更新（22テスト、画像更新含む）
+   - コード品質向上（ドキュメント追加、共通パターン統一）
+   - **テストスイート**: 93テスト、348アサーション、100%パス率達成
+   - 参照: `docs/reports/2025-12-05-task-feature-test-completion-report.md`
+
+**テスト対象API Actions（14個）**:
 1. StoreTaskApiAction - タスク作成
 2. IndexTaskApiAction - タスク一覧取得
-3. UpdateTaskApiAction - タスク更新
-4. DestroyTaskApiAction - タスク削除
-5. ToggleTaskCompletionApiAction - 完了トグル
-6. ApproveTaskApiAction - タスク承認
-7. RejectTaskApiAction - タスク却下
-8. UploadTaskImageApiAction - 画像アップロード
-9. DeleteTaskImageApiAction - 画像削除
-10. BulkCompleteTasksApiAction - 一括完了
-11. RequestApprovalApiAction - 完了申請
-12. ListPendingApprovalsApiAction - 承認待ち一覧
-13. SearchTasksApiAction - タスク検索
+3. GetTasksPaginatedApiAction - タスク一覧取得（ページネーション付き）
+4. UpdateTaskApiAction - タスク更新
+5. DestroyTaskApiAction - タスク削除
+6. ToggleTaskCompletionApiAction - 完了トグル
+7. ApproveTaskApiAction - タスク承認
+8. RejectTaskApiAction - タスク却下
+9. UploadTaskImageApiAction - 画像アップロード
+10. DeleteTaskImageApiAction - 画像削除
+11. BulkCompleteTasksApiAction - 一括完了
+12. RequestApprovalApiAction - 完了申請
+13. ListPendingApprovalsApiAction - 承認待ち一覧
+14. SearchTasksApiAction - タスク検索
 
 **テストカバレッジ**:
 - 認証フロー: Cognito JWT認証、ユーザー自動作成、重複処理
@@ -259,10 +360,12 @@
 - バリデーション: 重複チェック、自己除外、権限制御
 - エラーハンドリング: 認証エラー、権限エラー、データエラー
 
-**テストレポート**: `docs/reports/2025-11-29-phase1-5-test-infrastructure-fix-report.md`
-
-> **Phase 1完了宣言（2025-11-29）**: 
-> Cognito JWT認証、13 API Actions実装、64テストメソッド実装を完了し、**Phase 1のすべてのサブフェーズが完了**しました。次はPhase 2（ポータル独立化 + ParentShare開発）に移行します。
+> **Phase 1 サブフェーズ A-D 完了（2025-12-05）**: 
+> - **Cognito JWT認証**: 14 API Actions実装完了
+> - **Stripe都度決済**: トークン購入機能実装完了（本番確認済み）
+> - **包括的テスト**: 93テスト、348アサーション、100%パス率達成
+> 
+> 次はPhase 1.E（残り46+ ActionsのAPI化）に移行します。
 
 ### システム構成イメージ（Phase 2完了時）
 ```
@@ -353,15 +456,16 @@
 
 ## 📊 Phase別システム構成
 
-### Phase 1: MyTeacherモバイルアプリ（Phase 0.5完了後 → 実装中）
+### Phase 1: MyTeacherモバイルアプリ（Phase 0.5完了後 → バックエンド実装完了）
 
 **構成**:
 ```
 MyTeacher Web + モバイルアプリ
 ├── Laravel 12 (既存)
 │   ├── Web UI (Blade)
-│   ├── API (JSON + Cognito JWT)
-│   └── Portal統合（/portal/*）
+│   ├── API (JSON + Cognito JWT) ✅ 実装完了
+│   ├── Portal統合（/portal/*）
+│   └── Stripe都度決済 ✅ 本番稼働中
 ├── React Native/Expo アプリ（予定）
 ├── PostgreSQL (Phase 0.5で構築済み: RDS db.t4g.micro)
 ├── Redis (Phase 0.5で構築済み: ElastiCache cache.t4g.micro)
@@ -370,10 +474,12 @@ MyTeacher Web + モバイルアプリ
 ```
 
 **開発内容**:
-1. ✅ 既存Action → API Action拡張（JSON レスポンダー）- 13 API Actions完了
+1. ✅ 既存Action → API Action拡張（JSON レスポンダー）- 14 API Actions完了
 2. ✅ Cognito JWT認証対応（VerifyCognitoToken middleware + AuthHelper）
-3. ⏳ React Nativeアプリ開発（未着手）
-4. ⏳ Firebaseプッシュ通知統合（未着手）
+3. ✅ Stripe都度決済実装（Checkout Session + Webhook + 本番確認済み）
+4. ✅ 包括的テスト実装（93テスト、348アサーション、100%パス率）
+5. ⏳ React Nativeアプリ開発（未着手）
+6. ⏳ Firebaseプッシュ通知統合（未着手）
 
 **インフラ**:
 - Phase 0.5で構築済み: AWS Fargate (ECS) + RDS + ElastiCache + S3 + CloudFront

@@ -57,7 +57,7 @@ class IndexTaskApiAction
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'tasks' => $tasks->items()->map(function ($task) {
+                    'tasks' => collect($tasks->items())->map(function ($task) {
                         return [
                             'id' => $task->id,
                             'title' => $task->title,

@@ -104,18 +104,29 @@ class TagService implements TagServiceInterface
      *
      * @param int $id タグID
      * @return bool 削除成功の場合true
+     * @throws \Illuminate\Auth\Access\AuthorizationException 権限がない場合
      */
     public function deleteTag(int $id): bool
     {
         // 付属するタスクがあれば削除できないようにする
         $tag = $this->tags->findById($id);
-        if ($tag && $tag->tasks()->count() > 0) {
+        if (!$tag) {
+            return false;
+        }
+        
+        // 権限チェック: ログインユーザーとタグの所有者が一致するか
+        $currentUser = auth()->user();
+        if ($currentUser && $tag->user_id !== $currentUser->id) {
+            throw new \Illuminate\Auth\Access\AuthorizationException('他のユーザーのタグは削除できません。');
+        }
+        
+        if ($tag->tasks()->count() > 0) {
             return false;
         }
         
         $result = $this->tags->deleteTag($id);
         
-        if ($result && $tag) {
+        if ($result) {
             Cache::forget("user:{$tag->user_id}:tags");
         }
         
@@ -127,7 +138,7 @@ class TagService implements TagServiceInterface
      */
     public function getTasksByUserId(int $userId): array
     {
-        return $this->tags->getByUserIdWithTaskCount($userId)->all();
+        return $this->tags->getTasksByUserId($userId);
     }
 
     /**

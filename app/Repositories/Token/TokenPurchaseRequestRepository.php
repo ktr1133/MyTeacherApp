@@ -4,7 +4,7 @@ namespace App\Repositories\Token;
 
 use App\Models\TokenPurchaseRequest;
 use App\Models\User;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -42,7 +42,7 @@ class TokenPurchaseRequestRepository implements TokenPurchaseRequestRepositoryIn
     public function getPendingForParent(User $parent): Collection
     {
         if (!$parent->isParent()) {
-            return collect();
+            return TokenPurchaseRequest::query()->whereRaw('1 = 0')->get(); // 空のEloquent Collection
         }
         
         return TokenPurchaseRequest::whereHas('user', function ($query) use ($parent) {
