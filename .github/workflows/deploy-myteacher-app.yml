@@ -89,6 +89,8 @@ jobs:
           CLAMAV_USE_DAEMON: true
           CLAMAV_DAEMON_HOST: localhost
           CLAMAV_DAEMON_PORT: 3310
+          # OpenAI API設定（テスト用ダミー - Http::fake()でモック済み）
+          OPENAI_API_KEY: sk-test-dummy-key-for-ci-environment
         run: |
           echo "🧪 Running tests with SQLite in-memory database..."
           
