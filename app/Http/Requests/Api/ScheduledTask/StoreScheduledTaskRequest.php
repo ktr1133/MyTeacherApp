@@ -78,7 +78,6 @@ class StoreScheduledTaskRequest extends FormRequest
             'schedules.*.days.required_if' => '曜日を選択してください。',
             'schedules.*.dates.required_if' => '日付を選択してください。',
             'start_date.required' => '開始日を指定してください。',
-            'start_date.after_or_equal' => '開始日は今日以降の日付を指定してください。',
             'end_date.after' => '終了日は開始日より後の日付を指定してください。',
         ];
     }

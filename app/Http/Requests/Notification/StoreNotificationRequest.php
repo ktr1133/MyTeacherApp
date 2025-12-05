@@ -42,7 +42,7 @@ class StoreNotificationRequest extends FormRequest
             'target_type' => ['required', 'in:all,users,groups'],
             'target_ids' => ['nullable', 'array', 'required_if:target_type,users,groups'],
             'target_ids.*' => ['integer', 'exists:users,id'],
-            'publish_at' => ['nullable', 'date', 'after_or_equal:now'],
+            'publish_at' => ['nullable', 'date'],
             'expire_at' => ['nullable', 'date', 'after:publish_at'],
         ];
     }
