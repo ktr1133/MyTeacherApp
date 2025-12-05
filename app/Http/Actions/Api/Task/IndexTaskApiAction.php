@@ -63,7 +63,7 @@ class IndexTaskApiAction
                             'title' => $task->title,
                             'description' => $task->description,
                             'span' => $task->span,
-                            'due_date' => $task->due_date?->format('Y-m-d'),
+                            'due_date' => $task->hasParsableDueDate() ? $task->due_date->format('Y-m-d') : $task->due_date,
                             'priority' => $task->priority,
                             'status' => $task->status,
                             'reward' => $task->reward,

@@ -636,4 +636,34 @@ class TokenService implements TokenServiceInterface
             throw $e;
         }
     }
+
+    /**
+     * 使用トークン数を計算（インフラ負荷を加味）
+     * 
+     * @param string $type 使用タイプ ('monthly_report', 'avatar_generation', 'task_decomposition')
+     * @param int $rawUsage 生の使用量（外部APIコスト）
+     * @return int 計算後の使用トークン数（外部APIコスト + インフラ負荷）
+     */
+    public function calcUsedTokens(string $type, int $rawUsage): int
+    {
+        // 月次レポート: ピーク検知機能あり（Phase 3で実装予定）
+        if ($type === 'monthly_report') {
+            $multiplier = config('const.monthly_report.infra_load', 80);
+            return (int) ceil($rawUsage + $multiplier);
+        }
+
+        // アバター画像生成: 固定値（負荷集中なし）
+        if ($type === 'avatar_generation') {
+            $infraLoad = config('const.avatar_generation.infra_load', 10);
+            return (int) ceil($rawUsage + $infraLoad);
+        }
+
+        // タスク分解: 固定値（負荷集中なし）
+        if ($type === 'task_decomposition') {
+            $infraLoad = config('const.task_decomposition.infra_load', 3);
+            return (int) ceil($rawUsage + $infraLoad);
+        }
+
+        return $rawUsage;
+    }
 }

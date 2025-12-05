@@ -49,6 +49,8 @@ export default defineConfig({
                 'resources/js/dashboard/tag-tasks-modal.js',
                 'resources/js/dashboard/group-task.js',
                 'resources/js/dashboard/group-task-detail.js',
+                'resources/js/infinite-scroll.js',
+                'resources/js/dashboard/infinite-scroll-init.js',
                 'resources/js/batch/scheduled-task-controller.js',
                 'resources/js/notifications/notifications.js',
                 'resources/js/notifications/admin-notifications.js',

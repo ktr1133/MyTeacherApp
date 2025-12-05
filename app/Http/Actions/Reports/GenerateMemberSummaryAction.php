@@ -83,11 +83,14 @@ class GenerateMemberSummaryAction
             
             // レポート生成（Serviceに委譲）
             $result = $this->reportService->generateMemberSummary($userId, $group->id, $yearMonth);
-            
+
+            // インフラ負荷を加味したトークン消費量計算
+            $totalTokenCost = $this->tokenService->calcUsedTokens('monthly_report', $result['tokens_used']);
+
             // トークン消費
             $this->tokenService->consumeTokens(
                 $currentUser,
-                $tokenCost,
+                $totalTokenCost,
                 "メンバー別概況生成: {$targetUser->name} ({$yearMonth})",
                 $targetUser
             );
@@ -99,7 +102,7 @@ class GenerateMemberSummaryAction
                     'comment' => $result['comment'],
                     'task_classification' => $result['task_classification'],
                     'reward_trend' => $result['reward_trend'],
-                    'tokens_used' => $result['tokens_used'],
+                    'tokens_used' => $totalTokenCost,
                     'user_name' => $targetUser->name,
                     'year_month' => $yearMonth,
                 ],
@@ -162,7 +165,7 @@ class GenerateMemberSummaryAction
         
         // 帯域別のトークン消費量設定を取得
         $costs = config('const.token.consumption.member_summary_generation');
-        
+
         // タスク件数に応じて適切な値を返す
         if ($taskCount === 0) {
             return $costs['zero_tasks'];

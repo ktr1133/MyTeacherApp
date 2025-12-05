@@ -50,10 +50,12 @@ class TaskProposalService implements TaskProposalServiceInterface
         ];
         $actualTokens = $usage['total_tokens'];
 
-        // トークンを消費
+        // トークンを消費（インフラ負荷を加味）
+        $totalTokenCost = $this->tokenService->calcUsedTokens('task_decomposition', $actualTokens);
+        
         $consumed = $this->tokenService->consumeTokens(
             $user,
-            $actualTokens,
+            $totalTokenCost,
             "タスク提案生成: {$originalText}",
         );
 

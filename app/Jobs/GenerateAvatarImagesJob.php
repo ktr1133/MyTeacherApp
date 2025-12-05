@@ -380,10 +380,12 @@ class GenerateAvatarImagesJob implements ShouldQueue
             //     $avatar
             // );
 
-            // トークン消費
+            // トークン消費（インフラ負荷を加味）
+            $totalTokenCostWithInfra = $tokenService->calcUsedTokens('avatar_generation', $totalTokenCost);
+            
             $tokenService->consumeTokens(
                 $avatar->user,
-                $totalTokenCost,
+                $totalTokenCostWithInfra,
                 'アバター画像生成',
                 $avatar
             );

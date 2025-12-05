@@ -329,11 +329,35 @@ php artisan optimize:clear
 
 ### テスト
 
+**重要**: テスト実行時は必ず`CACHE_STORE=array`を指定してRedis接続を回避する。
+
 ```bash
-composer test                    # 全テスト実行 (Pest)
-php artisan test --filter "..."  # 特定テスト
-php artisan test --coverage      # カバレッジレポート
+# ✅ 正しいテスト実行方法（Redisキャッシュを回避）
+CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test
+
+# 全テスト実行 (Pest)
+CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test
+
+# 特定テストファイルのみ実行
+CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test tests/Feature/Task/StoreTaskTest.php
+
+# 特定テストケースのみ実行（フィルタ）
+CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test --filter="通常タスクを新規登録できる"
+
+# カバレッジレポート
+CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test --coverage
+
+# 最初の失敗で停止
+CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test --stop-on-failure
+
+# エラー詳細表示
+CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test --display-errors
+
+# ❌ NG: 環境変数なしで実行するとRedis接続でハングする
+php artisan test  # Redis接続待ちで無限ループ
 ```
+
+**注意**: `phpunit.xml`に`CACHE_STORE=array`が設定されているが、`artisan test`コマンドでは環境変数を明示的に指定する必要がある。
 
 ### テストデータ作成時の注意事項（重要）
 

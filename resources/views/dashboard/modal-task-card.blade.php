@@ -108,7 +108,7 @@
                                 <input 
                                     type="date"
                                     name="due_date"
-                                    value="{{ $task->due_date instanceof \Illuminate\Support\Carbon ? $task->due_date->format('Y-m-d') : $task->due_date }}"
+                                    value="{{ $task->due_date ? (is_string($task->due_date) ? \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') : $task->due_date->format('Y-m-d')) : '' }}"
                                     min="{{ date('Y-m-d') }}"
                                     class="search-input-glow w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm">
                             </div>

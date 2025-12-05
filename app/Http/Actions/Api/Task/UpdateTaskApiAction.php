@@ -64,7 +64,7 @@ class UpdateTaskApiAction
                         'title' => $updatedTask->title,
                         'description' => $updatedTask->description,
                         'span' => $updatedTask->span,
-                        'due_date' => $updatedTask->due_date?->format('Y-m-d'),
+                        'due_date' => $updatedTask->hasParsableDueDate() ? $updatedTask->due_date->format('Y-m-d') : $updatedTask->due_date,
                         'priority' => $updatedTask->priority,
                         'status' => $updatedTask->status,
                         'updated_at' => $updatedTask->updated_at->toIso8601String(),

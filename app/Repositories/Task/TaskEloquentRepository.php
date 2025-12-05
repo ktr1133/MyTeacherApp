@@ -68,6 +68,14 @@ class TaskEloquentRepository implements TaskRepositoryInterface
     public function getTasksByUserId(int $userId): Builder
     {
         return Task::query()
+            ->select([
+                'id', 'user_id', 'title', 'description',
+                'due_date', 'span', 'priority', 'is_completed',
+                'completed_at', 'group_task_id', 'reward',
+                'requires_approval', 'requires_image', 'approved_at',
+                'assigned_by_user_id', 'approved_by_user_id',
+                'source_proposal_id', 'created_at', 'updated_at', 'deleted_at'
+            ])
             ->with(['tags', 'images'])
             ->where('user_id', $userId)
             ->orderByDesc('created_at');
@@ -117,8 +125,11 @@ class TaskEloquentRepository implements TaskRepositoryInterface
             return;
         }
 
-        // 1. 既存のタグIDと、新規作成が必要なタグ名を分離する
-        $existingTags = Tag::whereIn('name', $tagNames)->pluck('id', 'name')->toArray();
+        // 1. 既存のタグIDと、新規作成が必要なタグ名を分離する（user_idでフィルタリング）
+        $existingTags = Tag::where('user_id', $task->user_id)
+            ->whereIn('name', $tagNames)
+            ->pluck('id', 'name')
+            ->toArray();
         $existingTagNames = array_keys($existingTags);
         $newTagNames = array_diff($tagNames, $existingTagNames);
 
@@ -138,8 +149,11 @@ class TaskEloquentRepository implements TaskRepositoryInterface
             Tag::insert($newTags);
         }
         
-        // 3. 全てのタグIDを取得し直す (新規作成されたIDを含む)
-        $allTagIds = Tag::whereIn('name', $tagNames)->pluck('id')->toArray();
+        // 3. 全てのタグIDを取得し直す (新規作成されたIDを含む、user_idでフィルタリング)
+        $allTagIds = Tag::where('user_id', $task->user_id)
+            ->whereIn('name', $tagNames)
+            ->pluck('id')
+            ->toArray();
         
         // 4. タスクにタグを関連付け/同期 (Many-to-Many)
         $task->tags()->sync($allTagIds);
@@ -266,8 +280,8 @@ class TaskEloquentRepository implements TaskRepositoryInterface
             // 1. タグとのリレーションを削除
             $this->detachAllTags($task);
 
-            // 2. タスク本体を削除（物理削除）
-            return $task->forceDelete();
+            // 2. タスク本体をソフトデリート
+            return $task->delete();
         });
     }
 

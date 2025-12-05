@@ -199,7 +199,7 @@ class TaskApprovalService implements TaskApprovalServiceInterface
      */
     public function uploadImage(Task $task, UploadedFile $file): TaskImage
     {
-        $path = $file->store('task-images', 'public');
+        $path = $file->store('task-images', 's3');
 
         return TaskImage::create([
             'task_id' => $task->id,
@@ -214,7 +214,10 @@ class TaskApprovalService implements TaskApprovalServiceInterface
      */
     public function deleteImage(TaskImage $image): bool
     {
-        Storage::disk('public')->delete($image->file_path);
+        // S3ディスクから画像を削除
+        if ($image->file_path && Storage::disk('s3')->exists($image->file_path)) {
+            Storage::disk('s3')->delete($image->file_path);
+        }
         return $image->delete();
     }
 

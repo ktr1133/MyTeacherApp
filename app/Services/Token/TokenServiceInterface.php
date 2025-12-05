@@ -146,4 +146,13 @@ interface TokenServiceInterface
         ?string $stripePaymentIntentId = null,
         $related = null
     ): bool;
+
+    /**
+     * 使用トークン数を計算（インフラ負荷を加味）
+     * 
+     * @param string $type 使用タイプ
+     * @param int $rawUsage 生の使用量
+     * @return int 計算後の使用トークン数
+     */
+    public function calcUsedTokens(string $type, int $rawUsage): int;
 }

@@ -22,6 +22,9 @@ class TaskListResponder
             'tasks'             => $data['tasks'],
             'tags'              => $data['tags'],
             'notificationCount' => $data['notificationCount'] ?? 0,
+            'hasMore'           => $data['hasMore'] ?? false,
+            'nextPage'          => $data['nextPage'] ?? 2,
+            'perPage'           => $data['perPage'] ?? 50,
         ]);
     }
 }

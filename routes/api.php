@@ -16,6 +16,7 @@ use App\Http\Actions\Api\Task\BulkCompleteTasksApiAction;
 use App\Http\Actions\Api\Task\RequestApprovalApiAction;
 use App\Http\Actions\Api\Task\ListPendingApprovalsApiAction;
 use App\Http\Actions\Api\Task\SearchTasksApiAction;
+use App\Http\Actions\Api\Task\GetTasksPaginatedApiAction;
 use App\Http\Actions\Token\HandleTokenPurchaseWebhookAction;
 
 // ============================================================
@@ -68,6 +69,9 @@ Route::prefix('v1')->middleware(['cognito'])->group(function () {
 
     // タスク検索
     Route::post('/tasks/search', SearchTasksApiAction::class)->name('api.v1.tasks.search');
+    
+    // タスク一覧（無限スクロール用・ページネーション付き）
+    Route::get('/tasks/paginated', GetTasksPaginatedApiAction::class)->name('api.v1.tasks.paginated');
 });
 
 // Breeze + Cognito 並行運用ルート（Phase 1.5 期間限定）
@@ -88,8 +92,9 @@ Route::prefix('v1/dual')->middleware(['dual.auth'])->group(function () {
     // Route::get('/tasks', ...)->name('api.v1.dual.tasks.index');
 });
 
-// レガシーAPI（Sanctum認証 - テスト用に一時的に維持）
-Route::prefix('api')->middleware(['auth:sanctum'])->group(function () {
+// レガシーAPI（Web認証 - ダッシュボード用）
+// 注意: routes/api.phpは自動的に/apiプレフィックスが付くため、prefix不要
+Route::middleware(['auth'])->group(function () {
     Route::get('/user', function () {
         return auth()->user();
     });
@@ -120,6 +125,9 @@ Route::prefix('api')->middleware(['auth:sanctum'])->group(function () {
     
     // タスク検索
     Route::post('/tasks/search', SearchTasksApiAction::class)->name('api.tasks.search');
+    
+    // タスク一覧（無限スクロール用・ページネーション付き）
+    Route::get('/tasks/paginated', GetTasksPaginatedApiAction::class)->name('api.tasks.paginated');
 
     Route::post('/tasks/propose', ProposeTaskAction::class)->name('api.tasks.propose');
 });

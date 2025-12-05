@@ -292,6 +292,15 @@
     "src": "resources/js/dashboard/header.js",
     "isEntry": true
   },
+  "resources/js/dashboard/infinite-scroll-init.js": {
+    "file": "assets/infinite-scroll-init-C52K78-E.js",
+    "name": "infinite-scroll-init",
+    "src": "resources/js/dashboard/infinite-scroll-init.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/infinite-scroll.js"
+    ]
+  },
   "resources/js/dashboard/tab-switch.js": {
     "file": "assets/tab-switch-dxN6N1uZ.js",
     "name": "tab-switch",
@@ -320,6 +329,12 @@
     "file": "assets/task-search-DMIlhMAa.js",
     "name": "task-search",
     "src": "resources/js/dashboard/task-search.js",
+    "isEntry": true
+  },
+  "resources/js/infinite-scroll.js": {
+    "file": "assets/infinite-scroll-CnjZ2ZYz.js",
+    "name": "infinite-scroll",
+    "src": "resources/js/infinite-scroll.js",
     "isEntry": true
   },
   "resources/js/notifications/admin-notifications.js": {

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
 
 
@@ -110,6 +111,7 @@ class TaskManagementService implements TaskManagementServiceInterface
                 // 追加フィールドの設定
                 $taskData['reward'] = $data['reward'];
                 $taskData['requires_approval'] = $data['requires_approval'];
+                $taskData['requires_image'] = $data['requires_image'] ?? false;
                 $taskData['assigned_by_user_id'] = Auth::user()->id;
                 $taskData['group_task_id'] = $data['group_task_id'];
                 // 担当者が未設定の場合はグループの編集権限のないメンバー全員分にタスクを作成する
@@ -217,13 +219,16 @@ class TaskManagementService implements TaskManagementServiceInterface
     public function makeTaskBaseData(array $data): array
     {
         if ($data['span'] == config('const.task_spans.mid')) {
-            try {
-                // 更新の場合は既存のdue_dateをパース
-                $data['due_date'] = Carbon::parse($data['due_date'])->format('Y-m-d');
-            } catch (\Exception $e) {
-                // 新規の場合はdue_dataは年末に設定
-                $tmp_due_data = $data['due_date'];
-                $data['due_date'] = Carbon::createFromFormat('Y', $tmp_due_data)->endOfYear()->format('Y-m-d');
+            // due_dateが存在する場合のみ処理
+            if (isset($data['due_date'])) {
+                try {
+                    // 更新の場合は既存のdue_dateをパース
+                    $data['due_date'] = Carbon::parse($data['due_date'])->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // 新規の場合はdue_dataは年末に設定
+                    $tmp_due_data = $data['due_date'];
+                    $data['due_date'] = Carbon::createFromFormat('Y', $tmp_due_data)->endOfYear()->format('Y-m-d');
+                }
             }
         }
 
@@ -270,7 +275,15 @@ class TaskManagementService implements TaskManagementServiceInterface
         try {
             $userId = $task->user_id;
             
-            // リポジトリを使用してタスクを削除
+            // タスクに関連する画像をS3から削除し、レコードも削除
+            foreach ($task->images as $image) {
+                if ($image->file_path && Storage::disk('s3')->exists($image->file_path)) {
+                    Storage::disk('s3')->delete($image->file_path);
+                }
+                $image->delete(); // TaskImageレコードを削除
+            }
+            
+            // リポジトリを使用してタスクを削除（ソフトデリート）
             $deleted = $this->taskRepository->deleteTask($task);
 
             if (!$deleted) {

@@ -47,17 +47,22 @@ class IndexTaskAction
         $userId = $user->id;
         $filters = $request->only(['search', 'status', 'priority', 'tags']);
         
-        // タスクデータを取得
-        $tasks = $this->taskListService->getTasksForUser($userId, $filters);
+        // 無限スクロール用の初回表示（50件のみ）
+        $perPage = 50;
+        $paginatedResult = $this->taskListService->getTasksForUserPaginated($userId, $filters, 1, $perPage);
+        
         $tags = $this->tagService->getByUserId($userId);
 
         // 未読通知件数を取得
         $notificationData = $this->notificationService->getUnreadCountWithNew($userId);
 
         $data = [
-            'tasks' => $tasks,
+            'tasks' => $paginatedResult['tasks'],
             'tags' => $tags,
             'notificationCount' => $notificationData['unread_count'] ?? 0,
+            'hasMore' => $paginatedResult['has_more'],
+            'nextPage' => $paginatedResult['next_page'],
+            'perPage' => $perPage,
         ];
 
         // 大人向けダッシュボード（既存）

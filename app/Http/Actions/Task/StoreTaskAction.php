@@ -127,10 +127,14 @@ class StoreTaskAction
                 // 承認要否を設定（チェックボックスがない場合はfalse）
                 $data['requires_approval'] = $request->requiresApproval();
                 
+                // 画像必須を設定（チェックボックスがない場合はfalse）
+                $data['requires_image'] = $request->requiresImage();
+                
                 Log::info('グループタスクデータ準備完了', [
                     'group_task_id' => $data['group_task_id'],
                     'assigned_user_id' => $userId,
                     'requires_approval' => $data['requires_approval'],
+                    'requires_image' => $data['requires_image'],
                 ]);
             }
 

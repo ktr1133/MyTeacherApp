@@ -41,11 +41,12 @@ class Task extends Model
 
     /**
      * 型変換
+     * 
+     * ⚠️ due_dateは除外: アクセサで動的に変換（長期タスクは文字列保持）
      *
      * @var array<string,string>
      */
     protected $casts = [
-        'due_date' => 'datetime',
         'approved_at' => 'datetime',
         'completed_at' => 'datetime',
         'is_completed' => 'boolean',
@@ -53,6 +54,54 @@ class Task extends Model
         'requires_image' => 'boolean',
         'priority' => 'integer',
     ];
+
+    /**
+     * due_dateアクセサ: spanに応じて動的に型変換
+     * 
+     * - 長期タスク（span=3）: 文字列のまま返す（例: "2年後"）
+     * - 短期・中期タスク（span=1,2）: Carbonオブジェクトに変換
+     * 
+     * @param string|null $value
+     * @return \Carbon\Carbon|string|null
+     */
+    public function getDueDateAttribute($value)
+    {
+        if ($value === null) {
+            return null;
+        }
+        
+        // 長期タスク（span=3）の場合は文字列のまま返す
+        if ($this->span === config('const.task_spans.long')) {
+            return $value;
+        }
+        
+        // 短期・中期の場合はCarbonに変換（日付形式の検証付き）
+        try {
+            return \Carbon\Carbon::parse($value);
+        } catch (\Exception $e) {
+            // パース失敗時は文字列のまま返す（データ整合性維持）
+            \Illuminate\Support\Facades\Log::warning('Failed to parse due_date as datetime', [
+                'task_id' => $this->id,
+                'span' => $this->span,
+                'due_date' => $value,
+            ]);
+            return $value;
+        }
+    }
+
+    /**
+     * due_dateが日付オブジェクトとして扱えるか判定
+     * 
+     * @return bool
+     */
+    public function hasParsableDueDate(): bool
+    {
+        if ($this->due_date === null) {
+            return false;
+        }
+        
+        return $this->due_date instanceof \Carbon\Carbon;
+    }
 
     /**
      * tags リレーション（中間テーブル名を明示: task_tag）

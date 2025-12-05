@@ -155,7 +155,7 @@ return [
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
             'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
-            'persistent' => env('REDIS_PERSISTENT', false),
+            'persistent' => env('REDIS_PERSISTENT', true), // 永続的接続を有効化（接続プール最適化）
         ],
 
         'default' => [
@@ -169,6 +169,10 @@ return [
             'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
             'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+            // 接続プール最適化パラメータ
+            'persistent_id' => 'myteacher_app', // 永続的接続の識別子
+            'timeout' => env('REDIS_TIMEOUT', 1.0), // 接続タイムアウト: 1秒
+            'read_timeout' => env('REDIS_READ_TIMEOUT', 3.0), // 読み取りタイムアウト: 3秒
         ],
 
         'cache' => [
@@ -182,6 +186,10 @@ return [
             'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
             'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+            // 接続プール最適化パラメータ
+            'persistent_id' => 'myteacher_cache', // キャッシュ用の別識別子
+            'timeout' => env('REDIS_TIMEOUT', 1.0),
+            'read_timeout' => env('REDIS_READ_TIMEOUT', 3.0),
         ],
 
     ],
