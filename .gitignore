@@ -215,4 +215,26 @@ docs/**/*.md
 public/build/assets/*.css
 public/build/assets/*.js
 public/build/manifest.json
-/mobile
+
+# Mobile app (Expo/React Native)
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/expo-env.d.ts
+mobile/.kotlin/
+mobile/*.orig.*
+mobile/*.jks
+mobile/*.p8
+mobile/*.p12
+mobile/*.key
+mobile/*.mobileprovision
+mobile/.metro-health-check*
+mobile/npm-debug.*
+mobile/yarn-debug.*
+mobile/yarn-error.*
+mobile/.env*.local
+mobile/*.tsbuildinfo
+mobile/ios/
+mobile/android/
+mobile/coverage/

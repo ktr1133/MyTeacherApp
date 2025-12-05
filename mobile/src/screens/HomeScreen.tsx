@@ -1,0 +1,105 @@
+/**
+ * ホーム画面（認証後）
+ */
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { useAuth } from '../hooks/useAuth';
+
+export default function HomeScreen() {
+  const { user, logout } = useAuth();
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>ようこそ</Text>
+        <Text style={styles.userName}>{user?.name}さん</Text>
+        
+        <View style={styles.infoBox}>
+          <Text style={styles.infoLabel}>メールアドレス</Text>
+          <Text style={styles.infoValue}>{user?.email}</Text>
+        </View>
+
+        <View style={styles.statusBox}>
+          <Text style={styles.statusText}>✅ 認証機能実装完了</Text>
+          <Text style={styles.statusSubtext}>Phase 2.B-2</Text>
+        </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+          <Text style={styles.logoutButtonText}>ログアウト</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+  },
+  content: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  userName: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+    marginBottom: 32,
+  },
+  infoBox: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 24,
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#1f2937',
+  },
+  statusBox: {
+    backgroundColor: '#d1fae5',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 32,
+    alignItems: 'center',
+  },
+  statusText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#059669',
+    marginBottom: 4,
+  },
+  statusSubtext: {
+    fontSize: 14,
+    color: '#047857',
+  },
+  logoutButton: {
+    backgroundColor: '#ef4444',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
