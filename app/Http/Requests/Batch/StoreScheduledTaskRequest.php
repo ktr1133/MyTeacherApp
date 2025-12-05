@@ -37,7 +37,7 @@ class StoreScheduledTaskRequest extends FormRequest
             'schedules.*.dates.*' => ['integer', 'between:1,31'],
             'due_duration_days' => ['nullable', 'integer', 'min:0', 'max:365'],
             'due_duration_hours' => ['nullable', 'integer', 'min:0', 'max:8760'],
-            'start_date' => ['required', 'date', 'after_or_equal:today'],
+            'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after:start_date'],
             'skip_holidays' => ['boolean'],
             'move_to_next_business_day' => ['boolean'],
