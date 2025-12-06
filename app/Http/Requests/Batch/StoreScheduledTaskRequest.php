@@ -38,7 +38,16 @@ class StoreScheduledTaskRequest extends FormRequest
             'due_duration_days' => ['nullable', 'integer', 'min:0', 'max:365'],
             'due_duration_hours' => ['nullable', 'integer', 'min:0', 'max:8760'],
             'start_date' => ['required', 'date'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'end_date' => [
+                'nullable',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $startDate = $this->input('start_date');
+                    if ($startDate && strtotime($value) < strtotime($startDate)) {
+                        $fail('終了日は開始日以降の日付を指定してください。');
+                    }
+                },
+            ],
             'skip_holidays' => ['boolean'],
             'move_to_next_business_day' => ['boolean'],
             'delete_incomplete_previous' => ['boolean'],
