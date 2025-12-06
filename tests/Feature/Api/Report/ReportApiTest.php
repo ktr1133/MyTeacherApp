@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Group;
 use App\Models\MonthlyReport;
 use App\Models\Task;
+use App\Services\AI\OpenAIServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -30,6 +31,19 @@ class ReportApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // OpenAI APIをモック（CI環境でのAPI認証エラーを回避）
+        $mockOpenAIService = \Mockery::mock(OpenAIServiceInterface::class);
+        $mockOpenAIService->shouldReceive('chat')
+            ->andReturn([
+                'content' => 'モックコメント: テストデータです。',
+                'usage' => [
+                    'prompt_tokens' => 100,
+                    'completion_tokens' => 50,
+                    'total_tokens' => 150,
+                ],
+            ]);
+        $this->app->instance(OpenAIServiceInterface::class, $mockOpenAIService);
 
         // グループとユーザー作成
         $this->group = Group::factory()->create();
