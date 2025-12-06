@@ -48,6 +48,38 @@ const ERROR_MESSAGES: Record<string, { adult: string; child: string }> = {
     adult: 'プロフィールの更新に失敗しました',
     child: 'じぶんのじょうほうをかえられなかったよ',
   },
+  PROFILE_DELETE_FAILED: {
+    adult: 'プロフィールの削除に失敗しました',
+    child: 'アカウントをけせなかったよ',
+  },
+
+  // タイムゾーン関連エラー
+  TIMEZONE_FETCH_FAILED: {
+    adult: 'タイムゾーン情報の取得に失敗しました',
+    child: 'じかんのせっていがとれなかったよ',
+  },
+  TIMEZONE_UPDATE_FAILED: {
+    adult: 'タイムゾーンの更新に失敗しました',
+    child: 'じかんのせっていをかえられなかったよ',
+  },
+
+  // パスワード関連エラー
+  PASSWORD_UPDATE_FAILED: {
+    adult: 'パスワードの更新に失敗しました',
+    child: 'パスワードをかえられなかったよ',
+  },
+  CURRENT_PASSWORD_INCORRECT: {
+    adult: '現在のパスワードが正しくありません',
+    child: 'いまのパスワードがちがうよ',
+  },
+  PASSWORD_TOO_SHORT: {
+    adult: 'パスワードは8文字以上で入力してください',
+    child: 'パスワードは8もじいじょうにしてね',
+  },
+  PASSWORD_CONFIRMATION_MISMATCH: {
+    adult: 'パスワードが確認用と一致しません',
+    child: 'パスワードがあっていないよ',
+  },
 
   // タスク操作エラー
   TASK_NOT_FOUND: {
