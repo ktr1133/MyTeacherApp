@@ -47,4 +47,13 @@ interface ProfileManagementServiceInterface
      * @return User
      */
     public function createUser(array $data): User;
+
+    /**
+     * ユーザーのパスワードを更新する
+     *
+     * @param User $user
+     * @param string $newPassword
+     * @return bool
+     */
+    public function updatePassword(User $user, string $newPassword): bool;
 }

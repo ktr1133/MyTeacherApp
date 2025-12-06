@@ -31,6 +31,7 @@ use App\Http\Actions\Api\Profile\UpdateProfileApiAction;
 use App\Http\Actions\Api\Profile\DeleteProfileApiAction;
 use App\Http\Actions\Api\Profile\ShowTimezoneSettingApiAction;
 use App\Http\Actions\Api\Profile\UpdateTimezoneApiAction;
+use App\Http\Actions\Api\Profile\UpdatePasswordApiAction;
 use App\Http\Actions\Api\Tags\TagsListApiAction;
 use App\Http\Actions\Api\Tags\StoreTagApiAction;
 use App\Http\Actions\Api\Tags\UpdateTagApiAction;
@@ -166,6 +167,7 @@ Route::prefix('v1')->middleware(['cognito'])->group(function () {
     Route::delete('/profile', DeleteProfileApiAction::class)->name('api.v1.profile.delete');
     Route::get('/profile/timezone', ShowTimezoneSettingApiAction::class)->name('api.v1.profile.timezone');
     Route::put('/profile/timezone', UpdateTimezoneApiAction::class)->name('api.v1.profile.timezone.update');
+    Route::put('/profile/password', UpdatePasswordApiAction::class)->name('api.v1.profile.password');
 
     // タグ管理API
     Route::get('/tags', TagsListApiAction::class)->name('api.v1.tags.index');
