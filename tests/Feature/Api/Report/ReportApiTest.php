@@ -30,21 +30,23 @@ class ReportApiTest extends TestCase
 
     protected function setUp(): void
     {
-        // OpenAI APIをモック（CI環境でのAPI認証エラーを回避）
-        // parent::setUp()より前に設定してサービスプロバイダーより先に登録
         parent::setUp();
-        
-        $mockOpenAIService = \Mockery::mock(OpenAIServiceInterface::class);
-        $mockOpenAIService->shouldReceive('chat')
-            ->andReturn([
-                'content' => 'モックコメント: テストデータです。',
-                'usage' => [
-                    'prompt_tokens' => 100,
-                    'completion_tokens' => 50,
-                    'total_tokens' => 150,
-                ],
-            ]);
-        $this->instance(OpenAIServiceInterface::class, $mockOpenAIService);
+
+        // OpenAI APIをモック（CI環境でのAPI認証エラーを回避）
+        // bind()で毎回新しいモックインスタンスを生成
+        $this->app->bind(OpenAIServiceInterface::class, function () {
+            $mock = \Mockery::mock(OpenAIServiceInterface::class);
+            $mock->shouldReceive('chat')
+                ->andReturn([
+                    'content' => 'モックコメント: テストデータです。',
+                    'usage' => [
+                        'prompt_tokens' => 100,
+                        'completion_tokens' => 50,
+                        'total_tokens' => 150,
+                    ],
+                ]);
+            return $mock;
+        });
 
         // グループとユーザー作成
         $this->group = Group::factory()->create();

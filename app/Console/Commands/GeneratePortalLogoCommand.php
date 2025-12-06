@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use App\Services\AI\OpenAIService;
+use App\Services\AI\OpenAIServiceInterface;
 use App\Services\AI\StableDiffusionService;
 
 /**
@@ -33,11 +33,11 @@ class GeneratePortalLogoCommand extends Command
     /**
      * コマンドを実行
      *
-     * @param OpenAIService $openAIService
+     * @param OpenAIServiceInterface $openAIService
      * @param StableDiffusionService $sdService
      * @return int
      */
-    public function handle(OpenAIService $openAIService, StableDiffusionService $sdService): int
+    public function handle(OpenAIServiceInterface $openAIService, StableDiffusionService $sdService): int
     {
         $this->info('🎨 Famicoポータルロゴ生成を開始します...');
 

@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use App\Services\AI\OpenAIService;
+use App\Services\AI\OpenAIServiceInterface;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +33,7 @@ class BenchmarkTaskDecomposition extends Command
         '新商品のマーケティング戦略立案',
     ];
 
-    public function handle(OpenAIService $openAIService): int
+    public function handle(OpenAIServiceInterface $openAIService): int
     {
         $userId = $this->argument('user_id');
         $samples = (int) $this->option('samples');

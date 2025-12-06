@@ -5,7 +5,7 @@ namespace App\Services\Task;
 use App\Models\User;
 use App\Models\TaskProposal;
 use App\Repositories\Task\TaskProposalRepositoryInterface;
-use App\Services\AI\OpenAIService;
+use App\Services\AI\OpenAIServiceInterface;
 use App\Services\Token\TokenServiceInterface;
 use Illuminate\Support\Facades\Log;
 
@@ -13,7 +13,7 @@ class TaskProposalService implements TaskProposalServiceInterface
 {
     public function __construct(
         private TaskProposalRepositoryInterface $repo,
-        private OpenAIService $openAI,
+        private OpenAIServiceInterface $openAI,
         private TokenServiceInterface $tokenService
     ) {}
 

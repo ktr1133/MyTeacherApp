@@ -127,6 +127,7 @@ use App\Services\Security\ClamAVScanService;
 
 // 外部APIサービスのインポート
 use App\Services\AI\OpenAIService;
+use App\Services\AI\OpenAIServiceInterface;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Log;
@@ -232,7 +233,13 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Report ---
         $this->app->bind(PerformanceServiceInterface::class, PerformanceService::class);
-        $this->app->bind(MonthlyReportServiceInterface::class, MonthlyReportService::class);
+        $this->app->bind(MonthlyReportServiceInterface::class, function ($app) {
+            return new MonthlyReportService(
+                $app->make(MonthlyReportRepositoryInterface::class),
+                $app->make(SubscriptionServiceInterface::class),
+                $app->make(OpenAIServiceInterface::class)
+            );
+        });
         $this->app->bind(PdfGenerationServiceInterface::class, PdfGenerationService::class);
 
         // --- Batch ---
@@ -277,6 +284,11 @@ class AppServiceProvider extends ServiceProvider
                 Log::warning('OpenAI API key is not set. Set OPENAI_API_KEY in .env or services.openai.api_key in config/services.php');
             }
             return new OpenAIService($apiKey);
+        });
+        
+        // OpenAIServiceInterfaceを具象クラスにバインド（シングルトンインスタンスを参照）
+        $this->app->singleton(OpenAIServiceInterface::class, function ($app) {
+            return $app->make(OpenAIService::class);
         });
     }
 

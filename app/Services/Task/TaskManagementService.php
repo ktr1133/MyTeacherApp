@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use App\Repositories\Tag\TagRepositoryInterface;
 use App\Repositories\Task\TaskRepositoryInterface;
-use App\Services\AI\OpenAIService;
+use App\Services\AI\OpenAIServiceInterface;
 use App\Services\Notification\NotificationServiceInterface;
 use App\Services\Tag\TagServiceInterface;
 use App\Services\Task\TaskProposalServiceInterface;
@@ -28,7 +28,7 @@ class TaskManagementService implements TaskManagementServiceInterface
     protected TaskRepositoryInterface $taskRepository;
     protected TagRepositoryInterface $tagRepository;
     protected ProfileUserRepositoryInterface $profileUserRepository;
-    protected OpenAIService $openAIService;
+    protected OpenAIServiceInterface $openAIService;
     protected TagServiceInterface $tagService;
     protected TaskProposalServiceInterface $proposalService;
     protected NotificationServiceInterface $notificationService;
@@ -40,7 +40,7 @@ class TaskManagementService implements TaskManagementServiceInterface
         TaskRepositoryInterface $taskRepository,
         TagRepositoryInterface $tagRepository,
         ProfileUserRepositoryInterface $profileUserRepository,
-        OpenAIService $openAIService,
+        OpenAIServiceInterface $openAIService,
         TagServiceInterface $tagService,
         TaskProposalServiceInterface $proposalService,
         NotificationServiceInterface $notificationService

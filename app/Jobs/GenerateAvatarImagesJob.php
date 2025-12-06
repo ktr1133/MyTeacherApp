@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\TeacherAvatar;
-use App\Services\AI\OpenAIService;
+use App\Services\AI\OpenAIServiceInterface;
 use App\Services\AI\StableDiffusionServiceInterface;
 use App\Services\AI\AICostServiceInterface;
 use App\Services\Notification\NotificationServiceInterface;

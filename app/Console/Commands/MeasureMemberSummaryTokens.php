@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use App\Services\AI\OpenAIService;
+use App\Services\AI\OpenAIServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -35,16 +35,16 @@ class MeasureMemberSummaryTokens extends Command
     /**
      * OpenAIサービス
      *
-     * @var OpenAIService
+     * @var OpenAIServiceInterface
      */
-    protected OpenAIService $openAIService;
+    protected OpenAIServiceInterface $openAIService;
 
     /**
      * コンストラクタ
      *
-     * @param OpenAIService $openAIService
+     * @param OpenAIServiceInterface $openAIService
      */
-    public function __construct(OpenAIService $openAIService)
+    public function __construct(OpenAIServiceInterface $openAIService)
     {
         parent::__construct();
         $this->openAIService = $openAIService;
