@@ -1440,6 +1440,88 @@ paths:
         '200':
           description: 更新成功
 
+  /profile/password:
+    put:
+      summary: パスワード更新
+      description: |
+        ユーザーのパスワードを更新します。
+        現在のパスワードで認証後、新しいパスワードに変更します。
+        
+        **バリデーション**:
+        - 現在のパスワード: 必須、正しいパスワード確認
+        - 新しいパスワード: 8文字以上、確認フィールド一致
+      tags: [Profile]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, password, password_confirmation]
+              properties:
+                current_password:
+                  type: string
+                  format: password
+                  description: 現在のパスワード
+                  example: "oldpassword123"
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: 新しいパスワード（8文字以上）
+                  example: "newpassword456"
+                password_confirmation:
+                  type: string
+                  format: password
+                  description: 新しいパスワード（確認用）
+                  example: "newpassword456"
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "パスワードを更新しました"
+        '401':
+          description: 現在のパスワードが間違っている
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "入力内容に誤りがあります"
+                errors:
+                  current_password: ["現在のパスワードが正しくありません"]
+        '422':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "入力内容に誤りがあります"
+                errors:
+                  password: ["新しいパスワードは8文字以上で入力してください"]
+                  password_confirmation: ["パスワードが確認用と一致しません"]
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "パスワードの更新に失敗しました"
+
   # ============================================================
   # Tags API（4エンドポイント）
   # ============================================================

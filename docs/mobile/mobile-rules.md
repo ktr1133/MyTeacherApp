@@ -133,9 +133,74 @@
    - OpenAPI仕様にない機能は実装しない（バックエンド側の実装が前提）
 
 4. **Webアプリ機能との整合性**
-   - 実装時は対応するWebアプリ（`/home/ktr/mtdev/resources/views/`, `/home/ktr/mtdev/app/`）の機能を必ず参照すること
-   - モバイル版は **Webアプリと同等の機能** を有すること
-   - UI/UXはモバイル向けに最適化するが、機能の過不足は許容しない
+   - **基本方針**: モバイル版は **Webアプリと同等の機能** を有すること
+   
+   - **実装前の差分検出手順（必須）**:
+     
+     **ステップ1: 対象ファイルの特定**
+     ```bash
+     # 例: プロフィール画面の場合
+     ls -la /home/ktr/mtdev/resources/views/profile/
+     # 結果: edit.blade.php, timezone.blade.php, partials/ を確認
+     ```
+     
+     **ステップ2: Bladeファイルの全文読解**
+     - 対象ファイルを **1行目から最終行まで** 読み、UIパーツを抽出
+     - `read_file` ツールで複数回に分けて全体を確認
+     - **見落とし防止**: `<form>`, `<a>`, `<button>`, `@include`, `@if` の全出現箇所をリストアップ
+     
+     **ステップ3: 機械的検出によるダブルチェック**
+     ```bash
+     # リンク・ボタンの網羅的検出
+     grep_search('<a href=', isRegexp=false, includePattern='resources/views/profile/*.blade.php')
+     grep_search('<button', isRegexp=false, includePattern='resources/views/profile/*.blade.php')
+     grep_search('@include', isRegexp=false, includePattern='resources/views/profile/*.blade.php')
+     
+     # フォームフィールドの検出
+     grep_search('name=', isRegexp=false, includePattern='resources/views/profile/*.blade.php')
+     
+     # 条件分岐の検出（成人限定機能等）
+     grep_search('@if', isRegexp=false, includePattern='resources/views/profile/*.blade.php')
+     ```
+     
+     **ステップ4: 検出結果の構造化リスト作成**
+     | # | 種別 | ラベル/テキスト | 遷移先/アクション | Blade行番号 | モバイル実装状況 |
+     |---|------|---------------|----------------|-----------|--------------|
+     | 1 | リンク | "グループ管理画面へ" | `route('group.edit')` | 139 | ❌ 未実装 |
+     | 2 | リンク | "タイムゾーン設定" | `route('profile.timezone')` | 165 | ✅ 実装済み |
+     | 3 | フォーム | "プロフィール編集" | POST `/profile` | 50-80 | ✅ 実装済み |
+     | 4 | セクション | "パスワード変更" | @include | 180 | ❌ 未実装 |
+     | 5 | セクション | "アカウント削除" | @include | 200 | ✅ 実装済み |
+     
+     **ステップ5: 差分サマリー作成**
+     - ✅ **実装済み**: X件
+     - ❌ **未実装**: Y件（優先度: 高/中/低を明記）
+     - ⚠️ **モバイル独自**: Z件（要件定義書への記載要否を判断）
+   
+   - **実装時の確認手順**:
+     1. 上記の差分検出手順を実施し、構造化リストを作成
+     2. Webアプリに存在する機能は **すべてモバイル版にも実装**
+     3. Webアプリに存在しない機能を追加する場合は、**事前に要件定義書に明記**し、承認を得る
+   
+   - **画面デザイン方針**: 
+     - Webアプリのレスポンシブデザインと **同等の画面構成** とすること
+     - モバイルネイティブの操作性（スワイプ、タップ等）に最適化
+     - 情報の過不足は許容しない（Webアプリと同じ情報を表示）
+   
+   **モバイル固有機能の扱い**:
+   - モバイル特有の機能（カメラ、プッシュ通知、位置情報等）は、**要件定義書に明記**されている場合のみ実装可能
+   - 例外的に追加が必要な場合:
+     1. 要件定義書（`/home/ktr/mtdev/definitions/*.md`）に追記
+     2. Webアプリ側への実装も検討（API側は共通化）
+     3. 完了レポートに「モバイル固有機能」として明記
+   
+   **チェックリスト**:
+   - [ ] Bladeファイルを1行目から最終行まで読解した
+   - [ ] `grep_search`でリンク・ボタン・フォームを機械的に検出した
+   - [ ] 検出結果を構造化リスト（表形式）にまとめた
+   - [ ] Webアプリの全機能をモバイル版に実装した（または未実装理由を明記）
+   - [ ] モバイル固有機能は要件定義書に明記されている
+   - [ ] 画面構成・情報量がWebアプリと一致している
 
 5. **データベーススキーマの確認**
    - 実装時は **必ず** Laravelのマイグレーションファイル（`/home/ktr/mtdev/database/migrations/`）を参照すること
@@ -701,8 +766,9 @@ feat: Phase 2.B-2 認証機能実装完了
 ### Phase完了時の報告
 
 1. **完了報告書作成**
-   - ファイル名: `/home/ktr/mtdev/docs/reports/YYYY-MM-DD-phase2-{phase名}-completion-report.md`
-   - copilot-instructions.mdの「レポート作成規則」に従う
+   - 保管先: `/home/ktr/mtdev/docs/reports/mobile/`
+   - ファイル名: `YYYY-MM-DD-phase2-{phase名}-completion-report.md`
+   - 形式: copilot-instructions.mdの「レポート作成規則」に従う
 
 2. **必須セクション**
    - 更新履歴
@@ -710,15 +776,31 @@ feat: Phase 2.B-2 認証機能実装完了
    - 計画との対応
    - 実施内容詳細
    - 成果と効果
-   - テスト手順・検証方法
-   - 制約・既知の問題
+   - 品質保証プロセス（TypeScript型チェック、テスト実行結果、規約遵守チェック）
    - 未完了項目・次のステップ
+   - 添付資料（ファイル一覧、コミット情報、テスト実行結果、パッケージ情報）
 
-3. **テストガイド更新**
+3. **実装計画書更新**
+   - `/home/ktr/mtdev/docs/plans/phase2-mobile-app-implementation-plan.md` の更新履歴に追記
+   - 該当フェーズのステータスを「✅ 完了」に更新
+   - 完了レポートへのリンクを追加
+
+4. **テストガイド更新**
    - `/home/ktr/mtdev/mobile/TESTING.md` に新機能のテスト手順を追加
+
+**例（Phase 2.B-4完了時）**:
+```markdown
+# 完了レポート
+docs/reports/mobile/2025-12-06-phase2-b4-profile-settings-completion-report.md
+
+# phase2-mobile-app-implementation-plan.md 更新内容
+- 更新履歴に「2025-12-06 | GitHub Copilot | Phase 2.B-4完了」追記
+- Phase 2.B-4セクション: 「🎯 実施中」→「✅ 完了: 2025-12-06」
+- 完了レポートリンク追加
+```
 
 ---
 
 **作成者**: GitHub Copilot  
-**最終更新**: 2025年12月5日  
+**最終更新**: 2025年12月6日  
 **対象フェーズ**: Phase 2.B（モバイルアプリ開発）

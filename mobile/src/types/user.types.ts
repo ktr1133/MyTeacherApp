@@ -19,7 +19,7 @@ export interface User {
   name: string | null;
   email: string;
   avatar_path: string | null;
-  bio: string | null;
+  avatar_url?: string | null; // S3/MinIO URL（プロフィール画面用）
   timezone: string;
   theme: ThemeType;
   group_id: number | null;
