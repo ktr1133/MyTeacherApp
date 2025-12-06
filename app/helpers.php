@@ -17,7 +17,6 @@ if (!function_exists('current_user')) {
     }
 }
 
-
 if (!function_exists('auth_provider')) {
     /**
      * 現在のユーザーの認証プロバイダーを取得
