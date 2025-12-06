@@ -25,6 +25,7 @@ use App\Http\Actions\Api\Group\UpdateMemberPermissionApiAction;
 use App\Http\Actions\Api\Group\ToggleMemberThemeApiAction;
 use App\Http\Actions\Api\Group\TransferGroupMasterApiAction;
 use App\Http\Actions\Api\Group\RemoveMemberApiAction;
+use App\Http\Actions\Api\User\GetCurrentUserApiAction;
 use App\Http\Actions\Api\Profile\EditProfileApiAction;
 use App\Http\Actions\Api\Profile\UpdateProfileApiAction;
 use App\Http\Actions\Api\Profile\DeleteProfileApiAction;
@@ -155,6 +156,9 @@ Route::prefix('v1')->middleware(['cognito'])->group(function () {
     Route::patch('/groups/members/{member}/theme', ToggleMemberThemeApiAction::class)->name('api.v1.groups.members.theme');
     Route::post('/groups/transfer/{newMaster}', TransferGroupMasterApiAction::class)->name('api.v1.groups.transfer');
     Route::delete('/groups/members/{member}', RemoveMemberApiAction::class)->name('api.v1.groups.members.remove');
+
+    // ユーザー情報API
+    Route::get('/user/current', GetCurrentUserApiAction::class)->name('api.v1.user.current');
 
     // プロフィール管理API
     Route::get('/profile/edit', EditProfileApiAction::class)->name('api.v1.profile.edit');
