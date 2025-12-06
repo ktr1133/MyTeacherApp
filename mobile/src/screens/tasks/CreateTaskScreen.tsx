@@ -2,8 +2,10 @@
  * タスク作成画面
  * 
  * グループタスク作成対応、テーマに応じたラベル表示
+ * 通常タスク: 報酬・承認の有無・画像必須の設定なし
+ * グループタスク: 報酬・承認の有無・画像必須の設定あり、グループメンバー必須
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,6 +22,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { CreateTaskData, TaskSpan, TaskPriority } from '../../types/task.types';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import api from '../../services/api';
 
 /**
  * ナビゲーションスタック型定義
@@ -30,6 +33,15 @@ type RootStackParamList = {
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+/**
+ * グループメンバー情報
+ */
+interface GroupMember {
+  id: number;
+  username: string;
+  name: string;
+}
 
 /**
  * タスク作成画面コンポーネント
@@ -49,6 +61,56 @@ export default function CreateTaskScreen() {
   const [requiresApproval, setRequiresApproval] = useState(false);
   const [requiresImage, setRequiresImage] = useState(false);
   const [isGroupTask, setIsGroupTask] = useState(false);
+  
+  // グループメンバー状態
+  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+
+  /**
+   * グループタスク切り替え時のメンバーチェック
+   */
+  useEffect(() => {
+    if (isGroupTask) {
+      checkGroupMembers();
+    }
+  }, [isGroupTask]);
+
+  /**
+   * グループメンバー存在チェック
+   */
+  const checkGroupMembers = async () => {
+    setIsLoadingMembers(true);
+    try {
+      const response = await api.get('/groups/edit');
+      if (response.data.success && response.data.data.members) {
+        const members = response.data.data.members as GroupMember[];
+        setGroupMembers(members);
+        
+        if (members.length === 0) {
+          Alert.alert(
+            theme === 'child' ? 'エラー' : 'エラー',
+            theme === 'child' 
+              ? 'みんなのやることをつくるには、グループメンバーがひつようだよ。さきにメンバーをついかしてね。'
+              : 'グループタスクを作成するには、グループメンバーが必要です。先にメンバーを追加してください。',
+            [{ text: 'OK', onPress: () => setIsGroupTask(false) }]
+          );
+        }
+      } else {
+        throw new Error('グループ情報の取得に失敗しました');
+      }
+    } catch (error: any) {
+      console.error('[CreateTaskScreen] グループメンバー取得エラー:', error);
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        theme === 'child' 
+          ? 'グループのじょうほうがとれなかったよ。もういちどためしてね。'
+          : 'グループ情報の取得に失敗しました。もう一度お試しください。',
+        [{ text: 'OK', onPress: () => setIsGroupTask(false) }]
+      );
+    } finally {
+      setIsLoadingMembers(false);
+    }
+  };
 
   /**
    * タスク作成処理
@@ -63,16 +125,31 @@ export default function CreateTaskScreen() {
       return;
     }
 
+    // グループタスクの場合、メンバー必須チェック
+    if (isGroupTask && groupMembers.length === 0) {
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        theme === 'child' 
+          ? 'みんなのやることをつくるには、グループメンバーがひつようだよ。'
+          : 'グループタスクを作成するには、グループメンバーが必要です。',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    // タスクデータ作成（通常タスクとグループタスクで分岐）
     const taskData: CreateTaskData = {
       title: title.trim(),
       description: description.trim() || undefined,
       span,
       due_date: dueDate.trim() || undefined,
       priority,
-      reward: parseInt(reward, 10) || 10,
-      requires_approval: requiresApproval,
-      requires_image: requiresImage,
       is_group_task: isGroupTask,
+      ...(isGroupTask && {
+        reward: parseInt(reward, 10) || 10,
+        requires_approval: requiresApproval,
+        requires_image: requiresImage,
+      }),
     };
 
     const newTask = await createTask(taskData);
@@ -99,6 +176,7 @@ export default function CreateTaskScreen() {
     requiresApproval,
     requiresImage,
     isGroupTask,
+    groupMembers,
     createTask,
     theme,
     navigation,
@@ -266,71 +344,81 @@ export default function CreateTaskScreen() {
           </Text>
         </View>
 
-        {/* 報酬 */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>
-            {theme === 'child' ? 'ほうび' : '報酬トークン'}
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={reward}
-            onChangeText={setReward}
-            placeholder="10"
-            placeholderTextColor="#9CA3AF"
-            keyboardType="numeric"
-          />
-        </View>
-
-        {/* スイッチ類 */}
-        <View style={styles.fieldContainer}>
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>
-              {theme === 'child' ? 'かくにんがひつよう' : '承認が必要'}
+        {/* 報酬（グループタスクのみ） */}
+        {isGroupTask && (
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>
+              {theme === 'child' ? 'ほうび' : '報酬トークン'}
             </Text>
-            <Switch
-              value={requiresApproval}
-              onValueChange={setRequiresApproval}
-              trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
-              thumbColor={requiresApproval ? '#4F46E5' : '#F3F4F6'}
+            <TextInput
+              style={styles.input}
+              value={reward}
+              onChangeText={setReward}
+              placeholder="10"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="numeric"
             />
           </View>
-          <Text style={styles.helpText}>
-            {theme === 'child'
-              ? 'できたらおとなにみせてね'
-              : '完了時に親が承認する必要があります'}
-          </Text>
-        </View>
+        )}
 
-        <View style={styles.fieldContainer}>
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>
-              {theme === 'child' ? 'しゃしんがひつよう' : '画像が必要'}
-            </Text>
-            <Switch
-              value={requiresImage}
-              onValueChange={setRequiresImage}
-              trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
-              thumbColor={requiresImage ? '#4F46E5' : '#F3F4F6'}
-            />
-          </View>
-          <Text style={styles.helpText}>
-            {theme === 'child'
-              ? 'できたらしゃしんをとってね'
-              : '完了時に写真の添付が必要です'}
-          </Text>
-        </View>
+        {/* スイッチ類（グループタスクのみ） */}
+        {isGroupTask && (
+          <>
+            <View style={styles.fieldContainer}>
+              <View style={styles.switchRow}>
+                <Text style={styles.switchLabel}>
+                  {theme === 'child' ? 'かくにんがひつよう' : '承認が必要'}
+                </Text>
+                <Switch
+                  value={requiresApproval}
+                  onValueChange={setRequiresApproval}
+                  trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
+                  thumbColor={requiresApproval ? '#4F46E5' : '#F3F4F6'}
+                />
+              </View>
+              <Text style={styles.helpText}>
+                {theme === 'child'
+                  ? 'できたらおとなにみせてね'
+                  : '完了時に親が承認する必要があります'}
+              </Text>
+            </View>
+
+            <View style={styles.fieldContainer}>
+              <View style={styles.switchRow}>
+                <Text style={styles.switchLabel}>
+                  {theme === 'child' ? 'しゃしんがひつよう' : '画像が必要'}
+                </Text>
+                <Switch
+                  value={requiresImage}
+                  onValueChange={setRequiresImage}
+                  trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
+                  thumbColor={requiresImage ? '#4F46E5' : '#F3F4F6'}
+                />
+              </View>
+              <Text style={styles.helpText}>
+                {theme === 'child'
+                  ? 'できたらしゃしんをとってね'
+                  : '完了時に写真の添付が必要です'}
+              </Text>
+            </View>
+          </>
+        )}
 
         <View style={styles.fieldContainer}>
           <View style={styles.switchRow}>
             <Text style={styles.switchLabel}>
               {theme === 'child' ? 'みんなのやること' : 'グループタスク'}
             </Text>
-            <Switch
-              value={isGroupTask}
-              onValueChange={setIsGroupTask}
-              trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
-              thumbColor={isGroupTask ? '#4F46E5' : '#F3F4F6'}
-            />
+            {isLoadingMembers ? (
+              <ActivityIndicator size="small" color="#4F46E5" />
+            ) : (
+              <Switch
+                value={isGroupTask}
+                onValueChange={setIsGroupTask}
+                trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
+                thumbColor={isGroupTask ? '#4F46E5' : '#F3F4F6'}
+              />
+            )}
           </View>
           <Text style={styles.helpText}>
             {theme === 'child'
