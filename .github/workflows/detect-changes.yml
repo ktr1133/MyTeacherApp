@@ -1,0 +1,42 @@
+name: Detect Changes
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+      docs: ${{ steps.filter.outputs.docs }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'app/**'
+              - 'config/**'
+              - 'routes/**'
+              - 'database/**'
+              - 'composer.json'
+              - 'composer.lock'
+              - 'docker/**'
+              - '.github/workflows/deploy-myteacher-app.yml'
+            mobile:
+              - 'mobile/**'
+            docs:
+              - 'docs/**'
+              - '*.md'
+      
+      - name: Report Changes
+        run: |
+          echo "Backend changed: ${{ steps.filter.outputs.backend }}"
+          echo "Mobile changed: ${{ steps.filter.outputs.mobile }}"
+          echo "Docs changed: ${{ steps.filter.outputs.docs }}"

@@ -1,0 +1,187 @@
+/**
+ * エラーメッセージ変換ユーティリティ
+ * 
+ * Service層で投げるエラーコードをテーマに応じた日本語メッセージに変換
+ * Web版の Blade内での条件分岐（@if ($theme === 'child')）に相当
+ */
+
+import { ThemeType } from '../types/user.types';
+
+/**
+ * エラーメッセージマップ
+ * 
+ * 各エラーコードに対して大人向け・子供向けのメッセージを定義
+ */
+const ERROR_MESSAGES: Record<string, { adult: string; child: string }> = {
+  // 認証エラー
+  AUTH_REQUIRED: {
+    adult: 'ログインが必要です',
+    child: 'ログインしてね',
+  },
+  SESSION_EXPIRED: {
+    adult: 'セッションが切れました。再度ログインしてください',
+    child: 'じかんがたったよ。もういちどログインしてね',
+  },
+
+  // ネットワークエラー
+  NETWORK_ERROR: {
+    adult: 'ネットワークエラーが発生しました',
+    child: 'インターネットにつながらないよ',
+  },
+  REQUEST_TIMEOUT: {
+    adult: '通信がタイムアウトしました',
+    child: 'じかんがかかりすぎちゃった',
+  },
+
+  // プロフィール関連エラー
+  PROFILE_FETCH_FAILED: {
+    adult: 'プロフィール情報の取得に失敗しました',
+    child: 'じぶんのじょうほうがとれなかったよ',
+  },
+  PROFILE_UPDATE_FAILED: {
+    adult: 'プロフィールの更新に失敗しました',
+    child: 'じぶんのじょうほうをかえられなかったよ',
+  },
+
+  // タスク操作エラー
+  TASK_NOT_FOUND: {
+    adult: 'タスクが見つかりません',
+    child: 'やることがみつからないよ',
+  },
+  TASK_ALREADY_COMPLETED: {
+    adult: 'タスクは既に完了しています',
+    child: 'もうおわっているよ',
+  },
+  TASK_CREATE_FAILED: {
+    adult: 'タスクの作成に失敗しました',
+    child: 'やることをつくれなかったよ',
+  },
+  TASK_UPDATE_FAILED: {
+    adult: 'タスクの更新に失敗しました',
+    child: 'へんこうできなかったよ',
+  },
+  TASK_DELETE_FAILED: {
+    adult: 'タスクの削除に失敗しました',
+    child: 'けせなかったよ',
+  },
+  TASK_FETCH_FAILED: {
+    adult: 'タスクの取得に失敗しました',
+    child: 'やることがみつからなかったよ',
+  },
+
+  // 承認操作エラー
+  APPROVAL_NOT_ALLOWED: {
+    adult: '承認権限がありません',
+    child: 'しょうにんできないよ',
+  },
+  ALREADY_APPROVED: {
+    adult: '既に承認済みです',
+    child: 'もうOKをだしているよ',
+  },
+  ALREADY_REJECTED: {
+    adult: '既に却下済みです',
+    child: 'もうだめっていったよ',
+  },
+
+  // 画像操作エラー
+  IMAGE_UPLOAD_FAILED: {
+    adult: '画像のアップロードに失敗しました',
+    child: 'しゃしんをおくれなかったよ',
+  },
+  IMAGE_DELETE_FAILED: {
+    adult: '画像の削除に失敗しました',
+    child: 'しゃしんをけせなかったよ',
+  },
+  IMAGE_TOO_LARGE: {
+    adult: '画像サイズが大きすぎます',
+    child: 'しゃしんがおおきすぎるよ',
+  },
+  INVALID_IMAGE_FORMAT: {
+    adult: '画像形式が不正です',
+    child: 'しゃしんのかたちがちがうよ',
+  },
+
+  // サーバーエラー
+  SERVER_ERROR: {
+    adult: 'サーバーエラーが発生しました',
+    child: 'サーバーがこまっているよ',
+  },
+  MAINTENANCE_MODE: {
+    adult: 'メンテナンス中です',
+    child: 'いまおやすみちゅうだよ',
+  },
+
+  // バリデーションエラー
+  VALIDATION_ERROR: {
+    adult: '入力内容に誤りがあります',
+    child: 'かいたないようがまちがっているよ',
+  },
+  TITLE_REQUIRED: {
+    adult: 'タイトルは必須です',
+    child: 'タイトルをかいてね',
+  },
+  TITLE_TOO_LONG: {
+    adult: 'タイトルが長すぎます',
+    child: 'タイトルがながすぎるよ',
+  },
+  DESCRIPTION_TOO_LONG: {
+    adult: '説明が長すぎます',
+    child: 'せつめいがながすぎるよ',
+  },
+
+  // 汎用エラー
+  UNKNOWN_ERROR: {
+    adult: '予期しないエラーが発生しました',
+    child: 'なにかおかしくなっちゃった',
+  },
+};
+
+/**
+ * エラーコードをテーマに応じたメッセージに変換
+ * 
+ * Web版の Blade内での以下のパターンに相当:
+ * ```blade
+ * @if ($theme === 'child')
+ *   やることをつくれなかったよ
+ * @else
+ *   タスクの作成に失敗しました
+ * @endif
+ * ```
+ * 
+ * @param errorCode エラーコード（例: 'TASK_CREATE_FAILED'）
+ * @param theme テーマ ('adult' | 'child')
+ * @returns テーマに応じた日本語メッセージ
+ * 
+ * @example
+ * ```tsx
+ * const { theme } = useTheme();
+ * 
+ * try {
+ *   await taskService.createTask(data);
+ * } catch (error: any) {
+ *   const message = getErrorMessage(error.message, theme);
+ *   Alert.alert('エラー', message);
+ * }
+ * ```
+ */
+export const getErrorMessage = (errorCode: string, theme: ThemeType): string => {
+  const messages = ERROR_MESSAGES[errorCode];
+  
+  if (!messages) {
+    // 未定義のエラーコードは汎用メッセージを返す
+    return theme === 'child' 
+      ? 'なにかおかしくなっちゃった' 
+      : '予期しないエラーが発生しました';
+  }
+
+  return theme === 'child' ? messages.child : messages.adult;
+};
+
+/**
+ * エラーコード一覧を取得（開発用）
+ * 
+ * @returns 定義済みエラーコードの配列
+ */
+export const getAvailableErrorCodes = (): string[] => {
+  return Object.keys(ERROR_MESSAGES);
+};
