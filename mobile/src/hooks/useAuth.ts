@@ -18,7 +18,12 @@ export const useAuth = () => {
   const checkAuth = async () => {
     try {
       const authenticated = await authService.isAuthenticated();
-      setIsAuthenticated(authenticated);
+      console.log('[useAuth] RAW authenticated:', JSON.stringify(authenticated), 'type:', typeof authenticated);
+      
+      // 確実にbooleanに変換
+      const boolValue = authenticated === true || authenticated === 'true';
+      console.log('[useAuth] CONVERTED isAuthenticated:', boolValue, 'type:', typeof boolValue);
+      setIsAuthenticated(boolValue);
       
       if (authenticated) {
         const currentUser = await authService.getCurrentUser();
@@ -26,7 +31,9 @@ export const useAuth = () => {
       }
     } catch (error) {
       console.error('Auth check failed:', error);
+      setIsAuthenticated(false);
     } finally {
+      console.log('[useAuth] Setting loading to FALSE');
       setLoading(false);
     }
   };
@@ -35,6 +42,7 @@ export const useAuth = () => {
     try {
       const { user: loggedInUser } = await authService.login(username, password);
       setUser(loggedInUser);
+      console.log('[useAuth] LOGIN - setting isAuthenticated to TRUE');
       setIsAuthenticated(true);
       return { success: true };
     } catch (error: any) {
@@ -54,6 +62,7 @@ export const useAuth = () => {
         name
       );
       setUser(registeredUser);
+      console.log('[useAuth] REGISTER - setting isAuthenticated to TRUE');
       setIsAuthenticated(true);
       return { success: true };
     } catch (error: any) {
@@ -70,14 +79,14 @@ export const useAuth = () => {
       await authService.logout();
     } catch (error) {
       console.error('Logout failed:', error);
-      // ネットワークエラーでも確実にローカル状態をクリア
     } finally {
       setUser(null);
+      console.log('[useAuth] LOGOUT - setting isAuthenticated to FALSE');
       setIsAuthenticated(false);
     }
   };
 
-  return {
+  const returnValue = {
     user,
     loading,
     isAuthenticated,
@@ -85,4 +94,13 @@ export const useAuth = () => {
     register,
     logout,
   };
+
+  console.log('[useAuth] RETURN VALUES:', {
+    loading: returnValue.loading,
+    loadingType: typeof returnValue.loading,
+    isAuthenticated: returnValue.isAuthenticated,
+    isAuthenticatedType: typeof returnValue.isAuthenticated,
+  });
+
+  return returnValue;
 };

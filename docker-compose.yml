@@ -6,7 +6,7 @@ services:
     image: mtdev-app:latest
     container_name: mtdev-app-1
     ports:
-      - "8080:80"
+      - "8090:80"
     volumes:
       - .:/var/www/html
       - ./docker/apache/000-default.conf:/etc/apache2/sites-enabled/000-default.conf

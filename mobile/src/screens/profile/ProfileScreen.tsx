@@ -235,7 +235,7 @@ export const ProfileScreen: React.FC = () => {
               value={name}
               onChangeText={setName}
               editable={isEditing}
-              placeholder={theme === 'child' ? 'ひょうじするなまえ' : '表示名を入力'}
+              placeholder={theme === 'child' ? 'よびかた' : '表示名'}
               accessibilityLabel="表示名"
             />
           </View>

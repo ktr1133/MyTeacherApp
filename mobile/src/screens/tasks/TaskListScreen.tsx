@@ -17,8 +17,8 @@ import {
 } from 'react-native';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Task, TaskStatus } from '../../types/task.types';
-import { useNavigation } from '@react-navigation/native';
+import { Task } from '../../types/task.types';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 /**
@@ -42,44 +42,78 @@ export default function TaskListScreen() {
     tasks,
     isLoading,
     error,
-    pagination,
     fetchTasks,
-    searchTasks,
     toggleComplete,
     clearError,
     refreshTasks,
   } = useTasks();
 
-  const [selectedStatus, setSelectedStatus] = useState<TaskStatus | 'all'>('all');
+  const [selectedStatus] = useState<'pending'>('pending'); // 未完了のみ表示
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
 
   /**
    * 初回データ取得
    */
   useEffect(() => {
-    loadTasks();
+    console.log('[TaskListScreen] Mounting, loading tasks...');
+    try {
+      loadTasks();
+    } catch (err) {
+      console.error('[TaskListScreen] Error loading tasks:', err);
+    }
   }, [selectedStatus]);
 
   /**
-   * 検索クエリ変更時にタスク検索
+   * 画面フォーカス時: タスクリストを再同期
+   * （削除後に前画面に戻った際、削除されたタスクを即座に消すため）
    */
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const filters = selectedStatus !== 'all' ? { status: selectedStatus } : undefined;
-      searchTasks(searchQuery, filters);
-    } else {
-      loadTasks();
-    }
-  }, [searchQuery]);
+  useFocusEffect(
+    useCallback(() => {
+      // 画面がフォーカスされたら、未完了タスクを再取得
+      fetchTasks({ status: 'pending' });
+    }, [fetchTasks])
+  );
 
   /**
-   * タスク一覧を取得
+   * タスクデータまたは検索クエリ変更時にフィルタリング
+   */
+  useEffect(() => {
+    console.log('[TaskListScreen] Filtering tasks, query:', searchQuery, 'tasks count:', tasks.length);
+    
+    if (searchQuery.trim()) {
+      // 検索クエリがある場合: タイトル、説明、タグ名で部分一致フィルタリング
+      const query = searchQuery.toLowerCase();
+      const filtered = tasks.filter(task => {
+        // タイトルで検索
+        if (task.title?.toLowerCase().includes(query)) {
+          return true;
+        }
+        // 説明で検索
+        if (task.description?.toLowerCase().includes(query)) {
+          return true;
+        }
+        // タグ名で検索
+        if (task.tags?.some(tag => tag.name?.toLowerCase().includes(query))) {
+          return true;
+        }
+        return false;
+      });
+      console.log('[TaskListScreen] Filtered tasks count:', filtered.length);
+      setFilteredTasks(filtered);
+    } else {
+      // 検索クエリがない場合: 全タスクを表示
+      setFilteredTasks(tasks);
+    }
+  }, [searchQuery, tasks]);
+
+  /**
+   * タスク一覧を取得（未完了のみ）
    */
   const loadTasks = useCallback(() => {
-    const filters = selectedStatus !== 'all' ? { status: selectedStatus } : undefined;
-    fetchTasks(filters);
-  }, [selectedStatus, fetchTasks]);
+    fetchTasks({ status: 'pending' });
+  }, [fetchTasks]);
 
   /**
    * Pull-to-Refresh
@@ -141,8 +175,8 @@ export default function TaskListScreen() {
    */
   const renderTaskItem = useCallback(
     ({ item }: { item: Task }) => {
-      const isCompleted = item.status === 'completed' || item.status === 'approved';
-      const isPending = item.status === 'pending';
+      const isCompleted = item.is_completed;
+      const isPending = !item.is_completed;
 
       return (
         <TouchableOpacity
@@ -154,9 +188,6 @@ export default function TaskListScreen() {
             <Text style={[styles.taskTitle, isCompleted && styles.completedText]}>
               {item.title}
             </Text>
-            <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
-              <Text style={styles.statusText}>{getStatusLabel(item.status, theme)}</Text>
-            </View>
           </View>
 
           {item.description && (
@@ -165,11 +196,25 @@ export default function TaskListScreen() {
             </Text>
           )}
 
+          {/* タグ表示 */}
+          {item.tags && item.tags.length > 0 && (
+            <View style={styles.tagsContainer}>
+              {item.tags.map((tag) => (
+                <View key={tag.id} style={styles.tagBadge}>
+                  <Text style={styles.tagText}>{tag.name}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           <View style={styles.taskFooter}>
-            <Text style={styles.taskReward}>
-              {theme === 'child' ? '⭐' : '報酬:'} {item.reward}
-              {theme === 'child' ? '' : 'トークン'}
-            </Text>
+            {/* グループタスクのみ報酬を表示 */}
+            {item.is_group_task && (
+              <Text style={styles.taskReward}>
+                {theme === 'child' ? '⭐' : '報酬:'} {item.reward}
+                {theme === 'child' ? '' : 'トークン'}
+              </Text>
+            )}
             {item.due_date && (
               <Text style={styles.taskDueDate}>
                 {theme === 'child' ? '⏰' : '期限:'} {item.due_date}
@@ -265,57 +310,20 @@ export default function TaskListScreen() {
         )}
       </View>
 
-      {/* フィルター */}
-      <View style={styles.filterContainer}>
-        <TouchableOpacity
-          style={[styles.filterButton, selectedStatus === 'all' && styles.filterButtonActive]}
-          onPress={() => setSelectedStatus('all')}
-        >
-          <Text
-            style={[
-              styles.filterButtonText,
-              selectedStatus === 'all' && styles.filterButtonTextActive,
-            ]}
-          >
-            {theme === 'child' ? 'ぜんぶ' : 'すべて'}
+      {/* 検索結果件数 */}
+      {searchQuery.trim() && (
+        <View style={styles.searchResultContainer}>
+          <Text style={styles.searchResultText}>
+            {theme === 'child' 
+              ? `${filteredTasks.length}こ みつかったよ` 
+              : `${filteredTasks.length}件のタスクが見つかりました`}
           </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.filterButton, selectedStatus === 'pending' && styles.filterButtonActive]}
-          onPress={() => setSelectedStatus('pending')}
-        >
-          <Text
-            style={[
-              styles.filterButtonText,
-              selectedStatus === 'pending' && styles.filterButtonTextActive,
-            ]}
-          >
-            {theme === 'child' ? 'やること' : '未完了'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.filterButton,
-            selectedStatus === 'completed' && styles.filterButtonActive,
-          ]}
-          onPress={() => setSelectedStatus('completed')}
-        >
-          <Text
-            style={[
-              styles.filterButtonText,
-              selectedStatus === 'completed' && styles.filterButtonTextActive,
-            ]}
-          >
-            {theme === 'child' ? 'できた' : '完了'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        </View>
+      )}
 
       {/* タスク一覧 */}
       <FlatList
-        data={tasks}
+        data={filteredTasks}
         renderItem={renderTaskItem}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
@@ -330,56 +338,7 @@ export default function TaskListScreen() {
   );
 }
 
-/**
- * ステータスに応じたラベルを取得
- */
-const getStatusLabel = (status: TaskStatus, theme: 'adult' | 'child'): string => {
-  if (theme === 'child') {
-    switch (status) {
-      case 'pending':
-        return 'やる';
-      case 'completed':
-        return 'できた';
-      case 'approved':
-        return 'OK!';
-      case 'rejected':
-        return 'やりなおし';
-      default:
-        return '?';
-    }
-  } else {
-    switch (status) {
-      case 'pending':
-        return '未完了';
-      case 'completed':
-        return '完了';
-      case 'approved':
-        return '承認済み';
-      case 'rejected':
-        return '却下';
-      default:
-        return '不明';
-    }
-  }
-};
 
-/**
- * ステータスに応じたスタイルを取得
- */
-const getStatusStyle = (status: TaskStatus) => {
-  switch (status) {
-    case 'pending':
-      return styles.statusPending;
-    case 'completed':
-      return styles.statusCompleted;
-    case 'approved':
-      return styles.statusApproved;
-    case 'rejected':
-      return styles.statusRejected;
-    default:
-      return styles.statusPending;
-  }
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -443,6 +402,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#9CA3AF',
     fontWeight: 'bold',
+  },
+  searchResultContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#EEF2FF',
+  },
+  searchResultText: {
+    fontSize: 14,
+    color: '#4F46E5',
+    fontWeight: '600',
   },
   filterContainer: {
     flexDirection: 'row',
@@ -528,6 +497,23 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginBottom: 12,
     lineHeight: 20,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  tagBadge: {
+    backgroundColor: '#E0E7FF',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  tagText: {
+    fontSize: 12,
+    color: '#4F46E5',
+    fontWeight: '600',
   },
   taskFooter: {
     flexDirection: 'row',

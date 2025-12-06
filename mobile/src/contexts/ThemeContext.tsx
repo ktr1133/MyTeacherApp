@@ -71,8 +71,15 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     loadTheme();
   }, []);
 
+  const contextValue: ThemeContextType = {
+    theme,
+    setTheme,
+    isLoading,
+    refreshTheme,
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, isLoading, refreshTheme }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

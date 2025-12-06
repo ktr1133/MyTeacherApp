@@ -139,6 +139,20 @@ const ERROR_MESSAGES: Record<string, { adult: string; child: string }> = {
     child: 'しゃしんのかたちがちがうよ',
   },
 
+  // 通知関連エラー
+  NOTIFICATION_FETCH_FAILED: {
+    adult: '通知の取得に失敗しました',
+    child: 'おしらせがとれなかったよ',
+  },
+  NOTIFICATION_UPDATE_FAILED: {
+    adult: '通知の更新に失敗しました',
+    child: 'おしらせをこうしんできなかったよ',
+  },
+  NOTIFICATION_SEARCH_FAILED: {
+    adult: '通知の検索に失敗しました',
+    child: 'おしらせをさがせなかったよ',
+  },
+
   // サーバーエラー
   SERVER_ERROR: {
     adult: 'サーバーエラーが発生しました',

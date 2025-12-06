@@ -81,6 +81,9 @@ export const authService = {
    */
   async isAuthenticated(): Promise<boolean> {
     const token = await storage.getItem(STORAGE_KEYS.JWT_TOKEN);
-    return !!token;
+    console.log('[authService] token from storage:', token, 'type:', typeof token);
+    const result = token !== null && token !== undefined && token !== '';
+    console.log('[authService] isAuthenticated result:', result, 'type:', typeof result);
+    return result;
   },
 };

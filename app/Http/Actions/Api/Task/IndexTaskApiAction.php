@@ -79,11 +79,15 @@ class IndexTaskApiAction
                                 'id' => $tag->id,
                                 'name' => $tag->name,
                             ])->toArray(),
-                            'images' => $task->images->map(fn($img) => [
-                                'id' => $img->id,
-                                'path' => $img->path,
-                                'url' => Storage::disk('s3')->url($img->path),
-                            ])->toArray(),
+                            'images' => $task->images
+                                ->filter(fn($img) => !empty($img->file_path))
+                                ->map(fn($img) => [
+                                    'id' => $img->id,
+                                    'path' => $img->file_path,
+                                    'url' => Storage::disk('s3')->url($img->file_path),
+                                ])
+                                ->values()
+                                ->toArray(),
                             'created_at' => $task->created_at->toIso8601String(),
                             'updated_at' => $task->updated_at->toIso8601String(),
                         ];

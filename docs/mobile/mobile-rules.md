@@ -4,6 +4,8 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-07 | GitHub Copilot | 画像機能に関する注意事項を追加（総則7項） |
+| 2025-12-07 | GitHub Copilot | 質疑応答結果の要件定義化ルール追加（総則6項） |
 | 2025-12-06 | GitHub Copilot | Service層とHook層のメソッド命名規則を追加（TypeScript規約4項） |
 | 2025-12-05 | GitHub Copilot | 初版作成: モバイルアプリ開発規則 |
 
@@ -207,42 +209,130 @@
    - モデルクラス（`/home/ktr/mtdev/app/Models/`）の `$fillable` プロパティを確認し、**存在するカラムのみを使用**
    - **推測によるカラム名の使用は厳禁**（`/home/ktr/mtdev/.github/copilot-instructions.md`の「不具合対応方針」に従う）
    
-   - **タスク関連の重要カラム**:
-     - `tasks` テーブル:
-       - ✅ **完了判定**: `is_completed` (boolean) - 完了状態の判定に使用
-       - ✅ **完了日時**: `completed_at` (timestamp) - 完了日時
-       - ❌ **存在しない**: `status` カラムは存在しない（旧コードの残骸、使用禁止）
-       - ✅ **タイトル**: `title` (string) - タスク件名
-       - ✅ **説明**: `description` (text) - タスク詳細説明
-       - ✅ **期限**: `due_date` (string) - 期日（span=3の場合は文字列、それ以外は日付）
-       - ✅ **優先度**: `priority` (integer) - 優先度（1-5）
-       - ✅ **タグ**: `tags` リレーション経由で取得（多対多）
-     
-     - **検索実装時の注意**:
-       - タスク件名: `tasks.title` LIKE検索
-       - タスク説明: `tasks.description` LIKE検索
-       - タグ名: `tags.name` LIKE検索（リレーション経由）
-       - 完了/未完了フィルター: `is_completed = true/false`
-   
-   - **認証関連のカラム**:
-     - `users` テーブル: `id`, `username`, `email`, `name`, `password`, `cognito_sub`, `auth_provider`, `theme` など
-   
    - **検証手順**:
      ```bash
      # マイグレーションファイルでカラム確認
-     cat /home/ktr/mtdev/database/migrations/*_tasks.php | grep '\$table->'
+     cat /home/ktr/mtdev/database/migrations/*_{テーブル名}.php | grep '\$table->'
      
      # モデルのfillableプロパティ確認
-     grep -A 30 'protected \$fillable' /home/ktr/mtdev/app/Models/Task.php
+     grep -A 30 'protected \$fillable' /home/ktr/mtdev/app/Models/{モデル名}.php
      ```
    
    - **禁止事項**:
      - ❌ マイグレーションファイルを確認せずにカラム名を推測
      - ❌ 他のプロジェクト・Stack Overflowのコード例をそのまま使用
-     - ❌ `status`カラムの使用（存在しない）
      - ❌ Webアプリで使用しているカラムを確認せず、独自カラム名を使用
+     - ❌ 存在しないカラムを型定義・API呼び出しに含める
 
-6. **テストファイルの作成（必須）**
+6. **質疑応答結果の要件定義化（重要）**
+   - **原則**: 実装中の質疑応答（仕様確認、UI調整、機能追加等）の結果は **必ず要件定義書として保管** すること
+   - 保管先: `/home/ktr/mtdev/definitions/mobile/` 配下
+   - ファイル名: `{画面名/機能名}.md`（例: `TaskListScreen.md`, `AuthFlow.md`）
+   - 形式: `/home/ktr/mtdev/.github/copilot-instructions.md` の「レポート作成規則」に準拠
+   
+   - **要件定義書の必須セクション**:
+     ```markdown
+     # {画面名/機能名} 要件定義書
+     
+     ## 更新履歴
+     | 日付 | 更新者 | 更新内容 |
+     
+     ## 1. 概要
+     - 対応フェーズ、関連画面、目的
+     
+     ## 2. 画面仕様（UI要件の場合）
+     - 画面構成、表示要素、データ取得仕様
+     
+     ## 3. 機能要件
+     - 各機能の詳細仕様、実装方式
+     
+     ## 4. UI/UXガイドライン
+     - テーマ対応、レスポンシブ対応
+     
+     ## 5. データベーススキーマ対応
+     - 使用テーブル、カラム一覧
+     
+     ## 6. エラーハンドリング
+     - エラーパターン、メッセージ
+     
+     ## 7. パフォーマンス要件
+     - 応答時間目標、最適化手法
+     
+     ## 8. テスト要件
+     - 単体テスト、統合テスト、E2Eテスト
+     
+     ## 9. 実装ファイル
+     - 実装ファイル一覧、テストファイル
+     
+     ## 10. 将来対応
+     - 次フェーズの機能追加予定
+     
+     ## 11. Webアプリとの差分
+     - 実装済み機能、未実装機能、モバイル独自機能
+     
+     ## 12. 参考資料
+     - 関連ドキュメント、完了レポート
+     
+     ## 13. 質疑応答履歴
+     - 質問と回答のペア、決定事項
+     ```
+   
+   - **要件定義化のタイミング**:
+     1. Phase完了時（必須）
+     2. 仕様変更が発生した場合（随時）
+     3. 質疑応答が5件以上累積した場合（推奨）
+   
+   - **質疑応答履歴の記録方法**:
+     - 質問: ユーザーからの質問をそのまま記載
+     - 回答: 決定事項、実装内容、理由を明記
+     - 影響範囲: 変更したファイル、行番号を記載
+   
+   - **禁止事項**:
+     - ❌ 質疑応答結果を口頭・チャットのみで終わらせる
+     - ❌ 決定事項を要件定義書に反映しない
+     - ❌ 仕様変更を個別ファイルのコメントのみで記録
+     - ❌ 将来参照できない形式で保管（Markdown以外）
+
+7. **画像機能に関する注意事項（重要）**
+   - **タスク画像アップロード機能は実装済み**:
+     - バックエンドAPI: `POST /api/tasks/{taskId}/images`（UploadTaskImageApiAction.php）
+     - モバイルUI: TaskDetailScreen.tsx の `handleImagePick()`
+     - 画像削除: `DELETE /api/tasks/images/{imageId}`（DeleteTaskImageApiAction.php）
+   
+   - **TaskImageモデルのカラム名**:
+     - **正**: `file_path`（マイグレーション定義）
+     - **誤**: `path`（存在しないカラム、APIレスポンスのみ）
+     - **注意**: API層で `$img->path` を参照するとエラー（`$img->file_path` を使用）
+   
+   - **画像データのAPI返却形式**:
+     ```php
+     'images' => $task->images
+         ->filter(fn($img) => !empty($img->file_path))  // null安全対策
+         ->map(fn($img) => [
+             'id' => $img->id,
+             'path' => $img->file_path,  // ✅ file_pathを使用
+             'url' => Storage::disk('s3')->url($img->file_path),
+         ])
+         ->values()
+         ->toArray(),
+     ```
+   
+   - **画像アップロードの制約**:
+     - 最大サイズ: 10MB
+     - 許可形式: JPEG, PNG, JPG, GIF
+     - ウイルススキャン: 有効（設定による）
+     - 保存先: S3/MinIO `task_approvals/` ディレクトリ
+   
+   - **チェックリスト**:
+     - [ ] マイグレーションファイルでカラム名を確認した（`file_path`）
+     - [ ] API層で `$img->file_path` を使用している（`$img->path` ではない）
+     - [ ] `file_path` が `null` の場合はスキップ（`filter()`使用）
+     - [ ] 画像アップロード機能の実装状況を確認した（実装済み）
+     - ❌ 質疑応答結果を口頭・チャットのみで終わらせる
+     - ❌ 実装完了後に要件定義書を作成せずに次フェーズに進む
+     - ❌ 質疑応答履歴を省略・簡略化する
+
+7. **テストファイルの作成（必須）**
    - 機能実装完了後、**必ず** テストファイルを作成すること
    - テストファイル配置: `/home/ktr/mtdev/mobile/__tests__/{機能名}/`
    - テストフレームワーク: Jest（Expoデフォルト）

@@ -4,9 +4,9 @@
 
 // API設定
 export const API_CONFIG = {
-  // Phase 2.B-3以降: ローカルLaravelに接続する場合は 'http://localhost:8080/api' に変更
-  // 本番環境: 'https://api.myteacher.example.com'
-  BASE_URL: process.env.EXPO_PUBLIC_API_URL || 'https://api.myteacher.example.com',
+  // Phase 2.B-3: ngrok経由でLaravelに接続（AP Isolation回避）
+  // ngrok URL: https://fizzy-formless-sandi.ngrok-free.dev
+  BASE_URL: process.env.EXPO_PUBLIC_API_URL || 'https://fizzy-formless-sandi.ngrok-free.dev/api',
   TIMEOUT: 10000,
 } as const;
 
@@ -16,6 +16,7 @@ export const STORAGE_KEYS = {
   FCM_TOKEN: 'fcm_token',
   USER_DATA: 'user_data', // プロフィール編集用の詳細ユーザー情報
   CURRENT_USER: 'current_user', // 全画面共通で使用する基本ユーザー情報（テーマ等）
+  NOTIFICATIONS_CACHE: 'notifications_cache', // 通知一覧キャッシュ
 } as const;
 
 // アプリ設定

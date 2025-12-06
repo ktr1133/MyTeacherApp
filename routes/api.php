@@ -101,183 +101,129 @@ Route::prefix('auth')->group(function () {
 Route::post('/webhooks/stripe/token-purchase', HandleTokenPurchaseWebhookAction::class)->name('webhooks.stripe.token-purchase');
 
 // ============================================================
-// Phase 1.5: 並行運用期間のAPI設定
+// モバイルアプリAPI（Sanctum認証）
+// Phase 2.B: モバイルアプリ実装（Cognito → Sanctum認証に統一）
 // ============================================================
-// - 既存: Sanctum認証（レガシー）
-// - 新規: Cognito JWT認証
-// - 並行: dual.auth ミドルウェア（Breeze + Cognito両対応）
-// ============================================================
-
-// Cognito JWT認証専用ルート（新規API向け）
-Route::prefix('v1')->middleware(['cognito'])->group(function () {
-    Route::get('/user', function (Request $request) {
-        return response()->json([
-            'id' => $request->user()->id ?? null,
-            'email' => $request->cognito_email,
-            'cognito_sub' => $request->cognito_sub,
-            'auth_provider' => 'cognito',
-        ]);
-    })->name('api.v1.user');
-
-    // タスクAPI（モバイルアプリ向け）
-    Route::get('/tasks', IndexTaskApiAction::class)->name('api.v1.tasks.index');
-    Route::post('/tasks', StoreTaskApiAction::class)->name('api.v1.tasks.store');
-    Route::put('/tasks/{task}', UpdateTaskApiAction::class)->name('api.v1.tasks.update');
-    Route::delete('/tasks/{task}', DestroyTaskApiAction::class)->name('api.v1.tasks.destroy');
-    Route::patch('/tasks/{task}/toggle', ToggleTaskCompletionApiAction::class)->name('api.v1.tasks.toggle');
+Route::middleware('auth:sanctum')->group(function () {
     
-    // タスク承認API（グループタスク）
-    Route::post('/tasks/{task}/approve', ApproveTaskApiAction::class)->name('api.v1.tasks.approve');
-    Route::post('/tasks/{task}/reject', RejectTaskApiAction::class)->name('api.v1.tasks.reject');
-    
-    // タスク画像API
-    Route::post('/tasks/{task}/images', UploadTaskImageApiAction::class)->name('api.v1.tasks.images.upload');
-    Route::delete('/task-images/{image}', DeleteTaskImageApiAction::class)->name('api.v1.tasks.images.delete');
-
-    // タスク一括完了/未完了
-    Route::patch('/tasks/bulk-complete', BulkCompleteTasksApiAction::class)->name('api.v1.tasks.bulk-complete');
-
-    // タスク完了申請
-    Route::post('/tasks/{task}/request-approval', RequestApprovalApiAction::class)->name('api.v1.tasks.request-approval');
-
-    // 承認待ち一覧取得
-    Route::get('/approvals/pending', ListPendingApprovalsApiAction::class)->name('api.v1.approvals.pending');
-
-    // タスク検索
-    Route::post('/tasks/search', SearchTasksApiAction::class)->name('api.v1.tasks.search');
-    
-    // タスク一覧（無限スクロール用・ページネーション付き）
-    Route::get('/tasks/paginated', GetTasksPaginatedApiAction::class)->name('api.v1.tasks.paginated');
-
-    // グループ管理API
-    Route::get('/groups/edit', EditGroupApiAction::class)->name('api.v1.groups.edit');
-    Route::patch('/groups', UpdateGroupApiAction::class)->name('api.v1.groups.update');
-    Route::post('/groups/members', AddMemberApiAction::class)->name('api.v1.groups.members.add');
-    Route::patch('/groups/members/{member}/permission', UpdateMemberPermissionApiAction::class)->name('api.v1.groups.members.permission');
-    Route::patch('/groups/members/{member}/theme', ToggleMemberThemeApiAction::class)->name('api.v1.groups.members.theme');
-    Route::post('/groups/transfer/{newMaster}', TransferGroupMasterApiAction::class)->name('api.v1.groups.transfer');
-    Route::delete('/groups/members/{member}', RemoveMemberApiAction::class)->name('api.v1.groups.members.remove');
-
     // ユーザー情報API
-    Route::get('/user/current', GetCurrentUserApiAction::class)->name('api.v1.user.current');
-
-    // プロフィール管理API
-    Route::get('/profile/edit', EditProfileApiAction::class)->name('api.v1.profile.edit');
-    Route::patch('/profile', UpdateProfileApiAction::class)->name('api.v1.profile.update');
-    Route::delete('/profile', DeleteProfileApiAction::class)->name('api.v1.profile.delete');
-    Route::get('/profile/timezone', ShowTimezoneSettingApiAction::class)->name('api.v1.profile.timezone');
-    Route::put('/profile/timezone', UpdateTimezoneApiAction::class)->name('api.v1.profile.timezone.update');
-    Route::put('/profile/password', UpdatePasswordApiAction::class)->name('api.v1.profile.password');
-
-    // タグ管理API
-    Route::get('/tags', TagsListApiAction::class)->name('api.v1.tags.index');
-    Route::post('/tags', StoreTagApiAction::class)->name('api.v1.tags.store');
-    Route::put('/tags/{id}', UpdateTagApiAction::class)->name('api.v1.tags.update');
-    Route::delete('/tags/{id}', DestroyTagApiAction::class)->name('api.v1.tags.destroy');
-
-    // ============================================================
-    // Phase 1.E-1.5.2: 中優先度API（アバター、通知、トークン管理）
-    // ============================================================
-
-    // アバター管理API
-    Route::post('/avatar', StoreTeacherAvatarApiAction::class)->name('api.v1.avatar.store');
-    Route::get('/avatar', ShowTeacherAvatarApiAction::class)->name('api.v1.avatar.show');
-    Route::put('/avatar', UpdateTeacherAvatarApiAction::class)->name('api.v1.avatar.update');
-    Route::delete('/avatar', DestroyTeacherAvatarApiAction::class)->name('api.v1.avatar.destroy');
-    Route::post('/avatar/regenerate', RegenerateAvatarImageApiAction::class)->name('api.v1.avatar.regenerate');
-    Route::patch('/avatar/visibility', ToggleAvatarVisibilityApiAction::class)->name('api.v1.avatar.visibility');
-    Route::get('/avatar/comment/{event}', GetAvatarCommentApiAction::class)->name('api.v1.avatar.comment');
-
-    // 通知API
-    Route::get('/notifications', IndexNotificationApiAction::class)->name('api.v1.notifications.index');
-    Route::get('/notifications/unread-count', GetUnreadCountApiAction::class)->name('api.v1.notifications.unread-count');
-    Route::get('/notifications/search', SearchNotificationsApiAction::class)->name('api.v1.notifications.search');
-    Route::post('/notifications/read-all', MarkAllNotificationsAsReadApiAction::class)->name('api.v1.notifications.read-all');
-    Route::get('/notifications/{id}', ShowNotificationApiAction::class)->name('api.v1.notifications.show');
-    Route::patch('/notifications/{id}/read', MarkNotificationAsReadApiAction::class)->name('api.v1.notifications.read');
-
-    // トークン管理API
-    Route::get('/tokens/balance', GetTokenBalanceApiAction::class)->name('api.v1.tokens.balance');
-    Route::get('/tokens/history', GetTokenHistoryApiAction::class)->name('api.v1.tokens.history');
-    Route::get('/tokens/packages', GetTokenPackagesApiAction::class)->name('api.v1.tokens.packages');
-    Route::post('/tokens/create-checkout-session', CreateCheckoutSessionApiAction::class)->name('api.v1.tokens.create-checkout-session');
-    Route::patch('/tokens/toggle-mode', ToggleTokenModeApiAction::class)->name('api.v1.tokens.toggle-mode');
-
-    // ============================================================
-    // Phase 1.E-1.5.3: 低優先度API（レポート・実績、スケジュールタスク）
-    // ============================================================
-
-    // レポート・実績API
-    Route::get('/reports/performance', IndexPerformanceApiAction::class)->name('api.v1.reports.performance');
-    Route::get('/reports/monthly/{year?}/{month?}', ShowMonthlyReportApiAction::class)->name('api.v1.reports.monthly.show');
-    Route::post('/reports/monthly/member-summary', GenerateMemberSummaryApiAction::class)->name('api.v1.reports.monthly.member-summary');
-    Route::post('/reports/monthly/member-summary/pdf', DownloadMemberSummaryPdfApiAction::class)->name('api.v1.reports.monthly.member-summary.pdf');
-
-    // スケジュールタスクAPI
-    Route::get('/scheduled-tasks', IndexScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.index');
-    Route::get('/scheduled-tasks/create', CreateScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.create');
-    Route::post('/scheduled-tasks', StoreScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.store');
-    Route::get('/scheduled-tasks/{id}/edit', EditScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.edit');
-    Route::put('/scheduled-tasks/{id}', UpdateScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.update');
-    Route::delete('/scheduled-tasks/{id}', DeleteScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.destroy');
-    Route::post('/scheduled-tasks/{id}/pause', PauseScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.pause');
-    Route::post('/scheduled-tasks/{id}/resume', ResumeScheduledTaskApiAction::class)->name('api.v1.scheduled-tasks.resume');
-});
-
-// Breeze + Cognito 並行運用ルート（Phase 1.5 期間限定）
-Route::prefix('v1/dual')->middleware(['dual.auth'])->group(function () {
     Route::get('/user', function (Request $request) {
         $user = $request->user();
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'auth_provider' => $user->auth_provider ?? 'breeze',
-            'cognito_sub' => $user->cognito_sub,
-            'authenticated_via' => $request->has('cognito_sub') ? 'cognito' : 'breeze',
+            'username' => $user->username,
+            'auth_provider' => 'sanctum',
         ]);
-    })->name('api.v1.dual.user');
+    })->name('api.user');
+    Route::get('/user/current', GetCurrentUserApiAction::class)->name('api.user.current');
 
-    // ★ 既存APIを段階的に移行する際はこちらに
-    // Route::get('/tasks', ...)->name('api.v1.dual.tasks.index');
-});
-
-// レガシーAPI（Web認証 - ダッシュボード用）
-// 注意: routes/api.phpは自動的に/apiプレフィックスが付くため、prefix不要
-Route::middleware(['auth'])->group(function () {
-    Route::get('/user', function () {
-        return auth()->user();
+    // タスクAPI
+    Route::prefix('tasks')->group(function () {
+        Route::get('/', IndexTaskApiAction::class)->name('api.tasks.index');
+        Route::post('/', StoreTaskApiAction::class)->name('api.tasks.store');
+        Route::put('/{task}', UpdateTaskApiAction::class)->name('api.tasks.update');
+        Route::delete('/{task}', DestroyTaskApiAction::class)->name('api.tasks.destroy');
+        Route::patch('/{task}/toggle', ToggleTaskCompletionApiAction::class)->name('api.tasks.toggle');
+        
+        // 検索・ページネーション
+        Route::post('/search', SearchTasksApiAction::class)->name('api.tasks.search');
+        Route::get('/paginated', GetTasksPaginatedApiAction::class)->name('api.tasks.paginated');
+        
+        // 承認フロー
+        Route::post('/{task}/approve', ApproveTaskApiAction::class)->name('api.tasks.approve');
+        Route::post('/{task}/reject', RejectTaskApiAction::class)->name('api.tasks.reject');
+        Route::post('/{task}/request-approval', RequestApprovalApiAction::class)->name('api.tasks.request-approval');
+        Route::get('/approvals/pending', ListPendingApprovalsApiAction::class)->name('api.tasks.approvals.pending');
+        
+        // 一括操作
+        Route::patch('/bulk-complete', BulkCompleteTasksApiAction::class)->name('api.tasks.bulk-complete');
+        
+        // 画像
+        Route::post('/{task}/images', UploadTaskImageApiAction::class)->name('api.tasks.images.upload');
+        Route::delete('/images/{image}', DeleteTaskImageApiAction::class)->name('api.tasks.images.delete');
+        
+        // その他
+        Route::post('/propose', ProposeTaskAction::class)->name('api.tasks.propose');
     });
 
-    // タスクAPI（テスト用 - Phase 2で削除予定）
-    Route::get('/tasks', IndexTaskApiAction::class)->name('api.tasks.index');
-    Route::post('/tasks', StoreTaskApiAction::class)->name('api.tasks.store');
-    Route::put('/tasks/{task}', UpdateTaskApiAction::class)->name('api.tasks.update');
-    Route::delete('/tasks/{task}', DestroyTaskApiAction::class)->name('api.tasks.destroy');
-    Route::patch('/tasks/{task}/toggle', ToggleTaskCompletionApiAction::class)->name('api.tasks.toggle');
-    
-    // タスク承認API
-    Route::post('/tasks/{task}/approve', ApproveTaskApiAction::class)->name('api.tasks.approve');
-    Route::post('/tasks/{task}/reject', RejectTaskApiAction::class)->name('api.tasks.reject');
-    
-    // タスク画像API
-    Route::post('/tasks/{task}/images', UploadTaskImageApiAction::class)->name('api.tasks.images.upload');
-    Route::delete('/task-images/{image}', DeleteTaskImageApiAction::class)->name('api.tasks.images.delete');
-    
-    // タスク一括完了/未完了
-    Route::patch('/tasks/bulk-complete', BulkCompleteTasksApiAction::class)->name('api.tasks.bulk-complete');
-    
-    // タスク完了申請
-    Route::post('/tasks/{task}/request-approval', RequestApprovalApiAction::class)->name('api.tasks.request-approval');
-    
-    // 承認待ち一覧取得
-    Route::get('/approvals/pending', ListPendingApprovalsApiAction::class)->name('api.approvals.pending');
-    
-    // タスク検索
-    Route::post('/tasks/search', SearchTasksApiAction::class)->name('api.tasks.search');
-    
-    // タスク一覧（無限スクロール用・ページネーション付き）
-    Route::get('/tasks/paginated', GetTasksPaginatedApiAction::class)->name('api.tasks.paginated');
+    // グループ管理API
+    Route::prefix('groups')->group(function () {
+        Route::get('/edit', EditGroupApiAction::class)->name('api.groups.edit');
+        Route::patch('/', UpdateGroupApiAction::class)->name('api.groups.update');
+        Route::post('/members', AddMemberApiAction::class)->name('api.groups.members.add');
+        Route::patch('/members/{member}/permission', UpdateMemberPermissionApiAction::class)->name('api.groups.members.permission');
+        Route::patch('/members/{member}/theme', ToggleMemberThemeApiAction::class)->name('api.groups.members.theme');
+        Route::post('/transfer/{newMaster}', TransferGroupMasterApiAction::class)->name('api.groups.transfer');
+        Route::delete('/members/{member}', RemoveMemberApiAction::class)->name('api.groups.members.remove');
+    });
 
-    Route::post('/tasks/propose', ProposeTaskAction::class)->name('api.tasks.propose');
+    // プロフィール管理API
+    Route::prefix('profile')->group(function () {
+        Route::get('/edit', EditProfileApiAction::class)->name('api.profile.edit');
+        Route::patch('/', UpdateProfileApiAction::class)->name('api.profile.update');
+        Route::delete('/', DeleteProfileApiAction::class)->name('api.profile.delete');
+        Route::get('/timezone', ShowTimezoneSettingApiAction::class)->name('api.profile.timezone');
+        Route::put('/timezone', UpdateTimezoneApiAction::class)->name('api.profile.timezone.update');
+        Route::put('/password', UpdatePasswordApiAction::class)->name('api.profile.password');
+    });
+
+    // タグ管理API
+    Route::prefix('tags')->group(function () {
+        Route::get('/', TagsListApiAction::class)->name('api.tags.index');
+        Route::post('/', StoreTagApiAction::class)->name('api.tags.store');
+        Route::put('/{id}', UpdateTagApiAction::class)->name('api.tags.update');
+        Route::delete('/{id}', DestroyTagApiAction::class)->name('api.tags.destroy');
+    });
+
+    // アバター管理API
+    Route::prefix('avatar')->group(function () {
+        Route::post('/', StoreTeacherAvatarApiAction::class)->name('api.avatar.store');
+        Route::get('/', ShowTeacherAvatarApiAction::class)->name('api.avatar.show');
+        Route::put('/', UpdateTeacherAvatarApiAction::class)->name('api.avatar.update');
+        Route::delete('/', DestroyTeacherAvatarApiAction::class)->name('api.avatar.destroy');
+        Route::post('/regenerate', RegenerateAvatarImageApiAction::class)->name('api.avatar.regenerate');
+        Route::patch('/visibility', ToggleAvatarVisibilityApiAction::class)->name('api.avatar.visibility');
+        Route::get('/comment/{event}', GetAvatarCommentApiAction::class)->name('api.avatar.comment');
+    });
+
+    // 通知API
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', IndexNotificationApiAction::class)->name('api.notifications.index');
+        Route::get('/unread-count', GetUnreadCountApiAction::class)->name('api.notifications.unread-count');
+        Route::get('/search', SearchNotificationsApiAction::class)->name('api.notifications.search');
+        Route::post('/read-all', MarkAllNotificationsAsReadApiAction::class)->name('api.notifications.read-all');
+        Route::get('/{id}', ShowNotificationApiAction::class)->name('api.notifications.show');
+        Route::patch('/{id}/read', MarkNotificationAsReadApiAction::class)->name('api.notifications.read');
+    });
+
+    // トークン管理API
+    Route::prefix('tokens')->group(function () {
+        Route::get('/balance', GetTokenBalanceApiAction::class)->name('api.tokens.balance');
+        Route::get('/history', GetTokenHistoryApiAction::class)->name('api.tokens.history');
+        Route::get('/packages', GetTokenPackagesApiAction::class)->name('api.tokens.packages');
+        Route::post('/create-checkout-session', CreateCheckoutSessionApiAction::class)->name('api.tokens.create-checkout-session');
+        Route::patch('/toggle-mode', ToggleTokenModeApiAction::class)->name('api.tokens.toggle-mode');
+    });
+
+    // レポート・実績API
+    Route::prefix('reports')->group(function () {
+        Route::get('/performance', IndexPerformanceApiAction::class)->name('api.reports.performance');
+        Route::get('/monthly/{year?}/{month?}', ShowMonthlyReportApiAction::class)->name('api.reports.monthly.show');
+        Route::post('/monthly/member-summary', GenerateMemberSummaryApiAction::class)->name('api.reports.monthly.member-summary');
+        Route::post('/monthly/member-summary/pdf', DownloadMemberSummaryPdfApiAction::class)->name('api.reports.monthly.member-summary.pdf');
+    });
+
+    // スケジュールタスクAPI
+    Route::prefix('scheduled-tasks')->group(function () {
+        Route::get('/', IndexScheduledTaskApiAction::class)->name('api.scheduled-tasks.index');
+        Route::get('/create', CreateScheduledTaskApiAction::class)->name('api.scheduled-tasks.create');
+        Route::post('/', StoreScheduledTaskApiAction::class)->name('api.scheduled-tasks.store');
+        Route::get('/{id}/edit', EditScheduledTaskApiAction::class)->name('api.scheduled-tasks.edit');
+        Route::put('/{id}', UpdateScheduledTaskApiAction::class)->name('api.scheduled-tasks.update');
+        Route::delete('/{id}', DeleteScheduledTaskApiAction::class)->name('api.scheduled-tasks.destroy');
+        Route::post('/{id}/pause', PauseScheduledTaskApiAction::class)->name('api.scheduled-tasks.pause');
+        Route::post('/{id}/resume', ResumeScheduledTaskApiAction::class)->name('api.scheduled-tasks.resume');
+    });
 });

@@ -32,6 +32,13 @@ export default function HomeScreen() {
         </View>
 
         <TouchableOpacity
+          style={styles.taskButton}
+          onPress={() => navigation.navigate('TaskList' as never)}
+        >
+          <Text style={styles.taskButtonText}>📋 タスク一覧</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile' as never)}
         >
@@ -98,7 +105,19 @@ const styles = StyleSheet.create({
   },
   statusSubtext: {
     fontSize: 14,
-    color: '#047857',
+    color: '#059669',
+  },
+  taskButton: {
+    backgroundColor: '#10b981',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  taskButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
   profileButton: {
     backgroundColor: '#3b82f6',

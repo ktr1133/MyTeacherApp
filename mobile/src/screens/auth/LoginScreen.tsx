@@ -88,7 +88,6 @@ export default function LoginScreen({ navigation }: any) {
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
-            accessibilityRole="button"
           >
             {loading ? (
               <ActivityIndicator color="#fff" testID="loading-indicator" />
@@ -136,7 +135,7 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   form: {
-    gap: 16,
+    rowGap: 16,
   },
   input: {
     backgroundColor: '#fff',
@@ -189,7 +188,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 4,
+    columnGap: 4,
     padding: 8,
   },
   registerText: {

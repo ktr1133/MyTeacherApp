@@ -13,6 +13,7 @@
 | 2025-12-06 | GitHub Copilot | Phase 2.B-4.5追加（パスワード変更機能）、Phase 2.B-5更新（検索・通知・タグ機能明記） |
 | 2025-12-06 | GitHub Copilot | Phase 2.B-4.5完了（パスワード変更機能、Laravel 9テスト+Mobile 20テスト全パス、残課題対応完了） |
 | 2025-12-06 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク検索機能、27テスト全パス、デバウンス処理実装、完了レポート作成） |
+| 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク一覧画面、500エラー修正、検索・報酬・タグ・ステータス問題解決、質疑応答要件定義化） |
 
 ---
 
@@ -48,11 +49,13 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
     - **テスト**: Laravel 9テスト + Mobile 20テスト、全パス（TypeScript 0エラー）
     - **残課題対応**: 既存テストMock更新、非同期テスト修正完了
     - **完了レポート**: `docs/reports/mobile/2025-12-06-phase2-b4-5-password-change-completion-report.md`
-  - 🎯 **Phase 2.B-5 Step 1完了**: タスク検索機能（2025-12-06）
-    - **実装**: TaskService.searchTasks()、useTasks.searchTasks()、TaskListScreen検索バーUI
-    - **テスト**: 27テスト全パス（Service層9+Hook層7+UI層11）
-    - **技術**: デバウンス処理（300ms）、API呼び出し最大67%削減
-    - **完了レポート**: `docs/reports/mobile/2025-12-06-phase2-b5-step1-search-feature-completion-report.md`
+  - ✅ **Phase 2.B-5 Step 1完了**: タスク一覧画面（2025-12-07）
+    - **500エラー修正**: statusカラム→is_completedに変更、タスク一覧API正常動作
+    - **UI改善**: 未完了のみ表示、グループタスクのみ報酬表示、タグ正常表示
+    - **検索機能**: フロントエンド側フィルタリング（タイトル・説明・タグ名部分一致）
+    - **質疑応答6件**: バケツ表示、報酬表示、タグ表示、ステータスフィルター等
+    - **ドキュメント**: TaskListScreen.md要件定義書（700行）、mobile-rules.md更新（質疑応答要件定義化ルール追加）
+    - **完了レポート**: `docs/reports/mobile/2025-12-07-phase2-b5-step1-task-list-completion-report.md`
   - 🎯 **Phase 2.B-5 Step 2**: 通知機能（次タスク）
     - **通知機能**: Push通知（FCM）、通知一覧、既読管理
   - 🎯 **Phase 2.B-5 Step 3**: アバター機能

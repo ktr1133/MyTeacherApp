@@ -101,14 +101,19 @@ export const useTasks = (): UseTasksReturn => {
   const fetchTasks = useCallback(
     async (filters?: TaskFilters) => {
       try {
+        console.log('[useTasks] fetchTasks started, filters:', filters);
         setIsLoading(true);
         setError(null);
         setCurrentFilters(filters);
 
         const response = await taskService.getTasks(filters);
+        console.log('[useTasks] fetchTasks success, tasks count:', response.tasks.length);
         setTasks(response.tasks);
         setPagination(response.pagination);
       } catch (err: any) {
+        console.error('[useTasks] fetchTasks error:', err);
+        console.error('[useTasks] fetchTasks error message:', err.message);
+        console.error('[useTasks] fetchTasks error response:', err.response?.data);
         handleError(err);
         setTasks([]);
         setPagination(null);
@@ -260,7 +265,7 @@ export const useTasks = (): UseTasksReturn => {
         setIsLoading(false);
       }
     },
-    [handleError, pagination]
+    [taskService, handleError, pagination]
   );
 
   /**

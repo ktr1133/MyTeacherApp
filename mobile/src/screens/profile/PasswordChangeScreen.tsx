@@ -39,14 +39,14 @@ const PasswordChangeScreen: React.FC = () => {
   const { updatePassword, isLoading, error } = useProfile(theme);
 
   // フォーム状態
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
 
   // パスワード表示状態
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState<boolean>(false);
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
   // バリデーション状態
   const [errors, setErrors] = useState<{

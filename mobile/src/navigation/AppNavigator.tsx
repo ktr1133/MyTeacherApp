@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../hooks/useAuth';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
@@ -11,14 +11,21 @@ import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
+import TaskListScreen from '../screens/tasks/TaskListScreen';
+import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import PasswordChangeScreen from '../screens/profile/PasswordChangeScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-  const { isAuthenticated, loading } = useAuth();
+  const authData = useAuth();
+  const loading = authData.loading;
+  const isAuthenticated = authData.isAuthenticated;
+
+  console.log('[AppNavigator] loading:', loading, typeof loading);
+  console.log('[AppNavigator] isAuthenticated:', isAuthenticated, typeof isAuthenticated);
 
   if (loading) {
     return (
@@ -30,53 +37,67 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#3b82f6',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      >
+      <Stack.Navigator>
         {!isAuthenticated ? (
-          // 未認証時のルート
           <>
             <Stack.Screen
               name="Login"
               component={LoginScreen}
-              options={{ headerShown: false }}
+              options={{
+                headerShown: false,
+              }}
             />
             <Stack.Screen
               name="Register"
               component={RegisterScreen}
-              options={{ title: '新規登録' }}
+              options={{
+                title: '新規登録',
+              }}
             />
           </>
         ) : (
-          // 認証済みのルート
           <>
             <Stack.Screen
               name="Home"
               component={HomeScreen}
-              options={{ title: 'MyTeacher' }}
+              options={{
+                title: 'MyTeacher',
+              }}
+            />
+            <Stack.Screen
+              name="TaskList"
+              component={TaskListScreen}
+              options={{
+                title: 'タスク一覧',
+              }}
+            />
+            <Stack.Screen
+              name="TaskDetail"
+              component={TaskDetailScreen}
+              options={{
+                title: 'タスク詳細',
+              }}
             />
             <Stack.Screen
               name="Profile"
               component={ProfileScreen}
-              options={{ title: 'プロフィール' }}
+              options={{
+                title: 'プロフィール',
+              }}
             />
             <Stack.Screen
               name="PasswordChange"
               component={PasswordChangeScreen}
-              options={{ title: 'パスワード変更' }}
+              options={{
+                title: 'パスワード変更',
+              }}
             />
             <Stack.Screen
               name="Settings"
               component={SettingsScreen}
-              options={{ title: '設定' }}
+              options={{
+                title: '設定',
+              }}
             />
           </>
         )}
