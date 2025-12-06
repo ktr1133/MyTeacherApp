@@ -25,6 +25,7 @@ jobs:
               - 'config/**'
               - 'routes/**'
               - 'database/**'
+              - 'tests/**'
               - 'composer.json'
               - 'composer.lock'
               - 'docker/**'

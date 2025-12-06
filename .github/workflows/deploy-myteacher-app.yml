@@ -26,6 +26,7 @@ on:
       - 'routes/**'
       - 'public/**'
       - 'docker/**'
+      - 'tests/**'
       - 'composer.json'
       - 'composer.lock'
       - '.github/workflows/deploy-myteacher-app.yml'
