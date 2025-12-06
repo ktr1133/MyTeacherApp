@@ -4,13 +4,12 @@
  * Web版のミドルウェア（ShareThemeMiddleware）に相当
  * View::share('theme', $theme) と同じくグローバルにテーマを提供
  * 
- * @note 暫定実装: ProfileServiceが /api/v1/profile/edit を使用
- * @todo Laravel側で /api/v1/user/current API作成後に切り替え
+ * Laravel API: GET /api/v1/user/current からテーマ情報を取得
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ThemeType } from '../types/user.types';
-import { profileService } from '../services/profile.service';
+import { userService } from '../services/user.service';
 
 /**
  * テーマコンテキストの型定義
@@ -43,13 +42,13 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   /**
-   * Laravel API からプロフィール情報を取得してテーマを設定
+   * Laravel API からユーザー情報を取得してテーマを設定
    */
   const loadTheme = async () => {
     try {
       setIsLoading(true);
-      const profile = await profileService.getProfile();
-      setTheme(profile.theme);
+      const currentUser = await userService.getCurrentUser();
+      setTheme(currentUser.theme);
     } catch (error: any) {
       console.warn('Failed to load theme from API, using default', error);
       // エラー時は大人向けテーマをデフォルト

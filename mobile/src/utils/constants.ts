@@ -14,7 +14,8 @@ export const API_CONFIG = {
 export const STORAGE_KEYS = {
   JWT_TOKEN: 'jwt_token',
   FCM_TOKEN: 'fcm_token',
-  USER_DATA: 'user_data',
+  USER_DATA: 'user_data', // プロフィール編集用の詳細ユーザー情報
+  CURRENT_USER: 'current_user', // 全画面共通で使用する基本ユーザー情報（テーマ等）
 } as const;
 
 // アプリ設定

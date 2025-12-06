@@ -51,7 +51,7 @@ describe('useAuth', () => {
         name: 'Test User',
         email: 'test@example.com',
         username: 'test_user',
-        avatar_url: null,
+        avatar_url: undefined,
         created_at: '2025-12-06T00:00:00Z',
       };
       mockedAuthService.isAuthenticated.mockResolvedValue(true);
@@ -95,7 +95,7 @@ describe('useAuth', () => {
           name: 'Test User',
           email: 'test@example.com',
           username: 'test_user',
-          avatar_url: null,
+          avatar_url: undefined,
           created_at: '2025-12-06T00:00:00Z',
         },
       };
@@ -176,7 +176,7 @@ describe('useAuth', () => {
           name: 'New User',
           email: 'new@example.com',
           username: 'new_user',
-          avatar_url: null,
+          avatar_url: undefined,
           created_at: '2025-12-06T00:00:00Z',
         },
       };
@@ -238,7 +238,7 @@ describe('useAuth', () => {
         name: 'Test User',
         email: 'test@example.com',
         username: 'test_user',
-        avatar_url: null,
+        avatar_url: undefined,
         created_at: '2025-12-06T00:00:00Z',
       };
       mockedAuthService.isAuthenticated.mockResolvedValue(true);
@@ -266,7 +266,7 @@ describe('useAuth', () => {
         name: 'Test User',
         email: 'test@example.com',
         username: 'test_user',
-        avatar_url: null,
+        avatar_url: undefined,
         created_at: '2025-12-06T00:00:00Z',
       };
       mockedAuthService.isAuthenticated.mockResolvedValue(true);
@@ -297,7 +297,7 @@ describe('useAuth', () => {
           name: 'Test User',
           email: 'test@example.com',
           username: 'test_user',
-          avatar_url: null,
+          avatar_url: undefined,
           created_at: '2025-12-06T00:00:00Z',
         },
       };

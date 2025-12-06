@@ -33,6 +33,12 @@ const ERROR_MESSAGES: Record<string, { adult: string; child: string }> = {
     child: 'じかんがかかりすぎちゃった',
   },
 
+  // ユーザー情報関連エラー
+  USER_FETCH_FAILED: {
+    adult: 'ユーザー情報の取得に失敗しました',
+    child: 'じぶんのじょうほうがとれなかったよ',
+  },
+
   // プロフィール関連エラー
   PROFILE_FETCH_FAILED: {
     adult: 'プロフィール情報の取得に失敗しました',

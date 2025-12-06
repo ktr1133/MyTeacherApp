@@ -2,11 +2,7 @@
  * プロフィールサービス
  * 
  * Laravel API: /api/v1/profile/* との通信を担当
- * 
- * @note 暫定実装: getProfile()は /api/v1/profile/edit を使用
- *       本来はプロフィール編集画面用のAPIだが、
- *       テーマ情報取得専用API (/api/v1/user/current) が未実装のため流用
- * @todo Laravel側で専用API作成後、getProfile()をgetCurrentUser()にリネームして切り替え
+ * プロフィール編集画面（アカウント管理）専用のサービス
  */
 
 import api from './api';
@@ -19,12 +15,14 @@ import { STORAGE_KEYS } from '../utils/constants';
  */
 class ProfileService {
   /**
-   * 現在のユーザープロフィールを取得
+   * プロフィール編集用のユーザー情報を取得
    * 
    * Laravel API: GET /api/v1/profile/edit
    * 認証必須（Sanctum token）
    * 
-   * @returns ユーザー情報（theme含む）
+   * プロフィール編集画面で使用する詳細なユーザー情報を取得
+   * 
+   * @returns ユーザー情報（email, avatar_path, bio, timezone等を含む）
    * @throws Error - 認証エラー、ネットワークエラー
    */
   async getProfile(): Promise<ProfileResponse['data']> {

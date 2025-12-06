@@ -457,7 +457,7 @@ describe('TaskService', () => {
         expect.any(FormData),
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
-      expect(result.image.url).toBe('https://example.com/tasks/1/image.jpg');
+      expect(result?.image.url).toBe('https://example.com/tasks/1/image.jpg');
     });
 
     it('画像ファイルが不正な場合にエラーコードをスローする', async () => {
