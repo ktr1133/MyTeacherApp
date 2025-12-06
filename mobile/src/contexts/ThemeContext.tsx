@@ -18,6 +18,7 @@ import { userService } from '../services/user.service';
  */
 interface ThemeContextType {
   theme: ThemeType;
+  setTheme: (theme: ThemeType) => void;
   isLoading: boolean;
   refreshTheme: () => Promise<void>;
 }
@@ -71,7 +72,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, isLoading, refreshTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, isLoading, refreshTheme }}>
       {children}
     </ThemeContext.Provider>
   );

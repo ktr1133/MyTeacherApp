@@ -11,6 +11,9 @@ import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
+import { ProfileScreen } from '../screens/profile/ProfileScreen';
+import PasswordChangeScreen from '../screens/profile/PasswordChangeScreen';
+import { SettingsScreen } from '../screens/settings/SettingsScreen';
 
 const Stack = createStackNavigator();
 
@@ -59,6 +62,21 @@ export default function AppNavigator() {
               name="Home"
               component={HomeScreen}
               options={{ title: 'MyTeacher' }}
+            />
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              options={{ title: 'プロフィール' }}
+            />
+            <Stack.Screen
+              name="PasswordChange"
+              component={PasswordChangeScreen}
+              options={{ title: 'パスワード変更' }}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={SettingsScreen}
+              options={{ title: '設定' }}
             />
           </>
         )}

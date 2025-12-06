@@ -8,9 +8,11 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../hooks/useAuth';
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const { user, logout } = useAuth();
 
   return (
@@ -28,6 +30,13 @@ export default function HomeScreen() {
           <Text style={styles.statusText}>✅ 認証機能実装完了</Text>
           <Text style={styles.statusSubtext}>Phase 2.B-2</Text>
         </View>
+
+        <TouchableOpacity
+          style={styles.profileButton}
+          onPress={() => navigation.navigate('Profile' as never)}
+        >
+          <Text style={styles.profileButtonText}>プロフィール</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
           <Text style={styles.logoutButtonText}>ログアウト</Text>
@@ -90,6 +99,18 @@ const styles = StyleSheet.create({
   statusSubtext: {
     fontSize: 14,
     color: '#047857',
+  },
+  profileButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  profileButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
   logoutButton: {
     backgroundColor: '#ef4444',

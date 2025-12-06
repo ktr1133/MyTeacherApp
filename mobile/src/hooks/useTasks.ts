@@ -40,7 +40,7 @@ interface UseTasksReturn {
   
   // 承認操作
   approveTask: (taskId: number, comment?: string) => Promise<boolean>;
-  rejectTask: (taskId: number, comment: string) => Promise<boolean>;
+  rejectTask: (taskId: number, comment?: string) => Promise<boolean>;
   
   // 画像操作
   uploadImage: (taskId: number, imageUri: string) => Promise<boolean>;
