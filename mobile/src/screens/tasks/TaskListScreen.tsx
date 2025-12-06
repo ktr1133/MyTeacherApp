@@ -13,6 +13,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Alert,
+  TextInput,
 } from 'react-native';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -43,6 +44,7 @@ export default function TaskListScreen() {
     error,
     pagination,
     fetchTasks,
+    searchTasks,
     toggleComplete,
     clearError,
     refreshTasks,
@@ -50,6 +52,7 @@ export default function TaskListScreen() {
 
   const [selectedStatus, setSelectedStatus] = useState<TaskStatus | 'all'>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   /**
    * 初回データ取得
@@ -57,6 +60,18 @@ export default function TaskListScreen() {
   useEffect(() => {
     loadTasks();
   }, [selectedStatus]);
+
+  /**
+   * 検索クエリ変更時にタスク検索
+   */
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const filters = selectedStatus !== 'all' ? { status: selectedStatus } : undefined;
+      searchTasks(searchQuery, filters);
+    } else {
+      loadTasks();
+    }
+  }, [searchQuery]);
 
   /**
    * タスク一覧を取得
@@ -229,6 +244,27 @@ export default function TaskListScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* 検索バー */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder={theme === 'child' ? 'さがす' : '検索（タイトル・説明）'}
+          placeholderTextColor="#9CA3AF"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            style={styles.clearButton}
+            onPress={() => setSearchQuery('')}
+          >
+            <Text style={styles.clearButtonText}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       {/* フィルター */}
       <View style={styles.filterContainer}>
         <TouchableOpacity
@@ -376,6 +412,36 @@ const styles = StyleSheet.create({
   createButtonText: {
     fontSize: 24,
     color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+    fontSize: 14,
+    color: '#111827',
+  },
+  clearButton: {
+    marginLeft: 8,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    fontSize: 18,
+    color: '#9CA3AF',
     fontWeight: 'bold',
   },
   filterContainer: {

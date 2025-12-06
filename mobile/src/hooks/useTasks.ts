@@ -5,7 +5,7 @@
  * 楽観的更新（Optimistic Updates）でUXを向上
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { taskService } from '../services/task.service';
 import { useTheme } from '../contexts/ThemeContext';
 import { getErrorMessage } from '../utils/errorMessages';
@@ -33,6 +33,7 @@ interface UseTasksReturn {
 
   // タスク操作
   fetchTasks: (filters?: TaskFilters) => Promise<void>;
+  searchTasks: (query: string, filters?: Omit<TaskFilters, 'q'>) => Promise<void>;
   createTask: (data: CreateTaskData) => Promise<Task | null>;
   updateTask: (taskId: number, data: UpdateTaskData) => Promise<Task | null>;
   deleteTask: (taskId: number) => Promise<boolean>;
@@ -73,6 +74,7 @@ export const useTasks = (): UseTasksReturn => {
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<UseTasksReturn['pagination']>(null);
   const [currentFilters, setCurrentFilters] = useState<TaskFilters | undefined>(undefined);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * エラーをテーマに応じたメッセージに変換してセット
@@ -113,6 +115,40 @@ export const useTasks = (): UseTasksReturn => {
       } finally {
         setIsLoading(false);
       }
+    },
+    [handleError]
+  );
+
+  /**
+   * タスクを検索（デバウンス処理付き）
+   * 
+   * @param query - 検索クエリ
+   * @param filters - 追加フィルター条件
+   */
+  const searchTasks = useCallback(
+    async (query: string, filters?: Omit<TaskFilters, 'q'>) => {
+      // 既存のタイムアウトをクリア
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      // デバウンス処理（300ms）
+      searchTimeoutRef.current = setTimeout(async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
+
+          const response = await taskService.searchTasks(query, filters);
+          setTasks(response.tasks);
+          setPagination(response.pagination);
+        } catch (err: any) {
+          handleError(err);
+          setTasks([]);
+          setPagination(null);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 300);
     },
     [handleError]
   );
@@ -402,6 +438,7 @@ export const useTasks = (): UseTasksReturn => {
 
     // タスク操作
     fetchTasks,
+    searchTasks,
     createTask,
     updateTask,
     deleteTask,

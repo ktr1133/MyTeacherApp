@@ -338,6 +338,39 @@ class TaskService {
       throw new Error('IMAGE_DELETE_FAILED');
     }
   }
+
+  /**
+   * タスクを検索
+   * 
+   * @param query - 検索クエリ（タイトル・説明で部分一致）
+   * @param filters - 追加フィルター条件
+   * @returns 検索結果のタスク一覧とページネーション情報
+   * @throws Error - エラーコードを投げる（UI層でテーマ変換）
+   */
+  async searchTasks(query: string, filters?: Omit<TaskFilters, 'q'>): Promise<TaskListResponse['data']> {
+    try {
+      const response = await api.get<TaskListResponse>('/tasks', {
+        params: {
+          q: query,
+          ...filters,
+        },
+      });
+
+      if (!response.data.success) {
+        throw new Error('TASK_SEARCH_FAILED');
+      }
+
+      return response.data.data;
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        throw new Error('AUTH_REQUIRED');
+      }
+      if (error.message && error.message !== 'Network Error') {
+        throw error;
+      }
+      throw new Error('NETWORK_ERROR');
+    }
+  }
 }
 
 // シングルトンインスタンスをエクスポート
