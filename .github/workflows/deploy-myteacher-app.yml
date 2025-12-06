@@ -120,7 +120,15 @@ jobs:
           
           # テスト実行（phpunit.xmlでSQLite設定済み）
           # 失敗時はデプロイを中断（continue-on-error削除により実現）
-          php artisan test --parallel
+          # 詳細エラー表示オプション追加（一時的）
+          php artisan test --parallel --stop-on-failure --display-errors || {
+            echo "⚠️ テスト失敗 - storage/logs/laravel.logを確認"
+            if [ -f storage/logs/laravel.log ]; then
+              echo "=== Laravel Log (last 100 lines) ==="
+              tail -100 storage/logs/laravel.log
+            fi
+            exit 1
+          }
           
           echo "✅ All tests passed successfully"
 
