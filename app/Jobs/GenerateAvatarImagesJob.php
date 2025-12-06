@@ -103,7 +103,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
      */
     public function handle(
         StableDiffusionServiceInterface $sdService,
-        OpenAIService $openAIService,
+        OpenAIServiceInterface $openAIService,
         AICostServiceInterface $aiCostService,
         TokenServiceInterface $tokenService,
         NotificationServiceInterface $notificationService
@@ -812,7 +812,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
      * コメント生成
      */
     private function generateComments(
-        OpenAIService $openAIService,
+        OpenAIServiceInterface $openAIService,
         AICostServiceInterface $aiCostService,
         TeacherAvatar $avatar
     ): int {
