@@ -3,7 +3,7 @@
 #
 # トリガー:
 #   - main ブランチへのpush (app/配下の変更時)
-#   - 手動トリガー
+#   - 手動トリガー (workflow_dispatch)
 #
 # ステップ:
 #   1. Dockerイメージビルド
