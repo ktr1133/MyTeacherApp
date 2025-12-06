@@ -174,14 +174,14 @@ class StoreTeacherAvatarRequest extends FormRequest
         
         // is_transparentの設定（'1'または'0'の文字列をbooleanに変換）
         if (isset($validated['is_transparent'])) {
-            $validated['is_transparent'] = $validated['is_transparent'] === '1' || $validated['is_transparent'] === 1 || $validated['is_transparent'] === true;
+            $validated['is_transparent'] = $validated['is_transparent'] === '1' || $validated['is_transparent'] === 1 || $validated['is_transparent'] === true || $validated['is_transparent'] === 'on';
         } else {
             $validated['is_transparent'] = false;
         }
-        
+
         // is_chibiの設定（'1'または'0'の文字列をbooleanに変換）
         if (isset($validated['is_chibi'])) {
-            $validated['is_chibi'] = $validated['is_chibi'] === '1' || $validated['is_chibi'] === 1 || $validated['is_chibi'] === true;
+            $validated['is_chibi'] = $validated['is_chibi'] === '1' || $validated['is_chibi'] === 1 || $validated['is_chibi'] === true || $validated['is_chibi'] === 'on';
         } else {
             $validated['is_chibi'] = false;
         }
