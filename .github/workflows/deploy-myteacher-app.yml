@@ -119,18 +119,20 @@ jobs:
           echo "✅ ClamAV service is ready"
           
           # テスト実行（phpunit.xmlでSQLite設定済み）
-          # 失敗時はデプロイを中断（continue-on-error削除により実現）
-          # 詳細エラー表示オプション追加（一時的）
-          php artisan test --parallel --stop-on-failure --display-errors || {
-            echo "⚠️ テスト失敗 - storage/logs/laravel.logを確認"
-            if [ -f storage/logs/laravel.log ]; then
-              echo "=== Laravel Log (last 100 lines) ==="
-              tail -100 storage/logs/laravel.log
-            fi
-            exit 1
-          }
-          
-          echo "✅ All tests passed successfully"
+        # 失敗時はデプロイを中断（continue-on-error削除により実現）
+        # 詳細エラー表示オプション追加（一時的）
+        php artisan test --parallel --stop-on-failure --display-errors || {
+          echo "⚠️ テスト失敗 - Laravelログを確認"
+          # 日次ローテーション形式のログファイルを検索
+          LOG_FILE=$(ls -t storage/logs/laravel-*.log 2>/dev/null | head -1)
+          if [ -n "$LOG_FILE" ]; then
+            echo "=== Laravel Log: $LOG_FILE (last 100 lines) ==="
+            tail -100 "$LOG_FILE"
+          else
+            echo "⚠️ ログファイルが見つかりません"
+          fi
+          exit 1
+        }          echo "✅ All tests passed successfully"
 
       #########################################################################
       # 3. アセットビルド検証
