@@ -202,12 +202,45 @@
    - [ ] モバイル固有機能は要件定義書に明記されている
    - [ ] 画面構成・情報量がWebアプリと一致している
 
-5. **データベーススキーマの確認**
-   - 実装時は **必ず** Laravelのマイグレーションファイル（`/home/ktr/mtdev/database/migrations/`）を参照すること
-   - モデルクラス（`/home/ktr/mtdev/app/Models/`）の `$fillable` プロパティを確認し、存在するカラムのみを使用
-   - **存在しないカラムを指定してエラーを発生させない**
-   - 特に認証関連は以下のカラムを確認：
-     - `users` テーブル: `id`, `username`, `email`, `name`, `password`, `cognito_sub`, `auth_provider` など
+5. **データベーススキーマの確認（重要）**
+   - **原則**: 実装時は **必ず** Laravelのマイグレーションファイル（`/home/ktr/mtdev/database/migrations/`）を参照すること
+   - モデルクラス（`/home/ktr/mtdev/app/Models/`）の `$fillable` プロパティを確認し、**存在するカラムのみを使用**
+   - **推測によるカラム名の使用は厳禁**（`/home/ktr/mtdev/.github/copilot-instructions.md`の「不具合対応方針」に従う）
+   
+   - **タスク関連の重要カラム**:
+     - `tasks` テーブル:
+       - ✅ **完了判定**: `is_completed` (boolean) - 完了状態の判定に使用
+       - ✅ **完了日時**: `completed_at` (timestamp) - 完了日時
+       - ❌ **存在しない**: `status` カラムは存在しない（旧コードの残骸、使用禁止）
+       - ✅ **タイトル**: `title` (string) - タスク件名
+       - ✅ **説明**: `description` (text) - タスク詳細説明
+       - ✅ **期限**: `due_date` (string) - 期日（span=3の場合は文字列、それ以外は日付）
+       - ✅ **優先度**: `priority` (integer) - 優先度（1-5）
+       - ✅ **タグ**: `tags` リレーション経由で取得（多対多）
+     
+     - **検索実装時の注意**:
+       - タスク件名: `tasks.title` LIKE検索
+       - タスク説明: `tasks.description` LIKE検索
+       - タグ名: `tags.name` LIKE検索（リレーション経由）
+       - 完了/未完了フィルター: `is_completed = true/false`
+   
+   - **認証関連のカラム**:
+     - `users` テーブル: `id`, `username`, `email`, `name`, `password`, `cognito_sub`, `auth_provider`, `theme` など
+   
+   - **検証手順**:
+     ```bash
+     # マイグレーションファイルでカラム確認
+     cat /home/ktr/mtdev/database/migrations/*_tasks.php | grep '\$table->'
+     
+     # モデルのfillableプロパティ確認
+     grep -A 30 'protected \$fillable' /home/ktr/mtdev/app/Models/Task.php
+     ```
+   
+   - **禁止事項**:
+     - ❌ マイグレーションファイルを確認せずにカラム名を推測
+     - ❌ 他のプロジェクト・Stack Overflowのコード例をそのまま使用
+     - ❌ `status`カラムの使用（存在しない）
+     - ❌ Webアプリで使用しているカラムを確認せず、独自カラム名を使用
 
 6. **テストファイルの作成（必須）**
    - 機能実装完了後、**必ず** テストファイルを作成すること

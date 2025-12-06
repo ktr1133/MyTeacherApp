@@ -2,12 +2,26 @@
  * タスク管理機能の型定義
  * 
  * Laravel API（IndexTaskApiAction等）のレスポンス形式に準拠
+ * 
+ * ⚠️ 重要: tasksテーブルにはstatusカラムは存在しない
+ * - 完了判定: is_completed (boolean)
+ * - 完了日時: completed_at (timestamp | null)
  */
 
 /**
- * タスクステータス
+ * タスクステータス（クエリパラメータ用）
+ * 
+ * APIリクエスト時のフィルター用。実際のDBカラムはis_completed
  */
-export type TaskStatus = 'pending' | 'completed' | 'approved' | 'rejected';
+export type TaskStatusFilter = 'pending' | 'completed';
+
+/**
+ * タグ情報
+ */
+export interface TaskTag {
+  id: number;
+  name: string;
+}
 
 /**
  * タスク期間（span）
@@ -38,6 +52,8 @@ export interface TaskImage {
 
 /**
  * タスクオブジェクト（API レスポンス形式）
+ * 
+ * Laravel API: IndexTaskApiAction::__invoke() の戻り値
  */
 export interface Task {
   id: number;
@@ -46,14 +62,15 @@ export interface Task {
   span: TaskSpan;
   due_date: string | null; // 'YYYY-MM-DD' or '2年後' (長期タスク)
   priority: TaskPriority;
-  status: TaskStatus;
+  is_completed: boolean; // 完了状態（DBカラム: tasks.is_completed）
+  completed_at: string | null; // 完了日時（ISO 8601、DBカラム: tasks.completed_at）
   reward: number;
   requires_approval: boolean;
   requires_image: boolean;
   is_group_task: boolean;
   group_task_id: string | null; // UUID
   assigned_by_user_id: number | null;
-  tags: string[];
+  tags: TaskTag[]; // タグ情報（id + name）
   images: TaskImage[];
   created_at: string; // ISO 8601
   updated_at: string; // ISO 8601

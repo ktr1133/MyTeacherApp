@@ -36,7 +36,7 @@ class IndexTaskApiAction
             }
 
             // クエリパラメータ
-            $status = $request->query('status'); // 'pending', 'completed', 'approved'
+            $status = $request->query('status'); // 'pending', 'completed'
             $perPage = min((int) $request->query('per_page', 20), 100); // 最大100件
             $page = (int) $request->query('page', 1);
 
@@ -45,9 +45,11 @@ class IndexTaskApiAction
                 ->with(['tags', 'images'])
                 ->orderBy('created_at', 'desc');
 
-            // ステータスフィルタ
-            if ($status) {
-                $query->where('status', $status);
+            // ステータスフィルタ（is_completedカラムを使用）
+            if ($status === 'pending') {
+                $query->where('is_completed', false);
+            } elseif ($status === 'completed') {
+                $query->where('is_completed', true);
             }
 
             // ページネーション
@@ -65,14 +67,18 @@ class IndexTaskApiAction
                             'span' => $task->span,
                             'due_date' => $task->hasParsableDueDate() ? $task->due_date->format('Y-m-d') : $task->due_date,
                             'priority' => $task->priority,
-                            'status' => $task->status,
+                            'is_completed' => $task->is_completed,
+                            'completed_at' => $task->completed_at?->toIso8601String(),
                             'reward' => $task->reward,
                             'requires_approval' => $task->requires_approval,
                             'requires_image' => $task->requires_image,
                             'is_group_task' => $task->group_task_id !== null,
                             'group_task_id' => $task->group_task_id,
                             'assigned_by_user_id' => $task->assigned_by_user_id,
-                            'tags' => $task->tags->pluck('name')->toArray(),
+                            'tags' => $task->tags->map(fn($tag) => [
+                                'id' => $tag->id,
+                                'name' => $tag->name,
+                            ])->toArray(),
                             'images' => $task->images->map(fn($img) => [
                                 'id' => $img->id,
                                 'path' => $img->path,
