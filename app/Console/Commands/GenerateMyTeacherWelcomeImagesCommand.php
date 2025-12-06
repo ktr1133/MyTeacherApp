@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-use App\Services\AI\OpenAIService;
+use App\Services\AI\OpenAIServiceInterface;
 use App\Services\AI\StableDiffusionService;
 
 /**
@@ -34,11 +34,11 @@ class GenerateMyTeacherWelcomeImagesCommand extends Command
     /**
      * コマンドを実行
      *
-     * @param OpenAIService $openAIService
+     * @param OpenAIServiceInterface $openAIService
      * @param StableDiffusionService $sdService
      * @return int
      */
-    public function handle(OpenAIService $openAIService, StableDiffusionService $sdService): int
+    public function handle(OpenAIServiceInterface $openAIService, StableDiffusionService $sdService): int
     {
         $this->info('🎨 MyTeacherウェルカムページ画像生成を開始します...');
         $this->newLine();
@@ -91,11 +91,11 @@ class GenerateMyTeacherWelcomeImagesCommand extends Command
     /**
      * ヒーローセクション画像を生成（お手伝いする子ども＋見守る家族＋応援するアバター）
      *
-     * @param OpenAIService $openAIService
+     * @param OpenAIServiceInterface $openAIService
      * @param StableDiffusionService $sdService
      * @return string|null ファイル名
      */
-    private function generateHeroImage(OpenAIService $openAIService, StableDiffusionService $sdService): ?string
+    private function generateHeroImage(OpenAIServiceInterface $openAIService, StableDiffusionService $sdService): ?string
     {
         $prompt = 
             'anime style illustration, overhead bird\'s eye view composition, ' .
@@ -153,11 +153,11 @@ class GenerateMyTeacherWelcomeImagesCommand extends Command
     /**
      * アバター応援画像を生成（喜びのアバター単体・バスト）
      *
-     * @param OpenAIService $openAIService
+     * @param OpenAIServiceInterface $openAIService
      * @param StableDiffusionService $sdService
      * @return string|null ファイル名
      */
-    private function generateAvatarCelebrationImage(OpenAIService $openAIService, StableDiffusionService $sdService): ?string
+    private function generateAvatarCelebrationImage(OpenAIServiceInterface $openAIService, StableDiffusionService $sdService): ?string
     {
         $prompt = 
             'chibi style teacher character portrait, bust shot (upper body only), ' .

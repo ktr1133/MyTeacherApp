@@ -370,6 +370,7 @@ class TaskApiTest extends TestCase
         $task = Task::factory()->create([
             'user_id' => $this->user->id,
             'requires_approval' => true,
+            'requires_image' => false, // 画像不要に設定
         ]);
 
         // Act

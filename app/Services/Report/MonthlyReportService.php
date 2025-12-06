@@ -7,7 +7,7 @@ use App\Models\MonthlyReport;
 use App\Models\Task;
 use App\Models\User;
 use App\Repositories\Report\MonthlyReportRepositoryInterface;
-use App\Services\AI\OpenAIService;
+use App\Services\AI\OpenAIServiceInterface;
 use App\Services\Subscription\SubscriptionServiceInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -26,12 +26,12 @@ class MonthlyReportService implements MonthlyReportServiceInterface
      * 
      * @param MonthlyReportRepositoryInterface $repository レポートリポジトリ
      * @param SubscriptionServiceInterface $subscriptionService サブスクリプションサービス
-     * @param OpenAIService $openAIService OpenAIサービス
+     * @param OpenAIServiceInterface $openAIService OpenAIサービス
      */
     public function __construct(
         protected MonthlyReportRepositoryInterface $repository,
         protected SubscriptionServiceInterface $subscriptionService,
-        protected OpenAIService $openAIService
+        protected OpenAIServiceInterface $openAIService
     ) {}
     
     /**

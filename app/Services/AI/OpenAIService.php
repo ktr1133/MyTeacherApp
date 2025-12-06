@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
  * 
  * OpenAI APIとの通信を担当します。
  */
-class OpenAIService
+class OpenAIService implements OpenAIServiceInterface
 {
     public function __construct(
         private ?string $apiKey = null,
