@@ -55,6 +55,8 @@ servers:
 tags:
   - name: Authentication
     description: 認証API（モバイルアプリ用 - Sanctum）
+  - name: User
+    description: ユーザー情報API（1エンドポイント）
   - name: Tasks
     description: タスク管理API（14エンドポイント）
   - name: Groups
@@ -814,6 +816,88 @@ paths:
                     example: "ログアウトしました"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+
+  # ============================================================
+  # User API（1エンドポイント - 全画面共通で使用）
+  # ============================================================
+
+  /user/current:
+    get:
+      summary: 現在のユーザー情報取得
+      description: |
+        認証済みユーザーの基本情報を取得します。
+        モバイルアプリ起動時に呼び出され、全画面でテーマ情報（adult/child）を使用します。
+        Web版のShareThemeMiddlewareに相当する役割です。
+        
+        **プロフィール編集API（/profile/edit）との違い**:
+        - /user/current: 全画面で使用（最小限の情報: id, username, name, theme, group_id, group_edit_flg）
+        - /profile/edit: プロフィール編集画面専用（詳細情報: email, bio, avatar, timezone等を含む）
+      tags: [User]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      username:
+                        type: string
+                        example: "testuser"
+                      name:
+                        type: string
+                        example: "テストユーザー"
+                      theme:
+                        type: string
+                        enum: [adult, child]
+                        example: "adult"
+                        description: "ユーザーのテーマ設定（全画面で使用）"
+                      group_id:
+                        type: integer
+                        nullable: true
+                        example: null
+                        description: "所属グループID"
+                      group_edit_flg:
+                        type: boolean
+                        example: false
+                        description: "グループ編集権限"
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "ユーザー認証に失敗しました。"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "ユーザー情報の取得に失敗しました。"
 
   # ============================================================
   # Tasks API（14エンドポイント）
