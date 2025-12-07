@@ -248,6 +248,10 @@ class TaskManagementService implements TaskManagementServiceInterface
             $result['span'] = $data['span'];
         }
         
+        if (isset($data['priority'])) {
+            $result['priority'] = $data['priority'];
+        }
+        
         if (array_key_exists('due_date', $data)) {
             $result['due_date'] = $data['due_date'];
         }

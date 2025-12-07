@@ -18,6 +18,7 @@
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 2範囲変更（通知基本実装のみ、Firebase/FCMをPhase 2.B-7.5に移動） |
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 2完了（通知機能基本実装、エンドポイント分離、モバイル/Web認証方式対応、421テストパス、完了レポート作成） |
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 3完了（アバター機能、Context API実装、5イベント対応、ローディング表示、229テストパス、完了レポート作成） |
+| 2025-12-07 | GitHub Copilot | Phase 2.B-6範囲明確化: タグ別バケット表示をデフォルトUI化（Web版整合性、mobile-rules.md総則4項遵守） |
 
 ---
 
@@ -80,7 +81,11 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
     - **テスト対応**: 全テストファイルAvatarProvider対応（229パス、1スキップ）
     - **完了レポート**: `docs/reports/2025-12-07-avatar-implementation-completion-report.md`、`docs/reports/2025-12-07-task-edit-navigation-fix-report.md`
   - 🎯 **Phase 2.B-6**: タグ・トークン・グラフ・レポート機能（2週間）
-    - **タグ機能（最優先 - Web版整合性）**: タグ選択、タグ表示、タグ別バケット表示（必須）、タグ管理
+    - **タグ機能（最優先 - Web版整合性）**:
+      - **タグ別バケット表示**: タスク一覧画面のデフォルトUI（Web版と同等、mobile-rules.md総則4項遵守）
+      - **画面遷移**: バケット表示 → タグ別タスク一覧（TagTasksScreen.tsx） → タスク詳細
+      - **検索機能統合**: 検索時はタスクカード表示に切り替え、検索クリア時にバケット表示復帰
+      - **タグ管理**: タグ作成・編集・削除、インライン編集
     - **トークン機能**: トークン残高表示、購入（Stripe）、履歴、サブスクリプション管理
     - **グラフ・レポート機能**: パフォーマンスグラフ、月次レポート、タスク完了率、AI利用統計
   - 🎯 **Phase 2.B-7**: スケジュールタスク機能（1週間）

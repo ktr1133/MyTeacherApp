@@ -3,6 +3,7 @@
 namespace App\Http\Actions\Api\Tags;
 
 use App\Services\Tag\TagServiceInterface;
+use App\Repositories\Tag\TagRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -11,7 +12,8 @@ use Illuminate\Support\Facades\Log;
  * API: タグ一覧取得アクション
  * 
  * ユーザーに紐づくタグとタスクの一覧を取得
- * Cognito認証を前提（middleware: cognito）
+ * モバイルAPI専用: tasks_count付きでタグを返却
+ * Sanctum認証を前提（middleware: auth:sanctum）
  */
 class TagsListApiAction
 {
@@ -19,7 +21,8 @@ class TagsListApiAction
      * コンストラクタ
      */
     public function __construct(
-        protected TagServiceInterface $tagService
+        protected TagServiceInterface $tagService,
+        protected TagRepositoryInterface $tagRepository
     ) {}
 
     /**
@@ -40,8 +43,8 @@ class TagsListApiAction
                 ], 401);
             }
 
-            // タグデータを取得
-            $tags = $this->tagService->getByUserId($user->id);
+            // タグデータを取得（モバイルAPI用: tasks_count付き）
+            $tags = $this->tagRepository->getByUserIdWithTaskCount($user->id);
 
             // タグに関連付けられたタスクを取得
             $tasks = $this->tagService->getTasksByUserId($user->id);

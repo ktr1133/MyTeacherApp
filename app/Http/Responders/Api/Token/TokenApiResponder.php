@@ -105,6 +105,77 @@ class TokenApiResponder
     }
 
     /**
+     * 購入リクエスト作成成功レスポンス
+     *
+     * @param \App\Models\TokenPurchaseRequest $request
+     * @return JsonResponse
+     */
+    public function purchaseRequestCreated($request): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => '購入リクエストを送信しました。保護者の承認をお待ちください。',
+            'data' => [
+                'request' => $this->formatPurchaseRequestData($request),
+            ],
+        ], 201);
+    }
+
+    /**
+     * 購入リクエスト一覧取得成功レスポンス
+     *
+     * @param Collection $requests
+     * @return JsonResponse
+     */
+    public function purchaseRequests(Collection $requests): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'requests' => $requests->map(function ($request) {
+                    return $this->formatPurchaseRequestData($request);
+                })->toArray(),
+            ],
+        ], 200);
+    }
+
+    /**
+     * 購入リクエスト承認成功レスポンス
+     *
+     * @param array $result
+     * @return JsonResponse
+     */
+    public function purchaseRequestApproved(array $result): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => '購入リクエストを承認しました。決済を完了してください。',
+            'data' => [
+                'request' => $this->formatPurchaseRequestData($result['request']),
+                'checkout_url' => $result['checkout_url'],
+                'session_id' => $result['session_id'],
+            ],
+        ], 200);
+    }
+
+    /**
+     * 購入リクエスト却下成功レスポンス
+     *
+     * @param \App\Models\TokenPurchaseRequest $request
+     * @return JsonResponse
+     */
+    public function purchaseRequestRejected($request): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => '購入リクエストを却下しました。',
+            'data' => [
+                'request' => $this->formatPurchaseRequestData($request),
+            ],
+        ], 200);
+    }
+
+    /**
      * エラーレスポンス
      *
      * @param string $message
@@ -161,6 +232,31 @@ class TokenApiResponder
             'is_active' => $package->is_active,
             'display_order' => $package->display_order,
             'created_at' => $package->created_at->toIso8601String(),
+        ];
+    }
+
+    /**
+     * トークン購入リクエストデータをフォーマット
+     *
+     * @param \App\Models\TokenPurchaseRequest $request
+     * @return array
+     */
+    private function formatPurchaseRequestData($request): array
+    {
+        return [
+            'id' => $request->id,
+            'user_id' => $request->user_id,
+            'user_name' => $request->user->name ?? null,
+            'package_id' => $request->package_id,
+            'package_name' => $request->package->name ?? null,
+            'token_amount' => $request->package->amount ?? null,
+            'price' => $request->package->price ?? null,
+            'status' => $request->status,
+            'approved_by_user_id' => $request->approved_by_user_id,
+            'approved_at' => $request->approved_at?->toIso8601String(),
+            'rejection_reason' => $request->rejection_reason,
+            'created_at' => $request->created_at->toIso8601String(),
+            'updated_at' => $request->updated_at->toIso8601String(),
         ];
     }
 }

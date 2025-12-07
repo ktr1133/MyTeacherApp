@@ -3,6 +3,7 @@
 namespace App\Http\Actions\Tags;
 
 use App\Services\Tag\TagServiceInterface;
+use App\Repositories\Tag\TagRepositoryInterface;
 use App\Responders\Tags\TagsListResponder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,19 +14,24 @@ use Illuminate\Http\Response;
 class TagsListAction
 {
     protected TagServiceInterface $tagService;
+    protected TagRepositoryInterface $tagRepository;
+    protected TagsListResponder $responder;
 
     /**
      * コンストラクタ。依存性の注入によりサービスとレスポンダを受け取る。
      *
      * @param TagServiceInterface $tagService タグ関連のビジネスロジックを提供するサービス
+     * @param TagRepositoryInterface $tagRepository タグリポジトリ（tasks_count取得用）
      * @param TagsListResponder $responder ビューの構築とHTTP応答を担当するレスポンダ
      */
     public function __construct(
         TagServiceInterface $tagService,
+        TagRepositoryInterface $tagRepository,
         TagsListResponder $responder
     )
     {
         $this->tagService = $tagService;
+        $this->tagRepository = $tagRepository;
         $this->responder = $responder;
     }
 
@@ -40,8 +46,8 @@ class TagsListAction
         // ユーザーIDと検索・フィルタパラメータを取得
         $userId = $request->user()->id;
 
-        // タグデータを取得
-        $tags = $this->tagService->getByUserId($userId);
+        // タグデータを取得（tasks_count付き）
+        $tags = $this->tagRepository->getByUserIdWithTaskCount($userId);
 
         // タグに関連付けられたタスクを取得
         $tasks = $this->tagService->getTasksByUserId($userId);

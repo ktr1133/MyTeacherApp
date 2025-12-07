@@ -159,16 +159,12 @@
                                                     <h3 class="text-base font-bold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition mb-2">
                                                         {{ $tag->name }}
                                                     </h3>
-                                                    @php
-                                                        $task = collect($tasks)->where('name', $tag->name)->first();
-                                                        $taskCount = $task ? $task->tasks_count : 0;
-                                                    @endphp
-                                                    @if($taskCount > 0)
+                                                    @if($tag->tasks_count > 0)
                                                         <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
                                                             <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                                             </svg>
-                                                            <span>関連タスク: <strong class="tag-task-count">{{ $taskCount }}</strong> 件</span>
+                                                            <span>関連タスク: <strong class="tag-task-count">{{ $tag->tasks_count }}</strong> 件</span>
                                                         </div>
                                                     @else
                                                         <div class="text-xs text-gray-400 dark:text-gray-500">

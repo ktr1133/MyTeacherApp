@@ -63,6 +63,8 @@ class UpdateTaskApiAction
                 'reward' => 'nullable|integer|min:0',
                 'requires_approval' => 'sometimes|boolean',
                 'requires_image' => 'sometimes|boolean',
+                'tag_ids' => 'nullable|array',
+                'tag_ids.*' => 'integer|exists:tags,id',
             ]);
             
             if ($validator->fails()) {
@@ -73,10 +75,19 @@ class UpdateTaskApiAction
                 ], 422);
             }
 
-            // タスクを更新
-            $updatedTask = $this->taskService->updateTask($task, $validator->validated());
+            // バリデーション済みデータを取得
+            $validatedData = $validator->validated();
+            
+            // tag_ids を tags に変換（TaskManagementService用）
+            if (array_key_exists('tag_ids', $validatedData)) {
+                $validatedData['tags'] = $validatedData['tag_ids'];
+                unset($validatedData['tag_ids']);
+            }
 
-            // レスポンス
+            // タスクを更新
+            $updatedTask = $this->taskService->updateTask($task, $validatedData);
+
+            // レスポンス（タグ情報を含める）
             return response()->json([
                 'success' => true,
                 'message' => 'タスクを更新しました。',
@@ -89,6 +100,13 @@ class UpdateTaskApiAction
                         'due_date' => $updatedTask->hasParsableDueDate() ? $updatedTask->due_date->format('Y-m-d') : $updatedTask->due_date,
                         'priority' => $updatedTask->priority,
                         'status' => $updatedTask->status,
+                        'tags' => $updatedTask->tags->map(function ($tag) {
+                            return [
+                                'id' => $tag->id,
+                                'name' => $tag->name,
+                                'color' => $tag->color,
+                            ];
+                        })->toArray(),
                         'updated_at' => $updatedTask->updated_at->toIso8601String(),
                     ]
                 ]

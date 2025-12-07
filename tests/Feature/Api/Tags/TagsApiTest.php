@@ -206,4 +206,176 @@ describe('タグ管理API', function () {
             $this->assertTrue($tasks->contains('title', 'タスク1'));
         });
     });
+
+    describe('タグとタスクの紐付け管理API', function () {
+        beforeEach(function () {
+            $this->tag = Tag::factory()->create(['user_id' => $this->user->id, 'name' => 'テストタグ']);
+            $this->task1 = Task::factory()->create(['user_id' => $this->user->id, 'title' => 'タスク1']);
+            $this->task2 = Task::factory()->create(['user_id' => $this->user->id, 'title' => 'タスク2']);
+        });
+
+        describe('タグに紐づくタスク一覧取得 (GET /api/tags/{tag}/tasks)', function () {
+            it('タグに紐づくタスクと未紐付けタスクを取得できる', function () {
+                // task1をタグに紐付け
+                $this->tag->tasks()->attach($this->task1->id);
+
+                $response = $this->actingAs($this->user)
+                    ->getJson("/api/tags/{$this->tag->id}/tasks");
+
+                $response->assertOk()
+                    ->assertJsonStructure([
+                        'linked' => [
+                            '*' => ['id', 'title'],
+                        ],
+                        'available' => [
+                            '*' => ['id', 'title'],
+                        ],
+                    ]);
+
+                // linkedにtask1、availableにtask2が含まれることを確認
+                $linkedIds = collect($response->json('linked'))->pluck('id')->toArray();
+                $availableIds = collect($response->json('available'))->pluck('id')->toArray();
+                
+                $this->assertContains($this->task1->id, $linkedIds);
+                $this->assertContains($this->task2->id, $availableIds);
+            });
+
+            it('他ユーザーのタグにはアクセスできない', function () {
+                $otherUser = User::factory()->create();
+                $otherTag = Tag::factory()->create(['user_id' => $otherUser->id]);
+
+                $response = $this->actingAs($this->user)
+                    ->getJson("/api/tags/{$otherTag->id}/tasks");
+
+                $response->assertForbidden();
+            });
+
+            it('未認証ではアクセスできない', function () {
+                $response = $this->getJson("/api/tags/{$this->tag->id}/tasks");
+
+                $response->assertUnauthorized();
+            });
+        });
+
+        describe('タスクをタグに紐付け (POST /api/tags/{tag}/tasks/attach)', function () {
+            it('タスクをタグに紐付けられる', function () {
+                $response = $this->actingAs($this->user)
+                    ->postJson("/api/tags/{$this->tag->id}/tasks/attach", [
+                        'task_id' => $this->task1->id,
+                    ]);
+
+                $response->assertOk()
+                    ->assertJson([
+                        'message' => 'タスクを紐付けました。',
+                    ]);
+
+                // DBで紐付けを確認
+                $this->assertDatabaseHas('task_tag', [
+                    'tag_id' => $this->tag->id,
+                    'task_id' => $this->task1->id,
+                ]);
+            });
+
+            it('存在しないタスクIDではエラーになる', function () {
+                $response = $this->actingAs($this->user)
+                    ->postJson("/api/tags/{$this->tag->id}/tasks/attach", [
+                        'task_id' => 99999,
+                    ]);
+
+                $response->assertUnprocessable()
+                    ->assertJsonValidationErrors(['task_id']);
+            });
+
+            it('他ユーザーのタグには紐付けられない', function () {
+                $otherUser = User::factory()->create();
+                $otherTag = Tag::factory()->create(['user_id' => $otherUser->id]);
+
+                $response = $this->actingAs($this->user)
+                    ->postJson("/api/tags/{$otherTag->id}/tasks/attach", [
+                        'task_id' => $this->task1->id,
+                    ]);
+
+                $response->assertForbidden();
+            });
+
+            it('task_idが必須である', function () {
+                $response = $this->actingAs($this->user)
+                    ->postJson("/api/tags/{$this->tag->id}/tasks/attach", []);
+
+                $response->assertUnprocessable()
+                    ->assertJsonValidationErrors(['task_id']);
+            });
+
+            it('未認証ではアクセスできない', function () {
+                $response = $this->postJson("/api/tags/{$this->tag->id}/tasks/attach", [
+                    'task_id' => $this->task1->id,
+                ]);
+
+                $response->assertUnauthorized();
+            });
+        });
+
+        describe('タスクからタグを解除 (DELETE /api/tags/{tag}/tasks/detach)', function () {
+            beforeEach(function () {
+                // 事前にtask1をタグに紐付け
+                $this->tag->tasks()->attach($this->task1->id);
+            });
+
+            it('タスクからタグを解除できる', function () {
+                $response = $this->actingAs($this->user)
+                    ->deleteJson("/api/tags/{$this->tag->id}/tasks/detach", [
+                        'task_id' => $this->task1->id,
+                    ]);
+
+                $response->assertOk()
+                    ->assertJson([
+                        'message' => 'タスクを解除しました。',
+                    ]);
+
+                // DBで紐付けが解除されたことを確認
+                $this->assertDatabaseMissing('task_tag', [
+                    'tag_id' => $this->tag->id,
+                    'task_id' => $this->task1->id,
+                ]);
+            });
+
+            it('存在しないタスクIDではエラーになる', function () {
+                $response = $this->actingAs($this->user)
+                    ->deleteJson("/api/tags/{$this->tag->id}/tasks/detach", [
+                        'task_id' => 99999,
+                    ]);
+
+                $response->assertUnprocessable()
+                    ->assertJsonValidationErrors(['task_id']);
+            });
+
+            it('他ユーザーのタグからは解除できない', function () {
+                $otherUser = User::factory()->create();
+                $otherTag = Tag::factory()->create(['user_id' => $otherUser->id]);
+
+                $response = $this->actingAs($this->user)
+                    ->deleteJson("/api/tags/{$otherTag->id}/tasks/detach", [
+                        'task_id' => $this->task1->id,
+                    ]);
+
+                $response->assertForbidden();
+            });
+
+            it('task_idが必須である', function () {
+                $response = $this->actingAs($this->user)
+                    ->deleteJson("/api/tags/{$this->tag->id}/tasks/detach", []);
+
+                $response->assertUnprocessable()
+                    ->assertJsonValidationErrors(['task_id']);
+            });
+
+            it('未認証ではアクセスできない', function () {
+                $response = $this->deleteJson("/api/tags/{$this->tag->id}/tasks/detach", [
+                    'task_id' => $this->task1->id,
+                ]);
+
+                $response->assertUnauthorized();
+            });
+        });
+    });
 });

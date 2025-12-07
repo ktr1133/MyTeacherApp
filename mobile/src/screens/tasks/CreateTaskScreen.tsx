@@ -22,7 +22,7 @@ import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
-import { CreateTaskData, TaskSpan, TaskPriority } from '../../types/task.types';
+import { CreateTaskData, TaskSpan } from '../../types/task.types';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import api from '../../services/api';
@@ -73,7 +73,6 @@ export default function CreateTaskScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date()); // DateTimePicker用（短期のみ）
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString()); // 年選択用（中期のみ）
   const [showDatePicker, setShowDatePicker] = useState(false); // DateTimePicker表示フラグ
-  const [priority, setPriority] = useState<TaskPriority>(3);
   const [reward, setReward] = useState('10');
   const [requiresApproval, setRequiresApproval] = useState(false);
   const [requiresImage, setRequiresImage] = useState(false);
@@ -249,7 +248,6 @@ export default function CreateTaskScreen() {
       description: description.trim() || undefined,
       span,
       due_date: formattedDueDate,
-      priority,
       is_group_task: isGroupTask,
       tag_ids: selectedTagIds.length > 0 ? selectedTagIds : undefined, // タグIDを追加
       ...(isGroupTask && {
@@ -287,7 +285,6 @@ export default function CreateTaskScreen() {
     description,
     span,
     dueDate,
-    priority,
     reward,
     requiresApproval,
     requiresImage,
@@ -478,39 +475,6 @@ export default function CreateTaskScreen() {
               placeholderTextColor="#9CA3AF"
             />
           )}
-        </View>
-
-        {/* 優先度 */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>
-            {theme === 'child' ? 'だいじさ' : '優先度'}
-          </Text>
-          <View style={styles.priorityContainer}>
-            {[1, 2, 3, 4, 5].map((p) => (
-              <TouchableOpacity
-                key={p}
-                style={[
-                  styles.priorityButton,
-                  priority === p && styles.priorityButtonActive,
-                ]}
-                onPress={() => setPriority(p as TaskPriority)}
-              >
-                <Text
-                  style={[
-                    styles.priorityButtonText,
-                    priority === p && styles.priorityButtonTextActive,
-                  ]}
-                >
-                  {p}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <Text style={styles.helpText}>
-            {theme === 'child'
-              ? '1がいちばんだいじ、5がすこしだいじ'
-              : '1が最高優先度、5が最低優先度'}
-          </Text>
         </View>
 
         {/* タグ選択 */}
@@ -753,31 +717,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   segmentButtonTextActive: {
-    color: '#FFFFFF',
-  },
-  priorityContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  priorityButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  priorityButtonActive: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
-  },
-  priorityButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  priorityButtonTextActive: {
     color: '#FFFFFF',
   },
   helpText: {

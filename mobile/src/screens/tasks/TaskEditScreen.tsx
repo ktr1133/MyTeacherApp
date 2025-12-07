@@ -21,7 +21,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAvatarContext } from '../../contexts/AvatarContext';
-import { TaskSpan, TaskPriority, Task } from '../../types/task.types';
+import { TaskSpan, Task } from '../../types/task.types';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import api from '../../services/api';
@@ -45,7 +45,7 @@ export default function TaskEditScreen() {
   const route = useRoute<RouteProps>();
   const { theme } = useTheme();
   const { dispatchAvatarEvent } = useAvatarContext();
-  const { tasks, updateTask, deleteTask, fetchTasks, getTask, isLoading } = useTasks();
+  const { tasks, updateTask, deleteTask, getTask, isLoading } = useTasks();
 
   const { taskId } = route.params;
   const [task, setTask] = useState<Task | null>(null);
@@ -60,7 +60,6 @@ export default function TaskEditScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [priority, setPriority] = useState<TaskPriority>(3);
   
   // タグ状態
   const [availableTags, setAvailableTags] = useState<Array<{ id: number; name: string; color?: string }>>([]);
@@ -84,12 +83,13 @@ export default function TaskEditScreen() {
       console.log('[TaskEditScreen] loadTask - taskId:', taskId);
       console.log('[TaskEditScreen] loadTask - tasks count:', tasks.length);
       
-      let foundTask = tasks.find((t) => t.id === taskId);
+      let foundTask: Task | undefined = tasks.find((t) => t.id === taskId);
       
       // tasksが空、またはタスクが見つからない場合はgetTaskでAPI取得
       if (!foundTask) {
         console.log('[TaskEditScreen] Task not found in current tasks, calling getTask API...');
-        foundTask = await getTask(taskId);
+        const result = await getTask(taskId);
+        foundTask = result ?? undefined;
         console.log('[TaskEditScreen] getTask result:', foundTask ? `id=${foundTask.id}` : 'null');
       } else {
         console.log('[TaskEditScreen] foundTask from existing tasks:', `id=${foundTask.id}`);
@@ -115,7 +115,6 @@ export default function TaskEditScreen() {
       setTitle(foundTask.title || '');
       setDescription(foundTask.description || '');
       setSpan(foundTask.span || 1);
-      setPriority(foundTask.priority || 3);
       
       // タグIDをセット
       if (foundTask.tags && foundTask.tags.length > 0) {
@@ -253,7 +252,6 @@ export default function TaskEditScreen() {
         description: description.trim() || undefined,
         span,
         due_date: formattedDueDate,
-        priority,
         tag_ids: selectedTagIds.length > 0 ? selectedTagIds : undefined,
       };
 
@@ -289,7 +287,7 @@ export default function TaskEditScreen() {
       setIsSubmitting(false);
       Alert.alert('エラー', 'タスクの更新に失敗しました');
     }
-  }, [title, description, span, dueDate, priority, selectedTagIds, taskId, updateTask, theme, navigation, dispatchAvatarEvent]);
+  }, [title, description, span, dueDate, selectedTagIds, taskId, updateTask, theme, navigation, dispatchAvatarEvent]);
 
   /**
    * 削除処理
@@ -489,25 +487,6 @@ export default function TaskEditScreen() {
             placeholderTextColor="#9CA3AF"
           />
         )}
-      </View>
-
-      {/* 優先度 */}
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>
-          {theme === 'child' ? 'だいじさ' : '優先度'}
-        </Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={priority}
-            onValueChange={(value) => setPriority(value as TaskPriority)}
-            style={styles.picker}
-            itemStyle={styles.pickerItem}
-          >
-            <Picker.Item label={theme === 'child' ? 'とてもだいじ' : '高'} value={1} />
-            <Picker.Item label={theme === 'child' ? 'だいじ' : '中'} value={2} />
-            <Picker.Item label={theme === 'child' ? 'ふつう' : '低'} value={3} />
-          </Picker>
-        </View>
       </View>
 
       {/* タグ選択 */}

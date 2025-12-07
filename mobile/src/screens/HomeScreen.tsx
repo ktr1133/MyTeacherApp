@@ -45,6 +45,13 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={styles.tagButton}
+          onPress={() => navigation.navigate('TagManagement' as never)}
+        >
+          <Text style={styles.tagButtonText}>🏷️ タグ管理</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile' as never)}
         >
@@ -133,6 +140,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   notificationButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  tagButton: {
+    backgroundColor: '#8B5CF6',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  tagButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',

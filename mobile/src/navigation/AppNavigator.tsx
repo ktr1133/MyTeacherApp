@@ -19,6 +19,9 @@ import NotificationDetailScreen from '../screens/notifications/NotificationDetai
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import PasswordChangeScreen from '../screens/profile/PasswordChangeScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import TagManagementScreen from '../screens/tags/TagManagementScreen';
+import { TagDetailScreen } from '../screens/tags/TagDetailScreen';
+import TagTasksScreen from '../screens/tasks/TagTasksScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -95,6 +98,13 @@ export default function AppNavigator() {
           }}
         />
         <Stack.Screen
+          name="TagTasks"
+          component={TagTasksScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="CreateTask"
           component={CreateTaskScreen}
           options={{
@@ -134,6 +144,20 @@ export default function AppNavigator() {
           component={SettingsScreen}
           options={{
             title: '設定',
+          }}
+        />
+        <Stack.Screen
+          name="TagManagement"
+          component={TagManagementScreen as React.ComponentType<any>}
+          options={{
+            title: 'タグ管理',
+          }}
+        />
+        <Stack.Screen
+          name="TagDetail"
+          component={TagDetailScreen as React.ComponentType<any>}
+          options={{
+            title: 'タグ詳細',
           }}
         />
       </Stack.Navigator>

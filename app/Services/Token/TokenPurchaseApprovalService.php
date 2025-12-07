@@ -20,6 +20,7 @@ class TokenPurchaseApprovalService implements TokenPurchaseApprovalServiceInterf
     public function __construct(
         private TokenPurchaseRequestRepositoryInterface $repository,
         private TokenServiceInterface $tokenService,
+        private TokenPurchaseServiceInterface $purchaseService,
         private NotificationService $notificationService
     ) {}
     
@@ -119,10 +120,90 @@ class TokenPurchaseApprovalService implements TokenPurchaseApprovalServiceInterf
     }
     
     /**
-     * 親がリクエストを却下
+     * 親がリクエストを承認してStripe Checkout Sessionを作成（API用）
+     * 
+     * @param int $requestId リクエストID
+     * @param User $parent 承認する親ユーザー
+     * @return array ['request' => TokenPurchaseRequest, 'checkout_url' => string, 'session_id' => string]
+     * @throws \Exception
      */
-    public function rejectRequest(TokenPurchaseRequest $request, User $parent, ?string $reason = null): TokenPurchaseRequest
+    public function approveRequestWithCheckout(int $requestId, User $parent): array
     {
+        // リクエストを取得
+        $request = $this->repository->findById($requestId);
+        if (!$request) {
+            throw new \Exception('リクエストが見つかりません。');
+        }
+        
+        // 親でない場合はエラー
+        if (!$parent->isParent()) {
+            throw new \Exception('承認は親ユーザーのみ実行できます。');
+        }
+        
+        // 同じグループか確認
+        if ($request->user->group_id !== $parent->group_id) {
+            throw new \Exception('異なるグループのリクエストは承認できません。');
+        }
+
+        // 承認待ちでない場合はエラー
+        if (!$request->isPending()) {
+            throw new \Exception('承認待ちのリクエストではありません。');
+        }
+        
+        DB::beginTransaction();
+        
+        try {
+            // リクエストを承認
+            $approvedRequest = $this->repository->approve($request, $parent->id);
+
+            // Stripe Checkout Sessionを作成
+            $checkoutSession = $this->purchaseService->createCheckoutSession(
+                $parent,  // 支払いは親アカウント
+                $approvedRequest->package
+            );
+
+            // 子どもに承認通知を送信
+            $this->sendApprovalNotificationToChild($approvedRequest);
+            
+            DB::commit();
+            
+            Log::info('[TokenPurchaseApprovalService] Request approved with checkout session', [
+                'request_id' => $approvedRequest->id,
+                'session_id' => $checkoutSession->id,
+            ]);
+            
+            return [
+                'request' => $approvedRequest,
+                'checkout_url' => $checkoutSession->url,
+                'session_id' => $checkoutSession->id,
+            ];
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('[TokenPurchaseApprovalService] Failed to approve request with checkout', [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+    
+    /**
+     * 親がリクエストを却下
+     * 
+     * @param int $requestId リクエストID
+     * @param User $parent 却下する親ユーザー
+     * @param string|null $reason 却下理由
+     * @return TokenPurchaseRequest
+     * @throws \Exception
+     */
+    public function rejectRequest(int $requestId, User $parent, ?string $reason = null): TokenPurchaseRequest
+    {
+        // リクエストを取得
+        $request = $this->repository->findById($requestId);
+        if (!$request) {
+            throw new \Exception('リクエストが見つかりません。');
+        }
+        
         // 親でない場合はエラー
         if (!$parent->isParent()) {
             throw new \Exception('却下は親ユーザーのみ実行できます。');

@@ -37,6 +37,7 @@ use App\Http\Actions\Api\Tags\TagsListApiAction;
 use App\Http\Actions\Api\Tags\StoreTagApiAction;
 use App\Http\Actions\Api\Tags\UpdateTagApiAction;
 use App\Http\Actions\Api\Tags\DestroyTagApiAction;
+use App\Http\Actions\Api\Tags\TagTaskApiAction;
 
 // Phase 1.E-1.5.2: Avatar API
 use App\Http\Actions\Api\Avatar\StoreTeacherAvatarApiAction;
@@ -61,6 +62,12 @@ use App\Http\Actions\Api\Token\GetTokenHistoryApiAction;
 use App\Http\Actions\Api\Token\GetTokenPackagesApiAction;
 use App\Http\Actions\Api\Token\CreateCheckoutSessionApiAction;
 use App\Http\Actions\Api\Token\ToggleTokenModeApiAction;
+
+// Phase 2.B-6: Token Purchase Request API (Child Approval Flow)
+use App\Http\Actions\Api\Token\CreatePurchaseRequestApiAction;
+use App\Http\Actions\Api\Token\GetPurchaseRequestsApiAction;
+use App\Http\Actions\Api\Token\ApprovePurchaseRequestApiAction;
+use App\Http\Actions\Api\Token\RejectPurchaseRequestApiAction;
 
 // Phase 1.E-1.5.3: Report API
 use App\Http\Actions\Api\Report\IndexPerformanceApiAction;
@@ -177,6 +184,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', StoreTagApiAction::class)->name('api.tags.store');
         Route::put('/{id}', UpdateTagApiAction::class)->name('api.tags.update');
         Route::delete('/{id}', DestroyTagApiAction::class)->name('api.tags.destroy');
+        
+        // タグ-タスク紐付け管理API（モバイル版）
+        Route::prefix('{tag}')->group(function () {
+            Route::get('tasks', [TagTaskApiAction::class, 'index'])->name('api.tags.tasks');
+            Route::post('tasks/attach', [TagTaskApiAction::class, 'attach'])->name('api.tags.tasks.attach');
+            Route::delete('tasks/detach', [TagTaskApiAction::class, 'detach'])->name('api.tags.tasks.detach');
+        });
     });
 
     // アバター管理API
@@ -210,6 +224,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/packages', GetTokenPackagesApiAction::class)->name('api.tokens.packages');
         Route::post('/create-checkout-session', CreateCheckoutSessionApiAction::class)->name('api.tokens.create-checkout-session');
         Route::patch('/toggle-mode', ToggleTokenModeApiAction::class)->name('api.tokens.toggle-mode');
+        
+        // Phase 2.B-6: 購入リクエストAPI（子ども承認フロー）
+        Route::prefix('purchase-requests')->group(function () {
+            Route::post('/', CreatePurchaseRequestApiAction::class)->name('api.tokens.purchase-requests.create');
+            Route::get('/', GetPurchaseRequestsApiAction::class)->name('api.tokens.purchase-requests.index');
+            Route::put('/{id}/approve', ApprovePurchaseRequestApiAction::class)->name('api.tokens.purchase-requests.approve');
+            Route::put('/{id}/reject', RejectPurchaseRequestApiAction::class)->name('api.tokens.purchase-requests.reject');
+        });
     });
 
     // レポート・実績API

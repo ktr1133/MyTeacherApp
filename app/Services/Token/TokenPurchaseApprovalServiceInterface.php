@@ -32,15 +32,25 @@ interface TokenPurchaseApprovalServiceInterface
     public function approveRequest(TokenPurchaseRequest $request, User $parent): TokenPurchaseRequest;
     
     /**
+     * 親がリクエストを承認してStripe Checkout Sessionを作成（API用）
+     *
+     * @param int $requestId リクエストID
+     * @param User $parent 承認する親ユーザー
+     * @return array ['request' => TokenPurchaseRequest, 'checkout_url' => string, 'session_id' => string]
+     * @throws \Exception
+     */
+    public function approveRequestWithCheckout(int $requestId, User $parent): array;
+    
+    /**
      * 親がリクエストを却下
      *
-     * @param TokenPurchaseRequest $request
-     * @param User $parent
-     * @param string|null $reason
+     * @param int $requestId リクエストID
+     * @param User $parent 却下する親ユーザー
+     * @param string|null $reason 却下理由
      * @return TokenPurchaseRequest
      * @throws \Exception
      */
-    public function rejectRequest(TokenPurchaseRequest $request, User $parent, ?string $reason = null): TokenPurchaseRequest;
+    public function rejectRequest(int $requestId, User $parent, ?string $reason = null): TokenPurchaseRequest;
     
     /**
      * 子どもがリクエストを取り下げ

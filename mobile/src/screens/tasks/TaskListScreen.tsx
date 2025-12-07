@@ -1,7 +1,8 @@
 /**
  * タスク一覧画面
  * 
- * テーマに応じた表示切り替え、完了/未完了フィルター、ページネーション対応
+ * タグ別バケット表示（Web版整合性）
+ * 検索時のみタスクカード表示に切り替え
  */
 import { useEffect, useState, useCallback } from 'react';
 import {
@@ -22,6 +23,16 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAvatar } from '../../hooks/useAvatar';
 import AvatarWidget from '../../components/common/AvatarWidget';
+import BucketCard from '../../components/tasks/BucketCard';
+
+/**
+ * バケット型定義
+ */
+interface Bucket {
+  id: number;
+  name: string;
+  tasks: Task[];
+}
 
 /**
  * ナビゲーションスタック型定義
@@ -31,6 +42,7 @@ type RootStackParamList = {
   TaskDetail: { taskId: number };
   TaskEdit: { taskId: number };
   CreateTask: undefined;
+  TagTasks: { tagId: number; tagName: string };
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -64,6 +76,43 @@ export default function TaskListScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [buckets, setBuckets] = useState<Bucket[]>([]);
+
+  /**
+   * タスクをタグ別にグループ化してバケットを生成
+   */
+  const groupTasksIntoBuckets = useCallback((taskList: Task[]): Bucket[] => {
+    const bucketMap: { [key: number]: Bucket } = {};
+
+    taskList.forEach(task => {
+      if (task.tags && task.tags.length > 0) {
+        // 複数タグを持つタスクは各バケットに追加
+        task.tags.forEach(tag => {
+          if (!bucketMap[tag.id]) {
+            bucketMap[tag.id] = {
+              id: tag.id,
+              name: tag.name,
+              tasks: [],
+            };
+          }
+          bucketMap[tag.id].tasks.push(task);
+        });
+      } else {
+        // タグなしタスクは「未分類」バケット
+        if (!bucketMap[0]) {
+          bucketMap[0] = {
+            id: 0,
+            name: theme === 'child' ? 'そのほか' : '未分類',
+            tasks: [],
+          };
+        }
+        bucketMap[0].tasks.push(task);
+      }
+    });
+
+    // タスク件数降順でソート
+    return Object.values(bucketMap).sort((a, b) => b.tasks.length - a.tasks.length);
+  }, [theme]);
 
   /**
    * 初回データ取得
@@ -114,11 +163,13 @@ export default function TaskListScreen() {
       });
       console.log('[TaskListScreen] Filtered tasks count:', filtered.length);
       setFilteredTasks(filtered);
+      setBuckets([]); // 検索時はバケット表示をクリア
     } else {
-      // 検索クエリがない場合: 全タスクを表示
-      setFilteredTasks(tasks);
+      // 検索クエリがない場合: バケット表示
+      setFilteredTasks([]);
+      setBuckets(groupTasksIntoBuckets(tasks));
     }
-  }, [searchQuery, tasks]);
+  }, [searchQuery, tasks, groupTasksIntoBuckets]);
 
   /**
    * タスク一覧を取得（未完了のみ）
@@ -210,7 +261,28 @@ export default function TaskListScreen() {
   }, [error, theme, clearError]);
 
   /**
-   * タスクアイテムをレンダリング
+   * バケットアイテムをレンダリング
+   */
+  const renderBucketItem = useCallback(
+    ({ item }: { item: Bucket }) => {
+      return (
+        <BucketCard
+          tagId={item.id}
+          tagName={item.name}
+          tasks={item.tasks}
+          onPress={() => {
+            console.log('[TaskListScreen] Bucket pressed:', item.id, item.name);
+            navigation.navigate('TagTasks', { tagId: item.id, tagName: item.name });
+          }}
+          theme={theme}
+        />
+      );
+    },
+    [theme, navigation]
+  );
+
+  /**
+   * タスクアイテムをレンダリング（検索時のみ使用）
    */
   const renderTaskItem = useCallback(
     ({ item }: { item: Task }) => {
@@ -288,6 +360,25 @@ export default function TaskListScreen() {
       return null;
     }
 
+    // 検索結果が0件の場合
+    if (searchQuery.trim()) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>
+            {theme === 'child' 
+              ? 'みつからなかったよ' 
+              : '検索結果が見つかりません'}
+          </Text>
+          <Text style={styles.emptySubtext}>
+            {theme === 'child'
+              ? 'ちがうことばでさがしてみてね'
+              : '別のキーワードで検索してください'}
+          </Text>
+        </View>
+      );
+    }
+
+    // タスクが0件の場合
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>
@@ -302,7 +393,7 @@ export default function TaskListScreen() {
         </Text>
       </View>
     );
-  }, [isLoading, theme]);
+  }, [isLoading, theme, searchQuery]);
 
   /**
    * フッターローディング表示
@@ -363,19 +454,34 @@ export default function TaskListScreen() {
         </View>
       )}
 
-      {/* タスク一覧 */}
-      <FlatList
-        data={filteredTasks}
-        renderItem={renderTaskItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#4F46E5']} />
-        }
-        ListEmptyComponent={renderEmptyList}
-        ListFooterComponent={renderFooter}
-        onEndReachedThreshold={0.5}
-      />
+      {/* バケット一覧 or タスク一覧 */}
+      {searchQuery.trim() ? (
+        /* 検索時: タスクカード表示 */
+        <FlatList
+          data={filteredTasks}
+          renderItem={renderTaskItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#4F46E5']} />
+          }
+          ListEmptyComponent={renderEmptyList}
+          ListFooterComponent={renderFooter}
+        />
+      ) : (
+        /* 通常時: バケット表示 */
+        <FlatList
+          data={buckets}
+          renderItem={renderBucketItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#4F46E5']} />
+          }
+          ListEmptyComponent={renderEmptyList}
+          ListFooterComponent={renderFooter}
+        />
+      )}
 
       {/* アバターウィジェット */}
       <AvatarWidget
