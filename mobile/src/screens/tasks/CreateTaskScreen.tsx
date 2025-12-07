@@ -16,7 +16,10 @@ import {
   Alert,
   ActivityIndicator,
   Switch,
+  Platform,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
 import { CreateTaskData, TaskSpan, TaskPriority } from '../../types/task.types';
@@ -55,16 +58,58 @@ export default function CreateTaskScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [span, setSpan] = useState<TaskSpan>(1);
-  const [dueDate, setDueDate] = useState('');
+  const [dueDate, setDueDate] = useState(''); // 短期: YYYY-MM-DD、中期: YYYY年、長期: 任意文字列
+  const [selectedDate, setSelectedDate] = useState(new Date()); // DateTimePicker用（短期のみ）
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString()); // 年選択用（中期のみ）
+  const [showDatePicker, setShowDatePicker] = useState(false); // DateTimePicker表示フラグ
   const [priority, setPriority] = useState<TaskPriority>(3);
   const [reward, setReward] = useState('10');
   const [requiresApproval, setRequiresApproval] = useState(false);
   const [requiresImage, setRequiresImage] = useState(false);
   const [isGroupTask, setIsGroupTask] = useState(false);
   
+  // タグ状態
+  const [availableTags, setAvailableTags] = useState<Array<{ id: number; name: string; color?: string }>>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
+  
   // グループメンバー状態
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+
+  /**
+   * 初回マウント時にタグ一覧を取得
+   */
+  useEffect(() => {
+    fetchTags();
+  }, []);
+
+  /**
+   * タグ一覧取得処理
+   */
+  const fetchTags = async () => {
+    setIsLoadingTags(true);
+    try {
+      const response = await api.get('/tags');
+      if (response.data.success && response.data.data.tags) {
+        setAvailableTags(response.data.data.tags);
+      }
+    } catch (error: any) {
+      console.error('[CreateTaskScreen] タグ取得エラー:', error);
+      // エラー時は空配列のままで続行（タグ選択は任意機能）
+    } finally {
+      setIsLoadingTags(false);
+    }
+  };
+
+  /**
+   * タグ選択/解除ハンドラー
+   */
+  const toggleTagSelection = useCallback((tagId: number) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
+    );
+  }, []);
 
   /**
    * グループタスク切り替え時のメンバーチェック
@@ -113,6 +158,50 @@ export default function CreateTaskScreen() {
   };
 
   /**
+   * DateTimePicker変更ハンドラー（短期用）
+   */
+  const handleDateChange = useCallback((_event: any, date?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios'); // iOSは常に表示、Androidは自動で閉じる
+    if (date) {
+      setSelectedDate(date);
+      // YYYY-MM-DD形式に変換
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      setDueDate(`${year}-${month}-${day}`);
+    }
+  }, []);
+
+  /**
+   * span変更時の処理（期限入力をリセット）
+   */
+  useEffect(() => {
+    console.log('[CreateTaskScreen] span changed:', span);
+    if (span === 1) {
+      // 短期: 今日の日付を初期値として設定
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      setDueDate(dateStr);
+      setSelectedDate(today);
+      console.log('[CreateTaskScreen] 短期初期化: dueDate =', dateStr);
+    } else if (span === 2) {
+      // 中期: 今年の年を初期値として設定
+      const currentYear = new Date().getFullYear().toString();
+      const dueDateStr = `${currentYear}年`;
+      setDueDate(dueDateStr);
+      setSelectedYear(currentYear);
+      console.log('[CreateTaskScreen] 中期初期化: dueDate =', dueDateStr, ', selectedYear =', currentYear);
+    } else {
+      // 長期: 空文字
+      setDueDate('');
+      console.log('[CreateTaskScreen] 長期初期化: dueDate = ""');
+    }
+  }, [span]);
+
+  /**
    * タスク作成処理
    */
   const handleCreate = useCallback(async () => {
@@ -138,13 +227,20 @@ export default function CreateTaskScreen() {
     }
 
     // タスクデータ作成（通常タスクとグループタスクで分岐）
+    // 中期の場合、due_dateから「年」を削除（例: 2027年 → 2027）
+    let formattedDueDate = dueDate.trim() || undefined;
+    if (span === 2 && formattedDueDate) {
+      formattedDueDate = formattedDueDate.replace('年', '');
+    }
+
     const taskData: CreateTaskData = {
       title: title.trim(),
       description: description.trim() || undefined,
       span,
-      due_date: dueDate.trim() || undefined,
+      due_date: formattedDueDate,
       priority,
       is_group_task: isGroupTask,
+      tag_ids: selectedTagIds.length > 0 ? selectedTagIds : undefined, // タグIDを追加
       ...(isGroupTask && {
         reward: parseInt(reward, 10) || 10,
         requires_approval: requiresApproval,
@@ -300,15 +396,68 @@ export default function CreateTaskScreen() {
           <Text style={styles.label}>
             {theme === 'child' ? 'きげん' : '期限日'}
           </Text>
-          <TextInput
-            style={styles.input}
-            value={dueDate}
-            onChangeText={setDueDate}
-            placeholder={
-              theme === 'child' ? '2025-12-31 か 2ねんご' : 'YYYY-MM-DD または 2年後'
-            }
-            placeholderTextColor="#9CA3AF"
-          />
+
+          {/* 短期: DateTimePicker（日付選択） */}
+          {span === 1 && (
+            <>
+              <TouchableOpacity
+                style={styles.dateButton}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text style={styles.dateButtonText}>
+                  {dueDate || (theme === 'child' ? 'ひづけをえらぶ' : '日付を選択')}
+                </Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={selectedDate}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={handleDateChange}
+                />
+              )}
+            </>
+          )}
+
+          {/* 中期: Picker（年選択） */}
+          {span === 2 && (
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedYear}
+                onValueChange={(value) => {
+                  setSelectedYear(value);
+                  setDueDate(`${value}年`);
+                }}
+                style={styles.picker}
+                itemStyle={styles.pickerItem}
+              >
+                {Array.from({ length: 6 }, (_, i) => {
+                  const year = new Date().getFullYear() + i;
+                  return (
+                    <Picker.Item
+                      key={year}
+                      label={`${year}年`}
+                      value={year.toString()}
+                      color={Platform.OS === 'ios' ? '#111827' : undefined}
+                    />
+                  );
+                })}
+              </Picker>
+            </View>
+          )}
+
+          {/* 長期: TextInput（任意文字列） */}
+          {span === 3 && (
+            <TextInput
+              style={styles.input}
+              value={dueDate}
+              onChangeText={setDueDate}
+              placeholder={
+                theme === 'child' ? 'れい: 5ねんご' : '例: 5年後'
+              }
+              placeholderTextColor="#9CA3AF"
+            />
+          )}
         </View>
 
         {/* 優先度 */}
@@ -342,6 +491,47 @@ export default function CreateTaskScreen() {
               ? '1がいちばんだいじ、5がすこしだいじ'
               : '1が最高優先度、5が最低優先度'}
           </Text>
+        </View>
+
+        {/* タグ選択 */}
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>
+            {theme === 'child' ? 'タグ' : 'タグ'}
+          </Text>
+          {isLoadingTags ? (
+            <ActivityIndicator size="small" color="#4F46E5" />
+          ) : availableTags.length > 0 ? (
+            <View style={styles.tagContainer}>
+              {availableTags.map((tag) => {
+                const isSelected = selectedTagIds.includes(tag.id);
+                return (
+                  <TouchableOpacity
+                    key={tag.id}
+                    style={[
+                      styles.tagChip,
+                      isSelected && styles.tagChipSelected,
+                      tag.color && { borderColor: tag.color },
+                    ]}
+                    onPress={() => toggleTagSelection(tag.id)}
+                  >
+                    <Text
+                      style={[
+                        styles.tagChipText,
+                        isSelected && styles.tagChipTextSelected,
+                        tag.color && isSelected && { color: tag.color },
+                      ]}
+                    >
+                      {tag.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          ) : (
+            <Text style={styles.helpText}>
+              {theme === 'child' ? 'タグがないよ' : 'タグがありません'}
+            </Text>
+          )}
         </View>
 
         {/* 報酬（グループタスクのみ） */}
@@ -566,6 +756,60 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9CA3AF',
     marginTop: 4,
+  },
+  dateButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: '#111827',
+  },
+  pickerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    overflow: 'hidden',
+    minHeight: Platform.OS === 'ios' ? 150 : 50,
+  },
+  picker: {
+    height: Platform.OS === 'ios' ? 150 : 50,
+    width: '100%',
+  },
+  pickerItem: {
+    height: Platform.OS === 'ios' ? 150 : 50,
+    fontSize: 16,
+    color: '#111827',
+  },
+  tagContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  tagChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  tagChipSelected: {
+    backgroundColor: '#4F46E5',
+    borderColor: '#4F46E5',
+  },
+  tagChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  tagChipTextSelected: {
+    color: '#FFFFFF',
   },
   switchRow: {
     flexDirection: 'row',

@@ -10,6 +10,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ThemeType } from '../types/user.types';
 import { userService } from '../services/user.service';
+import { useAuth } from './AuthContext';
 
 /**
  * テーマコンテキストの型定義
@@ -39,15 +40,25 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
  * ```
  */
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [theme, setTheme] = useState<ThemeType>('adult');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   /**
    * Laravel API からユーザー情報を取得してテーマを設定
+   * 認証済みの場合のみAPIを呼び出す
    */
   const loadTheme = async () => {
     try {
       setIsLoading(true);
+      
+      // 未認証の場合はAPIを呼ばない
+      if (!isAuthenticated) {
+        setTheme('adult'); // デフォルトテーマ
+        setIsLoading(false);
+        return;
+      }
+      
       const currentUser = await userService.getCurrentUser();
       setTheme(currentUser.theme);
     } catch (error: any) {
@@ -66,10 +77,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     await loadTheme();
   };
 
-  // 初回マウント時にテーマを取得
+  // 認証状態が変わったらテーマを再取得
   useEffect(() => {
     loadTheme();
-  }, []);
+  }, [isAuthenticated]);
 
   const contextValue: ThemeContextType = {
     theme,

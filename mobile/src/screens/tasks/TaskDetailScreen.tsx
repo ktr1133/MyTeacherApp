@@ -265,9 +265,13 @@ export default function TaskDetailScreen() {
         <Text style={styles.headerTitle}>
           {theme === 'child' ? 'やることのくわしいこと' : 'タスク詳細'}
         </Text>
-        <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-          <Text style={styles.deleteButtonText}>🗑️</Text>
-        </TouchableOpacity>
+        {/* グループタスクは削除ボタン非表示 */}
+        {!task?.is_group_task && (
+          <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+            <Text style={styles.deleteButtonText}>🗑️</Text>
+          </TouchableOpacity>
+        )}
+        {task?.is_group_task && <View style={styles.deleteButton} />}
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>

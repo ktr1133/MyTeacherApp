@@ -4,7 +4,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
 // 画面インポート
@@ -13,6 +13,8 @@ import RegisterScreen from '../screens/auth/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
 import TaskListScreen from '../screens/tasks/TaskListScreen';
 import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
+import TaskEditScreen from '../screens/tasks/TaskEditScreen';
+import CreateTaskScreen from '../screens/tasks/CreateTaskScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import PasswordChangeScreen from '../screens/profile/PasswordChangeScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
@@ -35,72 +37,90 @@ export default function AppNavigator() {
     );
   }
 
+  // 未認証時のナビゲーション
+  if (!isAuthenticated) {
+    return (
+      <NavigationContainer key="guest">
+        <Stack.Navigator>
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="Register"
+            component={RegisterScreen}
+            options={{
+              title: '新規登録',
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  }
+
+  // 認証済み時のナビゲーション
   return (
-    <NavigationContainer>
+    <NavigationContainer key="authenticated">
       <Stack.Navigator>
-        {!isAuthenticated ? (
-          <>
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="Register"
-              component={RegisterScreen}
-              options={{
-                title: '新規登録',
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-              options={{
-                title: 'MyTeacher',
-              }}
-            />
-            <Stack.Screen
-              name="TaskList"
-              component={TaskListScreen}
-              options={{
-                title: 'タスク一覧',
-              }}
-            />
-            <Stack.Screen
-              name="TaskDetail"
-              component={TaskDetailScreen}
-              options={{
-                title: 'タスク詳細',
-              }}
-            />
-            <Stack.Screen
-              name="Profile"
-              component={ProfileScreen}
-              options={{
-                title: 'プロフィール',
-              }}
-            />
-            <Stack.Screen
-              name="PasswordChange"
-              component={PasswordChangeScreen}
-              options={{
-                title: 'パスワード変更',
-              }}
-            />
-            <Stack.Screen
-              name="Settings"
-              component={SettingsScreen}
-              options={{
-                title: '設定',
-              }}
-            />
-          </>
-        )}
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            title: 'MyTeacher',
+          }}
+        />
+        <Stack.Screen
+          name="TaskList"
+          component={TaskListScreen}
+          options={{
+            title: 'タスク一覧',
+          }}
+        />
+        <Stack.Screen
+          name="TaskDetail"
+          component={TaskDetailScreen}
+          options={{
+            title: 'タスク詳細',
+          }}
+        />
+        <Stack.Screen
+          name="TaskEdit"
+          component={TaskEditScreen}
+          options={{
+            title: 'タスク編集',
+          }}
+        />
+        <Stack.Screen
+          name="CreateTask"
+          component={CreateTaskScreen}
+          options={{
+            title: 'タスク作成',
+          }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            title: 'プロフィール',
+          }}
+        />
+        <Stack.Screen
+          name="PasswordChange"
+          component={PasswordChangeScreen}
+          options={{
+            title: 'パスワード変更',
+          }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            title: '設定',
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

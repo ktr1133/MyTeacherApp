@@ -14,6 +14,7 @@
 | 2025-12-06 | GitHub Copilot | Phase 2.B-4.5完了（パスワード変更機能、Laravel 9テスト+Mobile 20テスト全パス、残課題対応完了） |
 | 2025-12-06 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク検索機能、27テスト全パス、デバウンス処理実装、完了レポート作成） |
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク一覧画面、500エラー修正、検索・報酬・タグ・ステータス問題解決、質疑応答要件定義化） |
+| 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク編集画面追加、AuthContext化、ログイン・ログアウト画面遷移修正、401エラー解消） |
 
 ---
 
@@ -55,6 +56,9 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
     - **検索機能**: フロントエンド側フィルタリング（タイトル・説明・タグ名部分一致）
     - **質疑応答6件**: バケツ表示、報酬表示、タグ表示、ステータスフィルター等
     - **ドキュメント**: TaskListScreen.md要件定義書（700行）、mobile-rules.md更新（質疑応答要件定義化ルール追加）
+    - **タスク編集画面追加**: TaskEditScreen.tsx（665行）、期限入力・タグ紐づけ実装
+    - **AuthContext化**: 認証状態の集中管理、ログイン・ログアウト画面遷移修正、401エラー解消
+    - **画面遷移修正**: AppNavigator.tsx（認証状態ごとに独立したNavigationContainer）
     - **完了レポート**: `docs/reports/mobile/2025-12-07-phase2-b5-step1-task-list-completion-report.md`
   - 🎯 **Phase 2.B-5 Step 2**: 通知機能（次タスク）
     - **通知機能**: Push通知（FCM）、通知一覧、既読管理

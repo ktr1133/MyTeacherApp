@@ -27,6 +27,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 type RootStackParamList = {
   TaskList: undefined;
   TaskDetail: { taskId: number };
+  TaskEdit: { taskId: number };
   CreateTask: undefined;
 };
 
@@ -141,13 +142,22 @@ export default function TaskListScreen() {
   );
 
   /**
-   * タスク詳細画面へ遷移
+   * タスク詳細/編集画面へ遷移
+   * 通常タスク: 編集画面へ遷移
+   * グループタスク: 詳細画面へ遷移
    */
   const navigateToDetail = useCallback(
     (taskId: number) => {
-      navigation.navigate('TaskDetail', { taskId });
+      const task = tasks.find(t => t.id === taskId);
+      if (task?.is_group_task) {
+        // グループタスク → 詳細画面（編集不可）
+        navigation.navigate('TaskDetail', { taskId });
+      } else {
+        // 通常タスク → 編集画面
+        navigation.navigate('TaskEdit', { taskId });
+      }
     },
-    [navigation]
+    [tasks, navigation]
   );
 
   /**
