@@ -24,6 +24,7 @@ import { TagDetailScreen } from '../screens/tags/TagDetailScreen';
 import TagTasksScreen from '../screens/tasks/TagTasksScreen';
 import TokenBalanceScreen from '../screens/tokens/TokenBalanceScreen';
 import TokenPackageListScreen from '../screens/tokens/TokenPurchaseWebViewScreen';
+import TokenHistoryScreen from '../screens/tokens/TokenHistoryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -172,6 +173,13 @@ export default function AppNavigator() {
         <Stack.Screen
           name="TokenPackageList"
           component={TokenPackageListScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="TokenHistory"
+          component={TokenHistoryScreen}
           options={{
             headerShown: false,
           }}

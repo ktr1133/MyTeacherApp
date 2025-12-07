@@ -62,13 +62,9 @@ export interface TokenTransaction {
  * GET /api/v1/tokens/history のレスポンス
  */
 export interface TokenHistoryStats {
-  transactions: TokenTransaction[];
-  pagination: {
-    current_page: number;
-    per_page: number;
-    total: number;
-    last_page: number;
-  };
+  monthlyPurchaseAmount: number;
+  monthlyPurchaseTokens: number;
+  monthlyUsage: number;
 }
 
 /**

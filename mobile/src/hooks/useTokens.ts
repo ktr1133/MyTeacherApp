@@ -16,6 +16,7 @@ import type {
   TokenPackage,
   TokenTransaction,
   PurchaseRequest,
+  TokenHistoryStats,
 } from '../types/token.types';
 
 /**
@@ -56,6 +57,9 @@ export const useTokens = (themeOverride?: 'adult' | 'child') => {
   const [history, setHistory] = useState<TokenTransaction[]>([]);
   const [historyPage, setHistoryPage] = useState(1);
   const [hasMoreHistory, setHasMoreHistory] = useState(true);
+  
+  // トークン履歴統計
+  const [historyStats, setHistoryStats] = useState<TokenHistoryStats | null>(null);
   
   // 購入リクエスト一覧（子ども承認フロー用）
   const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>([]);
@@ -150,6 +154,8 @@ export const useTokens = (themeOverride?: 'adult' | 'child') => {
   /**
    * トークン履歴を取得（ページネーション対応）
    * 
+   * TODO: 詳細な取引履歴API実装後に対応
+   * 
    * @param page ページ番号（デフォルト: 1）
    */
   const loadHistory = useCallback(async (page: number = 1) => {
@@ -161,16 +167,15 @@ export const useTokens = (themeOverride?: 'adult' | 'child') => {
       }
       setError(null);
 
-      const data = await TokenService.getTokenHistory(page, 20);
-
-      if (page === 1) {
-        setHistory(data.transactions);
-      } else {
-        setHistory(prev => [...prev, ...data.transactions]);
-      }
-
-      setHistoryPage(page);
-      setHasMoreHistory(page < data.pagination.last_page);
+      // TODO: 取引履歴APIが実装されたら有効化
+      // const data = await TokenService.getTokenHistory(page, 20);
+      // if (page === 1) {
+      //   setHistory(data.transactions);
+      // } else {
+      //   setHistory(prev => [...prev, ...data.transactions]);
+      // }
+      // setHistoryPage(page);
+      // setHasMoreHistory(page < data.pagination.last_page);
 
     } catch (err: any) {
       console.error('[useTokens] Failed to load history', err);
@@ -192,6 +197,30 @@ export const useTokens = (themeOverride?: 'adult' | 'child') => {
       await loadHistory(historyPage + 1);
     }
   }, [isLoadingMore, hasMoreHistory, historyPage, loadHistory]);
+
+  /**
+   * トークン履歴統計を取得
+   * 
+   * 月次の購入金額、購入トークン数、使用量を取得
+   */
+  const loadHistoryStats = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const data = await TokenService.getTokenHistoryStats();
+      setHistoryStats(data);
+
+    } catch (err: any) {
+      console.error('[useTokens] Failed to load history stats', err);
+      const errorCode = err.response?.data?.error || 'TOKEN_HISTORY_STATS_FETCH_FAILED';
+      const message = getErrorMessage(errorCode, theme);
+      setError(message);
+      Alert.alert('エラー', message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [theme]);
 
   /**
    * トークン購入リクエスト一覧を取得（子ども承認フロー用）
@@ -315,6 +344,7 @@ export const useTokens = (themeOverride?: 'adult' | 'child') => {
     balance,
     packages,
     history,
+    historyStats,
     purchaseRequests,
     isLoading,
     isLoadingMore,
@@ -323,8 +353,10 @@ export const useTokens = (themeOverride?: 'adult' | 'child') => {
 
     // 関数
     refreshBalance,
+    loadBalance,
     loadPackages,
     loadHistory,
+    loadHistoryStats,
     loadMoreHistory,
     loadPurchaseRequests,
     createPurchaseRequest,

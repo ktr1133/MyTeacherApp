@@ -34,18 +34,11 @@ export async function getTokenBalance(): Promise<TokenBalance> {
  * 
  * GET /api/v1/tokens/history
  * 
- * @param page ページ番号（デフォルト: 1）
- * @param perPage 1ページあたりの件数（デフォルト: 20）
- * @returns Promise<TokenHistoryStats> トークン履歴統計
+ * @returns Promise<TokenHistoryStats> トークン履歴統計（月次購入・使用情報）
  * @throws エラー時は例外をスロー
  */
-export async function getTokenHistory(
-  page: number = 1,
-  perPage: number = 20
-): Promise<TokenHistoryStats> {
-  const response = await api.get('/tokens/history', {
-    params: { page, per_page: perPage },
-  });
+export async function getTokenHistoryStats(): Promise<TokenHistoryStats> {
+  const response = await api.get('/tokens/history');
   return response.data.data;
 }
 
