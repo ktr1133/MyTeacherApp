@@ -16,6 +16,7 @@
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク一覧画面、500エラー修正、検索・報酬・タグ・ステータス問題解決、質疑応答要件定義化） |
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク編集画面追加、AuthContext化、ログイン・ログアウト画面遷移修正、401エラー解消） |
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 2範囲変更（通知基本実装のみ、Firebase/FCMをPhase 2.B-7.5に移動） |
+| 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 2完了（通知機能基本実装、エンドポイント分離、モバイル/Web認証方式対応、421テストパス、完了レポート作成） |
 
 ---
 
@@ -61,9 +62,15 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
     - **AuthContext化**: 認証状態の集中管理、ログイン・ログアウト画面遷移修正、401エラー解消
     - **画面遷移修正**: AppNavigator.tsx（認証状態ごとに独立したNavigationContainer）
     - **完了レポート**: `docs/reports/mobile/2025-12-07-phase2-b5-step1-task-list-completion-report.md`
-  - 🎯 **Phase 2.B-5 Step 2**: 通知機能 - 基本実装（次タスク）
-    - **通知機能**: 通知一覧、既読管理、検索機能（Firebase/FCMは Phase 2.B-7.5で実装）
-  - 🎯 **Phase 2.B-5 Step 3**: アバター機能
+  - ✅ **Phase 2.B-5 Step 2完了**: 通知機能 - 基本実装（2025-12-07）
+    - **エンドポイント分離**: モバイル用（/api/notifications/unread-count、Sanctum認証）、Web用（/notifications/unread-count、セッション認証）
+    - **通知ポーリング**: 30秒間隔でバックグラウンド未読数取得（401エラー対策）
+    - **認証エラー対策**: 401エラー時にログアウト画面遷移、エラーログ記録
+    - **動作確認**: モバイル・Web両方で正常動作確認（モバイルアプリキャッシュクリア必要）
+    - **テスト対応**: APIテスト修正（v1プレフィックス削除、128テストパス）、既存テスト確認（421テストパス、redis化影響なし）
+    - **ドキュメント**: .env更新（キャッシュドライバ用途・注意事項コメント追加）
+    - **完了レポート**: `docs/reports/mobile/2025-12-07-phase2-b5-step2-notification-completion-report.md`
+  - 🎯 **Phase 2.B-5 Step 3**: アバター機能（次タスク）
     - **アバター機能**: AI生成アバター表示、コメント表示、ポーズ切り替え
   - 🎯 **Phase 2.B-6**: タグ・トークン・グラフ・レポート機能（2週間）
     - **タグ機能（最優先 - Web版整合性）**: タグ選択、タグ表示、タグ別バケット表示（必須）、タグ管理

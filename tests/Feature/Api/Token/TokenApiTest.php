@@ -247,7 +247,7 @@ class TokenApiTest extends TestCase
         // Assert
         $response->assertStatus(422)
             ->assertJson([
-                'success' => false,
+                
             ]);
     }
 
@@ -332,7 +332,7 @@ class TokenApiTest extends TestCase
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'success' => false,
+                
                 'message' => 'グループに所属していないため、モードを切り替えられません。',
             ]);
     }

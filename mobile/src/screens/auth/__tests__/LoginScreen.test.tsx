@@ -12,10 +12,11 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import LoginScreen from '../LoginScreen';
-import { useAuth } from '../../../hooks/useAuth';
+import { AuthProvider } from '../../../contexts/AuthContext';
+import { authService } from '../../../services/auth.service';
 
 // モック設定
-jest.mock('../../../hooks/useAuth');
+jest.mock('../../../services/auth.service');
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     replace: jest.fn(),
@@ -24,10 +25,9 @@ jest.mock('@react-navigation/native', () => ({
 }));
 // @expo/vector-icons は jest-expo が自動モック
 
-const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockedAuthService = authService as jest.Mocked<typeof authService>;
 
 describe('LoginScreen', () => {
-  const mockLogin = jest.fn();
   const mockNavigate = jest.fn();
   const mockNavigation = {
     navigate: mockNavigate,
@@ -39,18 +39,24 @@ describe('LoginScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // useAuthモック
-    mockedUseAuth.mockReturnValue({
-      user: null,
-      loading: false,
-      isAuthenticated: false,
-      login: mockLogin,
-      register: jest.fn(),
-      logout: jest.fn(),
+    // authServiceモック
+    mockedAuthService.login.mockResolvedValue({
+      success: true,
+      user: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        theme: 'adult',
+      },
     });
+    mockedAuthService.isAuthenticated.mockResolvedValue(false);
   });
 
-  const renderComponent = () => render(<LoginScreen navigation={mockNavigation} />);
+  const renderComponent = () => render(
+    <AuthProvider>
+      <LoginScreen navigation={mockNavigation} />
+    </AuthProvider>
+  );
 
   describe('初期表示', () => {
     it('ログインフォームが正しく表示される', () => {
@@ -136,7 +142,7 @@ describe('LoginScreen', () => {
       // Assert
       const errorMessage = await findByText('ユーザー名とパスワードを入力してください');
       expect(errorMessage).toBeTruthy();
-      expect(mockLogin).not.toHaveBeenCalled();
+      expect(mockedAuthService.login).not.toHaveBeenCalled();
     });
 
     it('ユーザー名のみ入力の場合はエラーを表示する', async () => {
@@ -152,7 +158,7 @@ describe('LoginScreen', () => {
       // Assert
       const errorMessage = await findByText('ユーザー名とパスワードを入力してください');
       expect(errorMessage).toBeTruthy();
-      expect(mockLogin).not.toHaveBeenCalled();
+      expect(mockedAuthService.login).not.toHaveBeenCalled();
     });
 
     it('パスワードのみ入力の場合はエラーを表示する', async () => {
@@ -168,14 +174,22 @@ describe('LoginScreen', () => {
       // Assert
       const errorMessage = await findByText('ユーザー名とパスワードを入力してください');
       expect(errorMessage).toBeTruthy();
-      expect(mockLogin).not.toHaveBeenCalled();
+      expect(mockedAuthService.login).not.toHaveBeenCalled();
     });
   });
 
   describe('ログイン処理', () => {
     it('正常にログインできる', async () => {
       // Arrange
-      mockLogin.mockResolvedValue(undefined);
+      mockedAuthService.login.mockResolvedValue({
+        success: true,
+        user: {
+          id: 1,
+          username: 'test_user',
+          email: 'test@example.com',
+          theme: 'adult',
+        },
+      });
       const { getByPlaceholderText, getByText } = renderComponent();
       const usernameInput = getByPlaceholderText('ユーザー名');
       const passwordInput = getByPlaceholderText('パスワード');
@@ -188,14 +202,15 @@ describe('LoginScreen', () => {
 
       // Assert
       await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith('test_user', 'password123');
+        expect(mockedAuthService.login).toHaveBeenCalledWith('test_user', 'password123');
       });
     });
 
     it('ログイン中はローディングインジケーターを表示する', async () => {
       // Arrange
-      mockLogin.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+      let resolveLogin: any;
+      mockedAuthService.login.mockImplementation(
+        () => new Promise((resolve) => { resolveLogin = resolve; })
       );
       const { getByPlaceholderText, getByText, queryByTestId } = renderComponent();
       const usernameInput = getByPlaceholderText('ユーザー名');
@@ -213,6 +228,7 @@ describe('LoginScreen', () => {
       });
 
       // Assert - ローディング完了後
+      resolveLogin({ success: true, user: { id: 1, username: 'test_user', email: 'test@example.com', theme: 'adult' } });
       await waitFor(() => {
         expect(queryByTestId('loading-indicator')).toBeNull();
       });
@@ -227,7 +243,7 @@ describe('LoginScreen', () => {
           },
         },
       };
-      mockLogin.mockRejectedValue(mockError);
+      mockedAuthService.login.mockRejectedValue(mockError);
       const { getByPlaceholderText, getByText, findByText } = renderComponent();
       const usernameInput = getByPlaceholderText('ユーザー名');
       const passwordInput = getByPlaceholderText('パスワード');
@@ -246,7 +262,7 @@ describe('LoginScreen', () => {
     it('ネットワークエラー時にデフォルトエラーメッセージを表示する', async () => {
       // Arrange
       const mockError = new Error('Network Error');
-      mockLogin.mockRejectedValue(mockError);
+      mockedAuthService.login.mockRejectedValue(mockError);
       const { getByPlaceholderText, getByText, findByText } = renderComponent();
       const usernameInput = getByPlaceholderText('ユーザー名');
       const passwordInput = getByPlaceholderText('パスワード');

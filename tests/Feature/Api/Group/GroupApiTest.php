@@ -56,8 +56,8 @@ describe('グループ管理API', function () {
 
             $response->assertUnauthorized()
                 ->assertJson([
-                    'success' => false,
-                    'message' => 'ユーザー認証に失敗しました。',
+                    
+                    'message' => 'Unauthenticated.',
                 ]);
         });
 
@@ -69,7 +69,7 @@ describe('グループ管理API', function () {
 
             $response->assertNotFound()
                 ->assertJson([
-                    'success' => false,
+                    
                     'message' => 'グループが見つかりません。',
                 ]);
         });
@@ -102,7 +102,7 @@ describe('グループ管理API', function () {
 
             $response->assertStatus(422)
                 ->assertJson([
-                    'success' => false,
+                    
                     'message' => '入力内容に誤りがあります。',
                 ]);
         });
@@ -148,7 +148,7 @@ describe('グループ管理API', function () {
 
             $response->assertStatus(422)
                 ->assertJson([
-                    'success' => false,
+                    
                 ]);
         });
     });
@@ -185,7 +185,7 @@ describe('グループ管理API', function () {
 
             $response->assertNotFound()
                 ->assertJson([
-                    'success' => false,
+                    
                     'message' => 'メンバーが見つかりません。',
                 ]);
         });

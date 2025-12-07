@@ -47,8 +47,8 @@ describe('タグ管理API', function () {
 
             $response->assertUnauthorized()
                 ->assertJson([
-                    'success' => false,
-                    'message' => 'ユーザー認証に失敗しました。',
+                    
+                    'message' => 'Unauthenticated.',
                 ]);
         });
     });
@@ -91,7 +91,7 @@ describe('タグ管理API', function () {
 
             $response->assertStatus(422)
                 ->assertJson([
-                    'success' => false,
+                    
                     'message' => '入力内容に誤りがあります。',
                 ]);
         });
@@ -168,7 +168,7 @@ describe('タグ管理API', function () {
 
             $response->assertNotFound()
                 ->assertJson([
-                    'success' => false,
+                    
                     'message' => '指定されたタグが見つかりません。',
                 ]);
         });

@@ -32,9 +32,13 @@ export default function LoginScreen({ navigation }: any) {
 
     setLoading(true);
     try {
-      await login(username, password);
+      const result = await login(username, password);
+      if (!result.success && result.error) {
+        setError(result.error);
+      }
       // 成功時はuseAuthがナビゲーションを処理
     } catch (err: any) {
+      // 予期しないエラーの場合
       const errorMessage = err?.response?.data?.message || 'ログインに失敗しました';
       setError(errorMessage);
     } finally {

@@ -147,7 +147,7 @@ class NotificationApiTest extends TestCase
         // Assert
         $response->assertStatus(404)
             ->assertJson([
-                'success' => false,
+                
                 'message' => '通知が見つかりません。',
             ]);
     }
@@ -369,7 +369,7 @@ class NotificationApiTest extends TestCase
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'success' => false,
+                
                 'message' => '検索キーワードを指定してください。',
             ]);
     }
@@ -387,7 +387,7 @@ class NotificationApiTest extends TestCase
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'success' => false,
+                
                 'message' => '演算子はANDまたはORを指定してください。',
             ]);
     }

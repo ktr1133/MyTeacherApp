@@ -7,7 +7,7 @@ use Laravel\Sanctum\Sanctum;
 /**
  * パスワード更新API テスト
  * 
- * エンドポイント: PUT /api/v1/profile/password
+ * エンドポイント: PUT /api/profile/password
  * Action: UpdatePasswordApiAction
  * Service: ProfileManagementService::updatePassword()
  */
@@ -22,7 +22,7 @@ test('パスワード更新が成功する', function () {
     Sanctum::actingAs($user);
 
     // リクエスト
-    $response = $this->putJson('/api/v1/profile/password', [
+    $response = $this->putJson('/api/profile/password', [
         'current_password' => 'oldpassword123',
         'password' => 'newpassword456',
         'password_confirmation' => 'newpassword456',
@@ -47,7 +47,7 @@ test('現在のパスワードが間違っている場合エラーを返す', fu
 
     Sanctum::actingAs($user);
 
-    $response = $this->putJson('/api/v1/profile/password', [
+    $response = $this->putJson('/api/profile/password', [
         'current_password' => 'wrongpassword',
         'password' => 'newpassword456',
         'password_confirmation' => 'newpassword456',
@@ -65,7 +65,7 @@ test('新しいパスワードが8文字未満の場合エラーを返す', func
 
     Sanctum::actingAs($user);
 
-    $response = $this->putJson('/api/v1/profile/password', [
+    $response = $this->putJson('/api/profile/password', [
         'current_password' => 'oldpassword123',
         'password' => 'short',
         'password_confirmation' => 'short',
@@ -83,7 +83,7 @@ test('新しいパスワードと確認用が一致しない場合エラーを�
 
     Sanctum::actingAs($user);
 
-    $response = $this->putJson('/api/v1/profile/password', [
+    $response = $this->putJson('/api/profile/password', [
         'current_password' => 'oldpassword123',
         'password' => 'newpassword456',
         'password_confirmation' => 'differentpassword',
@@ -101,7 +101,7 @@ test('現在のパスワードが未入力の場合エラーを返す', function
 
     Sanctum::actingAs($user);
 
-    $response = $this->putJson('/api/v1/profile/password', [
+    $response = $this->putJson('/api/profile/password', [
         'current_password' => '',
         'password' => 'newpassword456',
         'password_confirmation' => 'newpassword456',
@@ -119,7 +119,7 @@ test('新しいパスワードが未入力の場合エラーを返す', function
 
     Sanctum::actingAs($user);
 
-    $response = $this->putJson('/api/v1/profile/password', [
+    $response = $this->putJson('/api/profile/password', [
         'current_password' => 'oldpassword123',
         'password' => '',
         'password_confirmation' => '',
@@ -131,7 +131,7 @@ test('新しいパスワードが未入力の場合エラーを返す', function
 });
 
 test('未認証ユーザーはアクセスできない', function () {
-    $response = $this->putJson('/api/v1/profile/password', [
+    $response = $this->putJson('/api/profile/password', [
         'current_password' => 'oldpassword123',
         'password' => 'newpassword456',
         'password_confirmation' => 'newpassword456',
@@ -150,7 +150,7 @@ test('複雑なパスワードに変更できる', function () {
 
     $newPassword = 'NewP@ssw0rd!2024';
 
-    $response = $this->putJson('/api/v1/profile/password', [
+    $response = $this->putJson('/api/profile/password', [
         'current_password' => 'oldpassword123',
         'password' => $newPassword,
         'password_confirmation' => $newPassword,
@@ -168,7 +168,7 @@ test('パスワード確認フィールドが未入力の場合エラーを返�
 
     Sanctum::actingAs($user);
 
-    $response = $this->putJson('/api/v1/profile/password', [
+    $response = $this->putJson('/api/profile/password', [
         'current_password' => 'oldpassword123',
         'password' => 'newpassword456',
         // password_confirmation省略

@@ -7,21 +7,32 @@
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useTasks } from '../../src/hooks/useTasks';
 import { taskService } from '../../src/services/task.service';
+import { authService } from '../../src/services/auth.service';
 import { ThemeProvider } from '../../src/contexts/ThemeContext';
+import { AuthProvider } from '../../src/contexts/AuthContext';
 import * as React from 'react';
 
 jest.mock('../../src/services/task.service');
+jest.mock('../../src/services/auth.service');
 
 const mockedTaskService = taskService as jest.Mocked<typeof taskService>;
+const mockedAuthService = authService as jest.Mocked<typeof authService>;
 
-// ThemeProviderラッパー
+// AuthProvider + ThemeProviderラッパー（AuthProviderが外側）
 const wrapper = ({ children }: { children: React.ReactNode }) => 
-  React.createElement(ThemeProvider, {}, children);
+  React.createElement(
+    AuthProvider,
+    {},
+    React.createElement(ThemeProvider, {}, children)
+  );
 
 describe('useTasks.searchTasks()', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    
+    // authServiceモックのセットアップ
+    mockedAuthService.isAuthenticated.mockResolvedValue(false);
   });
 
   afterEach(() => {

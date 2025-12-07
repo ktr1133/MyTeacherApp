@@ -90,8 +90,8 @@ describe('ユーザー情報API', function () {
 
             $response->assertUnauthorized()
                 ->assertJson([
-                    'success' => false,
-                    'message' => 'ユーザー認証に失敗しました。',
+                    
+                    'message' => 'Unauthenticated.',
                 ]);
         });
 

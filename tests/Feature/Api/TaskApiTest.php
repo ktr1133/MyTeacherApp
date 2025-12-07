@@ -353,7 +353,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->deleteJson("/api/task-images/{$taskImage->id}");
+            ->deleteJson("/api/tasks/images/{$taskImage->id}");
 
         // Assert
         $response->assertStatus(200);
@@ -399,7 +399,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->approver)
-            ->getJson('/api/approvals/pending');
+            ->getJson('/api/tasks/approvals/pending');
 
         // Assert
         $response->assertStatus(200)

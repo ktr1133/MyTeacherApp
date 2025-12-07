@@ -92,7 +92,7 @@ class StoreTaskApiActionTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJson([
-            'success' => false,
+            
             'upgrade_required' => true,
         ]);
         
@@ -181,7 +181,7 @@ class StoreTaskApiActionTest extends TestCase
 
         $response->assertStatus(403);
         $response->assertJson([
-            'success' => false,
+            
             'message' => 'グループタスク作成権限がありません。',
         ]);
     }

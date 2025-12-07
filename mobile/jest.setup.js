@@ -33,7 +33,10 @@ jest.mock('@react-navigation/native', () => ({
   useRoute: () => ({
     params: {},
   }),
-  useFocusEffect: jest.fn(),
+  // useFocusEffectは渡されたコールバックを即座に実行
+  useFocusEffect: (callback) => {
+    callback();
+  },
 }));
 
 // console の出力を抑制（テスト実行時のノイズ削減）

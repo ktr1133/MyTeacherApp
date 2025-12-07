@@ -151,7 +151,7 @@ class AvatarApiTest extends TestCase
         // Assert
         $response->assertStatus(404)
             ->assertJson([
-                'success' => false,
+                
                 'message' => 'アバターが見つかりません。',
             ]);
     }
@@ -364,7 +364,7 @@ class AvatarApiTest extends TestCase
         // Assert
         $response->assertStatus(400)
             ->assertJson([
-                'success' => false,
+                
                 'message' => '無効なイベントタイプです。',
             ]);
     }

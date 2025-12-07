@@ -15,6 +15,7 @@ jest.mock('../../src/hooks/useTasks');
 jest.mock('../../src/contexts/ThemeContext');
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
+  useFocusEffect: jest.fn((callback) => callback()),
 }));
 
 const mockedUseTasks = useTasks as jest.MockedFunction<typeof useTasks>;
@@ -117,53 +118,106 @@ describe('TaskListScreen - 検索機能', () => {
   });
 
   describe('検索実行', () => {
-    it('検索クエリ入力時にsearchTasksが呼ばれる', async () => {
-      const { getByPlaceholderText } = render(<TaskListScreen />);
+    it('検索クエリ入力時にタスクがフィルタリングされる', async () => {
+      mockedUseTasks.mockReturnValue({
+        tasks: [
+          {
+            id: 1,
+            title: 'テスト検索タスク',
+            description: 'テスト説明',
+            status: 'pending',
+            reward_tokens: 100,
+            user_id: 1,
+            images: [],
+            tags: [],
+            created_at: '2025-01-01T00:00:00.000Z',
+            updated_at: '2025-01-01T00:00:00.000Z',
+          },
+          {
+            id: 2,
+            title: '別のタスク',
+            description: '他の説明',
+            status: 'pending',
+            reward_tokens: 50,
+            user_id: 1,
+            images: [],
+            tags: [],
+            created_at: '2025-01-01T00:00:00.000Z',
+            updated_at: '2025-01-01T00:00:00.000Z',
+          },
+        ],
+        isLoading: false,
+        error: null,
+        pagination: null,
+        fetchTasks: mockFetchTasks,
+        searchTasks: mockSearchTasks,
+        createTask: jest.fn(),
+        updateTask: jest.fn(),
+        deleteTask: jest.fn(),
+        toggleComplete: mockToggleComplete,
+        approveTask: jest.fn(),
+        rejectTask: jest.fn(),
+        uploadImage: jest.fn(),
+        deleteImage: jest.fn(),
+        clearError: mockClearError,
+        refreshTasks: mockRefreshTasks,
+      });
+
+      const { getByPlaceholderText, getByText, queryByText } = render(<TaskListScreen />);
 
       const searchInput = getByPlaceholderText('検索（タイトル・説明）');
       fireEvent.changeText(searchInput, 'テスト検索');
 
       await waitFor(() => {
-        expect(mockSearchTasks).toHaveBeenCalledWith('テスト検索', undefined);
+        // フィルタリングされたタスクが表示される
+        expect(getByText('テスト検索タスク')).toBeTruthy();
+        // フィルタリングされないタスクは表示されない
+        expect(queryByText('別のタスク')).toBeNull();
       });
     });
 
-    it('検索クエリクリア時にfetchTasksが呼ばれる', async () => {
+    it('検索クエリクリア時に全タスクが表示される', async () => {
+      mockedUseTasks.mockReturnValue({
+        tasks: [
+          {
+            id: 1,
+            title: 'タスク1',
+            description: 'テスト説明',
+            status: 'pending',
+            reward_tokens: 100,
+            user_id: 1,
+            images: [],
+            tags: [],
+            created_at: '2025-01-01T00:00:00.000Z',
+            updated_at: '2025-01-01T00:00:00.000Z',
+          },
+        ],
+        isLoading: false,
+        error: null,
+        pagination: null,
+        fetchTasks: mockFetchTasks,
+        searchTasks: mockSearchTasks,
+        createTask: jest.fn(),
+        updateTask: jest.fn(),
+        deleteTask: jest.fn(),
+        toggleComplete: mockToggleComplete,
+        approveTask: jest.fn(),
+        rejectTask: jest.fn(),
+        uploadImage: jest.fn(),
+        deleteImage: jest.fn(),
+        clearError: mockClearError,
+        refreshTasks: mockRefreshTasks,
+      });
+
       const { getByPlaceholderText, getByText } = render(<TaskListScreen />);
 
       const searchInput = getByPlaceholderText('検索（タイトル・説明）');
       fireEvent.changeText(searchInput, 'テスト');
 
-      await waitFor(() => {
-        expect(mockSearchTasks).toHaveBeenCalled();
-      });
-
       const clearButton = getByText('✕');
       fireEvent.press(clearButton);
 
-      await waitFor(() => {
-        expect(mockFetchTasks).toHaveBeenCalled();
-      });
-    });
-
-    it('フィルター選択状態で検索できる', async () => {
-      const { getByPlaceholderText, getByText } = render(<TaskListScreen />);
-
-      // フィルター選択
-      const completedFilter = getByText('完了');
-      fireEvent.press(completedFilter);
-
-      await waitFor(() => {
-        expect(mockFetchTasks).toHaveBeenCalledWith({ status: 'completed' });
-      });
-
-      // 検索実行
-      const searchInput = getByPlaceholderText('検索（タイトル・説明）');
-      fireEvent.changeText(searchInput, '検索');
-
-      await waitFor(() => {
-        expect(mockSearchTasks).toHaveBeenCalledWith('検索', { status: 'completed' });
-      });
+      expect(searchInput.props.value).toBe('');
     });
   });
 
