@@ -15,6 +15,7 @@
 | 2025-12-06 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク検索機能、27テスト全パス、デバウンス処理実装、完了レポート作成） |
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク一覧画面、500エラー修正、検索・報酬・タグ・ステータス問題解決、質疑応答要件定義化） |
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 1完了（タスク編集画面追加、AuthContext化、ログイン・ログアウト画面遷移修正、401エラー解消） |
+| 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 2範囲変更（通知基本実装のみ、Firebase/FCMをPhase 2.B-7.5に移動） |
 
 ---
 
@@ -60,8 +61,8 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
     - **AuthContext化**: 認証状態の集中管理、ログイン・ログアウト画面遷移修正、401エラー解消
     - **画面遷移修正**: AppNavigator.tsx（認証状態ごとに独立したNavigationContainer）
     - **完了レポート**: `docs/reports/mobile/2025-12-07-phase2-b5-step1-task-list-completion-report.md`
-  - 🎯 **Phase 2.B-5 Step 2**: 通知機能（次タスク）
-    - **通知機能**: Push通知（FCM）、通知一覧、既読管理
+  - 🎯 **Phase 2.B-5 Step 2**: 通知機能 - 基本実装（次タスク）
+    - **通知機能**: 通知一覧、既読管理、検索機能（Firebase/FCMは Phase 2.B-7.5で実装）
   - 🎯 **Phase 2.B-5 Step 3**: アバター機能
     - **アバター機能**: AI生成アバター表示、コメント表示、ポーズ切り替え
   - 🎯 **Phase 2.B-6**: タグ・トークン・グラフ・レポート機能（2週間）
@@ -69,6 +70,10 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
     - **トークン機能**: トークン残高表示、購入（Stripe）、履歴、サブスクリプション管理
     - **グラフ・レポート機能**: パフォーマンスグラフ、月次レポート、タスク完了率、AI利用統計
   - 🎯 **Phase 2.B-7**: スケジュールタスク機能（1週間）
+  - 🎯 **Phase 2.B-7.5**: Push通知機能（Firebase/FCM）（1週間）
+    - **Firebase統合**: iOS/Android設定、FCMトークン登録
+    - **Push通知受信**: フォアグラウンド・バックグラウンド通知
+    - **通知権限管理**: iOS/Android権限リクエスト
   - 🎯 **Phase 2.B-8**: 総合テスト・バグ修正（1週間）
 - 🎯 **Phase 2.C**: App Store/Google Play申請 + 公開（4週間、2026年2月～3月）
 
@@ -1118,15 +1123,20 @@ export const notificationService = {
 - ✅ デバウンス処理実装（300ms）
 - ✅ 検索テスト作成（27テスト全パス、想定15テストを12テスト超過）
 
-**通知機能（Step 2 - 次タスク）**:
+**通知機能 - 基本実装（Step 2 - 次タスク）**:
 - [ ] NotificationListScreen UI実装
 - [ ] useNotifications Hook実装
-- [ ] Firebase設定（iOS + Android）
-- [ ] Push通知受信実装
-- [ ] フォアグラウンド通知実装
-- [ ] バックグラウンド通知実装
-- [ ] 既読管理実装
-- [ ] 通知テスト作成（20テスト）
+- [ ] notification.service.ts更新（Laravel API完全準拠）
+- [ ] 通知一覧表示（ページネーション対応）
+- [ ] 未読件数表示
+- [ ] 個別既読化機能
+- [ ] 全既読化機能
+- [ ] 通知検索機能
+- [ ] 通知テスト作成（notification.service.test.ts: 8テスト、useNotifications.test.ts: 12テスト）
+- [ ] TypeScript型チェック（0エラー）
+- [ ] 実機テスト（通知一覧・既読動作確認）
+
+**注**: Firebase/FCM（Push通知）は Phase 2.B-7.5で実装
 
 **アバター機能（Step 3）**:
 - [ ] AvatarListScreen UI実装
@@ -1288,6 +1298,94 @@ export const PerformanceChart: React.FC<Props> = ({ data }) => {
 - [ ] 実行履歴画面UI実装
 - [ ] API連携実装
 - [ ] 実機テスト（iOS + Android）
+
+---
+
+### 2.B-7.5: Push通知機能（Firebase/FCM）（1週間）
+
+#### 実装背景
+
+**Phase 2.B-5 Step 2で基本実装（通知一覧・既読管理）を完了後、Push通知機能を追加**
+- Phase 2.B-5 Step 2: 通知一覧・既読管理（Laravel API連携）
+- Phase 2.B-7.5: Firebase/FCM統合（Push通知受信）
+
+#### 実装内容
+
+1. **Firebase設定**
+   - Firebase プロジェクト作成
+   - iOS: GoogleService-Info.plist 追加
+   - Android: google-services.json 追加
+   - @react-native-firebase/messaging インストール
+
+2. **Push通知受信**
+   - FCMトークン取得・登録
+   - フォアグラウンド通知受信
+   - バックグラウンド通知受信
+   - 通知タップ時の画面遷移
+
+3. **通知権限管理**
+   - iOS: 通知権限リクエスト
+   - Android: 通知権限リクエスト
+   - 権限状態管理
+
+#### コード例（Push通知）
+
+```typescript
+// src/services/fcm.service.ts
+import messaging from '@react-native-firebase/messaging';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { notificationService } from './notification.service';
+
+export const fcmService = {
+  async requestPermission() {
+    const authStatus = await messaging().requestPermission();
+    return authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+           authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  },
+  
+  async getToken() {
+    const token = await messaging().getToken();
+    return token;
+  },
+  
+  async registerToken(fcmToken: string) {
+    // TODO: Laravel APIにトークン登録（POST /api/notifications/register-device）
+    await AsyncStorage.setItem('fcm_token', fcmToken);
+  },
+  
+  onMessage(callback: (message: any) => void) {
+    return messaging().onMessage(callback);
+  },
+  
+  onNotificationOpenedApp(callback: (message: any) => void) {
+    return messaging().onNotificationOpenedApp(callback);
+  },
+};
+```
+
+#### チェックリスト
+
+**Firebase設定**:
+- [ ] Firebase プロジェクト作成
+- [ ] iOS設定（GoogleService-Info.plist、証明書）
+- [ ] Android設定（google-services.json、FCM設定）
+- [ ] @react-native-firebase/messaging インストール
+
+**Push通知実装**:
+- [ ] FCMトークン取得・登録実装
+- [ ] フォアグラウンド通知受信実装
+- [ ] バックグラウンド通知受信実装
+- [ ] 通知タップ時の画面遷移実装
+- [ ] 通知権限管理実装
+
+**テスト**:
+- [ ] Push通知テスト作成（10テスト）
+- [ ] TypeScript型チェック（0エラー）
+- [ ] 実機テスト（iOS: 通知受信・タップ動作）
+- [ ] 実機テスト（Android: 通知受信・タップ動作）
+
+**総合**:
+- [ ] 完了レポート作成
 
 ---
 

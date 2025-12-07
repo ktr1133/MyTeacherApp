@@ -30,11 +30,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.ip' => \App\Http\Middleware\AdminIpRestriction::class,
             'cognito' => \App\Http\Middleware\VerifyCognitoToken::class,
             'dual.auth' => \App\Http\Middleware\DualAuthMiddleware::class,
+            'sanctum.debug' => \App\Http\Middleware\SanctumDebugMiddleware::class, // Phase 2.B-5: Sanctum認証デバッグ
         ]);
         // ★ Web ミドルウェアグループに追加
         $middleware->web(append: [
             \App\Http\Middleware\AddRequestIdToLogs::class, // 冗長構成対応: リクエストトレーシング
             \App\Http\Middleware\SetUserTheme::class, // 子供むけ画面対応
+        ]);
+        // ★ API ミドルウェアグループに追加（Sanctum認証デバッグ）
+        $middleware->api(prepend: [
+            \App\Http\Middleware\SanctumDebugMiddleware::class, // auth:sanctumの前に実行
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

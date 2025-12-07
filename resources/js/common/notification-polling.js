@@ -145,7 +145,7 @@ async function fetchUnreadCount(isInitial = false) {
             params.append('last_checked_at', lastCheckedAt);
         }
 
-        const response = await fetch(`/api/notifications/unread-count?${params.toString()}`, {
+        const response = await fetch(`/notifications/unread-count?${params.toString()}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',

@@ -35,7 +35,7 @@ api.interceptors.request.use(
   }
 );
 
-// レスポンスインターセプター（401エラーでログアウト）
+// レスポンスインターセプター（401エラー処理）
 api.interceptors.response.use(
   (response) => {
     console.log('[API] Response status:', response.status);
@@ -48,9 +48,17 @@ api.interceptors.response.use(
     console.error('[API] Response error data:', error.response?.data);
     
     if (error.response?.status === 401) {
-      // トークンを削除してログアウト
-      await storage.removeItem(STORAGE_KEYS.JWT_TOKEN);
-      // TODO: ログイン画面へ遷移
+      // ポーリングの401エラーはトークン削除しない（一時的なエラーの可能性）
+      const isPollingRequest = error.config?.url?.includes('/unread-count');
+      
+      if (!isPollingRequest) {
+        // 通常のリクエストの401エラーはトークン削除
+        console.log('[API] Authentication failed, removing token');
+        await storage.removeItem(STORAGE_KEYS.JWT_TOKEN);
+        // TODO: ログイン画面へ遷移
+      } else {
+        console.log('[API] Polling 401 error, keeping token (temporary error)');
+      }
     }
     return Promise.reject(error);
   }

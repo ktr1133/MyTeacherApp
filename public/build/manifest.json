@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-DReoQrC7.css",
+    "file": "assets/app-CkjIxp8b.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -239,7 +239,7 @@
     "isEntry": true
   },
   "resources/js/common/notification-polling.js": {
-    "file": "assets/notification-polling-CToVj1dM.js",
+    "file": "assets/notification-polling-CBj0By7H.js",
     "name": "notification-polling",
     "src": "resources/js/common/notification-polling.js",
     "isEntry": true

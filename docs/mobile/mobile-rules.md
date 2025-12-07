@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-07 | GitHub Copilot | バックエンド齟齬対応方針を追加（総則8項） |
 | 2025-12-07 | GitHub Copilot | 画像機能に関する注意事項を追加（総則7項） |
 | 2025-12-07 | GitHub Copilot | 質疑応答結果の要件定義化ルール追加（総則6項） |
 | 2025-12-06 | GitHub Copilot | Service層とHook層のメソッド命名規則を追加（TypeScript規約4項） |
@@ -316,7 +317,135 @@
          ->values()
          ->toArray(),
      ```
+
+8. **バックエンドとモバイル間の齟齬対応方針（重要）**
+
+   **基本原則**: バックエンド（Laravel）とモバイル（React Native）の間でAPI仕様やデータ構造に齟齬が発生した場合、**原則としてモバイル側で対応する**。
+
+   **理由**:
+   - バックエンド変更はWeb版、モバイル版、管理画面など複数のクライアントに影響
+   - モバイル側の変更は単一クライアントのみに影響
+   - バックエンドは既に本番稼働中で既存機能の安定性が重要
+   - モバイル側のみの修正で開発時間を短縮可能
+
+   **対応手順**:
+
+   **Step 1: 齟齬の特定と分析**
+   ```bash
+   # 1. バックエンドAPIのレスポンスを確認
+   # 実際のレスポンス構造をログで確認
    
+   # 2. テーブル定義とマイグレーションファイルを確認
+   cat /home/ktr/mtdev/database/migrations/*_{テーブル名}.php | grep '\$table->'
+   
+   # 3. モデルクラスのプロパティを確認
+   grep -A 30 'protected \$fillable' /home/ktr/mtdev/app/Models/{モデル名}.php
+   
+   # 4. モバイル側の型定義を確認
+   cat /home/ktr/mtdev/mobile/src/types/{機能名}.types.ts
+   ```
+
+   **Step 2: モバイル側での対応（優先）**
+
+   対応方法の優先順位:
+
+   **① 型定義の修正**（最優先）
+   ```typescript
+   // 修正前（モバイル想定）
+   interface NotificationTemplate {
+     content: string;
+     priority: 'low' | 'normal' | 'high';
+   }
+   
+   // 修正後（バックエンド実装に合わせる）
+   interface NotificationTemplate {
+     content: string | null; // バックエンドのmessageカラムがマッピングされる
+     priority: 'info' | 'normal' | 'important'; // Laravel実装値
+   }
+   ```
+
+   **② 表示ロジックの修正**
+   ```typescript
+   // 修正前
+   {item.template?.priority === 'high' && <Badge />}
+   
+   // 修正後（バックエンド実装値に合わせる）
+   {item.template?.priority === 'important' && <Badge />}
+   ```
+
+   **③ データ変換層の追加**（必要に応じて）
+   ```typescript
+   // services/notification.service.ts
+   const mapPriority = (priority: string): string => {
+     const mapping = { 'info': 'low', 'important': 'high' };
+     return mapping[priority] || priority;
+   };
+   ```
+
+   **Step 3: バックエンド変更が必要な場合**
+
+   以下の条件を**すべて満たす**場合のみ、バックエンド変更を検討:
+   - ✅ モバイル側での対応が技術的に困難または不可能
+   - ✅ バックエンド変更による既存機能への影響が軽微
+   - ✅ Web版などの他クライアントにも同様の修正が必要
+   - ✅ バックエンド変更により将来的な保守性が向上
+
+   **必須手順**:
+   
+   1. **質問として提示**（勝手に修正しない）
+      ```
+      以下のバックエンド修正が必要です。実施してよろしいですか？
+      
+      【修正内容】
+      - ファイル: app/Models/NotificationTemplate.php
+      - 変更: contentアクセサを追加してmessageカラムをマッピング
+      
+      【理由】
+      - モバイル側での対応が困難
+      
+      【影響範囲】
+      - Web版: 影響なし（contentアクセサは追加のみ）
+      - 管理画面: 影響なし
+      ```
+   
+   2. **承認後に実装**
+      - 明示的な承認を得てから修正
+      - 修正内容を詳細にドキュメント化
+   
+   3. **影響範囲の確認**
+      - Web版での動作確認
+      - 管理画面での動作確認
+      - APIテストの実行
+
+   **具体例: 通知機能の齟齬対応**
+
+   発生した齟齬:
+   - バックエンド: `message`カラム、`type`カラム、priority値 `'info' | 'normal' | 'important'`
+   - モバイル想定: `content`プロパティ、`category`プロパティ、priority値 `'low' | 'normal' | 'high'`
+
+   対応方法:
+   - ✅ **採用**: モバイル側の型定義を修正（`content`, `category`, priority値）
+   - ❌ **不採用**: バックエンドにアクセサ追加（影響範囲が大きい）
+
+   修正箇所:
+   ```typescript
+   // mobile/src/types/notification.types.ts
+   export interface NotificationTemplate {
+     content: string | null;              // バックエンドのmessageがマッピング
+     priority: 'info' | 'normal' | 'important'; // Laravel実装値
+     category: string | null;             // バックエンドのtypeがマッピング
+   }
+   
+   // mobile/src/screens/notifications/NotificationListScreen.tsx
+   {item.template?.priority === 'important' && <Badge />}
+   ```
+
+   **禁止事項**:
+   - ❌ バックエンド実装を確認せずにモバイル側の想定で型定義を作成
+   - ❌ 承認なしでバックエンドコードを修正
+   - ❌ 影響範囲を確認せずにバックエンド変更を実施
+   - ❌ Web版との整合性を確認せずにAPIレスポンス形式を変更
+
    - **画像アップロードの制約**:
      - 最大サイズ: 10MB
      - 許可形式: JPEG, PNG, JPG, GIF
@@ -332,7 +461,7 @@
      - ❌ 実装完了後に要件定義書を作成せずに次フェーズに進む
      - ❌ 質疑応答履歴を省略・簡略化する
 
-7. **テストファイルの作成（必須）**
+9. **テストファイルの作成（必須）**
    - 機能実装完了後、**必ず** テストファイルを作成すること
    - テストファイル配置: `/home/ktr/mtdev/mobile/__tests__/{機能名}/`
    - テストフレームワーク: Jest（Expoデフォルト）
@@ -342,7 +471,7 @@
      - **統合テスト**: API通信
      - **E2Eテスト**: 画面遷移（Phase 2.B-8で実装）
 
-7. **実装完了後の全体確認（必須）**
+10. **実装完了後の全体確認（必須）**
    - コード修正後、必ず以下を実行：
      - TypeScript型チェック: `npx tsc --noEmit`
      - 静的解析: ESLint実行（Phase 2.B-3で設定）
@@ -351,7 +480,7 @@
      - 未使用変数・インポートの削除
    - `/home/ktr/mtdev/.github/copilot-instructions.md` の「コード修正時の遵守事項」に従う
 
-8. **画面のデザイン方針**
+11. **画面のデザイン方針**
    - web版のレスポンシブデザインと同等の画面とすること
 
 

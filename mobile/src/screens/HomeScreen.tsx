@@ -1,7 +1,6 @@
 /**
  * ホーム画面（認証後）
  */
-import React from 'react';
 import {
   View,
   Text,
@@ -36,6 +35,13 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate('TaskList' as never)}
         >
           <Text style={styles.taskButtonText}>📋 タスク一覧</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('NotificationList' as never)}
+        >
+          <Text style={styles.notificationButtonText}>🔔 通知一覧</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -115,6 +121,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   taskButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  notificationButton: {
+    backgroundColor: '#59B9C6',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  notificationButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',

@@ -179,9 +179,9 @@ class NotificationApiResponder
             'template' => $notification->template ? [
                 'id' => $notification->template->id,
                 'title' => $notification->template->title,
-                'content' => $notification->template->content,
+                'content' => $notification->template->message,  // messageカラムをcontentとして返却
                 'priority' => $notification->template->priority,
-                'category' => $notification->template->category,
+                'category' => $notification->template->type,    // typeカラムをcategoryとして返却
             ] : null,
         ];
     }

@@ -1,7 +1,6 @@
 /**
  * ナビゲーション設定
  */
-import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,6 +14,8 @@ import TaskListScreen from '../screens/tasks/TaskListScreen';
 import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
 import TaskEditScreen from '../screens/tasks/TaskEditScreen';
 import CreateTaskScreen from '../screens/tasks/CreateTaskScreen';
+import NotificationListScreen from '../screens/notifications/NotificationListScreen';
+import NotificationDetailScreen from '../screens/notifications/NotificationDetailScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import PasswordChangeScreen from '../screens/profile/PasswordChangeScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
@@ -98,6 +99,20 @@ export default function AppNavigator() {
           component={CreateTaskScreen}
           options={{
             title: 'タスク作成',
+          }}
+        />
+        <Stack.Screen
+          name="NotificationList"
+          component={NotificationListScreen}
+          options={{
+            title: '通知一覧',
+          }}
+        />
+        <Stack.Screen
+          name="NotificationDetail"
+          component={NotificationDetailScreen}
+          options={{
+            title: '通知詳細',
           }}
         />
         <Stack.Screen

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,50 +11,56 @@ import {
   TextInput,
 } from 'react-native';
 import { useNotifications } from '../../hooks/useNotifications';
-import { Notification } from '../../services/notification.service';
+import { Notification, getNotificationTypeLabel } from '../../types/notification.types';
 import { useTheme } from '../../contexts/ThemeContext';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
   NotificationList: undefined;
   NotificationDetail: { notificationId: number };
 };
 
-type Props = NativeStackScreenProps<RootStackParamList, 'NotificationList'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 /**
  * 通知一覧画面
  * 
+ * Phase 2.B-5 Step 2でLaravel API完全準拠に更新
+ * 
  * 機能:
- * - 通知一覧表示（ページネーション対応）
+ * - 通知一覧表示（ページネーション対応、1ページ20件）
  * - 未読件数バッジ表示
  * - すべて既読ボタン
- * - 検索機能（デバウンス処理付き）
+ * - 検索機能（デバウンス処理300ms）
  * - Pull-to-Refresh
- * - 通知タップで詳細画面へ遷移
+ * - 無限スクロール対応
+ * - 通知タップで既読化 + 詳細画面遷移
  * 
  * Web版対応:
  * - resources/views/notifications/index.blade.php に相当
  * - resources/views/dashboard/partials/header.blade.php L111-128（通知ボタン）
  */
-export const NotificationListScreen: React.FC<Props> = ({ navigation }) => {
+export default function NotificationListScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
   const {
     notifications,
     unreadCount,
-    pagination,
-    isLoading,
-    isRefreshing,
+    loading,
     error,
-    refreshNotifications,
-    loadMore,
+    hasMore,
+    fetchNotifications,
     markAsRead,
     markAllAsRead,
     searchNotifications,
-  } = useNotifications();
+    loadMore,
+    refresh,
+  } = useNotifications(true); // ポーリング有効化（30秒間隔）
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   /**
    * 検索クエリ変更時のデバウンス処理
@@ -73,21 +79,30 @@ export const NotificationListScreen: React.FC<Props> = ({ navigation }) => {
         if (text.trim()) {
           searchNotifications(text.trim(), 1);
         } else {
-          refreshNotifications();
+          fetchNotifications(1);
         }
       }, 300);
 
       setSearchTimeout(timer);
     },
-    [searchTimeout, searchNotifications, refreshNotifications]
+    [searchTimeout, searchNotifications, fetchNotifications]
   );
+
+  /**
+   * Pull-to-Refresh
+   */
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await refresh();
+    setIsRefreshing(false);
+  }, [refresh]);
 
   /**
    * 通知タップ時の処理
    */
   const handleNotificationPress = useCallback(
     async (notification: Notification) => {
-      // 未読の場合は既読にする
+      // 未読の場合は既読にする（楽観的更新はmarkAsRead内で実行）
       if (!notification.is_read) {
         await markAsRead(notification.id);
       }
@@ -126,75 +141,69 @@ export const NotificationListScreen: React.FC<Props> = ({ navigation }) => {
    * リスト末尾到達時の処理（次ページ読み込み）
    */
   const handleEndReached = useCallback(() => {
-    if (
-      !isLoading &&
-      pagination &&
-      pagination.current_page < pagination.last_page
-    ) {
+    if (!loading && hasMore) {
       loadMore();
     }
-  }, [isLoading, pagination, loadMore]);
+  }, [loading, hasMore, loadMore]);
 
   /**
    * 通知アイテムのレンダリング
    */
   const renderNotificationItem = useCallback(
     ({ item }: { item: Notification }) => {
-      const isDeleted = !item.template;
+      const isUnread = !item.is_read;
 
       return (
         <TouchableOpacity
           style={[
             styles.notificationItem,
-            !item.is_read && styles.notificationItemUnread,
+            isUnread && styles.notificationItemUnread,
           ]}
           onPress={() => handleNotificationPress(item)}
-          accessibilityLabel={`通知: ${isDeleted ? '削除された通知' : item.title}`}
+          accessibilityLabel={`通知: ${item.template?.title || '通知'}`}
           accessibilityHint="タップして詳細を表示"
         >
           {/* 未読インジケーター */}
           <View style={styles.notificationIndicator}>
-            {!item.is_read && <View style={styles.unreadDot} />}
+            {isUnread && <View style={styles.unreadDot} />}
           </View>
 
           {/* 通知内容 */}
           <View style={styles.notificationContent}>
+            {/* 優先度バッジ (Laravel: 'info' | 'normal' | 'important') */}
+            {item.template?.priority === 'important' && (
+              <View style={styles.priorityBadge}>
+                <Text style={styles.priorityText}>重要</Text>
+              </View>
+            )}
+
             {/* タイトル */}
             <Text
-              style={[
-                styles.notificationTitle,
-                isDeleted && styles.notificationTitleDeleted,
-              ]}
-              numberOfLines={1}
+              style={styles.notificationTitle}
+              numberOfLines={2}
             >
-              {isDeleted
-                ? theme === 'child'
-                  ? '[けされたおしらせ]'
-                  : '[削除された通知]'
-                : item.template?.title || item.title}
+              {item.template?.title || '通知'}
             </Text>
 
-            {/* 送信者・日時 */}
+            {/* メッセージ */}
+            <Text
+              style={styles.notificationMessage}
+              numberOfLines={2}
+            >
+              {item.template?.content || '内容がありません'}
+            </Text>
+
+            {/* カテゴリと日時 */}
             <View style={styles.notificationMeta}>
-              {item.template?.sender && (
-                <Text style={styles.notificationSender}>
-                  {theme === 'child' ? 'せんせい' : '管理者'}:{' '}
-                  {item.template.sender.username}
+              {item.template?.category && (
+                <Text style={styles.notificationCategory}>
+                  {getNotificationTypeLabel(item.template.category)}
                 </Text>
               )}
               <Text style={styles.notificationDate}>
                 {formatDate(item.created_at, theme)}
               </Text>
             </View>
-
-            {/* 優先度バッジ */}
-            {item.priority === 'important' && (
-              <View style={styles.priorityBadge}>
-                <Text style={styles.priorityBadgeText}>
-                  {theme === 'child' ? 'じゅうよう' : '重要'}
-                </Text>
-              </View>
-            )}
           </View>
         </TouchableOpacity>
       );
@@ -206,7 +215,7 @@ export const NotificationListScreen: React.FC<Props> = ({ navigation }) => {
    * 空リストのレンダリング
    */
   const renderEmptyList = useCallback(() => {
-    if (isLoading) {
+    if (loading && notifications.length === 0) {
       return (
         <View style={styles.emptyContainer}>
           <ActivityIndicator size="large" color="#59B9C6" />
@@ -227,13 +236,13 @@ export const NotificationListScreen: React.FC<Props> = ({ navigation }) => {
         </Text>
       </View>
     );
-  }, [isLoading, theme]);
+  }, [loading, notifications.length, theme]);
 
   /**
    * フッターのレンダリング（ページネーション読み込み中）
    */
   const renderFooter = useCallback(() => {
-    if (!isLoading || notifications.length === 0) {
+    if (!loading || notifications.length === 0) {
       return null;
     }
 
@@ -242,7 +251,7 @@ export const NotificationListScreen: React.FC<Props> = ({ navigation }) => {
         <ActivityIndicator size="small" color="#59B9C6" />
       </View>
     );
-  }, [isLoading, notifications.length]);
+  }, [loading, notifications.length]);
 
   return (
     <View style={styles.container}>
@@ -305,7 +314,7 @@ export const NotificationListScreen: React.FC<Props> = ({ navigation }) => {
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
-            onRefresh={refreshNotifications}
+            onRefresh={handleRefresh}
             tintColor="#59B9C6"
           />
         }
@@ -457,39 +466,43 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 12,
   },
+  priorityBadge: {
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+    marginBottom: 6,
+  },
+  priorityText: {
+    color: '#DC2626',
+    fontSize: 11,
+    fontWeight: '700',
+  },
   notificationTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1F2937',
     marginBottom: 4,
   },
-  notificationTitleDeleted: {
-    color: '#9CA3AF',
+  notificationMessage: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 8,
   },
   notificationMeta: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
-    marginBottom: 8,
   },
-  notificationSender: {
+  notificationCategory: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#59B9C6',
+    fontWeight: '600',
   },
   notificationDate: {
     fontSize: 12,
     color: '#9CA3AF',
-  },
-  priorityBadge: {
-    backgroundColor: '#FEE2E2',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    alignSelf: 'flex-start',
-  },
-  priorityBadgeText: {
-    color: '#DC2626',
-    fontSize: 11,
-    fontWeight: '600',
   },
   emptyListContent: {
     flexGrow: 1,

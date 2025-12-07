@@ -188,7 +188,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/comment/{event}', GetAvatarCommentApiAction::class)->name('api.avatar.comment');
     });
 
-    // 通知API
+    // 通知API（モバイルアプリ専用）
+    // 注意: Sanctum認証（トークンベース）を使用
+    // Web画面用の未読件数エンドポイントは routes/web.php に別途定義（セッション認証）
+    // 経緯: 2025-12-07 Phase 2.B-5 Step 2実装時、認証方式の違いにより分離
     Route::prefix('notifications')->group(function () {
         Route::get('/', IndexNotificationApiAction::class)->name('api.notifications.index');
         Route::get('/unread-count', GetUnreadCountApiAction::class)->name('api.notifications.unread-count');

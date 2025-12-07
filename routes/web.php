@@ -373,9 +373,14 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ========================================
-    // 通知 API（非同期）
+    // 通知 API（非同期・Web画面専用）
     // ========================================
-    Route::get('/api/notifications/unread-count', GetUnreadCountAction::class)->name('api.notifications.unread-count');
+    // 注意: このエンドポイントはWeb画面のポーリング用（セッション認証）
+    // モバイルアプリ用は routes/api.php に別途定義（Sanctum認証: /api/notifications/unread-count）
+    // 経緯: 2025-12-07 Phase 2.B-5 Step 2実装時、認証方式の違いにより分離
+    // - Web: セッション認証 + CSRF保護 (/notifications/unread-count)
+    // - Mobile: Sanctum認証（トークンベース） (/api/notifications/unread-count)
+    Route::get('/notifications/unread-count', GetUnreadCountAction::class)->name('web.notifications.unread-count');
 });
 
 // ========================================
