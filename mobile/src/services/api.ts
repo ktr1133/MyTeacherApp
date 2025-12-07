@@ -17,7 +17,7 @@ const api = axios.create({
 // リクエストインターセプター（JWT自動付与）
 api.interceptors.request.use(
   async (config) => {
-    console.log('[API] Request URL:', config.baseURL + config.url);
+    console.log('[API] Request URL:', (config.baseURL || '') + (config.url || ''));
     console.log('[API] Request method:', config.method);
     console.log('[API] Request params:', config.params);
     

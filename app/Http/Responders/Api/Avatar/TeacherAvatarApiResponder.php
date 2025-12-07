@@ -116,20 +116,26 @@ class TeacherAvatarApiResponder
     }
 
     /**
-     * イベント向けコメント取得成功レスポンス
+     * イベント向けコメント取得レスポンス
      *
      * @param string $comment
      * @param string|null $imageUrl
+     * @param string $animation アニメーション種別（デフォルト: avatar-idle）
      * @return JsonResponse
      */
-    public function comment(string $comment, ?string $imageUrl): JsonResponse
+    public function comment(string $comment, ?string $imageUrl, string $animation = 'avatar-idle'): JsonResponse
     {
+        \Illuminate\Support\Facades\Log::info('🎭 [TeacherAvatarApiResponder] Creating comment response', [
+            'comment' => $comment,
+            'imageUrl' => $imageUrl,
+            'animation' => $animation,
+        ]);
+        
         return response()->json([
             'success' => true,
-            'data' => [
-                'comment' => $comment,
-                'image_url' => $imageUrl,
-            ],
+            'comment' => $comment,
+            'imageUrl' => $imageUrl,
+            'animation' => $animation,
         ], 200);
     }
 

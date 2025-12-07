@@ -9,6 +9,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import TaskListScreen from '../../src/screens/tasks/TaskListScreen';
 import { useTasks } from '../../src/hooks/useTasks';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { AvatarProvider } from '../../src/contexts/AvatarContext';
 import { useNavigation } from '@react-navigation/native';
 
 jest.mock('../../src/hooks/useTasks');
@@ -62,9 +63,16 @@ describe('TaskListScreen - 検索機能', () => {
     });
   });
 
+  // テストヘルパー: AvatarProviderでラップしてレンダリング
+  const renderWithProviders = () => render(
+    <AvatarProvider>
+      <TaskListScreen />
+    </AvatarProvider>
+  );
+
   describe('検索バーUI', () => {
     it('検索バーが表示される', () => {
-      const { getByPlaceholderText } = render(<TaskListScreen />);
+      const { getByPlaceholderText } = renderWithProviders();
 
       const searchInput = getByPlaceholderText('検索（タイトル・説明）');
       expect(searchInput).toBeTruthy();
@@ -76,14 +84,14 @@ describe('TaskListScreen - 検索機能', () => {
         toggleTheme: jest.fn(),
       });
 
-      const { getByPlaceholderText } = render(<TaskListScreen />);
+      const { getByPlaceholderText } = renderWithProviders();
 
       const searchInput = getByPlaceholderText('さがす');
       expect(searchInput).toBeTruthy();
     });
 
     it('検索バーに入力できる', () => {
-      const { getByPlaceholderText } = render(<TaskListScreen />);
+      const { getByPlaceholderText } = renderWithProviders();
 
       const searchInput = getByPlaceholderText('検索（タイトル・説明）');
       fireEvent.changeText(searchInput, 'テスト');
@@ -92,7 +100,7 @@ describe('TaskListScreen - 検索機能', () => {
     });
 
     it('クリアボタンは入力がある場合のみ表示される', () => {
-      const { getByPlaceholderText, queryByText, getByText } = render(<TaskListScreen />);
+      const { getByPlaceholderText, queryByText, getByText } = renderWithProviders();
 
       const searchInput = getByPlaceholderText('検索（タイトル・説明）');
 
@@ -105,7 +113,7 @@ describe('TaskListScreen - 検索機能', () => {
     });
 
     it('クリアボタンで検索クエリをクリアできる', () => {
-      const { getByPlaceholderText, getByText } = render(<TaskListScreen />);
+      const { getByPlaceholderText, getByText } = renderWithProviders();
 
       const searchInput = getByPlaceholderText('検索（タイトル・説明）');
       fireEvent.changeText(searchInput, 'テスト');
@@ -163,7 +171,7 @@ describe('TaskListScreen - 検索機能', () => {
         refreshTasks: mockRefreshTasks,
       });
 
-      const { getByPlaceholderText, getByText, queryByText } = render(<TaskListScreen />);
+      const { getByPlaceholderText, getByText, queryByText } = renderWithProviders();
 
       const searchInput = getByPlaceholderText('検索（タイトル・説明）');
       fireEvent.changeText(searchInput, 'テスト検索');
@@ -209,7 +217,7 @@ describe('TaskListScreen - 検索機能', () => {
         refreshTasks: mockRefreshTasks,
       });
 
-      const { getByPlaceholderText, getByText } = render(<TaskListScreen />);
+      const { getByPlaceholderText, getByText } = renderWithProviders();
 
       const searchInput = getByPlaceholderText('検索（タイトル・説明）');
       fireEvent.changeText(searchInput, 'テスト');
@@ -260,7 +268,7 @@ describe('TaskListScreen - 検索機能', () => {
         refreshTasks: mockRefreshTasks,
       });
 
-      const { getByText } = render(<TaskListScreen />);
+      const { getByText } = renderWithProviders();
 
       expect(getByText('検索結果タスク')).toBeTruthy();
     });
@@ -290,7 +298,7 @@ describe('TaskListScreen - 検索機能', () => {
         refreshTasks: mockRefreshTasks,
       });
 
-      const { getByText } = render(<TaskListScreen />);
+      const { getByText } = renderWithProviders();
 
       expect(getByText('タスクがありません')).toBeTruthy();
     });
@@ -319,7 +327,7 @@ describe('TaskListScreen - 検索機能', () => {
         refreshTasks: mockRefreshTasks,
       });
 
-      render(<TaskListScreen />);
+      renderWithProviders();
 
       await waitFor(() => {
         expect(mockAlert).toHaveBeenCalledWith(

@@ -16,6 +16,13 @@
 export type TaskStatusFilter = 'pending' | 'completed';
 
 /**
+ * タスクステータス（完全版）
+ * 
+ * グループタスクの承認・却下を含む全ステータス
+ */
+export type TaskStatus = 'pending' | 'completed' | 'approved' | 'rejected';
+
+/**
  * タグ情報
  */
 export interface TaskTag {
@@ -64,6 +71,7 @@ export interface Task {
   priority: TaskPriority;
   is_completed: boolean; // 完了状態（DBカラム: tasks.is_completed）
   completed_at: string | null; // 完了日時（ISO 8601、DBカラム: tasks.completed_at）
+  approved_at?: string | null; // 承認日時（ISO 8601、DBカラム: tasks.approved_at）
   reward: number;
   requires_approval: boolean;
   requires_image: boolean;

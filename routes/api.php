@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Actions\Task\ProposeTaskAction;
 use App\Http\Actions\Api\Task\StoreTaskApiAction;
 use App\Http\Actions\Api\Task\IndexTaskApiAction;
+use App\Http\Actions\Api\Task\ShowTaskApiAction;
 use App\Http\Actions\Api\Task\UpdateTaskApiAction;
 use App\Http\Actions\Api\Task\DestroyTaskApiAction;
 use App\Http\Actions\Api\Task\ToggleTaskCompletionApiAction;
@@ -122,6 +123,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // タスクAPI
     Route::prefix('tasks')->group(function () {
         Route::get('/', IndexTaskApiAction::class)->name('api.tasks.index');
+        Route::get('/{task}', ShowTaskApiAction::class)->name('api.tasks.show');
         Route::post('/', StoreTaskApiAction::class)->name('api.tasks.store');
         Route::put('/{task}', UpdateTaskApiAction::class)->name('api.tasks.update');
         Route::delete('/{task}', DestroyTaskApiAction::class)->name('api.tasks.destroy');

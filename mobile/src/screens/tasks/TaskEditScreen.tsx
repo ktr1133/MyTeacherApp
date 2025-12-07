@@ -4,7 +4,7 @@
  * 通常タスク専用の編集画面
  * グループタスクは編集不可（TaskDetailScreenで表示のみ）
  */
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAvatarContext } from '../../contexts/AvatarContext';
 import { TaskSpan, TaskPriority, Task } from '../../types/task.types';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -43,11 +44,13 @@ export default function TaskEditScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { theme } = useTheme();
-  const { tasks, updateTask, deleteTask, fetchTasks, isLoading } = useTasks();
+  const { dispatchAvatarEvent } = useAvatarContext();
+  const { tasks, updateTask, deleteTask, fetchTasks, getTask, isLoading } = useTasks();
 
   const { taskId } = route.params;
   const [task, setTask] = useState<Task | null>(null);
   const [loadingTask, setLoadingTask] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -78,12 +81,22 @@ export default function TaskEditScreen() {
   const loadTask = async () => {
     setLoadingTask(true);
     try {
-      if (tasks.length === 0) {
-        await fetchTasks();
+      console.log('[TaskEditScreen] loadTask - taskId:', taskId);
+      console.log('[TaskEditScreen] loadTask - tasks count:', tasks.length);
+      
+      let foundTask = tasks.find((t) => t.id === taskId);
+      
+      // tasksが空、またはタスクが見つからない場合はgetTaskでAPI取得
+      if (!foundTask) {
+        console.log('[TaskEditScreen] Task not found in current tasks, calling getTask API...');
+        foundTask = await getTask(taskId);
+        console.log('[TaskEditScreen] getTask result:', foundTask ? `id=${foundTask.id}` : 'null');
+      } else {
+        console.log('[TaskEditScreen] foundTask from existing tasks:', `id=${foundTask.id}`);
       }
-      const foundTask = tasks.find((t) => t.id === taskId);
       
       if (!foundTask) {
+        console.error('[TaskEditScreen] Task not found after API call');
         Alert.alert('エラー', 'タスクが見つかりません');
         navigation.goBack();
         return;
@@ -226,6 +239,7 @@ export default function TaskEditScreen() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       // タスクデータ作成
       // 中期の場合、due_dateから「年」を削除（例: 2027年 → 2027）
@@ -248,24 +262,34 @@ export default function TaskEditScreen() {
       const updatedTask = await updateTask(taskId, taskData as any);
 
       if (updatedTask) {
-        Alert.alert(
-          theme === 'child' ? 'できた!' : '更新完了',
-          theme === 'child' ? 'タスクをこうしんしたよ!' : 'タスクを更新しました',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
+        // アバターイベント発火
+        console.log('🎭 [TaskEditScreen] Firing avatar event: task_updated');
+        dispatchAvatarEvent('task_updated');
+        
+        // アバター表示後にアラート表示（3秒待機）
+        setTimeout(() => {
+          setIsSubmitting(false);
+          Alert.alert(
+            theme === 'child' ? 'できた!' : '更新完了',
+            theme === 'child' ? 'タスクをこうしんしたよ!' : 'タスクを更新しました',
+            [
+              {
+                text: 'OK',
+                onPress: () => navigation.goBack(),
+              },
+            ]
+          );
+        }, 3000);
       } else {
+        setIsSubmitting(false);
         Alert.alert('エラー', 'タスクの更新に失敗しました');
       }
     } catch (error: any) {
       console.error('[TaskEditScreen] Update error:', error);
+      setIsSubmitting(false);
       Alert.alert('エラー', 'タスクの更新に失敗しました');
     }
-  }, [title, description, span, dueDate, priority, selectedTagIds, taskId, updateTask, theme, navigation]);
+  }, [title, description, span, dueDate, priority, selectedTagIds, taskId, updateTask, theme, navigation, dispatchAvatarEvent]);
 
   /**
    * 削除処理
@@ -283,20 +307,31 @@ export default function TaskEditScreen() {
           text: theme === 'child' ? 'けす' : '削除',
           style: 'destructive',
           onPress: async () => {
+            setIsSubmitting(true);
             const success = await deleteTask(taskId);
             if (success) {
-              navigation.navigate('TaskList');
+              // アバターイベント発火
+              console.log('🎭 [TaskEditScreen] Firing avatar event: task_deleted');
+              dispatchAvatarEvent('task_deleted');
+              
+              // アバター表示後に画面遷移（3秒待機）
+              setTimeout(() => {
+                setIsSubmitting(false);
+                navigation.navigate('TaskList');
+              }, 3000);
+            } else {
+              setIsSubmitting(false);
             }
           },
         },
       ]
     );
-  }, [taskId, deleteTask, theme, navigation]);
+  }, [taskId, deleteTask, theme, navigation, dispatchAvatarEvent]);
 
   /**
    * DateTimePicker変更ハンドラー（短期のみ）
    */
-  const onDateChange = (event: any, selectedDate?: Date) => {
+  const onDateChange = (_event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       setSelectedDate(selectedDate);
@@ -328,7 +363,8 @@ export default function TaskEditScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* タイトル */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>
@@ -512,7 +548,7 @@ export default function TaskEditScreen() {
       <TouchableOpacity
         style={[styles.button, styles.updateButton]}
         onPress={handleUpdate}
-        disabled={isLoading}
+        disabled={isLoading || isSubmitting}
       >
         {isLoading ? (
           <ActivityIndicator color="#fff" />
@@ -527,13 +563,24 @@ export default function TaskEditScreen() {
       <TouchableOpacity
         style={[styles.button, styles.deleteButton]}
         onPress={handleDelete}
-        disabled={isLoading}
+        disabled={isLoading || isSubmitting}
       >
         <Text style={styles.buttonText}>
           {theme === 'child' ? 'けす' : '削除'}
         </Text>
       </TouchableOpacity>
     </ScrollView>
+
+    {/* ローディングオーバーレイ（アバター待機中） */}
+    {isSubmitting && (
+      <View style={styles.loadingOverlay}>
+        <View style={styles.loadingBox}>
+          <ActivityIndicator size="large" color="#4F46E5" />
+          <Text style={styles.loadingText}>処理中</Text>
+        </View>
+      </View>
+    )}
+    </>
   );
 }
 
@@ -638,5 +685,28 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingBox: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    minWidth: 200,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#374151',
+    textAlign: 'center',
   },
 });

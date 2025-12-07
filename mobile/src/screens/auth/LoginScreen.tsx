@@ -1,18 +1,19 @@
 /**
  * ログイン画面
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAvatar } from '../../hooks/useAvatar';
+import AvatarWidget from '../../components/common/AvatarWidget';
 
 export default function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
@@ -21,6 +22,15 @@ export default function LoginScreen({ navigation }: any) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const {
+    isVisible: avatarVisible,
+    currentData: avatarData,
+    dispatchAvatarEvent,
+    hideAvatar,
+  } = useAvatar();
+
+  // アバター状態をログ出力
+  console.log('🎭 [LoginScreen] Avatar state:', { avatarVisible, hasAvatarData: !!avatarData });
 
   const handleLogin = async () => {
     setError('');
@@ -32,8 +42,16 @@ export default function LoginScreen({ navigation }: any) {
 
     setLoading(true);
     try {
+      console.log('🎭 [LoginScreen] Attempting login:', { username });
       const result = await login(username, password);
-      if (!result.success && result.error) {
+      console.log('🎭 [LoginScreen] Login result:', { success: result.success });
+      
+      if (result.success) {
+        // アバターイベント発火
+        console.log('🎭 [LoginScreen] Firing avatar event: login');
+        dispatchAvatarEvent('login');
+        console.log('🎭 [LoginScreen] dispatchAvatarEvent called');
+      } else if (result.error) {
         setError(result.error);
       }
       // 成功時はuseAuthがナビゲーションを処理
@@ -111,6 +129,14 @@ export default function LoginScreen({ navigation }: any) {
           </View>
         </View>
       </View>
+
+      {/* アバターウィジェット */}
+      <AvatarWidget
+        visible={avatarVisible}
+        data={avatarData}
+        onClose={hideAvatar}
+        position="center"
+      />
     </View>
   );
 }

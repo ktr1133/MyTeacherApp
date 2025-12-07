@@ -3,7 +3,7 @@
  * 
  * タスク詳細表示、承認/却下機能、画像アップロード
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,10 +17,12 @@ import {
 } from 'react-native';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Task } from '../../types/task.types';
+import { Task, TaskStatus } from '../../types/task.types';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
+import { useAvatar } from '../../hooks/useAvatar';
+import AvatarWidget from '../../components/common/AvatarWidget';
 
 /**
  * ナビゲーションスタック型定義
@@ -45,7 +47,7 @@ export default function TaskDetailScreen() {
     isLoading,
     error,
     fetchTasks,
-    updateTask,
+    getTask,
     deleteTask,
     toggleComplete,
     approveTask,
@@ -54,27 +56,46 @@ export default function TaskDetailScreen() {
     deleteImage: removeImage,
     clearError,
   } = useTasks();
+  const {
+    isVisible: avatarVisible,
+    currentData: avatarData,
+    dispatchAvatarEvent,
+    hideAvatar,
+  } = useAvatar();
+
+  // アバター状態をログ出力
+  console.log('🎭 [TaskDetailScreen] Avatar state:', { avatarVisible, hasAvatarData: !!avatarData });
 
   const { taskId } = route.params;
   const [task, setTask] = useState<Task | null>(null);
   const [approvalComment, setApprovalComment] = useState('');
   const [showApprovalInput, setShowApprovalInput] = useState(false);
   const [showRejectInput, setShowRejectInput] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
    * タスク詳細を取得
    */
   useEffect(() => {
     const loadTask = async () => {
-      if (tasks.length === 0) {
-        await fetchTasks();
+      console.log('[TaskDetailScreen] loadTask - taskId:', taskId);
+      console.log('[TaskDetailScreen] loadTask - tasks count:', tasks.length);
+      
+      let foundTask = tasks.find((t) => t.id === taskId);
+      
+      if (!foundTask) {
+        console.log('[TaskDetailScreen] Task not found in current tasks, calling getTask API...');
+        foundTask = await getTask(taskId);
+        console.log('[TaskDetailScreen] getTask result:', foundTask ? `id=${foundTask.id}` : 'null');
+      } else {
+        console.log('[TaskDetailScreen] foundTask from existing tasks:', `id=${foundTask.id}`);
       }
-      const foundTask = tasks.find((t) => t.id === taskId);
+      
       setTask(foundTask || null);
     };
 
     loadTask();
-  }, [taskId, tasks, fetchTasks]);
+  }, [taskId, tasks, getTask]);
 
   /**
    * タスク完了切り替え
@@ -82,16 +103,32 @@ export default function TaskDetailScreen() {
   const handleToggleComplete = useCallback(async () => {
     if (!task) return;
 
+    setIsSubmitting(true);
+    console.log('🎭 [TaskDetailScreen] handleToggleComplete called:', { taskId, taskTitle: task.title });
     const success = await toggleComplete(taskId);
+    console.log('🎭 [TaskDetailScreen] toggleComplete result:', { success });
+    
     if (success) {
-      Alert.alert(
-        theme === 'child' ? 'やったね!' : '完了',
-        theme === 'child' ? 'やることをおわらせたよ!' : 'タスクを完了しました'
-      );
+      // アバターイベント発火
+      console.log('🎭 [TaskDetailScreen] Firing avatar event: task_completed');
+      dispatchAvatarEvent('task_completed');
+      console.log('🎭 [TaskDetailScreen] dispatchAvatarEvent called');
+
+      // アバター表示後にアラート表示（3秒待機）
+      setTimeout(() => {
+        setIsSubmitting(false);
+        Alert.alert(
+          theme === 'child' ? 'やったね!' : '完了',
+          theme === 'child' ? 'やることをおわらせたよ!' : 'タスクを完了しました'
+        );
+      }, 3000);
+
       // タスクを再取得
       await fetchTasks();
+    } else {
+      setIsSubmitting(false);
     }
-  }, [task, taskId, toggleComplete, theme, fetchTasks]);
+  }, [task, taskId, toggleComplete, theme, fetchTasks, dispatchAvatarEvent]);
 
   /**
    * タスク削除
@@ -250,10 +287,14 @@ export default function TaskDetailScreen() {
     );
   }
 
-  const isPending = task.status === 'pending';
-  const isCompleted = task.status === 'completed';
-  const isApproved = task.status === 'approved';
-  const isRejected = task.status === 'rejected';
+  // タスクのステータス判定（is_completed + approved_at）
+  const isPending = !task.is_completed;
+  const isCompleted = task.is_completed && !task.requires_approval;
+  const isApproved = task.is_completed && task.requires_approval && task.approved_at !== null;
+  const isPendingApproval = task.is_completed && task.requires_approval && task.approved_at === null;
+
+  // 表示用のステータス文字列
+  const displayStatus: TaskStatus = isApproved ? 'approved' : isPendingApproval ? 'pending' : isCompleted ? 'completed' : 'pending';
 
   return (
     <View style={styles.container}>
@@ -278,8 +319,8 @@ export default function TaskDetailScreen() {
         {/* タイトル */}
         <View style={styles.section}>
           <Text style={styles.title}>{task.title}</Text>
-          <View style={[styles.statusBadge, getStatusStyle(task.status)]}>
-            <Text style={styles.statusText}>{getStatusLabel(task.status, theme)}</Text>
+          <View style={[styles.statusBadge, getStatusStyle(displayStatus)]}>
+            <Text style={styles.statusText}>{getStatusLabel(displayStatus, theme)}</Text>
           </View>
         </View>
 
@@ -379,7 +420,7 @@ export default function TaskDetailScreen() {
           <TouchableOpacity
             style={styles.completeButton}
             onPress={handleToggleComplete}
-            disabled={isLoading}
+            disabled={isLoading || isSubmitting}
           >
             <Text style={styles.completeButtonText}>
               {theme === 'child' ? 'できた!' : '完了にする'}
@@ -493,6 +534,24 @@ export default function TaskDetailScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* アバターウィジェット */}
+      <AvatarWidget
+        visible={avatarVisible}
+        data={avatarData}
+        onClose={hideAvatar}
+        position="center"
+      />
+
+      {/* ローディングオーバーレイ（アバター待機中） */}
+      {isSubmitting && (
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingBox}>
+            <ActivityIndicator size="large" color="#4F46E5" />
+            <Text style={styles.loadingText}>処理中</Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -802,5 +861,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingBox: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    minWidth: 200,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#374151',
+    textAlign: 'center',
   },
 });

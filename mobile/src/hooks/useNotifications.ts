@@ -265,10 +265,10 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
         stopPolling();
       }
     }, 30000); // 30秒間隔
-  }, [unreadCount, fetchNotifications, isAuthenticated, stopPolling]);
+  }, [unreadCount, fetchNotifications, isAuthenticated]);
 
   /**
-   * ポーリング停止
+   * ポーリングを停止
    */
   const stopPolling = useCallback(() => {
     if (pollingIntervalRef.current) {

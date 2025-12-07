@@ -3,7 +3,7 @@
  * 
  * テーマに応じた表示切り替え、完了/未完了フィルター、ページネーション対応
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { Task } from '../../types/task.types';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useAvatar } from '../../hooks/useAvatar';
+import AvatarWidget from '../../components/common/AvatarWidget';
 
 /**
  * ナビゲーションスタック型定義
@@ -48,6 +50,15 @@ export default function TaskListScreen() {
     clearError,
     refreshTasks,
   } = useTasks();
+  const {
+    isVisible: avatarVisible,
+    currentData: avatarData,
+    dispatchAvatarEvent,
+    hideAvatar,
+  } = useAvatar();
+
+  // アバター状態をログ出力
+  console.log('🎭 [TaskListScreen] Avatar state:', { avatarVisible, hasAvatarData: !!avatarData });
 
   const [selectedStatus] = useState<'pending'>('pending'); // 未完了のみ表示
   const [refreshing, setRefreshing] = useState(false);
@@ -130,15 +141,26 @@ export default function TaskListScreen() {
    */
   const handleToggleComplete = useCallback(
     async (taskId: number) => {
+      console.log('🎭 [TaskListScreen] handleToggleComplete called:', { taskId });
       const success = await toggleComplete(taskId);
+      console.log('🎭 [TaskListScreen] toggleComplete result:', { success });
+      
       if (success) {
-        Alert.alert(
-          theme === 'child' ? 'やったね!' : '完了',
-          theme === 'child' ? 'やることをおわらせたよ!' : 'タスクを完了しました'
-        );
+        // アバターイベント発火
+        console.log('🎭 [TaskListScreen] Firing avatar event: task_completed');
+        dispatchAvatarEvent('task_completed');
+        console.log('🎭 [TaskListScreen] dispatchAvatarEvent called');
+
+        // アバター表示後にアラート表示（3秒待機）
+        setTimeout(() => {
+          Alert.alert(
+            theme === 'child' ? 'やったね!' : '完了',
+            theme === 'child' ? 'やることをおわらせたよ!' : 'タスクを完了しました'
+          );
+        }, 3000);
       }
     },
-    [toggleComplete, theme]
+    [toggleComplete, theme, dispatchAvatarEvent]
   );
 
   /**
@@ -148,12 +170,19 @@ export default function TaskListScreen() {
    */
   const navigateToDetail = useCallback(
     (taskId: number) => {
+      console.log('[TaskListScreen] navigateToDetail called, taskId:', taskId);
+      console.log('[TaskListScreen] tasks count:', tasks.length);
+      
       const task = tasks.find(t => t.id === taskId);
+      console.log('[TaskListScreen] found task:', task ? `id=${task.id}, is_group_task=${task.is_group_task}` : 'null');
+      
       if (task?.is_group_task) {
         // グループタスク → 詳細画面（編集不可）
+        console.log('[TaskListScreen] Navigating to TaskDetail');
         navigation.navigate('TaskDetail', { taskId });
       } else {
         // 通常タスク → 編集画面
+        console.log('[TaskListScreen] Navigating to TaskEdit');
         navigation.navigate('TaskEdit', { taskId });
       }
     },
@@ -191,7 +220,10 @@ export default function TaskListScreen() {
       return (
         <TouchableOpacity
           style={styles.taskItem}
-          onPress={() => navigateToDetail(item.id)}
+          onPress={() => {
+            console.log('[TaskListScreen] Task item pressed:', item.id, item.title);
+            navigateToDetail(item.id);
+          }}
           activeOpacity={0.7}
         >
           <View style={styles.taskHeader}>
@@ -343,6 +375,14 @@ export default function TaskListScreen() {
         ListEmptyComponent={renderEmptyList}
         ListFooterComponent={renderFooter}
         onEndReachedThreshold={0.5}
+      />
+
+      {/* アバターウィジェット */}
+      <AvatarWidget
+        visible={avatarVisible}
+        data={avatarData}
+        onClose={hideAvatar}
+        position="center"
       />
     </View>
   );

@@ -15,7 +15,6 @@ import {
   ToggleTaskResponse,
   ApprovalResponse,
   ImageUploadResponse,
-  ErrorResponse,
   TaskFilters,
 } from '../types/task.types';
 
@@ -53,6 +52,43 @@ class TaskService {
       console.error('[TaskService] getTasks error message:', error.message);
       console.error('[TaskService] getTasks error response:', error.response);
       
+      if (error.response?.status === 401) {
+        throw new Error('AUTH_REQUIRED');
+      }
+      if (error.message && error.message !== 'Network Error') {
+        throw error;
+      }
+      throw new Error('NETWORK_ERROR');
+    }
+  }
+
+  /**
+   * 特定のタスクを取得
+   * 
+   * @param taskId - タスクID
+   * @returns タスク詳細
+   * @throws Error - エラーコードを投げる（UI層でテーマ変換）
+   */
+  async getTask(taskId: number): Promise<Task> {
+    try {
+      console.log('[TaskService] getTask called, taskId:', taskId);
+      
+      const response = await api.get<TaskResponse>(`/tasks/${taskId}`);
+
+      console.log('[TaskService] getTask response status:', response.status);
+
+      if (!response.data.success || !response.data.data) {
+        console.error('[TaskService] getTask failed: success=false or no data');
+        throw new Error('TASK_NOT_FOUND');
+      }
+
+      return response.data.data.task;
+    } catch (error: any) {
+      console.error('[TaskService] getTask error:', error);
+      
+      if (error.response?.status === 404) {
+        throw new Error('TASK_NOT_FOUND');
+      }
       if (error.response?.status === 401) {
         throw new Error('AUTH_REQUIRED');
       }

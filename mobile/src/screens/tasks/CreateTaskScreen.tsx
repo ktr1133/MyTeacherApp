@@ -26,6 +26,8 @@ import { CreateTaskData, TaskSpan, TaskPriority } from '../../types/task.types';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import api from '../../services/api';
+import { useAvatar } from '../../hooks/useAvatar';
+import AvatarWidget from '../../components/common/AvatarWidget';
 
 /**
  * ナビゲーションスタック型定義
@@ -53,6 +55,15 @@ export default function CreateTaskScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
   const { createTask, isLoading, error, clearError } = useTasks();
+  const {
+    isVisible: avatarVisible,
+    currentData: avatarData,
+    dispatchAvatarEvent,
+    hideAvatar,
+  } = useAvatar();
+
+  // アバター状態をログ出力
+  console.log('🎭 [CreateTaskScreen] Avatar state:', { avatarVisible, hasAvatarData: !!avatarData });
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -251,16 +262,25 @@ export default function CreateTaskScreen() {
     const newTask = await createTask(taskData);
 
     if (newTask) {
-      Alert.alert(
-        theme === 'child' ? 'できたよ!' : '作成完了',
-        theme === 'child' ? 'あたらしいやることをつくったよ!' : 'タスクを作成しました',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      // アバターイベント発火（グループタスク or 通常タスク）
+      const eventType = isGroupTask ? 'group_task_created' : 'task_created';
+      console.log('🎭 [CreateTaskScreen] Firing avatar event:', { eventType, isGroupTask });
+      dispatchAvatarEvent(eventType);
+      console.log('🎭 [CreateTaskScreen] dispatchAvatarEvent called');
+
+      // アバター表示後に画面遷移（3秒待機）
+      setTimeout(() => {
+        Alert.alert(
+          theme === 'child' ? 'できたよ!' : '作成完了',
+          theme === 'child' ? 'あたらしいやることをつくったよ!' : 'タスクを作成しました',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.goBack(),
+            },
+          ]
+        );
+      }, 3000);
     }
   }, [
     title,
@@ -632,6 +652,14 @@ export default function CreateTaskScreen() {
           )}
         </TouchableOpacity>
       </ScrollView>
+
+      {/* アバターウィジェット */}
+      <AvatarWidget
+        visible={avatarVisible}
+        data={avatarData}
+        onClose={hideAvatar}
+        position="center"
+      />
     </View>
   );
 }

@@ -69,6 +69,7 @@ class IndexTaskApiAction
                             'priority' => $task->priority,
                             'is_completed' => $task->is_completed,
                             'completed_at' => $task->completed_at?->toIso8601String(),
+                            'approved_at' => $task->approved_at?->toIso8601String(),
                             'reward' => $task->reward,
                             'requires_approval' => $task->requires_approval,
                             'requires_image' => $task->requires_image,

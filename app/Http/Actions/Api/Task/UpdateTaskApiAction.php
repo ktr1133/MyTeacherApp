@@ -53,11 +53,12 @@ class UpdateTaskApiAction
             }
             
             // バリデーション（spanは任意）
+            // due_dateは中期タスク（span=2）で年のみ（例: "2025"）を許容するためstring
             $validator = Validator::make($request->all(), [
                 'title' => 'sometimes|string|max:255',
                 'description' => 'nullable|string',
                 'span' => 'nullable|integer|min:1',
-                'due_date' => 'nullable|date',
+                'due_date' => 'nullable|string',
                 'priority' => 'sometimes|integer|min:1|max:5',
                 'reward' => 'nullable|integer|min:0',
                 'requires_approval' => 'sometimes|boolean',

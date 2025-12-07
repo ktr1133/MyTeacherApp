@@ -9,14 +9,13 @@
  * - テーマ対応UI（adult/child）
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Image,
   StyleSheet,
   Alert,
   ActivityIndicator,

@@ -33,6 +33,7 @@ interface UseTasksReturn {
 
   // タスク操作
   fetchTasks: (filters?: TaskFilters) => Promise<void>;
+  getTask: (taskId: number) => Promise<Task | null>;
   searchTasks: (query: string, filters?: Omit<TaskFilters, 'q'>) => Promise<void>;
   createTask: (data: CreateTaskData) => Promise<Task | null>;
   updateTask: (taskId: number, data: UpdateTaskData) => Promise<Task | null>;
@@ -99,7 +100,7 @@ export const useTasks = (): UseTasksReturn => {
    * タスク一覧を取得
    */
   const fetchTasks = useCallback(
-    async (filters?: TaskFilters) => {
+    async (filters?: TaskFilters): Promise<Task[]> => {
       try {
         console.log('[useTasks] fetchTasks started, filters:', filters);
         setIsLoading(true);
@@ -110,6 +111,7 @@ export const useTasks = (): UseTasksReturn => {
         console.log('[useTasks] fetchTasks success, tasks count:', response.tasks.length);
         setTasks(response.tasks);
         setPagination(response.pagination);
+        return response.tasks; // 取得したタスク配列を返す
       } catch (err: any) {
         console.error('[useTasks] fetchTasks error:', err);
         console.error('[useTasks] fetchTasks error message:', err.message);
@@ -117,6 +119,34 @@ export const useTasks = (): UseTasksReturn => {
         handleError(err);
         setTasks([]);
         setPagination(null);
+        return []; // エラー時は空配列を返す
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [handleError]
+  );
+
+  /**
+   * 特定のタスクを取得
+   * 
+   * @param taskId - タスクID
+   * @returns タスク詳細（エラー時はnull）
+   */
+  const getTask = useCallback(
+    async (taskId: number): Promise<Task | null> => {
+      try {
+        console.log('[useTasks] getTask started, taskId:', taskId);
+        setIsLoading(true);
+        setError(null);
+
+        const task = await taskService.getTask(taskId);
+        console.log('[useTasks] getTask success:', task.id);
+        return task;
+      } catch (err: any) {
+        console.error('[useTasks] getTask error:', err);
+        handleError(err);
+        return null;
       } finally {
         setIsLoading(false);
       }
@@ -443,6 +473,7 @@ export const useTasks = (): UseTasksReturn => {
 
     // タスク操作
     fetchTasks,
+    getTask,
     searchTasks,
     createTask,
     updateTask,
