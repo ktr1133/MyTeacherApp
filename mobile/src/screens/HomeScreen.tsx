@@ -52,6 +52,13 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={styles.tokenButton}
+          onPress={() => navigation.navigate('TokenBalance' as never)}
+        >
+          <Text style={styles.tokenButtonText}>💰 トークン購入</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile' as never)}
         >
@@ -152,6 +159,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   tagButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  tokenButton: {
+    backgroundColor: '#f97316',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  tokenButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',

@@ -17,6 +17,7 @@ export const STORAGE_KEYS = {
   USER_DATA: 'user_data', // プロフィール編集用の詳細ユーザー情報
   CURRENT_USER: 'current_user', // 全画面共通で使用する基本ユーザー情報（テーマ等）
   NOTIFICATIONS_CACHE: 'notifications_cache', // 通知一覧キャッシュ
+  TOKEN_BALANCE: 'token_balance', // トークン残高キャッシュ
 } as const;
 
 // アプリ設定

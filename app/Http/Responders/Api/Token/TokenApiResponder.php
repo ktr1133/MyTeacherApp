@@ -226,11 +226,11 @@ class TokenApiResponder
             'id' => $package->id,
             'name' => $package->name,
             'description' => $package->description,
-            'amount' => $package->amount,
+            'token_amount' => $package->token_amount,
             'price' => $package->price,
             'stripe_price_id' => $package->stripe_price_id,
             'is_active' => $package->is_active,
-            'display_order' => $package->display_order,
+            'sort_order' => $package->sort_order,
             'created_at' => $package->created_at->toIso8601String(),
         ];
     }
@@ -249,7 +249,7 @@ class TokenApiResponder
             'user_name' => $request->user->name ?? null,
             'package_id' => $request->package_id,
             'package_name' => $request->package->name ?? null,
-            'token_amount' => $request->package->amount ?? null,
+            'token_amount' => $request->package->token_amount ?? null,
             'price' => $request->package->price ?? null,
             'status' => $request->status,
             'approved_by_user_id' => $request->approved_by_user_id,

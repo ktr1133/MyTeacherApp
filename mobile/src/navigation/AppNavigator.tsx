@@ -22,6 +22,8 @@ import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import TagManagementScreen from '../screens/tags/TagManagementScreen';
 import { TagDetailScreen } from '../screens/tags/TagDetailScreen';
 import TagTasksScreen from '../screens/tasks/TagTasksScreen';
+import TokenBalanceScreen from '../screens/tokens/TokenBalanceScreen';
+import TokenPackageListScreen from '../screens/tokens/TokenPurchaseWebViewScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -158,6 +160,20 @@ export default function AppNavigator() {
           component={TagDetailScreen as React.ComponentType<any>}
           options={{
             title: 'タグ詳細',
+          }}
+        />
+        <Stack.Screen
+          name="TokenBalance"
+          component={TokenBalanceScreen}
+          options={{
+            title: 'トークン残高',
+          }}
+        />
+        <Stack.Screen
+          name="TokenPackageList"
+          component={TokenPackageListScreen}
+          options={{
+            headerShown: false,
           }}
         />
       </Stack.Navigator>

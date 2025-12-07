@@ -153,6 +153,36 @@ const ERROR_MESSAGES: Record<string, { adult: string; child: string }> = {
     child: 'おしらせをさがせなかったよ',
   },
 
+  // トークン関連エラー
+  TOKEN_BALANCE_FETCH_FAILED: {
+    adult: 'トークン残高の取得に失敗しました',
+    child: 'トークンのかずがとれなかったよ',
+  },
+  TOKEN_HISTORY_FETCH_FAILED: {
+    adult: 'トークン履歴の取得に失敗しました',
+    child: 'トークンのりれきがとれなかったよ',
+  },
+  TOKEN_PACKAGES_FETCH_FAILED: {
+    adult: 'トークンパッケージの取得に失敗しました',
+    child: 'トークンパッケージがとれなかったよ',
+  },
+  TOKEN_PURCHASE_REQUEST_FAILED: {
+    adult: '購入リクエストの作成に失敗しました',
+    child: 'かうおねがいができなかったよ',
+  },
+  TOKEN_APPROVAL_FAILED: {
+    adult: '購入リクエストの承認に失敗しました',
+    child: 'OKをだせなかったよ',
+  },
+  TOKEN_REJECTION_FAILED: {
+    adult: '購入リクエストの却下に失敗しました',
+    child: 'だめっていえなかったよ',
+  },
+  INSUFFICIENT_TOKENS: {
+    adult: 'トークンが不足しています',
+    child: 'トークンがたりないよ',
+  },
+
   // サーバーエラー
   SERVER_ERROR: {
     adult: 'サーバーエラーが発生しました',
