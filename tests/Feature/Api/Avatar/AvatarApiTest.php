@@ -71,7 +71,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/avatar', $avatarData);
+            ->postJson('/api/avatar', $avatarData);
 
         // Assert
         $response->assertStatus(201)
@@ -122,7 +122,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/avatar');
+            ->getJson('/api/avatar');
 
         // Assert
         $response->assertStatus(200)
@@ -146,7 +146,7 @@ class AvatarApiTest extends TestCase
     {
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/avatar');
+            ->getJson('/api/avatar');
 
         // Assert
         $response->assertStatus(404)
@@ -176,7 +176,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->putJson('/api/v1/avatar', $updateData);
+            ->putJson('/api/avatar', $updateData);
 
         // Assert
         $response->assertStatus(200)
@@ -209,7 +209,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/avatar/regenerate');
+            ->postJson('/api/avatar/regenerate');
 
         // Assert
         $response->assertStatus(200)
@@ -239,7 +239,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->deleteJson('/api/v1/avatar');
+            ->deleteJson('/api/avatar');
 
         // Assert
         $response->assertStatus(200)
@@ -267,7 +267,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->patchJson('/api/v1/avatar/visibility');
+            ->patchJson('/api/avatar/visibility');
 
         // Assert
         $response->assertStatus(200)
@@ -296,7 +296,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->patchJson('/api/v1/avatar/visibility');
+            ->patchJson('/api/avatar/visibility');
 
         // Assert
         $response->assertStatus(200)
@@ -332,7 +332,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/avatar/comment/task_created');
+            ->getJson('/api/avatar/comment/task_created');
 
         // Assert
         $response->assertStatus(200)
@@ -359,7 +359,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/avatar/comment/invalid_event');
+            ->getJson('/api/avatar/comment/invalid_event');
 
         // Assert
         $response->assertStatus(400)
@@ -383,7 +383,7 @@ class AvatarApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/avatar/comment/task_created');
+            ->getJson('/api/avatar/comment/task_created');
 
         // Assert
         $response->assertStatus(200)

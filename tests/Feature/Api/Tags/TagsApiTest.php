@@ -9,7 +9,7 @@ describe('タグ管理API', function () {
         $this->user = User::factory()->create();
     });
 
-    describe('タグ一覧取得 (GET /api/v1/tags)', function () {
+    describe('タグ一覧取得 (GET /api/tags)', function () {
         it('ユーザーのタグ一覧を取得できる', function () {
             // ユーザーのタグを作成
             $tag1 = Tag::factory()->create(['user_id' => $this->user->id, 'name' => 'タグ1']);
@@ -19,7 +19,7 @@ describe('タグ管理API', function () {
             $otherTag = Tag::factory()->create(['name' => '他人のタグ']);
 
             $response = $this->actingAs($this->user)
-                ->getJson('/api/v1/tags');
+                ->getJson('/api/tags');
 
             $response->assertOk()
                 ->assertJson([
@@ -43,7 +43,7 @@ describe('タグ管理API', function () {
         });
 
         it('未認証ではアクセスできない', function () {
-            $response = $this->getJson('/api/v1/tags');
+            $response = $this->getJson('/api/tags');
 
             $response->assertUnauthorized()
                 ->assertJson([
@@ -53,10 +53,10 @@ describe('タグ管理API', function () {
         });
     });
 
-    describe('タグ作成 (POST /api/v1/tags)', function () {
+    describe('タグ作成 (POST /api/tags)', function () {
         it('新しいタグを作成できる', function () {
             $response = $this->actingAs($this->user)
-                ->postJson('/api/v1/tags', [
+                ->postJson('/api/tags', [
                     'name' => '新しいタグ',
                 ]);
 
@@ -85,7 +85,7 @@ describe('タグ管理API', function () {
 
         it('タグ名が空の場合はバリデーションエラー', function () {
             $response = $this->actingAs($this->user)
-                ->postJson('/api/v1/tags', [
+                ->postJson('/api/tags', [
                     'name' => '',
                 ]);
 
@@ -97,7 +97,7 @@ describe('タグ管理API', function () {
         });
     });
 
-    describe('タグ更新 (PUT /api/v1/tags/{id})', function () {
+    describe('タグ更新 (PUT /api/tags/{id})', function () {
         it('タグ名を更新できる', function () {
             $tag = Tag::factory()->create([
                 'user_id' => $this->user->id,
@@ -105,7 +105,7 @@ describe('タグ管理API', function () {
             ]);
 
             $response = $this->actingAs($this->user)
-                ->putJson("/api/v1/tags/{$tag->id}", [
+                ->putJson("/api/tags/{$tag->id}", [
                     'name' => '更新後のタグ名',
                 ]);
 
@@ -129,7 +129,7 @@ describe('タグ管理API', function () {
 
         it('存在しないタグIDは404エラー（暗黙的）', function () {
             $response = $this->actingAs($this->user)
-                ->putJson('/api/v1/tags/99999', [
+                ->putJson('/api/tags/99999', [
                     'name' => '更新',
                 ]);
 
@@ -138,7 +138,7 @@ describe('タグ管理API', function () {
         });
     });
 
-    describe('タグ削除 (DELETE /api/v1/tags/{id})', function () {
+    describe('タグ削除 (DELETE /api/tags/{id})', function () {
         it('タグを削除できる', function () {
             $tag = Tag::factory()->create([
                 'user_id' => $this->user->id,
@@ -146,7 +146,7 @@ describe('タグ管理API', function () {
             ]);
 
             $response = $this->actingAs($this->user)
-                ->deleteJson("/api/v1/tags/{$tag->id}");
+                ->deleteJson("/api/tags/{$tag->id}");
 
             $response->assertOk()
                 ->assertJson([
@@ -164,7 +164,7 @@ describe('タグ管理API', function () {
 
         it('存在しないタグIDは404エラー', function () {
             $response = $this->actingAs($this->user)
-                ->deleteJson('/api/v1/tags/99999');
+                ->deleteJson('/api/tags/99999');
 
             $response->assertNotFound()
                 ->assertJson([
@@ -177,7 +177,7 @@ describe('タグ管理API', function () {
             $otherUserTag = Tag::factory()->create(['name' => '他人のタグ']);
 
             $response = $this->actingAs($this->user)
-                ->deleteJson("/api/v1/tags/{$otherUserTag->id}");
+                ->deleteJson("/api/tags/{$otherUserTag->id}");
 
             // サービス層で権限チェックされる想定
             $response->assertStatus(403);
@@ -191,7 +191,7 @@ describe('タグ管理API', function () {
             $task->tags()->attach($tag->id);
 
             $response = $this->actingAs($this->user)
-                ->getJson('/api/v1/tags');
+                ->getJson('/api/tags');
 
             $response->assertOk()
                 ->assertJsonStructure([

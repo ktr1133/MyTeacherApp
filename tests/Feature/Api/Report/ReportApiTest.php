@@ -75,7 +75,7 @@ class ReportApiTest extends TestCase
     {
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/reports/performance');
+            ->getJson('/api/reports/performance');
 
         // Assert
         $response->assertStatus(200)
@@ -102,7 +102,7 @@ class ReportApiTest extends TestCase
     {
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/reports/performance?period=month&offset=0&tab=normal');
+            ->getJson('/api/reports/performance?period=month&offset=0&tab=normal');
 
         // Assert
         // 無料プランでは period が強制的に week になる
@@ -132,7 +132,7 @@ class ReportApiTest extends TestCase
         
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson("/api/v1/reports/monthly/{$year}/{$month}");
+            ->getJson("/api/reports/monthly/{$year}/{$month}");
 
         // Assert - レポート未生成のため404（サブスクリプションチェックは実装上、後続で実行される）
         $response->assertStatus(404)
@@ -150,7 +150,7 @@ class ReportApiTest extends TestCase
     {
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/reports/monthly/2020/01');
+            ->getJson('/api/reports/monthly/2020/01');
 
         // Assert
         $response->assertStatus(404)
@@ -175,7 +175,7 @@ class ReportApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($userWithoutGroup)
-            ->getJson('/api/v1/reports/monthly/2024/01');
+            ->getJson('/api/reports/monthly/2024/01');
 
         // Assert
         $response->assertStatus(404);
@@ -202,7 +202,7 @@ class ReportApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/reports/monthly/member-summary', $data);
+            ->postJson('/api/reports/monthly/member-summary', $data);
 
         // Assert
         $response->assertStatus(200)
@@ -240,7 +240,7 @@ class ReportApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($otherUser)
-            ->postJson('/api/v1/reports/monthly/member-summary', $data);
+            ->postJson('/api/reports/monthly/member-summary', $data);
 
         // Assert
         $response->assertStatus(403);
@@ -261,7 +261,7 @@ class ReportApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/reports/monthly/member-summary', $data);
+            ->postJson('/api/reports/monthly/member-summary', $data);
 
         // Assert
         $response->assertStatus(422)

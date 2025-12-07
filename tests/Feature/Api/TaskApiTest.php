@@ -79,7 +79,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/tasks', $taskData);
+            ->postJson('/api/tasks', $taskData);
 
         // Assert
         $response->assertStatus(201)
@@ -116,7 +116,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/tasks');
+            ->getJson('/api/tasks');
 
         // Assert
         $response->assertStatus(200)
@@ -148,7 +148,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->putJson("/api/v1/tasks/{$task->id}", $updateData);
+            ->putJson("/api/tasks/{$task->id}", $updateData);
 
         // Assert
         $response->assertStatus(200);
@@ -169,7 +169,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->deleteJson("/api/v1/tasks/{$task->id}");
+            ->deleteJson("/api/tasks/{$task->id}");
 
         // Assert
         $response->assertStatus(200);
@@ -190,7 +190,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->patchJson("/api/v1/tasks/{$task->id}/toggle");
+            ->patchJson("/api/tasks/{$task->id}/toggle");
 
         // Assert
         $response->assertStatus(200);
@@ -216,7 +216,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->patchJson('/api/v1/tasks/bulk-complete', [
+            ->patchJson('/api/tasks/bulk-complete', [
                 'task_ids' => $taskIds,
                 'is_completed' => true,
             ]);
@@ -254,7 +254,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->approver)
-            ->postJson("/api/v1/tasks/{$task->id}/approve");
+            ->postJson("/api/tasks/{$task->id}/approve");
 
         // Assert
         $response->assertStatus(200);
@@ -281,7 +281,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->approver)
-            ->postJson("/api/v1/tasks/{$task->id}/reject", [
+            ->postJson("/api/tasks/{$task->id}/reject", [
                 'reason' => 'テスト却下理由',
             ]);
 
@@ -311,7 +311,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson("/api/v1/tasks/{$task->id}/images", [
+            ->postJson("/api/tasks/{$task->id}/images", [
                 'image' => $image,
             ]);
 
@@ -353,7 +353,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->deleteJson("/api/v1/task-images/{$taskImage->id}");
+            ->deleteJson("/api/task-images/{$taskImage->id}");
 
         // Assert
         $response->assertStatus(200);
@@ -375,7 +375,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson("/api/v1/tasks/{$task->id}/request-approval");
+            ->postJson("/api/tasks/{$task->id}/request-approval");
 
         // Assert
         $response->assertStatus(200)
@@ -399,7 +399,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->approver)
-            ->getJson('/api/v1/approvals/pending');
+            ->getJson('/api/approvals/pending');
 
         // Assert
         $response->assertStatus(200)
@@ -436,7 +436,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/tasks/search', [
+            ->postJson('/api/tasks/search', [
                 'type' => 'title',
                 'operator' => 'or',
                 'terms' => ['検索対象'],
@@ -465,7 +465,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->putJson("/api/v1/tasks/{$task->id}", [
+            ->putJson("/api/tasks/{$task->id}", [
                 'title' => '不正な更新',
             ]);
 
@@ -485,7 +485,7 @@ class TaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->deleteJson("/api/v1/tasks/{$task->id}");
+            ->deleteJson("/api/tasks/{$task->id}");
 
         // Assert
         $response->assertStatus(403);
@@ -498,7 +498,7 @@ class TaskApiTest extends TestCase
     public function test_cannot_access_api_without_authentication(): void
     {
         // Act
-        $response = $this->getJson('/api/v1/tasks');
+        $response = $this->getJson('/api/tasks');
 
         // Assert
         $response->assertStatus(401);

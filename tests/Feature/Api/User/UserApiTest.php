@@ -13,10 +13,10 @@ describe('ユーザー情報API', function () {
         ]);
     });
 
-    describe('現在のユーザー情報取得 (GET /api/v1/user/current)', function () {
+    describe('現在のユーザー情報取得 (GET /api/user/current)', function () {
         it('認証済みユーザーの基本情報を取得できる', function () {
             $response = $this->actingAs($this->user)
-                ->getJson('/api/v1/user/current');
+                ->getJson('/api/user/current');
 
             $response->assertOk()
                 ->assertJson([
@@ -51,7 +51,7 @@ describe('ユーザー情報API', function () {
             ]);
 
             $response = $this->actingAs($childUser)
-                ->getJson('/api/v1/user/current');
+                ->getJson('/api/user/current');
 
             $response->assertOk()
                 ->assertJson([
@@ -73,7 +73,7 @@ describe('ユーザー情報API', function () {
             ]);
 
             $response = $this->actingAs($groupUser)
-                ->getJson('/api/v1/user/current');
+                ->getJson('/api/user/current');
 
             $response->assertOk()
                 ->assertJson([
@@ -86,7 +86,7 @@ describe('ユーザー情報API', function () {
         });
 
         it('未認証ではアクセスできない', function () {
-            $response = $this->getJson('/api/v1/user/current');
+            $response = $this->getJson('/api/user/current');
 
             $response->assertUnauthorized()
                 ->assertJson([
@@ -97,7 +97,7 @@ describe('ユーザー情報API', function () {
 
         it('プロフィール編集APIより必要最小限の情報のみ返す', function () {
             $response = $this->actingAs($this->user)
-                ->getJson('/api/v1/user/current');
+                ->getJson('/api/user/current');
 
             $response->assertOk()
                 ->assertJsonMissing([
@@ -116,7 +116,7 @@ describe('ユーザー情報API', function () {
             ]);
 
             $response = $this->actingAs($userWithoutTheme)
-                ->getJson('/api/v1/user/current');
+                ->getJson('/api/user/current');
 
             $response->assertOk()
                 ->assertJson([

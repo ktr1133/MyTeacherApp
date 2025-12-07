@@ -60,7 +60,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/scheduled-tasks?group_id=' . $this->group->id);
+            ->getJson('/api/scheduled-tasks?group_id=' . $this->group->id);
 
         // Assert
         $response->assertStatus(200)
@@ -88,7 +88,7 @@ class ScheduledTaskApiTest extends TestCase
     {
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/scheduled-tasks');
+            ->getJson('/api/scheduled-tasks');
 
         // Assert
         $response->assertStatus(400);
@@ -110,7 +110,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($otherUser)
-            ->getJson('/api/v1/scheduled-tasks?group_id=' . $this->group->id);
+            ->getJson('/api/scheduled-tasks?group_id=' . $this->group->id);
 
         // Assert
         $response->assertStatus(403);
@@ -129,7 +129,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/scheduled-tasks/create?group_id=' . $this->group->id);
+            ->getJson('/api/scheduled-tasks/create?group_id=' . $this->group->id);
 
         // Assert
         $response->assertStatus(200)
@@ -174,7 +174,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/scheduled-tasks', $data);
+            ->postJson('/api/scheduled-tasks', $data);
 
         // Assert
         $response->assertStatus(201)
@@ -209,7 +209,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/scheduled-tasks/' . $scheduledTask->id . '/edit');
+            ->getJson('/api/scheduled-tasks/' . $scheduledTask->id . '/edit');
 
         // Assert
         $response->assertStatus(200)
@@ -260,7 +260,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->putJson('/api/v1/scheduled-tasks/' . $scheduledTask->id, $data);
+            ->putJson('/api/scheduled-tasks/' . $scheduledTask->id, $data);
 
         // Assert
         $response->assertStatus(200)
@@ -288,7 +288,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->deleteJson('/api/v1/scheduled-tasks/' . $scheduledTask->id);
+            ->deleteJson('/api/scheduled-tasks/' . $scheduledTask->id);
 
         // Assert
         $response->assertStatus(200);
@@ -315,7 +315,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/scheduled-tasks/' . $scheduledTask->id . '/pause');
+            ->postJson('/api/scheduled-tasks/' . $scheduledTask->id . '/pause');
 
         // Assert
         $response->assertStatus(200);
@@ -340,7 +340,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/scheduled-tasks/' . $scheduledTask->id . '/resume');
+            ->postJson('/api/scheduled-tasks/' . $scheduledTask->id . '/resume');
 
         // Assert
         $response->assertStatus(200);
@@ -370,7 +370,7 @@ class ScheduledTaskApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/scheduled-tasks', $data);
+            ->postJson('/api/scheduled-tasks', $data);
 
         // Assert - 必須フィールドのバリデーションエラー（requires_approval以外）
         $response->assertStatus(422)

@@ -248,7 +248,7 @@ class MobileAuthApiTest extends TestCase
         Sanctum::actingAs($user);
 
         // Act - タスクAPI（認証必須）にアクセス
-        $response = $this->getJson('/api/v1/tasks');
+        $response = $this->getJson('/api/tasks');
 
         // Assert - 401ではなく200または他の正常なステータス
         $response->assertOk();
@@ -260,7 +260,7 @@ class MobileAuthApiTest extends TestCase
     public function test_cannot_access_protected_api_without_token(): void
     {
         // Act
-        $response = $this->getJson('/api/v1/tasks');
+        $response = $this->getJson('/api/tasks');
 
         // Assert
         $response->assertUnauthorized();

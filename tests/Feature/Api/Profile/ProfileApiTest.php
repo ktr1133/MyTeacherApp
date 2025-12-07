@@ -14,10 +14,10 @@ describe('プロフィール管理API', function () {
         ]);
     });
 
-    describe('プロフィール取得 (GET /api/v1/profile/edit)', function () {
+    describe('プロフィール取得 (GET /api/profile/edit)', function () {
         it('プロフィール情報を取得できる', function () {
             $response = $this->actingAs($this->user)
-                ->getJson('/api/v1/profile/edit');
+                ->getJson('/api/profile/edit');
 
             $response->assertOk()
                 ->assertJson([
@@ -42,7 +42,7 @@ describe('プロフィール管理API', function () {
         });
 
         it('未認証ではアクセスできない', function () {
-            $response = $this->getJson('/api/v1/profile/edit');
+            $response = $this->getJson('/api/profile/edit');
 
             $response->assertUnauthorized()
                 ->assertJson([
@@ -52,10 +52,10 @@ describe('プロフィール管理API', function () {
         });
     });
 
-    describe('プロフィール更新 (PATCH /api/v1/profile)', function () {
+    describe('プロフィール更新 (PATCH /api/profile)', function () {
         it('プロフィール情報を更新できる', function () {
             $response = $this->actingAs($this->user)
-                ->patchJson('/api/v1/profile', [
+                ->patchJson('/api/profile', [
                     'username' => 'newusername',
                     'name' => 'New Name',
                     'email' => 'newemail@example.com',
@@ -84,7 +84,7 @@ describe('プロフィール管理API', function () {
             $otherUser = User::factory()->create(['username' => 'existinguser']);
 
             $response = $this->actingAs($this->user)
-                ->patchJson('/api/v1/profile', [
+                ->patchJson('/api/profile', [
                     'username' => 'existinguser',
                 ]);
 
@@ -97,7 +97,7 @@ describe('プロフィール管理API', function () {
 
         it('nameが空の場合はusernameを使用する', function () {
             $response = $this->actingAs($this->user)
-                ->patchJson('/api/v1/profile', [
+                ->patchJson('/api/profile', [
                     'username' => 'newuser',
                     'name' => null, // 空文字列はバリデーションエラーになるのでnullを使用
                 ]);
@@ -109,10 +109,10 @@ describe('プロフィール管理API', function () {
         });
     });
 
-    describe('アカウント削除 (DELETE /api/v1/profile)', function () {
+    describe('アカウント削除 (DELETE /api/profile)', function () {
         it('通常ユーザーのアカウントを削除できる', function () {
             $response = $this->actingAs($this->user)
-                ->deleteJson('/api/v1/profile', [
+                ->deleteJson('/api/profile', [
                     'password' => 'password', // Factory default
                 ]);
 
@@ -130,7 +130,7 @@ describe('プロフィール管理API', function () {
 
         it('パスワード確認なしでは削除できない', function () {
             $response = $this->actingAs($this->user)
-                ->deleteJson('/api/v1/profile', []);
+                ->deleteJson('/api/profile', []);
 
             $response->assertStatus(422)
                 ->assertJson([
@@ -142,7 +142,7 @@ describe('プロフィール管理API', function () {
             $this->user->update(['auth_provider' => 'cognito']);
 
             $response = $this->actingAs($this->user)
-                ->deleteJson('/api/v1/profile', [
+                ->deleteJson('/api/profile', [
                     'password' => 'dummy', // Cognito認証なのでチェックされない
                 ]);
 
@@ -153,10 +153,10 @@ describe('プロフィール管理API', function () {
         });
     });
 
-    describe('タイムゾーン設定取得 (GET /api/v1/profile/timezone)', function () {
+    describe('タイムゾーン設定取得 (GET /api/profile/timezone)', function () {
         it('現在のタイムゾーン設定と選択肢を取得できる', function () {
             $response = $this->actingAs($this->user)
-                ->getJson('/api/v1/profile/timezone');
+                ->getJson('/api/profile/timezone');
 
             $response->assertOk()
                 ->assertJson([
@@ -176,10 +176,10 @@ describe('プロフィール管理API', function () {
         });
     });
 
-    describe('タイムゾーン更新 (PUT /api/v1/profile/timezone)', function () {
+    describe('タイムゾーン更新 (PUT /api/profile/timezone)', function () {
         it('タイムゾーンを更新できる', function () {
             $response = $this->actingAs($this->user)
-                ->putJson('/api/v1/profile/timezone', [
+                ->putJson('/api/profile/timezone', [
                     'timezone' => 'America/New_York',
                 ]);
 
@@ -200,7 +200,7 @@ describe('プロフィール管理API', function () {
 
         it('不正なタイムゾーンはバリデーションエラー', function () {
             $response = $this->actingAs($this->user)
-                ->putJson('/api/v1/profile/timezone', [
+                ->putJson('/api/profile/timezone', [
                     'timezone' => 'Invalid/Timezone',
                 ]);
 

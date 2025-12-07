@@ -59,7 +59,7 @@ class NotificationApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/notifications');
+            ->getJson('/api/notifications');
 
         // Assert
         $response->assertStatus(200)
@@ -103,7 +103,7 @@ class NotificationApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson("/api/v1/notifications/{$notification->id}");
+            ->getJson("/api/notifications/{$notification->id}");
 
         // Assert
         $response->assertStatus(200)
@@ -142,7 +142,7 @@ class NotificationApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson("/api/v1/notifications/{$notification->id}");
+            ->getJson("/api/notifications/{$notification->id}");
 
         // Assert
         $response->assertStatus(404)
@@ -169,7 +169,7 @@ class NotificationApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->patchJson("/api/v1/notifications/{$notification->id}/read");
+            ->patchJson("/api/notifications/{$notification->id}/read");
 
         // Assert
         $response->assertStatus(200)
@@ -203,7 +203,7 @@ class NotificationApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/notifications/read-all');
+            ->postJson('/api/notifications/read-all');
 
         // Assert
         $response->assertStatus(200)
@@ -249,7 +249,7 @@ class NotificationApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/notifications/unread-count');
+            ->getJson('/api/notifications/unread-count');
 
         // Assert
         $response->assertStatus(200)
@@ -288,7 +288,7 @@ class NotificationApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/notifications/search?keywords=タスク,完了&operator=AND');
+            ->getJson('/api/notifications/search?keywords=タスク,完了&operator=AND');
 
         // Assert
         $response->assertStatus(200)
@@ -341,7 +341,7 @@ class NotificationApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/notifications/search?keywords=タスク,グループ&operator=OR');
+            ->getJson('/api/notifications/search?keywords=タスク,グループ&operator=OR');
 
         // Assert
         $response->assertStatus(200)
@@ -364,7 +364,7 @@ class NotificationApiTest extends TestCase
     {
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/notifications/search?keywords=&operator=AND');
+            ->getJson('/api/notifications/search?keywords=&operator=AND');
 
         // Assert
         $response->assertStatus(400)
@@ -382,7 +382,7 @@ class NotificationApiTest extends TestCase
     {
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/notifications/search?keywords=タスク&operator=INVALID');
+            ->getJson('/api/notifications/search?keywords=タスク&operator=INVALID');
 
         // Assert
         $response->assertStatus(400)

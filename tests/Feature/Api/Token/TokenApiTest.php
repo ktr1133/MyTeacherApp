@@ -66,7 +66,7 @@ class TokenApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/tokens/balance');
+            ->getJson('/api/tokens/balance');
 
         // Assert
         $response->assertStatus(200)
@@ -105,7 +105,7 @@ class TokenApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/tokens/balance');
+            ->getJson('/api/tokens/balance');
 
         // Assert
         $response->assertStatus(200)
@@ -147,7 +147,7 @@ class TokenApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/tokens/history');
+            ->getJson('/api/tokens/history');
 
         // Assert: 実装ではstatsをそのまま返す（monthlyPurchaseAmount, monthlyPurchaseTokens, monthlyUsage）
         $response->assertStatus(200)
@@ -178,7 +178,7 @@ class TokenApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/tokens/packages');
+            ->getJson('/api/tokens/packages');
 
         // Assert
         $response->assertStatus(200)
@@ -220,7 +220,7 @@ class TokenApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/tokens/create-checkout-session', [
+            ->postJson('/api/tokens/create-checkout-session', [
                 'package_id' => $package->id,
             ]);
 
@@ -240,7 +240,7 @@ class TokenApiTest extends TestCase
     {
         // Act
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/tokens/create-checkout-session', [
+            ->postJson('/api/tokens/create-checkout-session', [
                 'package_id' => 99999,
             ]);
 
@@ -264,7 +264,7 @@ class TokenApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->patchJson('/api/v1/tokens/toggle-mode');
+            ->patchJson('/api/tokens/toggle-mode');
 
         // Assert
         $response->assertStatus(200)
@@ -295,7 +295,7 @@ class TokenApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->patchJson('/api/v1/tokens/toggle-mode');
+            ->patchJson('/api/tokens/toggle-mode');
 
         // Assert
         $response->assertStatus(200)
@@ -327,7 +327,7 @@ class TokenApiTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->patchJson('/api/v1/tokens/toggle-mode');
+            ->patchJson('/api/tokens/toggle-mode');
 
         // Assert
         $response->assertStatus(400)

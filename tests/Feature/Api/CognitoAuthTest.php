@@ -83,7 +83,7 @@ class CognitoAuthTest extends TestCase
         // Act & Assert
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/v1/user');
+        ])->getJson('/api/user');
 
         // 認証が通らない場合はモックが必要なため、401を許容
         // 実際のテストでは VerifyCognitoToken ミドルウェアをモック
@@ -150,7 +150,7 @@ class CognitoAuthTest extends TestCase
     public function test_returns_401_error_without_token(): void
     {
         // Act
-        $response = $this->getJson('/api/v1/user');
+        $response = $this->getJson('/api/user');
 
         // Assert
         $response->assertStatus(401);
@@ -165,7 +165,7 @@ class CognitoAuthTest extends TestCase
         // Act
         $response = $this->withHeaders([
             'Authorization' => 'Bearer invalid-token-format',
-        ])->getJson('/api/v1/user');
+        ])->getJson('/api/user');
 
         // Assert
         $response->assertStatus(401);

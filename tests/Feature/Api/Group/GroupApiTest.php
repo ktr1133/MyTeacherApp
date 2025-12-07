@@ -19,7 +19,7 @@ describe('グループ管理API', function () {
         $this->group->update(['master_user_id' => $this->user->id]);
     });
 
-    describe('グループ情報取得 (GET /api/v1/groups/edit)', function () {
+    describe('グループ情報取得 (GET /api/groups/edit)', function () {
         it('グループ情報とメンバー一覧を取得できる', function () {
             $member = User::factory()->create([
                 'group_id' => $this->group->id,
@@ -27,7 +27,7 @@ describe('グループ管理API', function () {
             ]);
 
             $response = $this->actingAs($this->user)
-                ->getJson('/api/v1/groups/edit');
+                ->getJson('/api/groups/edit');
 
             $response->assertOk()
                 ->assertJson([
@@ -52,7 +52,7 @@ describe('グループ管理API', function () {
         });
 
         it('未認証ではアクセスできない', function () {
-            $response = $this->getJson('/api/v1/groups/edit');
+            $response = $this->getJson('/api/groups/edit');
 
             $response->assertUnauthorized()
                 ->assertJson([
@@ -65,7 +65,7 @@ describe('グループ管理API', function () {
             $userWithoutGroup = User::factory()->create(['group_id' => null]);
 
             $response = $this->actingAs($userWithoutGroup)
-                ->getJson('/api/v1/groups/edit');
+                ->getJson('/api/groups/edit');
 
             $response->assertNotFound()
                 ->assertJson([
@@ -75,10 +75,10 @@ describe('グループ管理API', function () {
         });
     });
 
-    describe('グループ名更新 (PATCH /api/v1/groups)', function () {
+    describe('グループ名更新 (PATCH /api/groups)', function () {
         it('グループ名を更新できる', function () {
             $response = $this->actingAs($this->user)
-                ->patchJson('/api/v1/groups', [
+                ->patchJson('/api/groups', [
                     'name' => '新しいグループ名',
                 ]);
 
@@ -96,7 +96,7 @@ describe('グループ管理API', function () {
 
         it('空のグループ名はバリデーションエラー', function () {
             $response = $this->actingAs($this->user)
-                ->patchJson('/api/v1/groups', [
+                ->patchJson('/api/groups', [
                     'name' => '',
                 ]);
 
@@ -108,10 +108,10 @@ describe('グループ管理API', function () {
         });
     });
 
-    describe('メンバー追加 (POST /api/v1/groups/members)', function () {
+    describe('メンバー追加 (POST /api/groups/members)', function () {
         it('新しいメンバーを追加できる', function () {
             $response = $this->actingAs($this->user)
-                ->postJson('/api/v1/groups/members', [
+                ->postJson('/api/groups/members', [
                     'username' => 'newmember',
                     'email' => 'newmember@example.com',
                     'password' => 'password123',
@@ -140,7 +140,7 @@ describe('グループ管理API', function () {
 
         it('重複するユーザー名はエラー', function () {
             $response = $this->actingAs($this->user)
-                ->postJson('/api/v1/groups/members', [
+                ->postJson('/api/groups/members', [
                     'username' => $this->user->username,
                     'email' => 'newmail@example.com',
                     'password' => 'password123',
@@ -153,7 +153,7 @@ describe('グループ管理API', function () {
         });
     });
 
-    describe('メンバー権限更新 (PATCH /api/v1/groups/members/{member}/permission)', function () {
+    describe('メンバー権限更新 (PATCH /api/groups/members/{member}/permission)', function () {
         it('メンバーの編集権限を更新できる', function () {
             $member = User::factory()->create([
                 'group_id' => $this->group->id,
@@ -161,7 +161,7 @@ describe('グループ管理API', function () {
             ]);
 
             $response = $this->actingAs($this->user)
-                ->patchJson("/api/v1/groups/members/{$member->id}/permission", [
+                ->patchJson("/api/groups/members/{$member->id}/permission", [
                     'group_edit_flg' => true,
                 ]);
 
@@ -179,7 +179,7 @@ describe('グループ管理API', function () {
 
         it('存在しないメンバーは404エラー', function () {
             $response = $this->actingAs($this->user)
-                ->patchJson('/api/v1/groups/members/99999/permission', [
+                ->patchJson('/api/groups/members/99999/permission', [
                     'group_edit_flg' => true,
                 ]);
 
@@ -191,12 +191,12 @@ describe('グループ管理API', function () {
         });
     });
 
-    describe('メンバーテーマ切替 (PATCH /api/v1/groups/members/{member}/theme)', function () {
+    describe('メンバーテーマ切替 (PATCH /api/groups/members/{member}/theme)', function () {
         it('自分のテーマを切り替えられる', function () {
             $this->user->update(['theme' => 'adult']);
 
             $response = $this->actingAs($this->user)
-                ->patchJson("/api/v1/groups/members/{$this->user->id}/theme");
+                ->patchJson("/api/groups/members/{$this->user->id}/theme");
 
             $response->assertOk()
                 ->assertJson([
@@ -223,7 +223,7 @@ describe('グループ管理API', function () {
             ]);
 
             $response = $this->actingAs($this->user)
-                ->patchJson("/api/v1/groups/members/{$member->id}/theme");
+                ->patchJson("/api/groups/members/{$member->id}/theme");
 
             $response->assertOk()
                 ->assertJson([
@@ -237,7 +237,7 @@ describe('グループ管理API', function () {
         });
     });
 
-    describe('グループマスター譲渡 (POST /api/v1/groups/transfer/{newMaster})', function () {
+    describe('グループマスター譲渡 (POST /api/groups/transfer/{newMaster})', function () {
         it('グループマスターを譲渡できる', function () {
             $newMaster = User::factory()->create([
                 'group_id' => $this->group->id,
@@ -245,7 +245,7 @@ describe('グループ管理API', function () {
             ]);
 
             $response = $this->actingAs($this->user)
-                ->postJson("/api/v1/groups/transfer/{$newMaster->id}");
+                ->postJson("/api/groups/transfer/{$newMaster->id}");
 
             $response->assertOk()
                 ->assertJson([
@@ -270,13 +270,13 @@ describe('グループ管理API', function () {
             ]);
 
             $response = $this->actingAs($normalMember)
-                ->postJson("/api/v1/groups/transfer/{$newMaster->id}");
+                ->postJson("/api/groups/transfer/{$newMaster->id}");
 
             $response->assertForbidden();
         });
     });
 
-    describe('メンバー削除 (DELETE /api/v1/groups/members/{member})', function () {
+    describe('メンバー削除 (DELETE /api/groups/members/{member})', function () {
         it('メンバーをグループから削除できる', function () {
             $member = User::factory()->create([
                 'group_id' => $this->group->id,
@@ -284,7 +284,7 @@ describe('グループ管理API', function () {
             ]);
 
             $response = $this->actingAs($this->user)
-                ->deleteJson("/api/v1/groups/members/{$member->id}");
+                ->deleteJson("/api/groups/members/{$member->id}");
 
             $response->assertOk()
                 ->assertJson([
@@ -301,7 +301,7 @@ describe('グループ管理API', function () {
 
         it('マスターは削除できない', function () {
             $response = $this->actingAs($this->user)
-                ->deleteJson("/api/v1/groups/members/{$this->user->id}");
+                ->deleteJson("/api/groups/members/{$this->user->id}");
 
             $response->assertForbidden();
         });
