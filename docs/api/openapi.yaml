@@ -2576,6 +2576,128 @@ paths:
         '200':
           description: 再開成功
 
+  /scheduled-tasks/{id}/history:
+    get:
+      summary: スケジュールタスク実行履歴取得
+      description: |
+        指定したスケジュールタスクの実行履歴を取得します。
+        最新50件の実行履歴が降順で返されます。
+        
+        **実行ステータス**:
+        - `success`: タスク作成成功
+        - `failed`: タスク作成失敗（エラーメッセージ付き）
+        - `skipped`: 実行スキップ（祝日等）
+      tags: [ScheduledTasks]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: スケジュールタスクID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "実行履歴を取得しました。"
+                  data:
+                    type: object
+                    properties:
+                      scheduled_task:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            description: スケジュールタスクID
+                          title:
+                            type: string
+                            description: タイトル
+                      executions:
+                        type: array
+                        description: 実行履歴リスト（最新50件、降順）
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              description: 実行履歴ID
+                            scheduled_task_id:
+                              type: integer
+                              description: スケジュールタスクID
+                            created_task_id:
+                              type: integer
+                              nullable: true
+                              description: 作成されたタスクID（成功時のみ）
+                            deleted_task_id:
+                              type: integer
+                              nullable: true
+                              description: 削除されたタスクID（前回未完了削除時）
+                            executed_at:
+                              type: string
+                              format: date-time
+                              description: 実行日時（ISO 8601形式）
+                            status:
+                              type: string
+                              enum: [success, failed, skipped]
+                              description: 実行ステータス
+                            note:
+                              type: string
+                              nullable: true
+                              description: 備考（実行結果の詳細）
+                              example: "タスク3件作成、前回未完了2件削除"
+                            error_message:
+                              type: string
+                              nullable: true
+                              description: エラーメッセージ（失敗時のみ）
+                              example: "トークン不足: グループマスターのトークン残高が不足しています"
+              examples:
+                success:
+                  value:
+                    message: "実行履歴を取得しました。"
+                    data:
+                      scheduled_task:
+                        id: 1
+                        title: "毎週月曜日のゴミ出し"
+                      executions:
+                        - id: 1
+                          scheduled_task_id: 1
+                          created_task_id: 123
+                          deleted_task_id: 120
+                          executed_at: "2025-12-09T09:00:00+09:00"
+                          status: "success"
+                          note: "タスク3件作成、前回未完了2件削除"
+                          error_message: null
+                        - id: 2
+                          scheduled_task_id: 1
+                          created_task_id: null
+                          deleted_task_id: null
+                          executed_at: "2025-11-25T09:00:00+09:00"
+                          status: "skipped"
+                          note: "祝日のためスキップ"
+                          error_message: null
+                        - id: 3
+                          scheduled_task_id: 1
+                          created_task_id: null
+                          deleted_task_id: null
+                          executed_at: "2025-11-18T09:00:00+09:00"
+                          status: "failed"
+                          note: null
+                          error_message: "トークン不足: グループマスターのトークン残高が不足しています"
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（他のグループのスケジュールタスク）
+        '404':
+          description: スケジュールタスクが見つかりません
+
   # ============================================================
   # Subscriptions（サブスクリプション管理）
   # ============================================================

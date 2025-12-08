@@ -796,9 +796,8 @@ npm test
 
 ---
 
-### 2.B-4: プロフィール・設定機能（2週間）
-  },
-  
+### 2.B-4: プロフィール・設定機能（2週間）  
+```
   async completeTask(taskId: number): Promise<Task> {
     const response = await api.post(`/tasks/${taskId}/complete`);
     return response.data.task;
@@ -817,7 +816,6 @@ npm test
     });
     return response.data.image_url;
   },
-};
 ```
 
 #### チェックリスト

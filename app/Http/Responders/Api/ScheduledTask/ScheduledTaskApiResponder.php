@@ -133,6 +133,27 @@ class ScheduledTaskApiResponder
     }
 
     /**
+     * 実行履歴レスポンス
+     * 
+     * @param mixed $scheduledTask
+     * @param mixed $executions
+     * @return JsonResponse
+     */
+    public function history($scheduledTask, $executions): JsonResponse
+    {
+        return response()->json([
+            'message' => '実行履歴を取得しました。',
+            'data' => [
+                'scheduled_task' => [
+                    'id' => $scheduledTask->id,
+                    'title' => $scheduledTask->title,
+                ],
+                'executions' => $executions,
+            ],
+        ], 200);
+    }
+
+    /**
      * エラーレスポンス
      * 
      * @param string $message

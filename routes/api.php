@@ -85,6 +85,7 @@ use App\Http\Actions\Api\ScheduledTask\UpdateScheduledTaskApiAction;
 use App\Http\Actions\Api\ScheduledTask\DeleteScheduledTaskApiAction;
 use App\Http\Actions\Api\ScheduledTask\PauseScheduledTaskApiAction;
 use App\Http\Actions\Api\ScheduledTask\ResumeScheduledTaskApiAction;
+use App\Http\Actions\Api\ScheduledTask\GetScheduledTaskHistoryApiAction;
 
 // Phase 2.B-6: Subscription API
 use App\Http\Actions\Api\Subscription\GetSubscriptionPlansAction;
@@ -269,6 +270,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', DeleteScheduledTaskApiAction::class)->name('api.scheduled-tasks.destroy');
         Route::post('/{id}/pause', PauseScheduledTaskApiAction::class)->name('api.scheduled-tasks.pause');
         Route::post('/{id}/resume', ResumeScheduledTaskApiAction::class)->name('api.scheduled-tasks.resume');
+        Route::get('/{id}/history', GetScheduledTaskHistoryApiAction::class)->name('api.scheduled-tasks.history');
     });
 
     // Phase 2.B-6: サブスクリプション管理API

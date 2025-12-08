@@ -5,13 +5,14 @@ namespace Tests\Feature\Api\ScheduledTask;
 use App\Models\User;
 use App\Models\Group;
 use App\Models\ScheduledGroupTask;
+use App\Models\ScheduledTaskExecution;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
  * ScheduledTask API 統合テスト
  * 
- * Phase 1.E-1.5.3: スケジュールタスクAPI（8 Actions）
+ * Phase 1.E-1.5.3: スケジュールタスクAPI（9 Actions）
  * 
  * テスト対象:
  * 1. IndexScheduledTaskApiAction - 一覧取得
@@ -22,6 +23,7 @@ use Tests\TestCase;
  * 6. DeleteScheduledTaskApiAction - 削除
  * 7. PauseScheduledTaskApiAction - 一時停止
  * 8. ResumeScheduledTaskApiAction - 再開
+ * 9. GetScheduledTaskHistoryApiAction - 実行履歴取得
  */
 class ScheduledTaskApiTest extends TestCase
 {
@@ -375,5 +377,136 @@ class ScheduledTaskApiTest extends TestCase
         // Assert - 必須フィールドのバリデーションエラー（requires_approval以外）
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['title', 'reward', 'schedules', 'start_date']);
+    }
+
+    /**
+     * @test
+     * スケジュールタスクの実行履歴を取得できること
+     */
+    public function test_can_get_execution_history(): void
+    {
+        // Arrange
+        $scheduledTask = ScheduledGroupTask::factory()->create([
+            'group_id' => $this->group->id,
+            'created_by' => $this->user->id,
+            'title' => '毎週月曜日のゴミ出し',
+        ]);
+
+        // 実行履歴を3件作成
+        ScheduledTaskExecution::factory()->create([
+            'scheduled_task_id' => $scheduledTask->id,
+            'status' => 'success',
+            'created_task_id' => null,
+            'deleted_task_id' => null,
+            'note' => 'タスク3件作成、前回未完了2件削除',
+            'executed_at' => now()->subDays(2),
+        ]);
+
+        ScheduledTaskExecution::factory()->create([
+            'scheduled_task_id' => $scheduledTask->id,
+            'status' => 'skipped',
+            'created_task_id' => null,
+            'deleted_task_id' => null,
+            'note' => '祝日のためスキップ',
+            'executed_at' => now()->subDays(9),
+        ]);
+
+        ScheduledTaskExecution::factory()->create([
+            'scheduled_task_id' => $scheduledTask->id,
+            'status' => 'failed',
+            'created_task_id' => null,
+            'deleted_task_id' => null,
+            'error_message' => 'トークン不足: グループマスターのトークン残高が不足しています',
+            'executed_at' => now()->subDays(16),
+        ]);
+
+        // Act
+        $response = $this->actingAs($this->user)
+            ->getJson("/api/scheduled-tasks/{$scheduledTask->id}/history");
+
+        // Assert
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'message',
+                'data' => [
+                    'scheduled_task' => [
+                        'id',
+                        'title',
+                    ],
+                    'executions' => [
+                        '*' => [
+                            'id',
+                            'scheduled_task_id',
+                            'created_task_id',
+                            'deleted_task_id',
+                            'executed_at',
+                            'status',
+                            'note',
+                            'error_message',
+                        ],
+                    ],
+                ],
+            ])
+            ->assertJson([
+                'data' => [
+                    'scheduled_task' => [
+                        'id' => $scheduledTask->id,
+                        'title' => '毎週月曜日のゴミ出し',
+                    ],
+                ],
+            ]);
+
+        // 実行履歴が3件取得できることを確認
+        $this->assertCount(3, $response->json('data.executions'));
+
+        // 降順（最新が先頭）で返されることを確認
+        $executions = $response->json('data.executions');
+        $this->assertEquals('success', $executions[0]['status']);
+        $this->assertEquals('skipped', $executions[1]['status']);
+        $this->assertEquals('failed', $executions[2]['status']);
+    }
+
+    /**
+     * @test
+     * 存在しないスケジュールタスクの履歴取得で404エラーを返すこと
+     */
+    public function test_returns_404_for_nonexistent_scheduled_task_history(): void
+    {
+        // Act
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/scheduled-tasks/999999/history');
+
+        // Assert
+        $response->assertStatus(404);
+    }
+
+    /**
+     * @test
+     * 他のグループのスケジュールタスク履歴取得で403エラーを返すこと
+     */
+    public function test_returns_403_for_other_group_scheduled_task_history(): void
+    {
+        // Arrange - 別グループのスケジュールタスク作成
+        $otherGroup = Group::factory()->create();
+        $otherUser = User::factory()->create([
+            'cognito_sub' => 'cognito-sub-other-scheduled-test',
+            'email' => 'otherscheduleduser@test.com',
+            'username' => 'otherscheduleduser',
+            'auth_provider' => 'cognito',
+            'group_id' => $otherGroup->id,
+            'group_edit_flg' => true,
+        ]);
+
+        $otherScheduledTask = ScheduledGroupTask::factory()->create([
+            'group_id' => $otherGroup->id,
+            'created_by' => $otherUser->id,
+        ]);
+
+        // Act - 自分のグループでないスケジュールタスクの履歴取得を試みる
+        $response = $this->actingAs($this->user)
+            ->getJson("/api/scheduled-tasks/{$otherScheduledTask->id}/history");
+
+        // Assert
+        $response->assertStatus(403);
     }
 }
