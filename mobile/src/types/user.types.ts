@@ -24,6 +24,10 @@ export interface User {
   theme: ThemeType;
   group_id: number | null;
   group_edit_flg: boolean;
+  group?: {
+    id: number;
+    name: string;
+  } | null;
   auth_provider: string;
   cognito_sub: string | null;
   created_at: string;

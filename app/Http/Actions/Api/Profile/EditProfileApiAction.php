@@ -32,6 +32,9 @@ class EditProfileApiAction
                 ], 401);
             }
 
+            // groupリレーションをload
+            $user->load('group');
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -45,6 +48,10 @@ class EditProfileApiAction
                     'theme' => $user->theme ?? 'light',
                     'group_id' => $user->group_id,
                     'group_edit_flg' => (bool) $user->group_edit_flg,
+                    'group' => $user->group ? [
+                        'id' => $user->group->id,
+                        'name' => $user->group->name,
+                    ] : null,
                     'auth_provider' => $user->auth_provider ?? 'breeze',
                     'cognito_sub' => $user->cognito_sub,
                     'created_at' => $user->created_at->toIso8601String(),

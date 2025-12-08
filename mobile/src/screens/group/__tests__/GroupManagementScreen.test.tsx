@@ -25,6 +25,10 @@ describe('GroupManagementScreen', () => {
     username: 'testuser',
     group_id: 1,
     group_edit_flg: true,
+    group: {
+      id: 1,
+      name: 'テストグループ',
+    },
   };
 
   beforeEach(() => {
@@ -49,7 +53,7 @@ describe('GroupManagementScreen', () => {
 
     expect(screen.getByText('グループ管理')).toBeTruthy();
     expect(screen.getByText('グループ情報')).toBeTruthy();
-    expect(screen.getByText('マイグループ')).toBeTruthy(); // TODO: API実装後にグループ名取得テスト
+    expect(screen.getByText('テストグループ')).toBeTruthy();
     expect(screen.getByText('グループマスター')).toBeTruthy();
   });
 

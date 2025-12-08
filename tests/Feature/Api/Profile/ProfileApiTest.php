@@ -35,8 +35,45 @@ describe('プロフィール管理API', function () {
                     'success',
                     'data' => [
                         'id', 'username', 'name', 'email', 'avatar_path', 'bio',
-                        'timezone', 'theme', 'group_id', 'group_edit_flg',
+                        'timezone', 'theme', 'group_id', 'group_edit_flg', 'group',
                         'auth_provider', 'cognito_sub', 'created_at', 'updated_at',
+                    ],
+                ]);
+        });
+
+        it('グループに所属するユーザーのプロフィール情報にgroup情報が含まれる', function () {
+            $group = \App\Models\Group::factory()->create(['name' => 'テストグループ']);
+            $this->user->update(['group_id' => $group->id, 'group_edit_flg' => true]);
+
+            $response = $this->actingAs($this->user)
+                ->getJson('/api/profile/edit');
+
+            $response->assertOk()
+                ->assertJson([
+                    'success' => true,
+                    'data' => [
+                        'group_id' => $group->id,
+                        'group_edit_flg' => true,
+                        'group' => [
+                            'id' => $group->id,
+                            'name' => 'テストグループ',
+                        ],
+                    ],
+                ]);
+        });
+
+        it('グループに所属しないユーザーのgroup情報はnull', function () {
+            $this->user->update(['group_id' => null]);
+
+            $response = $this->actingAs($this->user)
+                ->getJson('/api/profile/edit');
+
+            $response->assertOk()
+                ->assertJson([
+                    'success' => true,
+                    'data' => [
+                        'group_id' => null,
+                        'group' => null,
                     ],
                 ]);
         });

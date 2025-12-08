@@ -32,8 +32,8 @@ export const GroupManagementScreen: React.FC = () => {
 
   // グループ情報（userから取得）
   const groupId = user?.group_id;
-  const groupName = 'マイグループ'; // TODO: グループ名取得APIを実装後に修正
-  const isGroupMaster = (user as any)?.group_edit_flg ?? false;
+  const groupName = user?.group?.name || 'マイグループ';
+  const isGroupMaster = user?.group_edit_flg ?? false;
 
   /**
    * スケジュールタスク管理画面へ遷移
