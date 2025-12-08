@@ -169,6 +169,7 @@ export default function MonthlyReportScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
+        testID="monthly-report-scroll-view"
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -186,6 +187,7 @@ export default function MonthlyReportScreen() {
         <View style={styles.monthSelector}>
           <Text style={styles.monthSelectorLabel}>対象月</Text>
           <Picker
+            testID="month-picker"
             selectedValue={`${selectedYear}-${selectedMonth}`}
             onValueChange={handleMonthChange}
             style={styles.picker}
@@ -272,6 +274,7 @@ export default function MonthlyReportScreen() {
                   <View style={styles.memberHeader}>
                     <Text style={styles.memberName}>{member.user_name}</Text>
                     <TouchableOpacity
+                      testID={`ai-summary-button-${member.user_id}`}
                       style={styles.summaryButton}
                       onPress={() =>
                         handleGenerateSummary(member.user_id, member.user_name)

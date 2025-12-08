@@ -114,8 +114,8 @@ class ReportApiTest extends TestCase
                     'tab' => 'normal',
                 ],
             ])
-            ->assertJsonPath('data.restrictions', fn($restrictions) => 
-                collect($restrictions)->contains('type', 'period')
+            ->assertJsonPath('data.restrictions.alerts', fn($alerts) => 
+                collect($alerts)->contains('type', 'period')
             );
     }
 

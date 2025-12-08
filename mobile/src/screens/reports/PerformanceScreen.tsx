@@ -202,7 +202,7 @@ export default function PerformanceScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#59B9C6" />
+          <ActivityIndicator size="large" color="#59B9C6" testID="loading-indicator" />
           <Text style={styles.loadingText}>読み込み中...</Text>
         </View>
       </SafeAreaView>
@@ -226,6 +226,7 @@ export default function PerformanceScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
+        testID="performance-scroll-view"
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -437,6 +438,7 @@ export default function PerformanceScreen() {
         {/* 期間ナビゲーション */}
         <View style={styles.navigationContainer}>
           <TouchableOpacity
+            testID="navigate-prev-button"
             style={[
               styles.navButton,
               (!data?.can_navigate_prev || data?.restrictions?.navigation_restricted) &&
@@ -465,6 +467,7 @@ export default function PerformanceScreen() {
           </TouchableOpacity>
           <Text style={styles.periodLabel}>{data?.period_label}</Text>
           <TouchableOpacity
+            testID="navigate-next-button"
             style={[
               styles.navButton,
               !data?.can_navigate_next && styles.navButtonDisabled,
