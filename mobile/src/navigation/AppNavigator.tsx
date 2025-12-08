@@ -4,7 +4,9 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../contexts/AuthContext';
+import { useAvatarContext } from '../contexts/AvatarContext';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import AvatarWidget from '../components/common/AvatarWidget';
 
 // 画面インポート
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -40,6 +42,7 @@ const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   const authData = useAuth();
+  const { isVisible, currentData, hideAvatar } = useAvatarContext();
   const loading = authData.loading;
   const isAuthenticated = authData.isAuthenticated;
 
@@ -80,15 +83,16 @@ export default function AppNavigator() {
 
   // 認証済み時のナビゲーション
   return (
-    <NavigationContainer key="authenticated">
-      <Stack.Navigator>
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            title: 'MyTeacher',
-          }}
-        />
+    <>
+      <NavigationContainer key="authenticated">
+        <Stack.Navigator>
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{
+              title: 'MyTeacher',
+            }}
+          />
         <Stack.Screen
           name="TaskList"
           component={TaskListScreen}
@@ -265,7 +269,15 @@ export default function AppNavigator() {
           }}
         />
       </Stack.Navigator>
-    </NavigationContainer>
+      </NavigationContainer>
+      
+      {/* アバターウィジェット（全画面共通） */}
+      <AvatarWidget
+        visible={isVisible}
+        data={currentData}
+        onClose={hideAvatar}
+      />
+    </>
   );
 }
 
