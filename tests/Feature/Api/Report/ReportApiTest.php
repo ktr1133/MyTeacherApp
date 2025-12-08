@@ -113,10 +113,16 @@ class ReportApiTest extends TestCase
                     'offset' => 0,
                     'tab' => 'normal',
                 ],
-            ])
-            ->assertJsonPath('data.restrictions.alerts', fn($alerts) => 
-                collect($alerts)->contains('type', 'period')
-            );
+            ]);
+        
+        // restrictions.alerts 配列に period 制限が含まれることを確認
+        $restrictions = $response->json('data.restrictions');
+        $this->assertIsArray($restrictions);
+        $this->assertArrayHasKey('alerts', $restrictions);
+        $this->assertTrue(
+            collect($restrictions['alerts'])->contains('type', 'period'),
+            'restrictions.alerts に period 制限が含まれていません'
+        );
     }
 
     /**
