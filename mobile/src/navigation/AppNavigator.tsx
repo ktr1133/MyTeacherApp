@@ -19,6 +19,11 @@ import NotificationDetailScreen from '../screens/notifications/NotificationDetai
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import PasswordChangeScreen from '../screens/profile/PasswordChangeScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import GroupManagementScreen from '../screens/group/GroupManagementScreen';
+import ScheduledTaskListScreen from '../screens/scheduled-tasks/ScheduledTaskListScreen';
+import ScheduledTaskHistoryScreen from '../screens/scheduled-tasks/ScheduledTaskHistoryScreen';
+import ScheduledTaskCreateScreen from '../screens/scheduled-tasks/ScheduledTaskCreateScreen';
+import ScheduledTaskEditScreen from '../screens/scheduled-tasks/ScheduledTaskEditScreen';
 import TagManagementScreen from '../screens/tags/TagManagementScreen';
 import { TagDetailScreen } from '../screens/tags/TagDetailScreen';
 import TagTasksScreen from '../screens/tasks/TagTasksScreen';
@@ -222,6 +227,41 @@ export default function AppNavigator() {
           component={MemberSummaryScreen}
           options={{
             title: 'メンバー別概況',
+          }}
+        />
+        <Stack.Screen
+          name="GroupManagement"
+          component={GroupManagementScreen}
+          options={{
+            title: 'グループ管理',
+          }}
+        />
+        <Stack.Screen
+          name="ScheduledTaskList"
+          component={ScheduledTaskListScreen}
+          options={{
+            title: 'タスクスケジュール管理',
+          }}
+        />
+        <Stack.Screen
+          name="ScheduledTaskHistory"
+          component={ScheduledTaskHistoryScreen}
+          options={{
+            title: '実行履歴',
+          }}
+        />
+        <Stack.Screen
+          name="ScheduledTaskCreate"
+          component={ScheduledTaskCreateScreen}
+          options={{
+            title: 'スケジュール作成',
+          }}
+        />
+        <Stack.Screen
+          name="ScheduledTaskEdit"
+          component={ScheduledTaskEditScreen}
+          options={{
+            title: 'スケジュール編集',
           }}
         />
       </Stack.Navigator>

@@ -274,6 +274,17 @@ export const ProfileScreen: React.FC = () => {
         {/* アカウント削除ボタン */}
         {!isEditing && (
           <>
+            {/* グループ管理ボタン */}
+            <TouchableOpacity
+              style={styles.groupButton}
+              onPress={() => navigation.navigate('GroupManagement' as never)}
+              accessibilityLabel="グループ管理"
+            >
+              <Text style={styles.groupButtonText}>
+                {theme === 'child' ? 'グループかんり' : 'グループ管理'}
+              </Text>
+            </TouchableOpacity>
+
             {/* パスワード変更ボタン */}
             <TouchableOpacity
               style={styles.passwordButton}
@@ -410,6 +421,20 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#fff',
+  },
+  groupButton: {
+    paddingVertical: 14,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  groupButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#16a34a',
   },
   passwordButton: {
     paddingVertical: 14,
