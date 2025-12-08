@@ -215,16 +215,20 @@ describe('ScheduledTaskService', () => {
           success: true,
           message: 'スケジュールタスクを作成しました。',
           data: {
-            id: 1,
-            title: '毎週月曜日のゴミ出し',
+            scheduled_task: {
+              id: 1,
+              title: '毎週月曜日のゴミ出し',
+            },
           },
         },
       };
       mockApi.post.mockResolvedValueOnce(mockResponse);
 
-      await scheduledTaskService.createScheduledTask(mockScheduledTaskRequest);
+      const result = await scheduledTaskService.createScheduledTask(mockScheduledTaskRequest);
 
       expect(mockApi.post).toHaveBeenCalledWith('/scheduled-tasks', mockScheduledTaskRequest);
+      expect(result.id).toBe(1);
+      expect(result.title).toBe('毎週月曜日のゴミ出し');
     });
 
     it('422エラーの場合VALIDATION_ERRORをスローする', async () => {
@@ -283,13 +287,20 @@ describe('ScheduledTaskService', () => {
         data: {
           success: true,
           message: 'スケジュールタスクを更新しました。',
+          data: {
+            scheduled_task: {
+              id: 1,
+              title: '毎週月曜日のゴミ出し',
+            },
+          },
         },
       };
       mockApi.put.mockResolvedValueOnce(mockResponse);
 
-      await scheduledTaskService.updateScheduledTask(1, mockScheduledTaskRequest);
+      const result = await scheduledTaskService.updateScheduledTask(1, mockScheduledTaskRequest);
 
       expect(mockApi.put).toHaveBeenCalledWith('/scheduled-tasks/1', mockScheduledTaskRequest);
+      expect(result.id).toBe(1);
     });
 
     it('422エラーの場合VALIDATION_ERRORをスローする', async () => {
@@ -343,13 +354,21 @@ describe('ScheduledTaskService', () => {
         data: {
           success: true,
           message: 'スケジュールタスクを一時停止しました。',
+          data: {
+            scheduled_task: {
+              id: 1,
+              title: '毎週月曜日のゴミ出し',
+              is_active: false,
+            },
+          },
         },
       };
       mockApi.post.mockResolvedValueOnce(mockResponse);
 
-      await scheduledTaskService.pauseScheduledTask(1);
+      const result = await scheduledTaskService.pauseScheduledTask(1);
 
       expect(mockApi.post).toHaveBeenCalledWith('/scheduled-tasks/1/pause');
+      expect(result.is_active).toBe(false);
     });
 
     it('404エラーの場合NOT_FOUNDをスローする', async () => {
@@ -365,13 +384,21 @@ describe('ScheduledTaskService', () => {
         data: {
           success: true,
           message: 'スケジュールタスクを再開しました。',
+          data: {
+            scheduled_task: {
+              id: 1,
+              title: '毎週月曜日のゴミ出し',
+              is_active: true,
+            },
+          },
         },
       };
       mockApi.post.mockResolvedValueOnce(mockResponse);
 
-      await scheduledTaskService.resumeScheduledTask(1);
+      const result = await scheduledTaskService.resumeScheduledTask(1);
 
       expect(mockApi.post).toHaveBeenCalledWith('/scheduled-tasks/1/resume');
+      expect(result.is_active).toBe(true);
     });
 
     it('404エラーの場合NOT_FOUNDをスローする', async () => {
@@ -394,10 +421,9 @@ describe('ScheduledTaskService', () => {
       const result = await scheduledTaskService.getExecutionHistory(1);
 
       expect(mockApi.get).toHaveBeenCalledWith('/scheduled-tasks/1/history');
-      expect(result.scheduled_task.id).toBe(1);
-      expect(result.executions).toHaveLength(2);
-      expect(result.executions[0].status).toBe('success');
-      expect(result.executions[1].status).toBe('skipped');
+      expect(result).toHaveLength(2);
+      expect(result[0].status).toBe('success');
+      expect(result[1].status).toBe('skipped');
     });
 
     it('404エラーの場合NOT_FOUNDをスローする', async () => {

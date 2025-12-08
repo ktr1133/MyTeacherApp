@@ -25,3 +25,118 @@ export const APP_CONFIG = {
   APP_NAME: 'MyTeacher',
   VERSION: '1.0.0',
 } as const;
+
+// ============================================================
+// アバター設定値（Phase 2.B-7）
+// config/services.php の定義に対応
+// ============================================================
+
+/**
+ * アバター設定オプション
+ */
+export const AVATAR_OPTIONS = {
+  sex: [
+    { value: 'male' as const, label: '男性', emoji: '👨' },
+    { value: 'female' as const, label: '女性', emoji: '👩' },
+    { value: 'other' as const, label: 'その他', emoji: '🧑' },
+  ],
+  hair_style: [
+    { value: 'short' as const, label: 'ショート' },
+    { value: 'middle' as const, label: 'ミディアム' },
+    { value: 'long' as const, label: 'ロング' },
+  ],
+  hair_color: [
+    { value: 'black' as const, label: '黒' },
+    { value: 'brown' as const, label: '茶' },
+    { value: 'blonde' as const, label: '金' },
+    { value: 'silver' as const, label: '銀' },
+    { value: 'red' as const, label: '赤' },
+  ],
+  eye_color: [
+    { value: 'black' as const, label: '黒' },
+    { value: 'brown' as const, label: '茶' },
+    { value: 'blue' as const, label: '青' },
+    { value: 'green' as const, label: '緑' },
+    { value: 'gray' as const, label: '灰' },
+    { value: 'purple' as const, label: '紫' },
+  ],
+  clothing: [
+    { value: 'suit' as const, label: 'スーツ' },
+    { value: 'casual' as const, label: 'カジュアル' },
+    { value: 'kimono' as const, label: '着物' },
+    { value: 'robe' as const, label: 'ローブ' },
+    { value: 'dress' as const, label: 'ドレス' },
+  ],
+  accessory: [
+    { value: 'nothing' as const, label: 'なし' },
+    { value: 'glasses' as const, label: '眼鏡' },
+    { value: 'hat' as const, label: '帽子' },
+    { value: 'necklace' as const, label: 'ネックレス' },
+    { value: 'cheer' as const, label: '応援メガホン' },
+  ],
+  body_type: [
+    { value: 'slim' as const, label: '細身' },
+    { value: 'average' as const, label: '標準' },
+    { value: 'sturdy' as const, label: 'がっしり' },
+    { value: 'chubby' as const, label: 'ぽっちゃり' },
+  ],
+  tone: [
+    { value: 'gentle' as const, label: '優しい' },
+    { value: 'friendly' as const, label: 'フレンドリー' },
+    { value: 'strict' as const, label: '厳しい' },
+    { value: 'intellectual' as const, label: '知的' },
+  ],
+  enthusiasm: [
+    { value: 'modest' as const, label: '控え目' },
+    { value: 'normal' as const, label: '普通' },
+    { value: 'high' as const, label: '高い' },
+  ],
+  formality: [
+    { value: 'polite' as const, label: '丁寧' },
+    { value: 'casual' as const, label: 'カジュアル' },
+    { value: 'formal' as const, label: 'フォーマル' },
+  ],
+  humor: [
+    { value: 'high' as const, label: '高い' },
+    { value: 'normal' as const, label: '普通' },
+    { value: 'low' as const, label: '控え目' },
+  ],
+  draw_model_version: [
+    { 
+      value: 'anything-v4.0' as const, 
+      label: 'anything-v4.0',
+      description: '線の細いタッチで描画',
+      estimatedTokenUsage: 5000, // 1枚1000トークン × 5枚
+    },
+    { 
+      value: 'animagine-xl-3.1' as const, 
+      label: 'animagine-xl-3.1',
+      description: '豊かな色彩のイラスト',
+      estimatedTokenUsage: 2000, // 1枚400トークン × 5枚
+    },
+    { 
+      value: 'stable-diffusion-3.5-medium' as const, 
+      label: 'stable-diffusion-3.5-medium',
+      description: '25億のパラメータで高品質描画',
+      estimatedTokenUsage: 23000, // 1枚4600トークン × 5枚
+    },
+  ],
+} as const;
+
+/**
+ * アバター生成ステータス
+ */
+export const AVATAR_GENERATION_STATUS = {
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+} as const;
+
+/**
+ * アバター生成に必要なトークン（作成時）
+ */
+export const AVATAR_TOKEN_COST = {
+  CREATE: 100000, // アバター作成
+  REGENERATE: 50000, // 画像再生成
+} as const;

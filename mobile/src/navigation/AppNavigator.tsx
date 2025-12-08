@@ -37,6 +37,9 @@ import SubscriptionInvoicesScreen from '../screens/subscriptions/SubscriptionInv
 import PerformanceScreen from '../screens/reports/PerformanceScreen';
 import MonthlyReportScreen from '../screens/reports/MonthlyReportScreen';
 import MemberSummaryScreen from '../screens/reports/MemberSummaryScreen';
+import { AvatarCreateScreen } from '../screens/avatars/AvatarCreateScreen';
+import { AvatarManageScreen } from '../screens/avatars/AvatarManageScreen';
+import { AvatarEditScreen } from '../screens/avatars/AvatarEditScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -98,6 +101,27 @@ export default function AppNavigator() {
           component={TaskListScreen}
           options={{
             title: 'タスク一覧',
+          }}
+        />
+        <Stack.Screen
+          name="AvatarManage"
+          component={AvatarManageScreen as React.ComponentType<any>}
+          options={{
+            title: 'アバター管理',
+          }}
+        />
+        <Stack.Screen
+          name="AvatarCreate"
+          component={AvatarCreateScreen as React.ComponentType<any>}
+          options={{
+            title: 'アバター作成',
+          }}
+        />
+        <Stack.Screen
+          name="AvatarEdit"
+          component={AvatarEditScreen as React.ComponentType<any>}
+          options={{
+            title: 'アバター編集',
           }}
         />
         <Stack.Screen

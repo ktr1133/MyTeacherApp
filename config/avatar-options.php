@@ -17,6 +17,12 @@ return [
             'color' => 'pink',
             'image' => '/images/avatars/sex/female.png',
         ],
+        'other' => [
+            'label' => 'その他',
+            'emoji' => '🧑',
+            'color' => 'gray',
+            'image' => '/images/avatars/sex/other.png',
+        ],
     ],
 
     /**
@@ -75,6 +81,11 @@ return [
      * 目の色
      */
     'eye_color' => [
+        'black' => [
+            'label' => '黒',
+            'color' => '#2d2d2d',
+            'image' => '/images/avatars/eye_color/black.svg',
+        ],
         'brown' => [
             'label' => '茶色',
             'color' => '#8b4513',
@@ -137,7 +148,7 @@ return [
      * アクセサリー
      */
     'accessory' => [
-        '' => [
+        'nothing' => [
             'label' => 'なし',
             'emoji' => '🚫',
             'image' => null,

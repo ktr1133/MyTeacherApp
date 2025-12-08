@@ -38,6 +38,13 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={styles.avatarButton}
+          onPress={() => navigation.navigate('AvatarManage' as never)}
+        >
+          <Text style={styles.avatarButtonText}>👤 アバター管理</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.notificationButton}
           onPress={() => navigation.navigate('NotificationList' as never)}
         >
@@ -149,6 +156,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   taskButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  avatarButton: {
+    backgroundColor: '#EC4899',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  avatarButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',

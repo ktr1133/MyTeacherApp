@@ -192,8 +192,8 @@ class TeacherAvatarApiResponder
                 return [
                     'id' => $image->id,
                     'image_type' => $image->image_type,
-                    'emotion' => $image->emotion,
-                    'image_url' => $image->image_url,
+                    'emotion' => $image->expression_type,
+                    'image_url' => $image->s3_url,  // ✅ s3_urlカラムを使用
                     'created_at' => $image->created_at->toIso8601String(),
                 ];
             })->toArray(),
