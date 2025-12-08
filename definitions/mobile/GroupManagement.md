@@ -5,6 +5,7 @@
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
 | 2025-12-08 | GitHub Copilot | 初版作成: Phase 2.B-7実装に向けたモバイル版要件定義 |
+| 2025-12-08 | GitHub Copilot | Q&A反映: グループ削除機能削除、Responder実装方針明記、サブスク連携追記、テスト数修正 |
 
 ---
 
@@ -17,9 +18,9 @@ MyTeacher モバイルアプリにおけるグループ管理機能の要件定�
 | 項目 | Web版 | モバイル版 |
 |------|-------|-----------|
 | グループ作成 | ✅ 実装済み | ❌ 未実装（Phase 2.B-7で実装） |
-| グループ削除 | ❌ 未実装 | ❌ 未実装（Phase 2.B-7で実装） |
+| グループ削除 | ❌ 未実装 | ❌ 未実装 |
 | メンバー管理 | ✅ 実装済み | ❌ 未実装（Phase 2.B-7で実装） |
-| サブスク管理連携 | ✅ リンク表示 | ✅ 既存画面へ遷移 |
+| サブスク管理連携 | ✅ リンク表示 | ✅ 既存画面へ遷移（Phase 2.B-6実装済み） |
 | スケジュールタスク | ✅ リンク表示 | ❌ Phase 2.B-7で実装予定 |
 
 ---
@@ -186,34 +187,7 @@ API呼び出し（PATCH /api/groups）
 - グループ未加入の場合、グループ名を送信することで新規作成
 - 作成者は自動的にグループマスターになる
 
-### 2.4 グループ削除
-
-#### 2.4.1 削除フロー
-
-**権限**: グループマスターのみ
-
-```
-GroupManageScreen
-    ↓
-「グループ削除」ボタンタップ
-    ↓
-確認ダイアログ表示（2段階）
-├ 1段階目: 「グループを削除しますか？」
-│   ↓ 「削除」タップ
-└ 2段階目: 「本当に削除しますか？この操作は取り消せません。」
-    ↓ 「削除」タップ
-    ↓
-API呼び出し（DELETE /api/groups）
-    ↓
-成功時にホーム画面へ遷移
-```
-
-**注意**:
-- **APIは未実装** - Phase 2.B-7で実装が必要
-- グループ削除時、全メンバーのgroup_idがnullになる
-- 関連するグループタスクはそのまま残る（assigned_by_user_id保持）
-
-### 2.5 サブスクリプション管理連携
+### 2.4 サブスクリプション管理連携
 
 ```
 GroupManageScreen
@@ -227,7 +201,7 @@ SubscriptionManageScreenへ遷移
 
 **実装状況**: ✅ SubscriptionManageScreenは Phase 2.B-6で実装済み
 
-### 2.6 スケジュールタスク管理連携
+### 2.5 スケジュールタスク管理連携
 
 ```
 GroupManageScreen
@@ -276,7 +250,6 @@ ScheduledTaskListScreenへ遷移
 │ └───────────────────────────┘  │
 │                                 │
 │        [メンバー追加]             │
-│        [グループ削除]             │
 │                                 │
 └─────────────────────────────────┘
 ```
@@ -509,20 +482,6 @@ ScheduledTaskListScreenへ遷移
 **実装状況**: ✅ 実装済み（`RemoveMemberApiAction`）
 **問題点**: ⚠️ Responder未使用 - Phase 2.B-7で修正推奨
 
-### 4.8 グループ削除
-
-**エンドポイント**: `DELETE /api/groups`
-
-**レスポンス**:
-```json
-{
-  "success": true,
-  "message": "グループを削除しました。"
-}
-```
-
-**実装状況**: ❌ **未実装** - Phase 2.B-7で実装が必要
-
 ---
 
 ## 5. データ設計
@@ -640,11 +599,6 @@ export const groupService = {
    * メンバー削除
    */
   async removeMember(userId: number): Promise<void> { /* ... */ },
-  
-  /**
-   * グループ削除
-   */
-  async deleteGroup(): Promise<void> { /* ... */ },
 };
 ```
 
@@ -694,11 +648,6 @@ export const useGroup = () => {
    */
   const removeMember = async (userId: number) => { /* ... */ };
   
-  /**
-   * グループ削除
-   */
-  const deleteGroup = async () => { /* ... */ };
-  
   return {
     groupDetail,
     isLoading,
@@ -710,7 +659,6 @@ export const useGroup = () => {
     toggleMemberTheme,
     transferMaster,
     removeMember,
-    deleteGroup,
   };
 };
 ```
@@ -728,11 +676,10 @@ export const useGroup = () => {
 - ✅ メンバーテーマ切替成功
 - ✅ グループマスター譲渡成功
 - ✅ メンバー削除成功
-- ✅ グループ削除成功
 - ✅ APIエラーハンドリング
 - ✅ ネットワークエラーハンドリング
 
-**目標**: 10テスト、全パス
+**目標**: 9テスト、全パス
 
 ### 7.2 Hookテスト（useGroup.test.ts）
 
@@ -743,11 +690,10 @@ export const useGroup = () => {
 - ✅ メンバーテーマ切替（成功・失敗）
 - ✅ グループマスター譲渡（成功・失敗）
 - ✅ メンバー削除（成功・失敗）
-- ✅ グループ削除（成功・失敗）
 - ✅ ローディング状態管理
 - ✅ エラー状態管理
 
-**目標**: 14テスト、全パス
+**目標**: 12テスト、全パス
 
 ### 7.3 UIテスト
 
@@ -760,39 +706,37 @@ export const useGroup = () => {
 - ✅ メンバーテーマ切替
 - ✅ グループマスター譲渡確認
 - ✅ メンバー削除確認
-- ✅ グループ削除確認（2段階）
 - ✅ サブスク管理画面へ遷移
 - ✅ スケジュールタスク管理画面へ遷移
 
-**目標**: 15テスト、全パス
+**目標**: 14テスト、全パス
 
 ---
 
 ## 8. 実装優先順位
 
-### Phase 2.B-7 Week 1（グループ管理）
+### Phase 2.B-7 Week 2（グループ管理）
 
 1. **Laravel API修正**（1日）
-   - グループ削除API実装（`DeleteGroupAction`）
    - 全Action にResponder導入（7ファイル修正）
-   - `GroupApiResponder` 作成
+   - `GroupApiResponder` 作成（インターフェース不要）
 
 2. **型定義作成**（0.5日）
    - `group.types.ts` 作成
 
 3. **Service層実装**（2日）
-   - `group.service.ts` 実装（8メソッド）
-   - `group.service.test.ts` 作成（10テスト）
+   - `group.service.ts` 実装（7メソッド）
+   - `group.service.test.ts` 作成（9テスト）
 
 4. **Hook層実装**（2日）
-   - `useGroup.ts` 実装（8メソッド）
-   - `useGroup.test.ts` 作成（14テスト）
+   - `useGroup.ts` 実装（7メソッド）
+   - `useGroup.test.ts` 作成（12テスト）
 
 5. **UI実装**（2.5日）
    - `GroupManageScreen.tsx` 実装
    - `CreateGroupModal.tsx` 実装
    - `AddMemberModal.tsx` 実装
-   - UIテスト作成（15テスト）
+   - UIテスト作成（14テスト）
 
 ---
 
@@ -802,6 +746,8 @@ export const useGroup = () => {
 
 **ファイル**: `app/Http/Responders/Api/Group/GroupApiResponder.php`
 
+**注意**: Responderクラスは**インターフェース不要**（`.github/copilot-instructions.md` の規約）
+
 ```php
 <?php
 
@@ -809,6 +755,9 @@ namespace App\Http\Responders\Api\Group;
 
 use Illuminate\Http\JsonResponse;
 
+/**
+ * グループ管理APIレスポンス整形
+ */
 class GroupApiResponder
 {
     public function groupDetail($group, $members): JsonResponse { /* ... */ }
@@ -818,42 +767,11 @@ class GroupApiResponder
     public function themeToggled(): JsonResponse { /* ... */ }
     public function masterTransferred(): JsonResponse { /* ... */ }
     public function memberRemoved(): JsonResponse { /* ... */ }
-    public function deleted(): JsonResponse { /* ... */ }
     public function error(string $message, int $statusCode = 400): JsonResponse { /* ... */ }
 }
 ```
 
-### 9.2 グループ削除Action作成
-
-**ファイル**: `app/Http/Actions/Api/Group/DeleteGroupApiAction.php`
-
-```php
-<?php
-
-namespace App\Http\Actions\Api\Group;
-
-use App\Services\Profile\GroupServiceInterface;
-use App\Http\Responders\Api\Group\GroupApiResponder;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-
-class DeleteGroupApiAction
-{
-    public function __construct(
-        protected GroupServiceInterface $groupService,
-        protected GroupApiResponder $responder
-    ) {}
-
-    public function __invoke(Request $request): JsonResponse
-    {
-        // グループマスター権限チェック
-        // グループ削除処理
-        // Responder経由でレスポンス返却
-    }
-}
-```
-
-### 9.3 既存Action修正
+### 9.2 既存Action修正
 
 **修正対象**（7ファイル）:
 - `EditGroupApiAction.php`

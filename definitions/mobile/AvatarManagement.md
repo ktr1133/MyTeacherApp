@@ -5,6 +5,7 @@
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
 | 2025-12-08 | GitHub Copilot | 初版作成: Phase 2.B-7実装に向けたモバイル版要件定義 |
+| 2025-12-08 | GitHub Copilot | Q&A反映: TeacherAvatarApiResponderはインターフェース不要の注記追加 |
 
 ---
 
