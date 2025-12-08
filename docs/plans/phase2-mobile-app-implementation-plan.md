@@ -23,6 +23,8 @@
 | 2025-12-08 | GitHub Copilot | Phase 2.B-6完了（トークン・サブスクリプション機能）: モバイル5画面実装、282テスト成功、WebView方式Stripe統合 |
 | 2025-12-08 | GitHub Copilot | Phase 2.B-6完了（グラフ・レポート機能）: モバイル3画面実装、react-native-chart-kit統合、サブスク制限実装、PDF生成Phase 2.B-8移動 |
 | 2025-12-08 | GitHub Copilot | Phase 2.B-6完了（UI修正）: 月次レポート画面のメンバー統計表示を改善、通常タスク/グループタスク内訳表示に変更 |
+| 2025-12-08 | GitHub Copilot | Phase 2.B-7計画更新: スケジュールタスク+グループ管理+アバター管理に変更（2週間に延長、API実装済み機能の画面化） |
+| 2025-12-08 | GitHub Copilot | Phase 2.B-7要件定義完了: GroupManagement.md、AvatarManagement.md作成、計画書詳細更新（実装スケジュール・Laravel修正タスク追加） |
 
 ---
 
@@ -135,7 +137,14 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
     - **グラフ実装**: react-native-chart-kit（積み上げ棒グラフ、折れ線グラフ、Web版同等の色設定）
     - **Phase 2.B-8への残タスク**: PDF生成・共有機能（react-native-html-to-pdf、expo-sharing）
     - **完了レポート**: `docs/reports/mobile/2025-12-08-phase2-b6-performance-report-mobile-implementation-report.md`
-  - 🎯 **Phase 2.B-7**: スケジュールタスク機能（1週間）
+  - 🎯 **Phase 2.B-7**: スケジュールタスク + グループ管理 + アバター管理（2週間、2025年12月9日～20日）
+    - **スケジュールタスク機能**（Week 1, 5日間）: 一覧・作成・編集・削除・一時停止・再開（Laravel API実装済み、8エンドポイント）
+    - **グループ管理機能**（Week 2, 5日間）: メンバー管理・権限設定・マスター譲渡・グループ削除（Laravel API 7エンドポイント実装済み + 1エンドポイント新規実装 + Responder統一が必要）
+    - **アバター管理機能**（並行実装、3日間）: 作成・編集・削除・画像再生成・表示切替（Laravel API実装済み、7エンドポイント + コメント機能実装済み）
+    - **要件定義書**: 
+      - `definitions/mobile/ScheduledTaskManagement.md`（作成予定）
+      - `definitions/mobile/GroupManagement.md`（✅作成完了）
+      - `definitions/mobile/AvatarManagement.md`（✅作成完了）
   - 🎯 **Phase 2.B-7.5**: Push通知機能（Firebase/FCM）（1週間）
     - **Firebase統合**: iOS/Android設定、FCMトークン登録
     - **Push通知受信**: フォアグラウンド・バックグラウンド通知
@@ -1340,32 +1349,252 @@ export const PerformanceChart: React.FC<Props> = ({ data }) => {
 - [ ] API連携実装
 - [ ] TypeScript型チェック（0エラー）
 - [ ] 全テスト実行（全パス）
-- [ ] 実機テスト（iOS + Android）
-- [ ] 完了レポート作成
-
 ---
 
-### 2.B-7: スケジュールタスク機能（1週間）
+### 2.B-7: スケジュールタスク + グループ管理 + アバター管理（2週間、2025年12月9日～20日）
+
+#### 実装背景
+
+**API実装済み、モバイル画面未実装の機能を完全実装**:
+- ✅ Laravel API: 全エンドポイント実装済み（スケジュール8 + グループ7 + アバター7）
+- ❌ モバイル画面: 未実装
+- ⚠️ アバターコメント表示機能のみ実装済み（Phase 2.B-5 Step 3）
+- ⚠️ グループAPI: Responder未使用（Phase 2.B-7で統一が必要）
+
+#### 実装スケジュール
+
+**Week 1（12月9日～13日）**: スケジュールタスク機能
+- Day 1-2: Laravel API確認・Service/Hook層実装
+- Day 3-4: UI実装（3画面）
+- Day 5: テスト実装・動作確認
+
+**Week 2（12月16日～20日）**: グループ管理機能
+- Day 1: Laravel API修正（Responder統一、グループ削除API実装）
+- Day 2-3: Service/Hook層実装
+- Day 4-5: UI実装（2画面）
+
+**並行実装（Week 1-2）**: アバター管理機能（3日間）
+- Day 1: 型定義・Service層実装
+- Day 2: Hook層実装・テスト作成
+- Day 3: UI実装（3画面）
 
 #### 実装内容
 
-1. **スケジュールタスク管理**
-   - スケジュール一覧
-   - スケジュール作成/編集
-   - 繰り返し設定（毎日、毎週、毎月）
-   - 祝日除外設定
-   - ランダム割当設定
+##### 1. スケジュールタスク機能（Laravel API実装済み - 8エンドポイント）
 
-2. **実行履歴**
-   - 実行履歴一覧
-   - 実行結果確認
+**画面実装**:
+- ScheduledTaskListScreen（一覧表示、一時停止/再開、実行履歴）
+- ScheduledTaskCreateScreen（作成画面、繰り返し設定）
+- ScheduledTaskEditScreen（編集画面、祝日除外設定）
+
+**機能**:
+- スケジュール一覧表示（実行状態・次回実行日時表示）
+- スケジュール作成（繰り返し設定、祝日除外、ランダム割当）
+- スケジュール編集・削除
+- 一時停止・再開機能
+- 実行履歴表示（過去の実行結果一覧）
+
+**Laravel API**:
+```php
+GET    /api/scheduled-tasks              # 一覧取得
+GET    /api/scheduled-tasks/create       # 作成フォーム
+POST   /api/scheduled-tasks              # 作成実行
+GET    /api/scheduled-tasks/{id}/edit    # 編集フォーム
+PUT    /api/scheduled-tasks/{id}         # 更新実行
+DELETE /api/scheduled-tasks/{id}         # 削除
+POST   /api/scheduled-tasks/{id}/pause   # 一時停止
+POST   /api/scheduled-tasks/{id}/resume  # 再開
+```
+
+**要件定義書**: `definitions/mobile/ScheduledTaskManagement.md`（作成予定）
+
+##### 2. グループ管理機能（Laravel API 7エンドポイント + 1エンドポイント新規実装 + Responder統一）
+
+**画面実装**:
+- GroupManageScreen（グループ情報・メンバー一覧・グループ作成）
+- CreateGroupModal（グループ作成モーダル）
+- AddMemberModal（メンバー追加モーダル）
+
+**機能**:
+- グループ情報表示・編集
+- グループ作成（未加入時に作成可能）
+- グループ削除（グループマスターのみ、2段階確認）
+- メンバー一覧表示
+- メンバー追加（ユーザー名完全一致検索）
+- メンバー権限変更（閲覧のみ/編集可能/グループマスター）
+- メンバーテーマ切替（大人モード/子どもモード）
+- グループマスター譲渡（確認ダイアログ付き）
+- メンバー削除（グループマスター以外）
+- サブスクリプション管理連携
+- スケジュールタスク管理連携
+
+**Laravel API（既存7 + 新規1）**:
+```php
+GET    /api/groups/edit                          # グループ情報取得
+PATCH  /api/groups                                # グループ情報更新・作成
+POST   /api/groups/members                        # メンバー追加
+PATCH  /api/groups/members/{userId}/permission    # 権限変更
+PATCH  /api/groups/members/{userId}/theme         # テーマ切替
+POST   /api/groups/transfer/{userId}              # マスター譲渡
+DELETE /api/groups/members/{userId}               # メンバー削除
+DELETE /api/groups                                # グループ削除（新規実装）
+```
+
+**Laravel API修正タスク**:
+- ✅ 既存7エンドポイント: Responder導入（GroupApiResponder作成）
+- ✅ 新規1エンドポイント: グループ削除API実装（DeleteGroupApiAction）
+
+**要件定義書**: ✅ `definitions/mobile/GroupManagement.md`（作成完了）
+
+##### 3. アバター管理機能（Laravel API実装済み - 7エンドポイント + コメント機能実装済み）
+
+**画面実装**:
+- AvatarCreateScreen（AI生成アバター作成、6外見+4性格入力）
+- AvatarManageScreen（アバター一覧・編集・削除）
+- AvatarEditScreen（アバター編集画面）
+
+**機能**:
+- アバター作成（オプション機能、設定画面からのみアクセス）
+  - 外見設定6項目（性別、年齢層、髪型、髪色、服装、表情）
+  - 性格設定4項目（性格、口調、教育スタイル、特徴）
+  - AI生成（バックグラウンド処理、通知で完了通知）
+- アバター編集（名前変更のみ、プロフィール設定不可）
+- アバター削除（確認ダイアログ付き）
+- 画像再生成（ポーズ・表情の再生成、バックグラウンド処理）
+- 表示切替（ON/OFF、オフ時はコメント非表示）
+- ✅ アバターコメント表示（実装済み - Phase 2.B-5 Step 3、5イベント対応）
+
+**Laravel API**:
+```php
+POST   /api/avatar                        # アバター作成
+GET    /api/avatar                         # アバター取得
+PUT    /api/avatar                         # アバター更新（名前のみ）
+DELETE /api/avatar                         # アバター削除
+POST   /api/avatar/regenerate              # 画像再生成
+PATCH  /api/avatar/visibility              # 表示切替
+GET    /api/avatar/comment/{event}         # コメント取得（実装済み）
+```
+
+**要件定義書**: ✅ `definitions/mobile/AvatarManagement.md`（作成完了）
+
+**Web版との差異**:
+- Web: ログイン時にアバター未設定の場合、自動的にウィザード画面へリダイレクト
+- Mobile: ログイン後にアバター作成は強制せず、設定画面から任意で作成
+
+#### コード例（グループ管理 - Service層）
+
+```typescript
+// src/services/group.service.ts
+import api from './api';
+import { Group, GroupDetail, GroupMember } from '../types/group.types';
+
+export const groupService = {
+  /**
+   * グループ情報取得
+   */
+  async getGroupDetail(): Promise<GroupDetail> {
+    const response = await api.get('/groups/edit');
+    return response.data.data;
+  },
+  
+  /**
+   * グループ作成・更新
+   */
+  async updateGroup(name: string): Promise<void> {
+    await api.patch('/groups', { name });
+  },
+  
+  /**
+   * メンバー追加
+   */
+  async addMember(username: string): Promise<void> {
+    await api.post('/groups/members', { username });
+  },
+  
+  /**
+   * メンバー権限変更
+   */
+  async updateMemberPermission(userId: number, canEdit: boolean): Promise<void> {
+    await api.patch(`/groups/members/${userId}/permission`, { group_edit_flg: canEdit });
+  },
+  
+  /**
+   * メンバーテーマ切替
+   */
+  async toggleMemberTheme(userId: number): Promise<void> {
+    await api.patch(`/groups/members/${userId}/theme`);
+  },
+  
+  /**
+   * グループマスター譲渡
+   */
+  async transferMaster(userId: number): Promise<void> {
+    await api.post(`/groups/transfer/${userId}`);
+  },
+  
+  /**
+   * メンバー削除
+   */
+  async removeMember(userId: number): Promise<void> {
+    await api.delete(`/groups/members/${userId}`);
+  },
+  
+  /**
+   * グループ削除
+   */
+  async deleteGroup(): Promise<void> {
+    await api.delete('/groups');
+  },
+};
+```
 
 #### チェックリスト
 
-- [ ] スケジュール一覧画面UI実装
-- [ ] スケジュール作成/編集画面UI実装
-- [ ] 実行履歴画面UI実装
-- [ ] API連携実装
+**スケジュールタスク機能（Week 1）**:
+- [ ] ScheduledTaskListScreen UI実装（505行目標）
+- [ ] ScheduledTaskCreateScreen UI実装（650行目標）
+- [ ] ScheduledTaskEditScreen UI実装（620行目標）
+- [ ] useScheduledTasks Hook実装（280行目標）
+- [ ] scheduledTask.service.ts実装（120行目標）
+- [ ] scheduled-task.types.ts型定義作成（80行目標）
+- [ ] スケジュールタスクテスト作成（Service 8 + Hook 12 + UI 15 = 35テスト）
+- [ ] 要件定義書作成（ScheduledTaskManagement.md）
+
+**グループ管理機能（Week 2）**:
+- [ ] Laravel API修正
+  - [ ] GroupApiResponder作成（8メソッド）
+  - [ ] DeleteGroupAction実装
+  - [ ] 既存7 Action修正（Responder導入）
+- [ ] GroupManageScreen UI実装（600行目標）
+- [ ] CreateGroupModal UI実装（180行目標）
+- [ ] AddMemberModal UI実装（180行目標）
+- [ ] useGroup Hook実装（230行目標）
+- [ ] group.service.ts実装（71行目標）
+- [ ] group.types.ts型定義作成（46行目標）
+- [ ] グループ管理テスト作成（Service 10 + Hook 14 + UI 15 = 39テスト）
+
+**アバター管理機能（並行実装）**:
+- [ ] AvatarCreateScreen UI実装（680行目標）
+- [ ] AvatarManageScreen UI実装（520行目標）
+- [ ] AvatarEditScreen UI実装（420行目標）
+- [ ] useAvatar Hook実装（280行目標）
+- [ ] avatar.service.ts拡張（管理機能追加、120行目標）
+- [ ] avatar.types.ts型定義拡張（80行目標）
+- [ ] アバター管理テスト作成（Service 8 + Hook 12 + UI 20 = 40テスト）
+
+**総合**:
+- [ ] TypeScript型チェック（0エラー）
+- [ ] 全テスト実行（全パス）
+- [ ] 実機テスト（iOS + Android）
+- [ ] 完了レポート作成（3機能統合）
+
+**テスト目標**:
+- スケジュールタスク: 35テスト
+- グループ管理: 39テスト（Laravel含む）
+- アバター管理: 40テスト
+- **合計**: 114テスト全パス
+
+--- ] API連携実装
 - [ ] 実機テスト（iOS + Android）
 
 ---
