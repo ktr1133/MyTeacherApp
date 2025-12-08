@@ -326,7 +326,8 @@ class MonthlyReportService implements MonthlyReportServiceInterface
     public function canAccessReport(Group $group, string $yearMonth): bool
     {
         // サブスク加入者は全期間アクセス可能
-        if ($group->subscription_active === true) {
+        // subscription_activeではなくCashierのsubscribed()を使用（有効期限内かチェック）
+        if ($group->subscribed('default')) {
             return true;
         }
         

@@ -4,6 +4,8 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-08 | GitHub Copilot | Phase 2.B-6実装完了: メンバー別概況画面追加、キャッシュ機能、エラーハンドリング強化 |
+| 2025-12-08 | GitHub Copilot | 質疑応答結果を反映: グラフ種類明確化、アニメーション方針、PDF生成Phase 2.B-8移動、サブスク制限Phase 2.B-6実装 |
 | 2025-12-07 | GitHub Copilot | 初版作成: モバイルアプリ実績・レポート機能（Chart.js移植、PDF生成、共有機能） |
 
 ---
@@ -17,24 +19,39 @@ MyTeacher モバイルアプリにおける実績・レポート機能は、ユ�
 **グラフライブラリ**: `react-native-chart-kit` v6.12.0
 - Web版Chart.jsをReact Native向けに移植
 - SVGベースのレンダリング（iOS/Android対応）
-- 棒グラフ、折れ線グラフ、円グラフ対応
+- **グラフ種類**: 積み上げ棒グラフ、折れ線グラフ、ドーナツグラフ
+- **アニメーション**: Web版より制限的だが、なめらかな印象を保つ（enter/exit animations、smooth transitions）
 
-**PDF生成**: `react-native-html-to-pdf` または `@react-pdf/renderer`
+**PDF生成**: `react-native-html-to-pdf` または `@react-pdf/renderer`（Phase 2.B-8で実装予定）
 - HTMLテンプレートからPDF生成（Web版と同じレイアウト）
 - 日本語フォント埋め込み対応
+- **Phase 2.B-8（総合テスト）で実装**: Phase 2.B-6では基本機能（グラフ表示、データ表示）のみ実装
 
-**共有機能**: `expo-sharing` v14.0.8
+**共有機能**: `expo-sharing` v14.0.8（Phase 2.B-8で実装予定）
 - ネイティブ共有ダイアログ表示
 - メール、クラウドストレージ、メッセージアプリへの共有
 - iOS: `UIActivityViewController`
 - Android: Intent ACTION_SEND
+
+**色設定**: Tailwind CSSと同じ色を使用
+- メインカラー: `#59B9C6`（ティール系、通常タスク）
+- アクセント: `#8B5CF6`（パープル系、グループタスク）
 
 ### 1.2 対応プラットフォーム
 
 | プラットフォーム | 実装状況 | グラフライブラリ | PDF生成 | 共有機能 |
 |----------------|---------|----------------|---------|---------|
 | **Web** | ✅ 実装済み | Chart.js | Blade PDF | ブラウザダウンロード |
-| **モバイル** | 🎯 Phase 2.B-6実装予定 | react-native-chart-kit | react-native-html-to-pdf | expo-sharing |
+| **モバイル** | 🎯 Phase 2.B-6実装完了 | react-native-chart-kit | （Phase 2.B-8予定） | （Phase 2.B-8予定） |
+
+**Phase 2.B-6実装内容**:
+- ✅ 月次レポート画面（MonthlyReportScreen）
+- ✅ メンバー別概況専用画面（MemberSummaryScreen）
+- ✅ AsyncStorageキャッシュ機能（対象月別）
+- ✅ AIサマリーAPI連携
+- ✅ データ検証によるクラッシュ防止
+- ✅ 戻るボタン確認ダイアログ
+- ⏭️ PDF生成・共有機能（Phase 2.B-8で実装）
 
 ---
 
@@ -231,7 +248,19 @@ export const PerformanceScreen = () => {
 
 ### 3.1 機能要件
 
-**概要**: グループメンバーの月次タスク実績をPDF生成し、メール・クラウド・メッセージアプリに共有できる機能。
+**概要**: グループメンバーの月次タスク実績を表示する機能。
+
+**Phase 2.B-6実装範囲**:
+- ✅ 月次レポートデータ表示（MonthlyReportScreen）
+- ✅ メンバー別統計表示（月次レポート画面内）
+- ✅ トレンドグラフ表示（メンバー別完了数推移）
+- ✅ AI生成サマリー専用画面（MemberSummaryScreen）
+  - 円グラフ（タスク分類）
+  - 折れ線グラフ（報酬推移）
+  - AsyncStorageキャッシュ（対象月別）
+  - 戻るボタン確認ダイアログ
+- ✅ サブスク制限（無料ユーザーはAIサマリー生成不可）
+- ⏭️ PDF生成・共有機能（Phase 2.B-8で実装）
 
 **処理フロー**:
 ```
@@ -371,7 +400,9 @@ export const MonthlyReportScreen = ({ route }) => {
 
 ---
 
-## 4. PDF生成機能
+## 4. PDF生成機能（Phase 2.B-8で実装予定）
+
+**Phase 2.B-6の実装範囲外**: PDF生成・共有機能はPhase 2.B-8（総合テスト）で実装します。
 
 ### 4.1 実装方式
 
@@ -1073,3 +1104,432 @@ public function canAccessReport(Group $group, string $yearMonth): bool
 - **プロジェクト規約**: `.github/copilot-instructions.md`
 - **react-native-chart-kit**: https://github.com/indiespirit/react-native-chart-kit
 - **expo-sharing**: https://docs.expo.dev/versions/latest/sdk/sharing/
+
+---
+
+## 10. モバイル専用仕様: メンバー別概況画面（Phase 2.B-6実装完了）
+
+### 10.1 概要
+
+**目的**: 
+- Web版のモーダル表示をモバイルでは専用画面として実装
+- トークン消費による生成結果を確実に表示し、アプリクラッシュを防止
+- AsyncStorageによるキャッシュ機能で対象月別にデータを保持
+
+**Web版との違い**:
+| 項目 | Web版 | モバイル版 |
+|------|-------|-----------|
+| 表示方式 | モーダル | 専用画面（スタックナビゲーション） |
+| 閉じる時の警告 | モーダルの×ボタン・オーバーレイクリック | 戻るボタン（ハードウェア含む） |
+| データ保持 | セッション（モーダル閉じると破棄） | AsyncStorageキャッシュ（対象月別） |
+| グラフライブラリ | Chart.js | react-native-chart-kit |
+| PDF生成 | 即時実装済み | 将来実装（ボタンのみ配置、Phase 2.B-8予定） |
+
+### 10.2 画面遷移フロー
+
+```
+MonthlyReportScreen
+  ↓ [メンバー選択 → AIサマリーボタン押下]
+  ↓ [トークン消費確認ダイアログ]
+  ↓ [API呼び出し + データ検証]
+  ↓ [AsyncStorageキャッシュチェック]
+  ↓ [成功時]
+  ↓
+MemberSummaryScreen
+  ├─ ヘッダー: カスタム戻るボタン（確認ダイアログ付き）
+  ├─ AIコメント表示エリア
+  ├─ タスク分類円グラフ (PieChart)
+  ├─ 報酬推移折れ線グラフ (LineChart)
+  ├─ トークン消費量表示
+  ├─ PDFダウンロードボタン（無効化・TODO付き）
+  └─ 生成日時フッター
+  
+  [戻るボタン押下]
+  ↓ [確認ダイアログ表示]
+  ↓ [「戻る」選択]
+  ↓
+MonthlyReportScreen（元の画面に戻る）
+```
+
+### 10.3 データフロー
+
+#### 10.3.1 API呼び出しとデータ変換
+
+**Service層** (`mobile/src/services/performance.service.ts`):
+```typescript
+export const generateMemberSummary = async (
+  request: GenerateMemberSummaryRequest,
+  userName: string
+): Promise<MemberSummaryData> => {
+  // キャッシュキー: member_summary_{user_id}_{year_month}
+  const cacheKey = `${MEMBER_SUMMARY_CACHE_KEY_PREFIX}${request.user_id}_${request.year_month}`;
+  
+  // キャッシュチェック
+  const cached = await AsyncStorage.getItem(cacheKey);
+  if (cached) {
+    return JSON.parse(cached); // キャッシュヒット
+  }
+  
+  // API呼び出し
+  const response = await api.post<ApiResponse<MemberSummaryResponse>>(
+    '/reports/monthly/member-summary',
+    request
+  );
+  
+  // 生データ → 画面表示用データ変換
+  const summaryData: MemberSummaryData = {
+    user_id: apiData.user_id,
+    user_name: userName,
+    year_month: apiData.year_month,
+    comment: apiData.summary.comment,
+    task_classification: apiData.summary.task_classification,
+    reward_trend: apiData.summary.reward_trend,
+    tokens_used: apiData.summary.tokens_used,
+    generated_at: new Date().toISOString(),
+  };
+  
+  // キャッシュ保存
+  await AsyncStorage.setItem(cacheKey, JSON.stringify(summaryData));
+  
+  return summaryData;
+};
+```
+
+**Hook層** (`mobile/src/hooks/usePerformance.ts`):
+```typescript
+const generateMemberSummary = useCallback(
+  async (userId: number, userName: string): Promise<MemberSummaryData | null> => {
+    // データ検証
+    if (!selectedYear || !selectedMonth || !user?.group_id) {
+      throw new Error('必要なデータが不足しています');
+    }
+    
+    const yearMonth = `${selectedYear}-${selectedMonth}`;
+    
+    // Service層でキャッシュチェック + API呼び出し + データ変換
+    const result = await performanceService.generateMemberSummary(
+      { user_id: userId, group_id: user.group_id, year_month: yearMonth },
+      userName
+    );
+    
+    // レスポンス検証
+    if (!result.comment || !result.task_classification || !result.reward_trend) {
+      throw new Error('サマリーデータの形式が不正です');
+    }
+    
+    return result;
+  },
+  [selectedYear, selectedMonth, user]
+);
+```
+
+#### 10.3.2 キャッシュ戦略
+
+**キャッシュキー形式**: `member_summary_{user_id}_{year_month}`
+
+**対象月別キャッシュの動作**:
+```
+例1: 2025-11のサマリー生成
+  → キャッシュキー: member_summary_2_2025-11
+  → 次回2025-11のサマリー表示時はキャッシュヒット（API呼び出しなし）
+
+例2: 2025-12に月を変更してサマリー生成
+  → キャッシュキー: member_summary_2_2025-12（別キー）
+  → キャッシュミス → API呼び出し → 新規キャッシュ保存
+```
+
+**キャッシュ無効化**: 対象月が異なれば自動的に別キーとなり、古いキャッシュは参照されない
+
+**メリット**:
+- トークン節約: 同じ月のサマリーを再表示する際はAPIコールなし
+- オフライン対応: 一度生成したサマリーはオフラインでも閲覧可能
+- パフォーマンス向上: 即座にデータ表示
+
+### 10.4 画面実装詳細
+
+#### 10.4.1 MemberSummaryScreen.tsx
+
+**ファイルパス**: `mobile/src/screens/reports/MemberSummaryScreen.tsx`
+
+**主要コンポーネント**:
+- **ヘッダー**: `useLayoutEffect`でカスタム戻るボタン設定
+- **AIコメントセクション**: アイコン付きカード、複数行テキスト表示
+- **タスク分類グラフ**: PieChart（react-native-chart-kit）、凡例付き
+- **報酬推移グラフ**: LineChart、ベジェ曲線、Y軸フォーマット
+- **トークン消費表示**: 情報アイコン付き、数値フォーマット
+- **PDFボタン**: 無効化状態、TODOコメント付き
+
+**テーマ対応**: `useColorScheme()`でダーク/ライトモード自動切替
+
+**実装ファイル**: 377行
+
+#### 10.4.2 戻るボタンの確認ダイアログ
+
+**実装箇所**: `MemberSummaryScreen.tsx`の`handleBackPress()`
+
+**ダイアログ内容**:
+```javascript
+Alert.alert(
+  'レポートを閉じますか？',
+  'このレポートはトークンを消費して生成されています。\n戻ると生成結果が破棄されます。\n\n本当に戻ってもよろしいですか？',
+  [
+    { text: 'キャンセル', style: 'cancel' },
+    { text: '戻る', style: 'destructive', onPress: () => navigation.goBack() }
+  ]
+);
+```
+
+**発動タイミング**:
+- ヘッダーの戻るボタン（←）タップ
+- Androidのハードウェア戻るボタン（`useLayoutEffect`でインターセプト）
+
+**Web版との文言統一**:
+- Web版: "このレポートはトークンを消費して生成されています。\n閉じると生成結果が破棄されます。\n\n本当に閉じてもよろしいですか？"
+- モバイル版: "戻ると" に変更（画面遷移の文脈に合わせる）
+
+#### 10.4.3 グラフ実装
+
+**タスク分類円グラフ** (PieChart):
+```typescript
+const getPieChartData = () => {
+  const colors = [
+    'rgba(59, 130, 246, 0.9)',   // blue
+    'rgba(168, 85, 247, 0.9)',   // purple
+    'rgba(236, 72, 153, 0.9)',   // pink
+    'rgba(16, 185, 129, 0.9)',   // green
+    'rgba(251, 146, 60, 0.9)',   // orange
+    'rgba(250, 204, 21, 0.9)',   // yellow
+  ];
+
+  return data.task_classification.labels.map((label, index) => ({
+    name: label,
+    population: data.task_classification.data[index],
+    color: colors[index % colors.length],
+    legendFontColor: isDark ? '#e5e7eb' : '#374151',
+    legendFontSize: 12,
+  }));
+};
+```
+
+**報酬推移折れ線グラフ** (LineChart):
+```typescript
+const getLineChartData = () => {
+  return {
+    labels: data.reward_trend.labels,
+    datasets: [{
+      data: data.reward_trend.data,
+      color: (opacity = 1) => `rgba(251, 146, 60, ${opacity})`,
+      strokeWidth: 3,
+    }],
+  };
+};
+
+// Y軸フォーマット
+formatYLabel={(value) => `${parseInt(value).toLocaleString()}円`}
+```
+
+### 10.5 エラーハンドリング（アプリクラッシュ対策）
+
+**Option B実装: データ検証 + 画面遷移分離**
+
+#### 10.5.1 MonthlyReportScreen.tsx
+
+```typescript
+const handleGenerateSummary = async (userId: number, userName: string) => {
+  // サブスクチェック
+  if (!report?.has_subscription) {
+    Alert.alert('プレミアム機能', 'サブスクリプションが必要です');
+    return;
+  }
+
+  Alert.alert(
+    'AI生成サマリー',
+    `${userName}さんの月次サマリーを生成しますか？\n（トークンを消費します）`,
+    [
+      { text: 'キャンセル', style: 'cancel' },
+      {
+        text: '生成',
+        onPress: async () => {
+          setGeneratingSummary(userId);
+          try {
+            // ✅ データ検証済みのサマリーデータを取得
+            const summaryData = await generateMemberSummary(userId, userName);
+            
+            if (summaryData) {
+              // ✅ 検証済みデータを持って専用画面に遷移
+              navigation.navigate('MemberSummary', { data: summaryData });
+            } else {
+              throw new Error('サマリーデータの取得に失敗しました');
+            }
+          } catch (error: any) {
+            console.error('[MonthlyReportScreen] サマリー生成エラー:', error);
+            Alert.alert('エラー', error.message || 'サマリーの生成に失敗しました');
+          } finally {
+            setGeneratingSummary(null);
+          }
+        },
+      },
+    ]
+  );
+};
+```
+
+**重要ポイント**:
+1. **画面遷移前にデータ検証**: `generateMemberSummary()`内で構造チェック
+2. **try-catchで確実にエラー捕捉**: アプリクラッシュを防止
+3. **検証済みデータのみ渡す**: `navigation.navigate('MemberSummary', { data })`
+
+#### 10.5.2 usePerformance.ts
+
+```typescript
+const generateMemberSummary = useCallback(
+  async (userId: number, userName: string): Promise<MemberSummaryData | null> => {
+    // パラメータ検証
+    if (!selectedYear || !selectedMonth) {
+      throw new Error('年月が選択されていません');
+    }
+    if (!user?.group_id) {
+      throw new Error('グループIDが取得できません');
+    }
+
+    try {
+      const yearMonth = `${selectedYear}-${selectedMonth}`;
+      
+      // Service層でキャッシュチェック + API呼び出し + データ変換
+      const result = await performanceService.generateMemberSummary(
+        { user_id: userId, group_id: user.group_id, year_month: yearMonth },
+        userName
+      );
+      
+      // ✅ データ検証
+      if (!result.comment || !result.task_classification || !result.reward_trend) {
+        console.error('[useMonthlyReport] 不正なレスポンス構造:', result);
+        throw new Error('サマリーデータの形式が不正です');
+      }
+      
+      return result;
+    } catch (err: any) {
+      console.error('[useMonthlyReport] メンバーサマリー生成エラー:', err);
+      throw new Error(err.response?.data?.message || 'サマリーの生成に失敗しました');
+    }
+  },
+  [selectedYear, selectedMonth, user]
+);
+```
+
+**エラーハンドリングの階層**:
+1. **Service層**: キャッシュエラー、API通信エラー
+2. **Hook層**: パラメータ不足、レスポンス構造不正
+3. **Screen層**: UI操作エラー、ナビゲーションエラー
+
+### 10.6 型定義
+
+**MemberSummaryData（画面表示用）**:
+```typescript
+export interface MemberSummaryData {
+  user_id: number;
+  user_name: string;  // Service層で追加
+  year_month: string;
+  comment: string;
+  task_classification: {
+    labels: string[];
+    data: number[];
+  };
+  reward_trend: {
+    labels: string[];
+    data: number[];
+  };
+  tokens_used: number;
+  generated_at: string;  // Service層で追加
+}
+```
+
+**MemberSummaryResponse（API生データ）**:
+```typescript
+export interface MemberSummaryResponse {
+  user_id: number;
+  group_id: number;
+  year_month: string;
+  summary: {
+    comment: string;
+    task_classification: {
+      labels: string[];
+      data: number[];
+    };
+    reward_trend: {
+      labels: string[];
+      data: number[];
+    };
+    tokens_used: number;
+  };
+}
+```
+
+**MemberSummaryCacheKey**:
+```typescript
+export interface MemberSummaryCacheKey {
+  prefix: string;  // 'member_summary_'
+  user_id: number;
+  year_month: string;
+}
+```
+
+### 10.7 ナビゲーション設定
+
+**AppNavigator.tsx**:
+```typescript
+import MemberSummaryScreen from '../screens/reports/MemberSummaryScreen';
+
+// Stack.Navigator内
+<Stack.Screen
+  name="MemberSummary"
+  component={MemberSummaryScreen}
+  options={{ title: 'メンバー別概況' }}  // ヘッダータイトルはuseLayoutEffectで動的変更
+/>
+```
+
+**RootStackParamList**:
+```typescript
+export type RootStackParamList = {
+  // ...
+  MemberSummary: { data: MemberSummaryData };
+};
+```
+
+### 10.8 PDF生成機能（将来実装）
+
+**現状**: ボタンのみ配置、無効化状態
+
+**実装予定時の作業**:
+```typescript
+// TODO: PDF生成機能実装（Phase 2.B-8）
+// - React Native Blob Util等でPDFダウンロード
+// - バックエンドAPI: POST /reports/monthly/member-summary/pdf
+// - リクエストボディ: { user_id, year_month, comment, chart_image }
+```
+
+**ボタン実装**:
+```tsx
+<TouchableOpacity
+  style={[styles.pdfButton, styles.pdfButtonDisabled]}
+  disabled={true}
+>
+  <Ionicons name="download-outline" size={20} color="#9ca3af" />
+  <Text style={styles.pdfButtonTextDisabled}>
+    PDFダウンロード（準備中）
+  </Text>
+</TouchableOpacity>
+```
+
+### 10.9 テスト要件（Phase 2.B-6実装完了）
+
+**実装済みテスト**:
+- ✅ `performance.service.test.ts`: generateMemberSummary()
+- ✅ `usePerformance.test.ts`: generateMemberSummary()
+- ✅ `MemberSummaryScreen.test.tsx`: 画面表示、グラフ、戻るボタン
+
+**今後の追加テスト**（Phase 2.B-8）:
+- PDF生成機能
+- オフラインキャッシュ動作
+- エラーリカバリー
+

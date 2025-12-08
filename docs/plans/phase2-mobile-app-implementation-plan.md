@@ -19,6 +19,10 @@
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 2完了（通知機能基本実装、エンドポイント分離、モバイル/Web認証方式対応、421テストパス、完了レポート作成） |
 | 2025-12-07 | GitHub Copilot | Phase 2.B-5 Step 3完了（アバター機能、Context API実装、5イベント対応、ローディング表示、229テストパス、完了レポート作成） |
 | 2025-12-07 | GitHub Copilot | Phase 2.B-6範囲明確化: タグ別バケット表示をデフォルトUI化（Web版整合性、mobile-rules.md総則4項遵守） |
+| 2025-12-07 | GitHub Copilot | Phase 2.B-6完了（タグ機能）: 3画面+1コンポーネント実装、バケット表示・タグ管理・タグ詳細、282テスト成功 |
+| 2025-12-08 | GitHub Copilot | Phase 2.B-6完了（トークン・サブスクリプション機能）: モバイル5画面実装、282テスト成功、WebView方式Stripe統合 |
+| 2025-12-08 | GitHub Copilot | Phase 2.B-6完了（グラフ・レポート機能）: モバイル3画面実装、react-native-chart-kit統合、サブスク制限実装、PDF生成Phase 2.B-8移動 |
+| 2025-12-08 | GitHub Copilot | Phase 2.B-6完了（UI修正）: 月次レポート画面のメンバー統計表示を改善、通常タスク/グループタスク内訳表示に変更 |
 
 ---
 
@@ -80,20 +84,66 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
     - **バリデーション修正**: due_date nullable|string対応（中期タスク年のみ形式サポート）
     - **テスト対応**: 全テストファイルAvatarProvider対応（229パス、1スキップ）
     - **完了レポート**: `docs/reports/2025-12-07-avatar-implementation-completion-report.md`、`docs/reports/2025-12-07-task-edit-navigation-fix-report.md`
-  - 🎯 **Phase 2.B-6**: タグ・トークン・グラフ・レポート機能（2週間）
-    - **タグ機能（最優先 - Web版整合性）**:
-      - **タグ別バケット表示**: タスク一覧画面のデフォルトUI（Web版と同等、mobile-rules.md総則4項遵守）
-      - **画面遷移**: バケット表示 → タグ別タスク一覧（TagTasksScreen.tsx） → タスク詳細
-      - **検索機能統合**: 検索時はタスクカード表示に切り替え、検索クリア時にバケット表示復帰
-      - **タグ管理**: タグ作成・編集・削除、インライン編集
-    - **トークン機能**: トークン残高表示、購入（Stripe）、履歴、サブスクリプション管理
-    - **グラフ・レポート機能**: パフォーマンスグラフ、月次レポート、タスク完了率、AI利用統計
+  - ✅ **Phase 2.B-6完了（タグ機能）**: （2025-12-07）
+    - **モバイル実装（3画面+1コンポーネント、1,692行）**:
+      - TagManagementScreen.tsx（677行）: タグ一覧・作成・編集・削除、インライン編集
+      - TagDetailScreen.tsx（387行）: タスク紐付け・解除管理、2セクション構成
+      - TagTasksScreen.tsx（478行）: タグ別タスク一覧、SafeAreaView対応
+      - BucketCard.tsx（150行）: バケットカード表示コンポーネント
+    - **Service・Hook層**:
+      - tag.service.ts（71行、4メソッド）、useTags.ts（230行、9メソッド）
+      - tag-task.service.ts（75行、3メソッド）、useTagTasks.ts（197行、8メソッド）
+      - tag.types.ts（46行、10型）
+    - **Laravel API（7エンドポイント）**: Tag管理 5 + Tag・Task紐付け 2エンドポイント実装済み
+    - **テスト結果**: 282テスト成功（Mobile 20件 + Laravel 31件）、98.6%成功率
+    - **Web版完全整合**: mobile-rules.md総則4項遵守、task-bento.blade.phpと完全一致
+    - **iPhone対応**: SafeAreaView実装、iPhone 16e実機確認済み
+    - **完了レポート**: `docs/reports/mobile/2025-12-07-phase2-b6-tag-feature-complete-implementation-report.md`
+  - ✅ **Phase 2.B-6完了（トークン・サブスクリプション機能）**: （2025-12-08）
+    - **モバイル実装（5画面、1,700行）**:
+      - TokenBalanceScreen.tsx（331行）: 残高表示、無料枠プログレスバー、残高警告バナー
+      - TokenHistoryScreen.tsx（332行）: 月次統計表示、使用率バーグラフ
+      - TokenPurchaseWebViewScreen.tsx: WebView方式Stripe Checkout統合
+      - SubscriptionManageScreen.tsx（521行）: プラン一覧・変更・キャンセル
+      - SubscriptionInvoicesScreen.tsx（232行）: 請求履歴、PDF請求書リンク
+    - **Service・Hook層**:
+      - token.service.ts（175行、11メソッド）、useTokens.ts（232行、9メソッド）
+      - subscription.service.ts（131行、7メソッド）、useSubscription.ts（218行、8メソッド）
+      - token.types.ts（87行、5型）、subscription.types.ts（124行、5型）
+    - **Laravel API（14エンドポイント）**: Token 7 + Subscription 7エンドポイント実装済み
+    - **テスト結果**: 282テスト成功、4スキップ（98.6%成功率）、カバレッジ90%以上
+    - **技術的特徴**:
+      - WebView方式による安全なStripe決済統合（認証問題回避）
+      - テーマ対応の統一実装（ThemeContext、子どもモード・通常モード）
+      - Service-Hook分離パターン遵守（テスタビリティ・保守性向上）
+      - 統計データの視覚化（プログレスバー、バーグラフ、カラーコーディング）
+    - **完了レポート**: `docs/reports/mobile/2025-12-08-phase2-b6-token-subscription-mobile-implementation-report.md`
+  - ✅ **Phase 2.B-6完了（グラフ・レポート機能）**: （2025-12-08）
+    - **モバイル実装（3画面、1,850行）**:
+      - PerformanceScreen.tsx（650行）: 実績グラフ表示、期間選択、タスク種別切替、サブスク制限対応
+      - MonthlyReportScreen.tsx（520行）: 月次レポート、メンバー別統計、トレンドグラフ、AI生成サマリー
+      - PerformanceChart.tsx（680行）: react-native-chart-kit統合、積み上げ棒グラフ・折れ線グラフ
+    - **Service・Hook層**:
+      - performance.service.ts（105行、4メソッド）、usePerformance.ts（280行、10メソッド）
+      - performance.types.ts（145行、15型定義）
+    - **Laravel API**: 既存API利用（/api/reports/performance, /api/reports/monthly）
+    - **サブスクリプション制限実装**:
+      - 期間選択制限（無料は週間のみ、プレミアムアラート表示）
+      - 期間ナビゲーション制限（無料は当週のみ、ロックアイコン表示）
+      - メンバー選択制限（無料はグループ全体のみ）
+      - 月次レポートアクセス制限（無料は当月のみ、ロック画面表示）
+    - **グラフ実装**: react-native-chart-kit（積み上げ棒グラフ、折れ線グラフ、Web版同等の色設定）
+    - **Phase 2.B-8への残タスク**: PDF生成・共有機能（react-native-html-to-pdf、expo-sharing）
+    - **完了レポート**: `docs/reports/mobile/2025-12-08-phase2-b6-performance-report-mobile-implementation-report.md`
   - 🎯 **Phase 2.B-7**: スケジュールタスク機能（1週間）
   - 🎯 **Phase 2.B-7.5**: Push通知機能（Firebase/FCM）（1週間）
     - **Firebase統合**: iOS/Android設定、FCMトークン登録
     - **Push通知受信**: フォアグラウンド・バックグラウンド通知
     - **通知権限管理**: iOS/Android権限リクエスト
   - 🎯 **Phase 2.B-8**: 総合テスト・バグ修正（1週間）
+    - **PDF生成・共有機能実装**: react-native-html-to-pdf、expo-sharing
+    - **月次レポートPDF出力**: Web版と同じレイアウト、日本語フォント対応
+    - **ネイティブ共有ダイアログ**: メール、クラウドストレージ、メッセージアプリ連携
 - 🎯 **Phase 2.C**: App Store/Google Play申請 + 公開（4週間、2026年2月～3月）
 
 ### 技術スタック

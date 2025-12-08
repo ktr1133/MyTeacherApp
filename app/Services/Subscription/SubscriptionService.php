@@ -169,7 +169,9 @@ class SubscriptionService implements SubscriptionServiceInterface
      */
     public function isGroupSubscribed(Group $group): bool
     {
-        return $group->subscription_active === true;
+        // Cashierのsubscribed()を使用して有効期限内かチェック
+        // サブスクが取り消されていても、有効期限内ならtrueを返す
+        return $group->subscribed('default');
     }
 
     /**

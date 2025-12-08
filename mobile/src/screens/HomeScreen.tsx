@@ -52,6 +52,13 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={styles.performanceButton}
+          onPress={() => navigation.navigate('Performance' as never)}
+        >
+          <Text style={styles.performanceButtonText}>📊 実績</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.tokenButton}
           onPress={() => navigation.navigate('TokenBalance' as never)}
         >
@@ -166,6 +173,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   tagButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  performanceButton: {
+    backgroundColor: '#06b6d4',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  performanceButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',

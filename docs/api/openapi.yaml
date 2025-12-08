@@ -72,7 +72,7 @@ tags:
   - name: Tokens
     description: トークン管理API（5エンドポイント）
   - name: Reports
-    description: レポート・実績API（4エンドポイント）
+    description: レポート・実績API（5エンドポイント）
   - name: ScheduledTasks
     description: スケジュールタスクAPI（8エンドポイント）
   - name: Subscriptions
@@ -598,9 +598,59 @@ components:
         created_at:
           type: string
           format: date-time
+
+    AvailableMonth:
+      type: object
+      description: 生成済み月次レポートの年月情報
+      properties:
+        year:
+          type: string
+          description: 年（YYYY形式）
+          example: "2025"
+        month:
+          type: string
+          description: 月（MM形式、ゼロパディング）
+          example: "11"
+        label:
+          type: string
+          description: 表示用ラベル
+          example: "2025年11月"
         updated_at:
           type: string
           format: date-time
+
+    MemberStats:
+      type: object
+      description: メンバー別統計情報（月次レポート用）
+      properties:
+        user_id:
+          type: integer
+          description: ユーザーID
+          example: 1
+        user_name:
+          type: string
+          description: ユーザー名
+          example: "田中太郎"
+        completed:
+          type: integer
+          description: 合計完了タスク数（通常タスク + グループタスク）
+          example: 25
+        incomplete:
+          type: integer
+          description: 未完了タスク数
+          example: 5
+        reward:
+          type: integer
+          description: グループタスク報酬合計
+          example: 15000
+        normal_tasks_completed:
+          type: integer
+          description: 通常タスク完了数
+          example: 18
+        group_tasks_completed:
+          type: integer
+          description: グループタスク完了数
+          example: 7
 
     # ============================================================
     # ScheduledTask関連スキーマ
@@ -2228,7 +2278,7 @@ paths:
           description: リクエストが既に処理済み
 
   # ============================================================
-  # Reports API（4エンドポイント）
+  # Reports API（5エンドポイント）
   # ============================================================
 
   /reports/performance:
@@ -2246,6 +2296,77 @@ paths:
       responses:
         '200':
           description: 成功
+
+  /reports/monthly/available-months:
+    get:
+      summary: 生成済み月次レポート一覧取得
+      description: |
+        実際に生成済みの月次レポートの年月一覧を取得します。
+        
+        **目的**: モバイルアプリでクライアント側で12ヶ月分生成していた問題を解決し、
+        実際に存在するレポートのみを表示するために使用します。
+        
+        **動作**:
+        - MonthlyReportServiceのgetAvailableMonths()を呼び出し
+        - 実際にDBに存在する月次レポートの年月のみを返却
+        - 降順（最新月が先頭）でソート済み
+        - デフォルトで最大12ヶ月分を返却
+        
+        **使用例**:
+        - 月次レポート選択画面の初期表示
+        - ドロップダウンメニューの選択肢生成
+        - 最新の利用可能月を初期選択（配列の最初の要素）
+      tags: [Reports]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AvailableMonth'
+              examples:
+                success:
+                  summary: 成功例
+                  value:
+                    success: true
+                    data:
+                      - year: "2025"
+                        month: "11"
+                        label: "2025年11月"
+                      - year: "2025"
+                        month: "10"
+                        label: "2025年10月"
+                      - year: "2025"
+                        month: "09"
+                        label: "2025年9月"
+                empty:
+                  summary: レポートが存在しない場合
+                  value:
+                    success: true
+                    data: []
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "認証が必要です"
 
   /reports/monthly/{year}/{month}:
     get:

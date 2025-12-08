@@ -27,6 +27,7 @@ export interface User {
   email: string;
   avatar_url?: string;
   created_at: string;
+  group_id?: number;
 }
 
 export interface AuthResponse {

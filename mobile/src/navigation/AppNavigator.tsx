@@ -27,6 +27,9 @@ import TokenPackageListScreen from '../screens/tokens/TokenPurchaseWebViewScreen
 import TokenHistoryScreen from '../screens/tokens/TokenHistoryScreen';
 import SubscriptionManageScreen from '../screens/subscriptions/SubscriptionManageScreen';
 import SubscriptionInvoicesScreen from '../screens/subscriptions/SubscriptionInvoicesScreen';
+import PerformanceScreen from '../screens/reports/PerformanceScreen';
+import MonthlyReportScreen from '../screens/reports/MonthlyReportScreen';
+import MemberSummaryScreen from '../screens/reports/MemberSummaryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -198,6 +201,27 @@ export default function AppNavigator() {
           component={SubscriptionInvoicesScreen}
           options={{
             title: '請求履歴',
+          }}
+        />
+        <Stack.Screen
+          name="Performance"
+          component={PerformanceScreen}
+          options={{
+            title: '実績',
+          }}
+        />
+        <Stack.Screen
+          name="MonthlyReport"
+          component={MonthlyReportScreen}
+          options={{
+            title: '月次レポート',
+          }}
+        />
+        <Stack.Screen
+          name="MemberSummary"
+          component={MemberSummaryScreen}
+          options={{
+            title: 'メンバー別概況',
           }}
         />
       </Stack.Navigator>

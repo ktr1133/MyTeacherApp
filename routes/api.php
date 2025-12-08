@@ -74,6 +74,7 @@ use App\Http\Actions\Api\Report\IndexPerformanceApiAction;
 use App\Http\Actions\Api\Report\ShowMonthlyReportApiAction;
 use App\Http\Actions\Api\Report\GenerateMemberSummaryApiAction;
 use App\Http\Actions\Api\Report\DownloadMemberSummaryPdfApiAction;
+use App\Http\Actions\Api\Report\GetAvailableMonthsApiAction;
 
 // Phase 1.E-1.5.3: ScheduledTask API
 use App\Http\Actions\Api\ScheduledTask\IndexScheduledTaskApiAction;
@@ -252,6 +253,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // レポート・実績API
     Route::prefix('reports')->group(function () {
         Route::get('/performance', IndexPerformanceApiAction::class)->name('api.reports.performance');
+        Route::get('/monthly/available-months', GetAvailableMonthsApiAction::class)->name('api.reports.monthly.available-months');
         Route::get('/monthly/{year?}/{month?}', ShowMonthlyReportApiAction::class)->name('api.reports.monthly.show');
         Route::post('/monthly/member-summary', GenerateMemberSummaryApiAction::class)->name('api.reports.monthly.member-summary');
         Route::post('/monthly/member-summary/pdf', DownloadMemberSummaryPdfApiAction::class)->name('api.reports.monthly.member-summary.pdf');

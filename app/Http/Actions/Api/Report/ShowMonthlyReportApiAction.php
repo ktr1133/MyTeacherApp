@@ -88,6 +88,9 @@ class ShowMonthlyReportApiAction
         
         // グラフ用のトレンドデータ取得（直近6ヶ月）
         $trendData = $this->reportService->getTrendData($group, $yearMonth, 6);
+        
+        // サブスクリプション情報
+        $hasSubscription = $group->subscribed('default');
 
         return $this->responder->monthlyReport([
             'report' => $report,
@@ -98,6 +101,8 @@ class ShowMonthlyReportApiAction
             'month' => $month,
             'available_months' => $availableMonths,
             'trend_data' => $trendData,
+            'can_access' => true, // このアクションに到達した時点でアクセス権限あり
+            'has_subscription' => $hasSubscription,
         ]);
     }
 }

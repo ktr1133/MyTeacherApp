@@ -99,7 +99,12 @@ class IndexPerformanceApiAction
             'selected_user_id' => $actualUserId,
             'is_child_theme' => $isChildTheme,
             'has_subscription' => $hasSubscription,
-            'restrictions' => $restrictions['alerts'],
+            'restrictions' => [
+                'period_restricted' => !$hasSubscription,
+                'navigation_restricted' => !$hasSubscription,
+                'member_restricted' => !$hasSubscription,
+                'alerts' => $restrictions['alerts'],
+            ],
             'normal_data' => $normalData,
             'group_data' => $groupData,
             'members' => $members,
@@ -201,24 +206,17 @@ class IndexPerformanceApiAction
      * 
      * @param string $period
      * @param int $offset
-     * @return \DateTime
+     * @return \Carbon\Carbon
      */
-    protected function calculateTargetPeriod(string $period, int $offset): \DateTime
+    protected function calculateTargetPeriod(string $period, int $offset): \Carbon\Carbon
     {
-        $date = new \DateTime();
-        
-        switch($period) {
-            case 'week':
-                $date->modify("{$offset} weeks");
-                break;
-            case 'month':
-                $date->modify("{$offset} months");
-                break;
-            case 'year':
-                $date->modify("{$offset} years");
-                break;
-        }
-        
-        return $date;
+        $now = now();
+
+        return match($period) {
+            'week' => $now->addWeeks($offset)->startOfWeek(),
+            'month' => $now->addMonths($offset)->startOfMonth(),
+            'year' => $now->addYears($offset)->startOfYear(),
+            default => $now->addWeeks($offset)->startOfWeek(),
+        };
     }
 }
