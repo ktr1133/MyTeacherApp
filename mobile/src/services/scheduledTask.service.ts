@@ -11,6 +11,7 @@
 import api from './api';
 import {
   ScheduledTask,
+  ScheduledTaskExecution,
   ScheduledTaskListResponse,
   ScheduledTaskCreateResponse,
   ScheduledTaskEditResponse,
@@ -100,9 +101,10 @@ class ScheduledTaskService {
    * スケジュールタスクを作成
    * 
    * @param data - スケジュールタスク作成データ
+   * @returns 作成されたスケジュールタスク
    * @throws Error - VALIDATION_ERROR, API_ERROR, AUTH_REQUIRED, NETWORK_ERROR
    */
-  async createScheduledTask(data: ScheduledTaskRequest): Promise<void> {
+  async createScheduledTask(data: ScheduledTaskRequest): Promise<ScheduledTask> {
     try {
       console.log('[ScheduledTaskService] createScheduledTask called, data:', data);
       
@@ -110,10 +112,12 @@ class ScheduledTaskService {
 
       console.log('[ScheduledTaskService] createScheduledTask response status:', response.status);
 
-      if (!response.data.success) {
-        console.error('[ScheduledTaskService] createScheduledTask failed: success=false');
+      if (!response.data.success || !response.data.data?.scheduled_task) {
+        console.error('[ScheduledTaskService] createScheduledTask failed: success=false or no data');
         throw new Error('API_ERROR');
       }
+
+      return response.data.data.scheduled_task;
     } catch (error: any) {
       console.error('[ScheduledTaskService] createScheduledTask error:', error);
       
@@ -175,9 +179,10 @@ class ScheduledTaskService {
    * 
    * @param id - スケジュールタスクID
    * @param data - 更新データ
+   * @returns 更新されたスケジュールタスク
    * @throws Error - VALIDATION_ERROR, NOT_FOUND, API_ERROR, AUTH_REQUIRED, PERMISSION_DENIED, NETWORK_ERROR
    */
-  async updateScheduledTask(id: number, data: ScheduledTaskRequest): Promise<void> {
+  async updateScheduledTask(id: number, data: ScheduledTaskRequest): Promise<ScheduledTask> {
     try {
       console.log('[ScheduledTaskService] updateScheduledTask called, id:', id, 'data:', data);
       
@@ -185,10 +190,12 @@ class ScheduledTaskService {
 
       console.log('[ScheduledTaskService] updateScheduledTask response status:', response.status);
 
-      if (!response.data.success) {
-        console.error('[ScheduledTaskService] updateScheduledTask failed: success=false');
+      if (!response.data.success || !response.data.data?.scheduled_task) {
+        console.error('[ScheduledTaskService] updateScheduledTask failed: success=false or no data');
         throw new Error('API_ERROR');
       }
+
+      return response.data.data.scheduled_task;
     } catch (error: any) {
       console.error('[ScheduledTaskService] updateScheduledTask error:', error);
       
@@ -252,9 +259,10 @@ class ScheduledTaskService {
    * スケジュールタスクを一時停止
    * 
    * @param id - スケジュールタスクID
+   * @returns 更新されたスケジュールタスク
    * @throws Error - NOT_FOUND, API_ERROR, AUTH_REQUIRED, PERMISSION_DENIED, NETWORK_ERROR
    */
-  async pauseScheduledTask(id: number): Promise<void> {
+  async pauseScheduledTask(id: number): Promise<ScheduledTask> {
     try {
       console.log('[ScheduledTaskService] pauseScheduledTask called, id:', id);
       
@@ -262,10 +270,12 @@ class ScheduledTaskService {
 
       console.log('[ScheduledTaskService] pauseScheduledTask response status:', response.status);
 
-      if (!response.data.success) {
-        console.error('[ScheduledTaskService] pauseScheduledTask failed: success=false');
+      if (!response.data.success || !response.data.data?.scheduled_task) {
+        console.error('[ScheduledTaskService] pauseScheduledTask failed: success=false or no data');
         throw new Error('API_ERROR');
       }
+
+      return response.data.data.scheduled_task;
     } catch (error: any) {
       console.error('[ScheduledTaskService] pauseScheduledTask error:', error);
       
@@ -289,9 +299,10 @@ class ScheduledTaskService {
    * スケジュールタスクを再開
    * 
    * @param id - スケジュールタスクID
+   * @returns 更新されたスケジュールタスク
    * @throws Error - NOT_FOUND, API_ERROR, AUTH_REQUIRED, PERMISSION_DENIED, NETWORK_ERROR
    */
-  async resumeScheduledTask(id: number): Promise<void> {
+  async resumeScheduledTask(id: number): Promise<ScheduledTask> {
     try {
       console.log('[ScheduledTaskService] resumeScheduledTask called, id:', id);
       
@@ -299,10 +310,12 @@ class ScheduledTaskService {
 
       console.log('[ScheduledTaskService] resumeScheduledTask response status:', response.status);
 
-      if (!response.data.success) {
-        console.error('[ScheduledTaskService] resumeScheduledTask failed: success=false');
+      if (!response.data.success || !response.data.data?.scheduled_task) {
+        console.error('[ScheduledTaskService] resumeScheduledTask failed: success=false or no data');
         throw new Error('API_ERROR');
       }
+
+      return response.data.data.scheduled_task;
     } catch (error: any) {
       console.error('[ScheduledTaskService] resumeScheduledTask error:', error);
       
@@ -326,10 +339,10 @@ class ScheduledTaskService {
    * スケジュールタスクの実行履歴を取得
    * 
    * @param id - スケジュールタスクID
-   * @returns 実行履歴データ（スケジュール基本情報 + 実行履歴リスト）
+   * @returns 実行履歴配列
    * @throws Error - NOT_FOUND, API_ERROR, AUTH_REQUIRED, PERMISSION_DENIED, NETWORK_ERROR
    */
-  async getExecutionHistory(id: number): Promise<ScheduledTaskHistoryApiResponse['data']> {
+  async getExecutionHistory(id: number): Promise<ScheduledTaskExecution[]> {
     try {
       console.log('[ScheduledTaskService] getExecutionHistory called, id:', id);
       
@@ -342,7 +355,7 @@ class ScheduledTaskService {
         throw new Error('API_ERROR');
       }
 
-      return response.data.data;
+      return response.data.data.executions;
     } catch (error: any) {
       console.error('[ScheduledTaskService] getExecutionHistory error:', error);
       
