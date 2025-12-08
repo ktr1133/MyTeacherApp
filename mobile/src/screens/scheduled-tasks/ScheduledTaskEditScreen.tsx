@@ -132,7 +132,9 @@ export default function ScheduledTaskEditScreen() {
         setEndDate(task.end_date ? new Date(task.end_date) : null);
         setSkipHolidays(task.skip_holidays);
         setExecuteOnNextBusinessDay(task.execute_on_next_business_day);
-        setTagsInput(task.tags ? task.tags.join(', ') : '');
+        // tag_names（文字列配列）を使用。フォールバックとしてtags配列も対応
+        const tags = task.tag_names || task.tags || [];
+        setTagsInput(Array.isArray(tags) ? tags.join(', ') : '');
         setGroupId(task.group_id);
 
         console.log('[ScheduledTaskEditScreen] Loaded task data:', task);

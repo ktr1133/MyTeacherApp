@@ -90,8 +90,10 @@ export interface ScheduledTask {
   move_to_next_business_day: boolean;
   /** 前回未完了タスク削除フラグ（常にtrue、ユーザー変更不可） */
   delete_incomplete_previous: boolean;
-  /** タグリスト */
+  /** タグリスト（tag_namesフィールドから取得） */
   tags: string[];
+  /** タグリスト（バックエンドから返される実際のフィールド名） */
+  tag_names?: string[];
   /** 有効状態フラグ（true=有効, false=一時停止） */
   is_active: boolean;
   /** 一時停止日時（ISO 8601形式、null=有効） */

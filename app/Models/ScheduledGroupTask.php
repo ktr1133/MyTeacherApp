@@ -50,6 +50,16 @@ class ScheduledGroupTask extends Model
     ];
 
     /**
+     * JSON変換時に追加する属性
+     */
+    protected $appends = ['tag_names'];
+
+    /**
+     * JSON変換時に隠す属性（tagsリレーションはtag_namesで代替）
+     */
+    protected $hidden = [];
+
+    /**
      * グループとのリレーション
      */
     public function group(): BelongsTo
@@ -130,13 +140,23 @@ class ScheduledGroupTask extends Model
     }
 
     /**
-     * タグ名の配列を取得
+     * タグ名の配列を取得（Accessor）
+     * 
+     * JSON変換時に自動的に tag_names として追加される
      */
-    public function getTagNames(): array
+    public function getTagNamesAttribute(): array
     {
-        // ⚠️ 一時的な対応: リレーションキャッシュを使わず、常にDBから取得
-        // 理由: テスト環境でwith(['tags'])が機能しない問題を回避
-        // TODO: 原因究明後、Eloquentリレーション経由に変更
+        // tagsリレーションがロードされている場合はそれを使用
+        if ($this->relationLoaded('tags') && $this->tags !== null) {
+            return $this->tags->pluck('tag_name')->toArray();
+        }
+        
+        // IDが未設定の場合（新規作成時など）は空配列
+        if (!$this->id) {
+            return [];
+        }
+        
+        // ロードされていない場合はDBから取得
         return DB::table('scheduled_task_tags')
             ->where('scheduled_task_id', $this->id)
             ->pluck('tag_name')

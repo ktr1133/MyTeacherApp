@@ -310,18 +310,21 @@ export default function ScheduledTaskListScreen() {
         )}
 
         {/* タグ */}
-        {item.tags && item.tags.length > 0 && (
-          <View style={styles.tagsContainer}>
-            {item.tags.slice(0, 3).map((tag, index) => (
-              <View key={index} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
-            {item.tags.length > 3 && (
-              <Text style={styles.moreTagsText}>+{item.tags.length - 3}</Text>
-            )}
-          </View>
-        )}
+        {(() => {
+          const tags = item.tag_names || item.tags || [];
+          return tags.length > 0 && (
+            <View style={styles.tagsContainer}>
+              {tags.slice(0, 3).map((tag, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text style={styles.tagText}>{tag}</Text>
+                </View>
+              ))}
+              {tags.length > 3 && (
+                <Text style={styles.moreTagsText}>+{tags.length - 3}</Text>
+              )}
+            </View>
+          );
+        })()}
 
         {/* アクションボタン */}
         <View style={styles.actionButtons}>
