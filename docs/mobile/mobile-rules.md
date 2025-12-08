@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-08 | GitHub Copilot | テストコード規約に型安全性に関する禁止事項を追加 |
 | 2025-12-07 | GitHub Copilot | バックエンド齟齬対応方針を追加（総則8項） |
 | 2025-12-07 | GitHub Copilot | 画像機能に関する注意事項を追加（総則7項） |
 | 2025-12-07 | GitHub Copilot | 質疑応答結果の要件定義化ルール追加（総則6項） |
@@ -483,6 +484,75 @@
 11. **画面のデザイン方針**
    - web版のレスポンシブデザインと同等の画面とすること
 
+12. **API追加時の手順（必須）**
+   
+   **原則**: 新しいAPIエンドポイントを追加する場合、**必ず以下の順序で実施**してください。
+   
+   **Step 1: 要件定義書の作成・更新**
+   - 保管先: `/home/ktr/mtdev/definitions/mobile/` または `/home/ktr/mtdev/definitions/`
+   - 新機能の場合: 新規ファイル作成（例: `SubscriptionManagementAPI.md`）
+   - 既存機能の拡張: 既存ファイルに追記（更新履歴に記録）
+   - 必須セクション: API仕様、リクエスト/レスポンス形式、エラーハンドリング
+   
+   **Step 2: バックエンドAPI実装**
+   - `routes/api.php` にルート定義追加
+   - Action-Service-Repositoryパターンで実装
+   - バリデーション、認証、権限チェック実装
+   - テスト実装（Feature Test, Unit Test）
+   
+   **Step 3: OpenAPI仕様書の更新** ← **【必須】**
+   - ファイル: `/home/ktr/mtdev/docs/api/openapi.yaml`
+   - tagsセクションに新しいタグを追加（必要に応じて）
+   - pathsセクションにエンドポイント定義を追加
+   - リクエスト/レスポンススキーマを定義（JSON Schema形式）
+   - 認証方式（`SanctumAuth`）を明記
+   - HTTPステータスコード（200, 400, 401, 403, 404, 500）を定義
+   
+   **Step 4: モバイル側の実装**
+   - TypeScript型定義作成（`src/types/{機能名}.types.ts`）
+   - API通信層実装（`src/services/{機能名}.service.ts`）
+   - カスタムフック実装（`src/hooks/use{機能名}.ts`）
+   - 画面コンポーネント実装（`src/screens/{機能名}/`）
+   - テスト実装（`__tests__/{機能名}/`）
+   
+   **OpenAPI更新時の注意事項**:
+   
+   1. **既存エンドポイントとの整合性確認**
+      ```bash
+      # routes/api.phpで定義されている全エンドポイントを確認
+      grep -E "Route::(get|post|put|patch|delete)" /home/ktr/mtdev/routes/api.php
+      
+      # openapi.yamlで定義されているエンドポイントを確認
+      grep -E "^  /" /home/ktr/mtdev/docs/api/openapi.yaml
+      ```
+   
+   2. **スキーマ定義のベストプラクティス**
+      - プロパティには必ず `description` を記載
+      - enum値は実装と完全一致させる
+      - nullable値は明示的に `nullable: true` を記載
+      - 例を `example` プロパティで提供
+   
+   3. **レスポンススキーマの共通化**
+      - `components.schemas` に共通スキーマを定義
+      - 複数エンドポイントで使用するスキーマは `$ref` で参照
+   
+   **禁止事項**:
+   - ❌ OpenAPI仕様書を更新せずにAPI実装
+   - ❌ routes/api.phpとopenapi.yamlの不一致を放置
+   - ❌ エンドポイント追加後にOpenAPI仕様書の更新を忘れる
+   - ❌ スキーマ定義が実装と異なる（型、フィールド名、enum値）
+   
+   **チェックリスト**:
+   - [ ] 要件定義書を作成・更新した
+   - [ ] routes/api.phpにルート定義を追加した
+   - [ ] バックエンドAPI実装完了（Action、Service、Repository）
+   - [ ] バックエンドテスト実装完了（Feature Test、Unit Test）
+   - [ ] **openapi.yamlにエンドポイント定義を追加した**
+   - [ ] リクエスト/レスポンススキーマを定義した
+   - [ ] HTTPステータスコードを定義した
+   - [ ] モバイル側の型定義を作成した
+   - [ ] モバイル側のAPI通信層を実装した
+   - [ ] モバイル側のテストを実装した
 
 ---
 
@@ -948,6 +1018,102 @@ MyTeacher モバイルアプリ
    - Services: 100%
    - Hooks: 90%以上
    - Components: 80%以上
+
+4. **型安全性に関する禁止事項（重要）**
+   
+   **原則**: テストコードでも型安全性を最優先とし、`as any`による型チェック回避を極力避ける。
+   
+   #### ❌ 禁止事項
+   
+   - **`as any`によるモック型キャスト**
+     ```typescript
+     // ❌ NG: 型チェックを完全に回避
+     mockUseTokens.mockReturnValue({
+       balance: null,
+       loadBalance: jest.fn(),
+       // 必須プロパティが不足しているが as any でエラーを隠蔽
+     } as any);
+     ```
+   
+   - **部分的なモック定義で`as any`使用**
+     ```typescript
+     // ❌ NG: 実装の変更時にテストが追従できない
+     const mockUser = {
+       id: 1,
+       name: 'Test User',
+     } as any;
+     ```
+   
+   #### ✅ 推奨事項
+   
+   1. **型定義を明示的にエクスポート**
+      ```typescript
+      // hooks/useTokens.ts
+      export interface UseTokensReturn {
+        balance: TokenBalance | null;
+        loadBalance: () => Promise<void>;
+        // ... 全プロパティを定義
+      }
+      
+      export const useTokens = (): UseTokensReturn => {
+        // 実装
+      };
+      ```
+   
+   2. **テストヘルパー関数で完全な型を生成**
+      ```typescript
+      // __tests__/helper.ts
+      const createMockUseTokensReturn = (
+        overrides?: Partial<UseTokensReturn>
+      ): UseTokensReturn => ({
+        balance: null,
+        packages: [],
+        history: [],
+        isLoading: false,
+        error: null,
+        loadBalance: jest.fn(),
+        loadPackages: jest.fn(),
+        // ... 全プロパティにデフォルト値
+        ...overrides,
+      });
+      
+      // テストで使用
+      mockUseTokens.mockReturnValue(createMockUseTokensReturn({
+        balance: mockBalance,
+      }));
+      ```
+   
+   3. **型定義の更新時にテストも自動検証される**
+      - インターフェース変更時、ヘルパー関数がコンパイルエラーを出す
+      - 実装とテストの乖離を防ぐ
+   
+   #### 例外的に許容されるケース
+   
+   - **外部ライブラリの型が不完全な場合**（Navigation等）
+     ```typescript
+     // ✅ OK: React Navigationの型が複雑すぎる場合のみ
+     const mockNavigation = {
+       goBack: jest.fn(),
+       navigate: jest.fn(),
+     } as any;
+     ```
+   
+   - **その場合も、可能な限り部分的な型定義を使用**
+     ```typescript
+     // ✅ Better: 使用するメソッドのみ型定義
+     const mockNavigation: Pick<NavigationProp<any>, 'goBack' | 'navigate'> = {
+       goBack: jest.fn(),
+       navigate: jest.fn(),
+     };
+     ```
+   
+   #### 違反時の影響
+   
+   - ❌ 実装変更時にテストが気づかず失敗
+   - ❌ 実行時エラーが発生（型チェックをすり抜けた不正な値）
+   - ❌ コードレビューで指摘 → 修正コスト増加
+   
+   **TypeScriptの型システムを最大限活用し、テストコードの信頼性を確保すること。**
 
 ---
 

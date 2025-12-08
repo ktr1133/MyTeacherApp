@@ -17,7 +17,7 @@ import { useAuth } from './AuthContext';
  * 
  * Web版の Blade内での $theme 変数に相当
  */
-interface ThemeContextType {
+export interface ThemeContextType {
   theme: ThemeType;
   setTheme: (theme: ThemeType) => void;
   isLoading: boolean;

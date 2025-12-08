@@ -2,7 +2,6 @@
  * SettingsScreen テスト
  */
 
-import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import SettingsScreen from '../SettingsScreen';
@@ -135,7 +134,7 @@ describe('SettingsScreen', () => {
       timezone: 'America/New_York',
     });
 
-    const { getByText } = render(<SettingsScreen />);
+    render(<SettingsScreen />);
 
     await waitFor(() => {
       expect(mockProfileHook.getTimezoneSettings).toHaveBeenCalled();

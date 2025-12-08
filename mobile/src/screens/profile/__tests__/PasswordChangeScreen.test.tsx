@@ -2,7 +2,6 @@
  * PasswordChangeScreen テスト
  */
 
-import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import PasswordChangeScreen from '../PasswordChangeScreen';
@@ -60,7 +59,7 @@ describe('PasswordChangeScreen', () => {
 
   describe('UI表示', () => {
     it('adult themeで正しく描画される', () => {
-      const { getByText, getByPlaceholderText } = render(<PasswordChangeScreen />);
+      const { getByText } = render(<PasswordChangeScreen />);
 
       expect(getByText('パスワード更新')).toBeTruthy();
       expect(getByText('現在のパスワード')).toBeTruthy();
@@ -91,7 +90,7 @@ describe('PasswordChangeScreen', () => {
 
   describe('パスワード表示切替', () => {
     it('目アイコンをタップするとパスワードが表示/非表示切り替えされる', () => {
-      const { getAllByText, getByDisplayValue } = render(<PasswordChangeScreen />);
+      const { getAllByText } = render(<PasswordChangeScreen />);
 
       const eyeIcons = getAllByText('👁️');
       expect(eyeIcons.length).toBe(3); // 3つの入力フィールド
@@ -288,7 +287,7 @@ describe('PasswordChangeScreen', () => {
         clearProfileCache: jest.fn(),
       });
 
-      const { queryByText, getByTestId } = render(<PasswordChangeScreen />);
+      const { queryByText } = render(<PasswordChangeScreen />);
 
       // ローディング中は「保存」ボタンが非表示
       expect(queryByText('保存')).toBeNull();

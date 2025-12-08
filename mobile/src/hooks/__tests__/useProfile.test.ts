@@ -2,7 +2,7 @@
  * useProfile Hook テスト
  */
 
-import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { renderHook, act } from '@testing-library/react-native';
 import { useProfile } from '../useProfile';
 import { profileService } from '../../services/profile.service';
 import { User } from '../../types/user.types';

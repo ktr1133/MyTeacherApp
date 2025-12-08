@@ -85,6 +85,15 @@ use App\Http\Actions\Api\ScheduledTask\DeleteScheduledTaskApiAction;
 use App\Http\Actions\Api\ScheduledTask\PauseScheduledTaskApiAction;
 use App\Http\Actions\Api\ScheduledTask\ResumeScheduledTaskApiAction;
 
+// Phase 2.B-6: Subscription API
+use App\Http\Actions\Api\Subscription\GetSubscriptionPlansAction;
+use App\Http\Actions\Api\Subscription\GetCurrentSubscriptionAction;
+use App\Http\Actions\Api\Subscription\CreateCheckoutSessionApiAction as CreateSubscriptionCheckoutSessionApiAction;
+use App\Http\Actions\Api\Subscription\GetInvoicesAction;
+use App\Http\Actions\Api\Subscription\UpdateSubscriptionPlanAction;
+use App\Http\Actions\Api\Subscription\CancelSubscriptionApiAction;
+use App\Http\Actions\Api\Subscription\GetBillingPortalUrlAction;
+
 // ============================================================
 // 認証API（モバイルアプリ用 - Sanctum）
 // ============================================================
@@ -252,5 +261,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', DeleteScheduledTaskApiAction::class)->name('api.scheduled-tasks.destroy');
         Route::post('/{id}/pause', PauseScheduledTaskApiAction::class)->name('api.scheduled-tasks.pause');
         Route::post('/{id}/resume', ResumeScheduledTaskApiAction::class)->name('api.scheduled-tasks.resume');
+    });
+
+    // Phase 2.B-6: サブスクリプション管理API
+    Route::prefix('subscriptions')->group(function () {
+        Route::get('/plans', GetSubscriptionPlansAction::class)->name('api.subscriptions.plans');
+        Route::get('/current', GetCurrentSubscriptionAction::class)->name('api.subscriptions.current');
+        Route::post('/checkout', CreateSubscriptionCheckoutSessionApiAction::class)->name('api.subscriptions.checkout');
+        Route::get('/invoices', GetInvoicesAction::class)->name('api.subscriptions.invoices');
+        Route::post('/update', UpdateSubscriptionPlanAction::class)->name('api.subscriptions.update');
+        Route::post('/cancel', CancelSubscriptionApiAction::class)->name('api.subscriptions.cancel');
+        Route::post('/billing-portal', GetBillingPortalUrlAction::class)->name('api.subscriptions.billing-portal');
     });
 });

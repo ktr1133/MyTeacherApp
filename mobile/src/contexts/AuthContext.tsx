@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('[AuthContext] RAW authenticated:', JSON.stringify(authenticated), 'type:', typeof authenticated);
       
       // 確実にbooleanに変換
-      const boolValue = authenticated === true || authenticated === 'true';
+      const boolValue = authenticated === true;
       console.log('[AuthContext] CONVERTED isAuthenticated:', boolValue, 'type:', typeof boolValue);
       setIsAuthenticated(boolValue);
       

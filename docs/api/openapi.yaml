@@ -75,6 +75,8 @@ tags:
     description: レポート・実績API（4エンドポイント）
   - name: ScheduledTasks
     description: スケジュールタスクAPI（8エンドポイント）
+  - name: Subscriptions
+    description: サブスクリプション管理API（7エンドポイント）
 
 security:
   - CognitoAuth: []
@@ -1226,11 +1228,110 @@ paths:
         '200':
           description: 成功
 
-  /approvals/pending:
+  /tasks/approvals/pending:
     get:
-      summary: 承認待ちタスク一覧
+      summary: 承認待ちタスク一覧取得
       description: 承認待ち状態のタスク一覧を取得します。
       tags: [Tasks]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      type: object
+                      description: タスクオブジェクト
+        '401':
+          description: 認証エラー
+
+  /tasks/propose:
+    post:
+      summary: AIタスク提案
+      description: AIを使用してタスクを分解・提案します。
+      tags: [Tasks]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  description: タスクタイトル
+                  example: "夏休みの宿題を終わらせる"
+                context:
+                  type: string
+                  description: タスクのコンテキスト（任意）
+                  example: "算数、国語、理科の3科目"
+      responses:
+        '200':
+          description: 提案成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subtasks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        description:
+                          type: string
+                  usage:
+                    type: object
+                    description: トークン使用量
+        '400':
+          description: バリデーションエラー
+        '401':
+          description: 認証エラー
+        '402':
+          description: トークン不足
+
+  /tasks/images/{image}:
+    delete:
+      summary: タスク画像削除
+      description: タスクに添付された画像を削除します。
+      tags: [Tasks]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: image
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 画像ID
+      responses:
+        '200':
+          description: 削除成功
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足
+        '404':
+          description: 画像が見つかりません
+
+  /approvals/pending:
+    get:
+      summary: 承認待ちタスク一覧（非推奨）
+      description: 承認待ち状態のタスク一覧を取得します。/tasks/approvals/pendingを使用してください。
+      tags: [Tasks]
+      deprecated: true
       responses:
         '200':
           description: 成功
@@ -1599,6 +1700,108 @@ paths:
         '200':
           description: 削除成功
 
+  /tags/{tag}/tasks:
+    get:
+      summary: タグに紐づくタスク一覧取得
+      description: 指定したタグに紐づくタスクの一覧を取得します。
+      tags: [Tags]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: tag
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: タグID
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      type: object
+                      description: タスクオブジェクト
+        '401':
+          description: 認証エラー
+        '404':
+          description: タグが見つかりません
+
+  /tags/{tag}/tasks/attach:
+    post:
+      summary: タスクにタグを紐付け
+      description: 指定したタスクにタグを紐付けます。
+      tags: [Tags]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: tag
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: タグID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task_id
+              properties:
+                task_id:
+                  type: integer
+                  description: タスクID
+      responses:
+        '200':
+          description: 紐付け成功
+        '400':
+          description: バリデーションエラー
+        '401':
+          description: 認証エラー
+        '404':
+          description: タグまたはタスクが見つかりません
+
+  /tags/{tag}/tasks/detach:
+    delete:
+      summary: タスクからタグを削除
+      description: 指定したタスクからタグを削除します。
+      tags: [Tags]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: tag
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: タグID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task_id
+              properties:
+                task_id:
+                  type: integer
+                  description: タスクID
+      responses:
+        '200':
+          description: 削除成功
+        '401':
+          description: 認証エラー
+        '404':
+          description: タグまたはタスクが見つかりません
+
   # ============================================================
   # Avatars API（7エンドポイント）
   # ============================================================
@@ -1853,6 +2056,177 @@ paths:
         '200':
           description: 切り替え成功
 
+  /tokens/purchase-requests:
+    post:
+      summary: トークン購入リクエスト作成（子ども）
+      description: 子どもが親にトークン購入を依頼します（Phase 2.B-6: 子ども承認フロー）。
+      tags: [Tokens]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - package_id
+              properties:
+                package_id:
+                  type: integer
+                  description: トークンパッケージID
+                  example: 1
+                reason:
+                  type: string
+                  description: 購入理由（任意）
+                  example: "AI機能を使いたいため"
+      responses:
+        '201':
+          description: リクエスト作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: リクエストID
+                  status:
+                    type: string
+                    enum: [pending, approved, rejected]
+                    example: pending
+        '400':
+          description: バリデーションエラー
+        '401':
+          description: 認証エラー
+        '403':
+          description: 子どもテーマユーザーのみ使用可能
+
+    get:
+      summary: トークン購入リクエスト一覧取得
+      description: 購入リクエストの一覧を取得します（親: すべて、子ども: 自分のみ）。
+      tags: [Tokens]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected, all]
+            default: pending
+          description: リクエストステータス
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        package_id:
+                          type: integer
+                        package_name:
+                          type: string
+                        amount:
+                          type: integer
+                        reason:
+                          type: string
+                          nullable: true
+                        status:
+                          type: string
+                          enum: [pending, approved, rejected]
+                        requested_by:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                        created_at:
+                          type: string
+                          format: date-time
+        '401':
+          description: 認証エラー
+
+  /tokens/purchase-requests/{id}/approve:
+    put:
+      summary: トークン購入リクエスト承認（親）
+      description: 子どもからの購入リクエストを承認し、Stripe Checkoutに進みます。
+      tags: [Tokens]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: リクエストID
+      responses:
+        '200':
+          description: 承認成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checkout_url:
+                    type: string
+                    format: uri
+                    description: Stripe Checkout URL
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（親ユーザーのみ）
+        '404':
+          description: リクエストが見つかりません
+        '409':
+          description: リクエストが既に処理済み
+
+  /tokens/purchase-requests/{id}/reject:
+    put:
+      summary: トークン購入リクエスト却下（親）
+      description: 子どもからの購入リクエストを却下します。
+      tags: [Tokens]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: リクエストID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: 却下理由（任意）
+                  example: "今月の予算を超過しているため"
+      responses:
+        '200':
+          description: 却下成功
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（親ユーザーのみ）
+        '404':
+          description: リクエストが見つかりません
+        '409':
+          description: リクエストが既に処理済み
+
   # ============================================================
   # Reports API（4エンドポイント）
   # ============================================================
@@ -2080,3 +2454,350 @@ paths:
       responses:
         '200':
           description: 再開成功
+
+  # ============================================================
+  # Subscriptions（サブスクリプション管理）
+  # ============================================================
+
+  /subscriptions/plans:
+    get:
+      summary: サブスクリプションプラン一覧取得
+      description: 利用可能なサブスクリプションプラン一覧と現在のプラン情報を取得します。
+      tags: [Subscriptions]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plans:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        plan_id:
+                          type: string
+                          enum: [family, enterprise]
+                          description: プラン種別
+                        name:
+                          type: string
+                          description: プラン名
+                        amount:
+                          type: integer
+                          description: 月額料金（円）
+                        currency:
+                          type: string
+                          example: jpy
+                        interval:
+                          type: string
+                          example: month
+                        max_members:
+                          type: integer
+                          description: 最大メンバー数
+                        max_groups:
+                          type: integer
+                          description: 最大グループ数
+                        trial_days:
+                          type: integer
+                          description: 無料トライアル日数
+                        features:
+                          type: object
+                          description: プラン特典
+                  additional_member_price:
+                    type: integer
+                    description: 追加メンバー料金（エンタープライズ）
+                  current_plan:
+                    type: string
+                    nullable: true
+                    description: 現在のプラン種別
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（子どもテーマユーザー）
+
+  /subscriptions/current:
+    get:
+      summary: 現在のサブスクリプション情報取得
+      description: ログインユーザーのグループの現在のサブスクリプション情報を取得します。
+      tags: [Subscriptions]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription:
+                    type: object
+                    nullable: true
+                    properties:
+                      plan:
+                        type: string
+                        enum: [family, enterprise]
+                        description: プラン種別
+                      active:
+                        type: boolean
+                        description: サブスク有効フラグ
+                      stripe_status:
+                        type: string
+                        description: Stripeステータス
+                        enum: [active, trialing, past_due, canceled, incomplete, incomplete_expired, unpaid]
+                      ends_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        description: サブスク終了日時（キャンセル済みの場合のみ）
+                      trial_ends_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        description: 無料トライアル終了日時
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（子どもテーマユーザー）
+
+  /subscriptions/checkout:
+    post:
+      summary: Stripe Checkout Session作成
+      description: Stripe Checkout Sessionを作成し、WebViewで決済画面を開くためのURLを返却します。
+      tags: [Subscriptions]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - plan
+              properties:
+                plan:
+                  type: string
+                  enum: [family, enterprise]
+                  description: プラン種別
+                additional_members:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                  default: 0
+                  description: 追加メンバー数（enterpriseのみ）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checkout_url:
+                    type: string
+                    format: uri
+                    description: Stripe Checkout URL
+        '400':
+          description: バリデーションエラー
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（子どもテーマユーザー、管理権限なし）
+        '500':
+          description: Stripe APIエラー
+
+  /subscriptions/invoices:
+    get:
+      summary: 請求履歴取得
+      description: グループの請求履歴を取得します。デフォルトで直近10件を返却します。
+      tags: [Subscriptions]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: 取得件数
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Stripe請求書ID
+                        date:
+                          type: string
+                          format: date-time
+                          description: 請求日時
+                        total:
+                          type: integer
+                          description: 請求総額（円）
+                        amount_paid:
+                          type: integer
+                          description: 支払済み金額（円）
+                        status:
+                          type: string
+                          enum: [paid, open, void, uncollectible]
+                          description: 請求ステータス
+                        currency:
+                          type: string
+                          example: jpy
+                        invoice_pdf:
+                          type: string
+                          format: uri
+                          description: PDF請求書URL
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（子どもテーマユーザー、管理権限なし）
+        '404':
+          description: サブスクリプション未加入
+
+  /subscriptions/update:
+    post:
+      summary: サブスクリプションプラン変更
+      description: 現在のサブスクリプションプランを変更します（即時反映）。
+      tags: [Subscriptions]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - plan
+              properties:
+                plan:
+                  type: string
+                  enum: [family, enterprise]
+                  description: 変更先プラン種別
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: プランを変更しました。
+                  subscription:
+                    type: object
+                    properties:
+                      plan:
+                        type: string
+                      active:
+                        type: boolean
+                      stripe_status:
+                        type: string
+                      ends_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      trial_ends_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+        '400':
+          description: バリデーションエラー、同じプランへの変更
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（子どもテーマユーザー、管理権限なし）
+        '404':
+          description: サブスクリプション未加入
+        '500':
+          description: Stripe APIエラー
+
+  /subscriptions/cancel:
+    post:
+      summary: サブスクリプションキャンセル
+      description: サブスクリプションをキャンセルします。期間終了時に解約されます（即時解約ではありません）。
+      tags: [Subscriptions]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: サブスクリプションをキャンセルしました。期間終了まで利用可能です。
+                  subscription:
+                    type: object
+                    properties:
+                      plan:
+                        type: string
+                      active:
+                        type: boolean
+                      stripe_status:
+                        type: string
+                      ends_at:
+                        type: string
+                        format: date-time
+                        description: 期間終了日時
+                      trial_ends_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（子どもテーマユーザー、管理権限なし）
+        '404':
+          description: サブスクリプション未加入
+        '500':
+          description: Stripe APIエラー
+
+  /subscriptions/billing-portal:
+    post:
+      summary: Stripe Billing Portal URL取得
+      description: Stripe Billing PortalのセッションURLを取得します。WebViewで決済方法変更、請求書ダウンロード等の操作が可能です。
+      tags: [Subscriptions]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portal_url:
+                    type: string
+                    format: uri
+                    description: Stripe Billing Portal URL
+        '401':
+          description: 認証エラー
+        '403':
+          description: 権限不足（子どもテーマユーザー、管理権限なし）
+        '404':
+          description: サブスクリプション未加入
+        '500':
+          description: Stripe APIエラー

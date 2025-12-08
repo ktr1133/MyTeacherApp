@@ -9,7 +9,6 @@
  * - エラー表示
  */
 
-import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import LoginScreen from '../LoginScreen';
 import { AuthProvider } from '../../../contexts/AuthContext';
@@ -42,12 +41,13 @@ describe('LoginScreen', () => {
     
     // authServiceモック
     mockedAuthService.login.mockResolvedValue({
-      success: true,
+      token: 'dummy-token',
       user: {
         id: 1,
-        username: 'testuser',
+        name: 'testuser',
         email: 'test@example.com',
-        theme: 'adult',
+        avatar_url: undefined,
+        created_at: '2025-12-01T00:00:00Z',
       },
     });
     mockedAuthService.isAuthenticated.mockResolvedValue(false);
@@ -185,12 +185,13 @@ describe('LoginScreen', () => {
     it('正常にログインできる', async () => {
       // Arrange
       mockedAuthService.login.mockResolvedValue({
-        success: true,
+        token: 'dummy-token',
         user: {
           id: 1,
-          username: 'test_user',
+          name: 'test_user',
           email: 'test@example.com',
-          theme: 'adult',
+          avatar_url: undefined,
+          created_at: '2025-12-01T00:00:00Z',
         },
       });
       const { getByPlaceholderText, getByText } = renderComponent();

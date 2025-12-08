@@ -20,6 +20,34 @@ import type {
 } from '../types/token.types';
 
 /**
+ * useTokens Hookの戻り値型
+ */
+export interface UseTokensReturn {
+  // 状態
+  balance: TokenBalance | null;
+  packages: TokenPackage[];
+  history: TokenTransaction[];
+  historyStats: TokenHistoryStats | null;
+  purchaseRequests: PurchaseRequest[];
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMoreHistory: boolean;
+  error: string | null;
+
+  // 関数
+  refreshBalance: () => Promise<void>;
+  loadBalance: () => Promise<void>;
+  loadPackages: () => Promise<void>;
+  loadHistory: (page?: number) => Promise<void>;
+  loadHistoryStats: () => Promise<void>;
+  loadMoreHistory: () => Promise<void>;
+  loadPurchaseRequests: () => Promise<void>;
+  createPurchaseRequest: (packageId: number) => Promise<PurchaseRequest>;
+  approvePurchaseRequest: (requestId: number) => Promise<void>;
+  rejectPurchaseRequest: (requestId: number) => Promise<void>;
+}
+
+/**
  * useTokens Hook
  * 
  * トークン関連の状態管理とAPI呼び出しを提供
@@ -43,7 +71,7 @@ import type {
  * <Button onPress={refreshBalance} />
  * ```
  */
-export const useTokens = (themeOverride?: 'adult' | 'child') => {
+export const useTokens = (themeOverride?: 'adult' | 'child'): UseTokensReturn => {
   const themeContext = useTheme();
   const theme = themeOverride || themeContext.theme;
 
@@ -53,10 +81,10 @@ export const useTokens = (themeOverride?: 'adult' | 'child') => {
   // トークンパッケージ一覧
   const [packages, setPackages] = useState<TokenPackage[]>([]);
   
-  // トークン履歴
-  const [history, setHistory] = useState<TokenTransaction[]>([]);
-  const [historyPage, setHistoryPage] = useState(1);
-  const [hasMoreHistory, setHasMoreHistory] = useState(true);
+  // トークン履歴（将来実装用）
+  const [history] = useState<TokenTransaction[]>([]);
+  const [historyPage] = useState(1);
+  const [hasMoreHistory] = useState(true);
   
   // トークン履歴統計
   const [historyStats, setHistoryStats] = useState<TokenHistoryStats | null>(null);

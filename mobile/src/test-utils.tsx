@@ -5,9 +5,9 @@
  */
 import React from 'react';
 import { render, RenderOptions } from '@testing-library/react-native';
-import { AuthProvider } from '../contexts/AuthContext';
-import { ThemeProvider } from '../contexts/ThemeContext';
-import { AvatarProvider } from '../contexts/AvatarContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AvatarProvider } from './contexts/AvatarContext';
 
 /**
  * 全てのプロバイダーでラップするラッパー

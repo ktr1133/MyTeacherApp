@@ -67,7 +67,7 @@ export default function TaskDetailScreen() {
   console.log('🎭 [TaskDetailScreen] Avatar state:', { avatarVisible, hasAvatarData: !!avatarData });
 
   const { taskId } = route.params;
-  const [task, setTask] = useState<Task | null>(null);
+  const [task, setTask] = useState<Task | undefined>(undefined);
   const [approvalComment, setApprovalComment] = useState('');
   const [showApprovalInput, setShowApprovalInput] = useState(false);
   const [showRejectInput, setShowRejectInput] = useState(false);
@@ -85,13 +85,14 @@ export default function TaskDetailScreen() {
       
       if (!foundTask) {
         console.log('[TaskDetailScreen] Task not found in current tasks, calling getTask API...');
-        foundTask = await getTask(taskId);
-        console.log('[TaskDetailScreen] getTask result:', foundTask ? `id=${foundTask.id}` : 'null');
+        const fetchedTask = await getTask(taskId);
+        foundTask = fetchedTask ?? undefined;
+        console.log('[TaskDetailScreen] getTask result:', foundTask ? `id=${foundTask.id}` : 'undefined');
       } else {
         console.log('[TaskDetailScreen] foundTask from existing tasks:', `id=${foundTask.id}`);
       }
       
-      setTask(foundTask || null);
+      setTask(foundTask || undefined);
     };
 
     loadTask();

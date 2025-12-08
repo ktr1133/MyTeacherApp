@@ -196,10 +196,6 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
         try {
             $response = $group->redirectToBillingPortal(route('subscriptions.manage'));
             
-            Log::info('Billing portal session created', [
-                'group_id' => $group->id,
-            ]);
-            
             // redirectToBillingPortalはRedirectResponseを返すので、getTargetUrl()でURLを取得
             return $response->getTargetUrl();
         } catch (ApiErrorException $e) {

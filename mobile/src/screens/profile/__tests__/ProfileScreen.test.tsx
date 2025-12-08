@@ -2,7 +2,6 @@
  * ProfileScreen テスト
  */
 
-import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import ProfileScreen from '../ProfileScreen';

@@ -50,7 +50,7 @@ class ShowSubscriptionPlansAction
         // プラン情報と現在のサブスクリプション取得
         $plans = $this->subscriptionService->getAvailablePlans();
         $currentSubscription = $this->subscriptionService->getCurrentSubscription($group);
-        
+
         // 請求履歴取得（サブスクリプション加入者のみ）
         $invoices = $currentSubscription 
             ? $this->subscriptionService->getInvoiceHistory($group, 10)

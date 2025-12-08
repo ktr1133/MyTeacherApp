@@ -25,6 +25,8 @@ import TagTasksScreen from '../screens/tasks/TagTasksScreen';
 import TokenBalanceScreen from '../screens/tokens/TokenBalanceScreen';
 import TokenPackageListScreen from '../screens/tokens/TokenPurchaseWebViewScreen';
 import TokenHistoryScreen from '../screens/tokens/TokenHistoryScreen';
+import SubscriptionManageScreen from '../screens/subscriptions/SubscriptionManageScreen';
+import SubscriptionInvoicesScreen from '../screens/subscriptions/SubscriptionInvoicesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -182,6 +184,20 @@ export default function AppNavigator() {
           component={TokenHistoryScreen}
           options={{
             headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="SubscriptionManage"
+          component={SubscriptionManageScreen}
+          options={{
+            title: 'サブスクリプション管理',
+          }}
+        />
+        <Stack.Screen
+          name="SubscriptionInvoices"
+          component={SubscriptionInvoicesScreen}
+          options={{
+            title: '請求履歴',
           }}
         />
       </Stack.Navigator>

@@ -324,3 +324,62 @@ A: 「グループメンバーにランダム割り当て」オプションを�
 ### Q: 前回のタスクが未完了のまま新しいタスクを作成したくない
 
 A: 「未完了の前回タスクを削除」オプションを有効にすると、新タスク作成時に前回の未完了タスクが削除されます。
+
+## 10. サブスクリプション期間終了クリーンアップ
+
+### 10-1. 概要
+
+サブスクリプション期間終了後、Groupsテーブルを無料プランに自動リセットします。
+
+**実行タイミング**: 毎日深夜3時（JST）  
+**目的**: Webhook失敗時のフォールバック処理
+
+### 10-2. 手動実行（開発環境）
+
+**重要**: ホスト側から実行する場合は環境変数を上書きしてください。
+
+**方法1: Dockerコンテナ内で実行（推奨）**
+```bash
+# Dockerコンテナ内で実行（本番環境と同じ環境）
+docker exec mtdev-app-1 php artisan subscription:cleanup-expired
+
+# 実行結果
+期間終了サブスクリプションのクリーンアップを開始します...
+対象サブスクリプション: 0件
+クリーンアップ完了: 0件のGroupをリセットしました
+```
+
+**方法2: ホスト側から実行（環境変数上書き）**
+```bash
+# ❌ NG: DB接続エラー（DB_HOST=db はDockerコンテナ名）
+php artisan subscription:cleanup-expired
+
+# ✅ OK: 環境変数を上書き（ローカルPostgreSQL使用時）
+DB_HOST=localhost DB_PORT=5432 DB_PASSWORD=laravel_password php artisan subscription:cleanup-expired
+```
+
+**推奨**: **Dockerコンテナ内での実行**が本番環境に最も近い動作確認方法です。
+
+### 10-3. ログ確認
+
+```bash
+# 専用ログファイル
+tail -f storage/logs/subscription-cleanup.log
+
+# 実行結果例
+[2025-12-08 03:00:00] INFO: サブスクリプションクリーンアップ成功
+[2025-12-08 03:00:01] INFO: 処理済み: 2件
+```
+
+### 10-4. テスト実行
+
+```bash
+# Integration Test（Artisan::call()でコマンド実行）
+CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test tests/Feature/Console/CleanupExpiredSubscriptionsTest.php
+```
+
+### 10-5. 監視項目
+
+- **ログファイル**: `storage/logs/subscription-cleanup.log`
+- **確認項目**: 処理件数、失敗件数、孤児データ件数
+- **アラート**: `onFailure()` でエラーログ記録

@@ -259,14 +259,14 @@ describe('useTokens', () => {
 
     it('次ページの履歴を追加読み込みできる', async () => {
       // Arrange
-      const page1History = {
-        transactions: [{ id: 1 } as any],
-        pagination: { current_page: 1, per_page: 20, total: 25, last_page: 2 },
-      };
-      const page2History = {
-        transactions: [{ id: 2 } as any],
-        pagination: { current_page: 2, per_page: 20, total: 25, last_page: 2 },
-      };
+      // const page1History = {
+      //   transactions: [{ id: 1 } as any],
+      //   pagination: { current_page: 1, per_page: 20, total: 25, last_page: 2 },
+      // };
+      // const page2History = {
+      //   transactions: [{ id: 2 } as any],
+      //   pagination: { current_page: 2, per_page: 20, total: 25, last_page: 2 },
+      // };
       mockedTokenService.getCachedTokenBalance.mockResolvedValue(null);
       mockedTokenService.getTokenBalance.mockResolvedValue({} as any);
       mockedTokenService.cacheTokenBalance.mockResolvedValue();

@@ -5,6 +5,7 @@
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
 | 2025-12-03 | GitHub Copilot | 初版作成: Stripe決済とLaravel Cashier統合の要件定義 |
+| 2025-12-08 | GitHub Copilot | サブスクリプション期間終了後の自動クリーンアップ機能を追加 |
 
 ---
 
@@ -783,9 +784,249 @@ protected function handlePaymentIntentSucceeded(array $payload): void
 
 ---
 
-## 8. 注意事項・ベストプラクティス
+## 8. サブスクリプション期間終了後の自動クリーンアップ
 
-### 8.1 Cashier初期化の重要性
+### 8.1 概要
+
+サブスクリプションが終了予定日（`ends_at`）を過ぎた場合、**Groupsテーブルを無料プラン状態に自動リセット**する機能を実装します。
+
+**目的**:
+- 期間終了後、ユーザーが無料プランの制限内でサービスを継続利用できるようにする
+- データ整合性を保証し、有料機能への不正アクセスを防止する
+
+**実装方式**:
+- **Webhook**: Stripeからのリアルタイム通知で即座に処理（メイン）
+- **Cronジョブ**: 日次バッチでフォールバック処理（バックアップ）
+
+### 8.2 Webhook処理の拡張
+
+#### 8.2.1 handleSubscriptionUpdated の拡張
+
+**既存**: `customer.subscription.updated` イベントでsubscriptionsテーブルを更新  
+**追加**: 期間終了（`ends_at < now()`）を検知してGroupsテーブルをリセット
+
+**処理フロー**:
+```
+1. Stripe → customer.subscription.updated イベント発火
+   - stripe_status: 'canceled'
+   - ends_at: 過去の日時
+   ↓
+2. HandleStripeWebhookAction::handleCustomerSubscriptionUpdated()
+   ↓
+3. 親クラス（Cashier）のハンドラー実行
+   - subscriptionsテーブル更新
+   ↓
+4. SubscriptionWebhookService::handleSubscriptionUpdated()
+   - ends_at < now() を検知
+   - Groupsテーブルをリセット
+```
+
+**実装箇所**:
+- `app/Services/Subscription/SubscriptionWebhookService.php`
+- `handleSubscriptionUpdated()` メソッドに期間終了検知ロジックを追加
+
+#### 8.2.2 handleSubscriptionDeleted の既存処理
+
+**既存実装**: `customer.subscription.deleted` イベントでGroupsテーブルをリセット
+
+**処理内容**:
+```php
+$group->update([
+    'subscription_active' => false,
+    'subscription_plan' => null,
+    'max_members' => 6, // 無料プラン
+]);
+```
+
+**注意**: Stripeが`deleted`イベントを発火しない場合もあるため、`updated`イベントでのフォールバック処理が重要
+
+### 8.3 Cronジョブによるフォールバック
+
+#### 8.3.1 コマンド仕様
+
+**コマンド名**: `subscription:cleanup-expired`
+
+**実行頻度**: 毎日深夜3時（JST）
+
+**処理内容**:
+1. 期間終了したサブスクリプションを検索
+   ```php
+   Subscription::where('stripe_status', 'canceled')
+       ->where('ends_at', '<', now())
+       ->get()
+   ```
+2. 対象のGroupsテーブルを無料プラン状態に更新
+3. 処理結果をログ出力
+
+**目的**:
+- Webhook失敗時のフォールバック
+- ネットワークエラー・サーバーダウン時の対策
+- データ整合性の最終保証
+
+#### 8.3.2 スケジュール設定
+
+```php
+// app/Console/Kernel.php
+protected function schedule(Schedule $schedule)
+{
+    $schedule->command('subscription:cleanup-expired')
+        ->dailyAt('03:00')
+        ->timezone('Asia/Tokyo');
+}
+```
+
+### 8.4 Groupsテーブル更新仕様
+
+#### 8.4.1 リセット対象カラム
+
+| カラム名 | 更新前（有料） | 更新後（無料） |
+|---------|--------------|--------------|
+| `subscription_active` | `true` | `false` |
+| `subscription_plan` | `'family'` or `'enterprise'` | `null` |
+| `max_members` | 6, 20, etc. | `6` |
+| `max_groups` | 1, 5, etc. | `1` |
+| `free_group_task_limit` | 変更なし | 変更なし（`3`） |
+
+#### 8.4.2 更新処理の冪等性
+
+**要件**: 同じGroupに対して複数回実行されても安全
+
+**実装方針**:
+- `subscription_active = false` をチェック（既にリセット済みならスキップ）
+- DB::transaction() でアトミック性を保証
+
+### 8.5 ログ出力仕様
+
+#### 8.5.1 Webhook処理ログ
+
+```php
+Log::info('Subscription expired: Groups table reset', [
+    'group_id' => $group->id,
+    'subscription_id' => $subscription->id,
+    'stripe_status' => $subscription->stripe_status,
+    'ends_at' => $subscription->ends_at,
+    'trigger' => 'webhook', // 'webhook' or 'cron'
+]);
+```
+
+#### 8.5.2 Cronジョブログ
+
+```php
+Log::info('Cron: Cleanup expired subscriptions started');
+
+// 各Group処理時
+Log::info('Cron: Groups table reset', [
+    'group_id' => $group->id,
+    'subscription_id' => $subscription->id,
+]);
+
+// 完了時
+Log::info('Cron: Cleanup completed', [
+    'total_processed' => $count,
+]);
+```
+
+### 8.6 エラーハンドリング
+
+#### 8.6.1 Webhook処理
+
+```php
+try {
+    DB::transaction(function () use ($group) {
+        $group->update([...]);
+    });
+} catch (\Exception $e) {
+    Log::error('Webhook: Groups reset failed', [
+        'group_id' => $group->id,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+    ]);
+    // Webhook処理は失敗してもHTTP 200を返す（Stripeの再送を防ぐ）
+    // Cronジョブでリトライされる
+}
+```
+
+#### 8.6.2 Cronジョブ
+
+```php
+try {
+    DB::transaction(function () use ($group) {
+        $group->update([...]);
+    });
+} catch (\Exception $e) {
+    Log::error('Cron: Groups reset failed', [
+        'group_id' => $group->id,
+        'error' => $e->getMessage(),
+    ]);
+    // 次のGroupの処理を継続（1件の失敗で全体を止めない）
+}
+```
+
+### 8.7 テスト要件
+
+#### 8.7.1 Unit Test
+
+**対象**: `SubscriptionWebhookService`
+
+**テストケース**:
+1. 期間終了したサブスクリプション → Groupsリセット成功
+2. 猶予期間中（`ends_at > now()`） → リセットしない
+3. アクティブなサブスク → リセットしない
+
+#### 8.7.2 Feature Test
+
+**対象**: Webhookエンドポイント、Cronコマンド
+
+**テストケース**:
+1. `customer.subscription.updated` Webhook受信 → Groupsリセット
+2. `customer.subscription.deleted` Webhook受信 → Groupsリセット
+3. Cronコマンド実行 → 期間終了サブスクのみリセット
+4. 冪等性確認 → 2回実行しても安全
+
+#### 8.7.3 時刻操作
+
+**手法**: `Carbon::setTestNow()` を使用
+
+```php
+// テスト例
+test('期間終了したサブスクはリセットされる', function () {
+    Carbon::setTestNow('2025-12-10 00:00:00');
+    
+    $subscription = Subscription::factory()->create([
+        'ends_at' => '2025-12-09 23:59:59', // 1秒前に終了
+    ]);
+    
+    // 処理実行
+    $this->artisan('subscription:cleanup-expired');
+    
+    // 検証
+    $group->refresh();
+    expect($group->subscription_active)->toBeFalse();
+});
+```
+
+### 8.8 監視・アラート
+
+#### 8.8.1 Cronジョブ監視
+
+**方法**: Laravel Scheduleのログ監視
+
+```bash
+tail -f storage/logs/laravel-$(date +%Y-%m-%d).log | grep "subscription:cleanup-expired"
+```
+
+#### 8.8.2 Webhook監視
+
+**方法**: Stripeダッシュボード
+
+- Webhook配信状態を確認（成功/失敗）
+- 失敗時はCronジョブでリカバリー
+
+---
+
+## 9. 注意事項・ベストプラクティス
+
+### 9.1 Cashier初期化の重要性
 
 **問題**: `config/cashier.php`に`'model' => App\Models\Group::class`を設定しても、Cashierは実行時にこの値を読み込まない。
 
@@ -800,7 +1041,7 @@ public function boot(): void
 }
 ```
 
-### 8.2 Webhook処理の冪等性
+### 9.2 Webhook処理の冪等性
 
 Stripeは同じWebhookイベントを複数回送信する可能性があります。
 
@@ -825,7 +1066,7 @@ public function handleSubscriptionCreated(array $payload): void
 }
 ```
 
-### 8.3 テスト環境と本番環境の分離
+### 9.3 テスト環境と本番環境の分離
 
 **重要**: Test ModeとLive Modeで異なるAPI Keyを使用する。
 
@@ -848,7 +1089,7 @@ STRIPE_FAMILY_PLAN_PRICE_ID=price_xxxxxxxxxxxxxxxxxxxxx
 - Webhook URLも環境ごとに設定が必要
 - テスト用カード番号: `4242 4242 4242 4242`
 
-### 8.4 セキュリティ
+### 9.4 セキュリティ
 
 #### Webhook署名検証
 
@@ -879,7 +1120,7 @@ try {
 }
 ```
 
-### 8.5 ログとモニタリング
+### 9.5 ログとモニタリング
 
 #### 必須ログ
 
@@ -913,7 +1154,7 @@ Log::error('Webhook processing failed', [
 
 ---
 
-## 9. 関連ドキュメント
+## 10. 関連ドキュメント
 
 - **Stripe公式ドキュメント**: https://stripe.com/docs
 - **Laravel Cashier公式**: https://laravel.com/docs/11.x/billing
@@ -925,7 +1166,7 @@ Log::error('Webhook processing failed', [
 
 ---
 
-## 10. まとめ
+## 11. まとめ
 
 本プロジェクトでは、Laravel CashierをカスタマイズしてGroup単位のサブスクリプション課金を実現しています。
 

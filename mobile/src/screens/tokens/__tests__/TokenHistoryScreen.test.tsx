@@ -3,8 +3,8 @@
  */
 import { render, fireEvent } from '@testing-library/react-native';
 import TokenHistoryScreen from '../TokenHistoryScreen';
-import { useTokens } from '../../../hooks/useTokens';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTokens, UseTokensReturn } from '../../../hooks/useTokens';
+import { useTheme, ThemeContextType } from '../../../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 
 // モック
@@ -18,6 +18,43 @@ jest.mock('@react-navigation/native', () => ({
 const mockUseTokens = useTokens as jest.MockedFunction<typeof useTokens>;
 const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
 const mockUseNavigation = useNavigation as jest.MockedFunction<typeof useNavigation>;
+
+/**
+ * デフォルトのuseTokensモック値を生成
+ */
+const createMockUseTokensReturn = (overrides?: Partial<UseTokensReturn>): UseTokensReturn => ({
+  balance: null,
+  packages: [],
+  history: [],
+  historyStats: null,
+  purchaseRequests: [],
+  isLoading: false,
+  isLoadingMore: false,
+  hasMoreHistory: false,
+  error: null,
+  refreshBalance: jest.fn(),
+  loadBalance: jest.fn(),
+  loadPackages: jest.fn(),
+  loadHistory: jest.fn(),
+  loadHistoryStats: jest.fn(),
+  loadMoreHistory: jest.fn(),
+  loadPurchaseRequests: jest.fn(),
+  createPurchaseRequest: jest.fn(),
+  approvePurchaseRequest: jest.fn(),
+  rejectPurchaseRequest: jest.fn(),
+  ...overrides,
+});
+
+/**
+ * デフォルトのuseThemeモック値を生成
+ */
+const createMockThemeReturn = (overrides?: Partial<ThemeContextType>): ThemeContextType => ({
+  theme: 'adult',
+  setTheme: jest.fn(),
+  isLoading: false,
+  refreshTheme: jest.fn(),
+  ...overrides,
+});
 
 describe('TokenHistoryScreen', () => {
   const mockNavigation = {
@@ -39,31 +76,8 @@ describe('TokenHistoryScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseNavigation.mockReturnValue(mockNavigation as any);
-    mockUseTheme.mockReturnValue({
-      theme: 'adult',
-      setTheme: jest.fn(),
-    });
-    mockUseTokens.mockReturnValue({
-      historyStats: null,
-      loadHistoryStats: jest.fn(),
-      isLoading: false,
-      error: null,
-      balance: null,
-      packages: [],
-      loadBalance: jest.fn(),
-      loadPackages: jest.fn(),
-      purchaseRequests: [],
-      createPurchaseRequest: jest.fn(),
-      approvePurchaseRequest: jest.fn(),
-      rejectPurchaseRequest: jest.fn(),
-      loadPurchaseRequests: jest.fn(),
-      history: [],
-      loadHistory: jest.fn(),
-      loadMoreHistory: jest.fn(),
-      isLoadingMore: false,
-      hasMoreHistory: false,
-      refreshBalance: jest.fn(),
-    });
+    mockUseTheme.mockReturnValue(createMockThemeReturn());
+    mockUseTokens.mockReturnValue(createMockUseTokensReturn());
   });
 
   describe('初期表示', () => {
@@ -75,10 +89,7 @@ describe('TokenHistoryScreen', () => {
     });
 
     it('ヘッダーが正しく表示される（子どもモード）', () => {
-      mockUseTheme.mockReturnValue({
-        theme: 'child',
-        setTheme: jest.fn(),
-      });
+      mockUseTheme.mockReturnValue(createMockThemeReturn({ theme: 'child' }));
       
       const { getByText } = render(<TokenHistoryScreen />);
       
@@ -88,20 +99,9 @@ describe('TokenHistoryScreen', () => {
 
     it('初回読み込み時にloadHistoryStatsが呼ばれる', () => {
       const mockLoadHistoryStats = jest.fn();
-      mockUseTokens.mockReturnValue({
-        historyStats: null,
+      mockUseTokens.mockReturnValue(createMockUseTokensReturn({
         loadHistoryStats: mockLoadHistoryStats,
-        isLoading: false,
-        error: null,
-        balance: null,
-        packages: [],
-        loadBalance: jest.fn(),
-        loadPackages: jest.fn(),
-        purchaseRequests: [],
-        createPurchaseRequest: jest.fn(),
-        approvePurchaseRequest: jest.fn(),
-        rejectPurchaseRequest: jest.fn(),
-      });
+      }));
       
       render(<TokenHistoryScreen />);
       
@@ -111,20 +111,9 @@ describe('TokenHistoryScreen', () => {
 
   describe('ローディング状態', () => {
     it('ローディング中にインジケーターとメッセージを表示', () => {
-      mockUseTokens.mockReturnValue({
-        historyStats: null,
-        loadHistoryStats: jest.fn(),
+      mockUseTokens.mockReturnValue(createMockUseTokensReturn({
         isLoading: true,
-        error: null,
-        balance: null,
-        packages: [],
-        loadBalance: jest.fn(),
-        loadPackages: jest.fn(),
-        purchaseRequests: [],
-        createPurchaseRequest: jest.fn(),
-        approvePurchaseRequest: jest.fn(),
-        rejectPurchaseRequest: jest.fn(),
-      });
+      }));
       
       const { getByText } = render(<TokenHistoryScreen />);
       
@@ -134,20 +123,9 @@ describe('TokenHistoryScreen', () => {
 
   describe('エラー表示', () => {
     it('エラーメッセージを表示', () => {
-      mockUseTokens.mockReturnValue({
-        historyStats: null,
-        loadHistoryStats: jest.fn(),
-        isLoading: false,
+      mockUseTokens.mockReturnValue(createMockUseTokensReturn({
         error: 'ネットワークエラー',
-        balance: null,
-        packages: [],
-        loadBalance: jest.fn(),
-        loadPackages: jest.fn(),
-        purchaseRequests: [],
-        createPurchaseRequest: jest.fn(),
-        approvePurchaseRequest: jest.fn(),
-        rejectPurchaseRequest: jest.fn(),
-      });
+      }));
       
       const { getByText } = render(<TokenHistoryScreen />);
       
@@ -165,20 +143,9 @@ describe('TokenHistoryScreen', () => {
 
   describe('統計表示', () => {
     beforeEach(() => {
-      mockUseTokens.mockReturnValue({
+      mockUseTokens.mockReturnValue(createMockUseTokensReturn({
         historyStats: mockHistoryStats,
-        loadHistoryStats: jest.fn(),
-        isLoading: false,
-        error: null,
-        balance: null,
-        packages: [],
-        loadBalance: jest.fn(),
-        loadPackages: jest.fn(),
-        purchaseRequests: [],
-        createPurchaseRequest: jest.fn(),
-        approvePurchaseRequest: jest.fn(),
-        rejectPurchaseRequest: jest.fn(),
-      });
+      }));
     });
 
     it('今月の購入情報を表示', () => {
@@ -204,28 +171,17 @@ describe('TokenHistoryScreen', () => {
     });
 
     it('購入がない場合は使用率を表示しない', () => {
-      mockUseTokens.mockReturnValue({
+      mockUseTokens.mockReturnValue(createMockUseTokensReturn({
         historyStats: {
           monthlyPurchaseAmount: 0,
           monthlyPurchaseTokens: 0,
-          monthlyUsage: 100,
+          monthlyUsage: 1000000,
         },
-        loadHistoryStats: jest.fn(),
-        isLoading: false,
-        error: null,
-        balance: null,
-        packages: [],
-        loadBalance: jest.fn(),
-        loadPackages: jest.fn(),
-        purchaseRequests: [],
-        createPurchaseRequest: jest.fn(),
-        approvePurchaseRequest: jest.fn(),
-        rejectPurchaseRequest: jest.fn(),
-      });
+      }));
       
       const { queryByText } = render(<TokenHistoryScreen />);
       
-      // 使用率カードが表示されない
+      // 購入が0の場合は使用率カードが表示されない
       expect(queryByText('使用率')).toBeNull();
     });
   });
@@ -243,22 +199,12 @@ describe('TokenHistoryScreen', () => {
   describe('Pull-to-Refresh', () => {
     it('リフレッシュ時にloadHistoryStatsを呼び出す', async () => {
       const mockLoadHistoryStats = jest.fn();
-      mockUseTokens.mockReturnValue({
+      mockUseTokens.mockReturnValue(createMockUseTokensReturn({
         historyStats: mockHistoryStats,
         loadHistoryStats: mockLoadHistoryStats,
-        isLoading: false,
-        error: null,
-        balance: null,
-        packages: [],
-        loadBalance: jest.fn(),
-        loadPackages: jest.fn(),
-        purchaseRequests: [],
-        createPurchaseRequest: jest.fn(),
-        approvePurchaseRequest: jest.fn(),
-        rejectPurchaseRequest: jest.fn(),
-      });
+      }));
       
-      const { getByTestId } = render(<TokenHistoryScreen />);
+      render(<TokenHistoryScreen />);
       
       // ScrollViewのRefreshControlをトリガー
       // Note: RefreshControlのテストは実機での動作確認を推奨

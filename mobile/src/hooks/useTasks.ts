@@ -32,7 +32,7 @@ interface UseTasksReturn {
   } | null;
 
   // タスク操作
-  fetchTasks: (filters?: TaskFilters) => Promise<void>;
+  fetchTasks: (filters?: TaskFilters) => Promise<Task[]>;
   getTask: (taskId: number) => Promise<Task | null>;
   searchTasks: (query: string, filters?: Omit<TaskFilters, 'q'>) => Promise<void>;
   createTask: (data: CreateTaskData) => Promise<Task | null>;
@@ -161,7 +161,7 @@ export const useTasks = (): UseTasksReturn => {
    * @param filters - 追加フィルター条件
    */
   const searchTasks = useCallback(
-    async (query: string, filters?: Omit<TaskFilters, 'q'>) => {
+    async (query: string, filters?: Omit<TaskFilters, 'q'>): Promise<void> => {
       // 既存のタイムアウトをクリア
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);

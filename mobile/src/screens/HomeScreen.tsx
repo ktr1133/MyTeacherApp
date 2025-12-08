@@ -59,6 +59,13 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={styles.subscriptionButton}
+          onPress={() => navigation.navigate('SubscriptionManage' as never)}
+        >
+          <Text style={styles.subscriptionButtonText}>💳 サブスクリプション管理</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile' as never)}
         >
@@ -171,6 +178,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   tokenButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  subscriptionButton: {
+    backgroundColor: '#6366f1',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  subscriptionButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',

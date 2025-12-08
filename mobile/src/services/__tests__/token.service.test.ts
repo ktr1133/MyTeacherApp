@@ -59,63 +59,23 @@ describe('TokenService', () => {
 
   // TODO: 取引履歴API実装後に有効化
   describe.skip('getTokenHistory', () => {
-    it('トークン履歴を取得できる（デフォルトページ）', async () => {
+    it('トークン履歴統計を取得できる', async () => {
       // Arrange
       const mockHistory = {
-        transactions: [
-          {
-            id: 1,
-            type: 'purchase' as const,
-            amount: 500000,
-            balance_after: 500000,
-            description: 'スターターパック購入',
-            created_at: '2025-12-07T10:00:00+09:00',
-          },
-        ],
-        pagination: {
-          current_page: 1,
-          per_page: 20,
-          total: 1,
-          last_page: 1,
-        },
+        monthlyPurchaseAmount: 3000,
+        monthlyPurchaseTokens: 500000,
+        monthlyUsage: 120000,
       };
       mockedApi.get.mockResolvedValueOnce({
         data: { data: mockHistory },
       });
 
       // Act
-      const result = await TokenService.getTokenHistory();
+      const result = await TokenService.getTokenHistoryStats();
 
       // Assert
-      expect(mockedApi.get).toHaveBeenCalledWith('/tokens/history', {
-        params: { page: 1, per_page: 20 },
-      });
+      expect(mockedApi.get).toHaveBeenCalledWith('/tokens/history');
       expect(result).toEqual(mockHistory);
-    });
-
-    it('ページ番号を指定してトークン履歴を取得できる', async () => {
-      // Arrange
-      const mockHistory = {
-        transactions: [],
-        pagination: {
-          current_page: 2,
-          per_page: 20,
-          total: 25,
-          last_page: 2,
-        },
-      };
-      mockedApi.get.mockResolvedValueOnce({
-        data: { data: mockHistory },
-      });
-
-      // Act
-      const result = await TokenService.getTokenHistory(2, 20);
-
-      // Assert
-      expect(mockedApi.get).toHaveBeenCalledWith('/tokens/history', {
-        params: { page: 2, per_page: 20 },
-      });
-      expect(result.pagination.current_page).toBe(2);
     });
   });
 

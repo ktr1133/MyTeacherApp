@@ -21,7 +21,7 @@ export const useAuth = () => {
       console.log('[useAuth] RAW authenticated:', JSON.stringify(authenticated), 'type:', typeof authenticated);
       
       // 確実にbooleanに変換
-      const boolValue = authenticated === true || authenticated === 'true';
+      const boolValue = authenticated === true;
       console.log('[useAuth] CONVERTED isAuthenticated:', boolValue, 'type:', typeof boolValue);
       setIsAuthenticated(boolValue);
       

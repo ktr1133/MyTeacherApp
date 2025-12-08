@@ -121,8 +121,8 @@ jobs:
           
           # テスト実行（phpunit.xmlでSQLite設定済み）
           # 失敗時はデプロイを中断（continue-on-error削除により実現）
-          # 詳細エラー表示オプション追加（一時的）
-          php artisan test --parallel --stop-on-failure --display-errors || {
+          # 環境変数を明示的に指定してRedis/DB依存を回避
+          CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --parallel --stop-on-failure --display-errors || {
             echo "⚠️ テスト失敗 - Laravelログを確認"
             # 日次ローテーション形式のログファイルを検索
             LOG_FILE=$(ls -t storage/logs/laravel-*.log 2>/dev/null | head -1)

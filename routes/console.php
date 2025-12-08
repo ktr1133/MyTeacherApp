@@ -124,6 +124,23 @@ Schedule::call(function () {
 ->name('clear-old-cache');
 
 // ========================================
+// サブスクリプション期間終了クリーンアップ（毎日深夜3時）
+// Webhook失敗時のフォールバック処理
+// ========================================
+Schedule::command('subscription:cleanup-expired')
+    ->dailyAt('03:00')
+    ->timezone('Asia/Tokyo')
+    ->withoutOverlapping()  // 二重実行防止
+    ->onOneServer()         // 複数サーバー環境での重複実行防止
+    ->appendOutputTo(storage_path('logs/subscription-cleanup.log'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('サブスクリプションクリーンアップ成功');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('サブスクリプションクリーンアップ失敗');
+    });
+
+// ========================================
 // Phase 1.5: Breeze + Cognito並行運用監視（5分ごと）
 // 並行運用期間のみ有効化（2025年12月1日〜12月14日）
 // ========================================
