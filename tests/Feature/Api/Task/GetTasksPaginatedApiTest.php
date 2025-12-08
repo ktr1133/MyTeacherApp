@@ -1,19 +1,19 @@
 <?php
 
-namespace Tests\Feature\Task;
+namespace Tests\Feature\Api\Task;
 
 use App\Models\User;
 use App\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Laravel\Sanctum\Sanctum;
 
 /**
- * 無限スクロール（ページネーション）機能のテスト
+ * モバイル版: 無限スクロール（ページネーション）機能のテスト
  * 
- * Web版: /tasks/paginated (セッション認証)
- * モバイル版: /api/tasks/paginated (Sanctum認証)
+ * API: /api/tasks/paginated (Sanctum認証)
  */
-class InfiniteScrollTest extends TestCase
+class GetTasksPaginatedApiTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -23,6 +23,7 @@ class InfiniteScrollTest extends TestCase
     public function test_ページネーションAPIが正常に動作する(): void
     {
         $user = User::factory()->create();
+        Sanctum::actingAs($user);
         
         // 100件のタスクを作成
         Task::factory()->count(100)->create([
@@ -32,7 +33,7 @@ class InfiniteScrollTest extends TestCase
         ]);
 
         // 1ページ目取得（50件）
-        $response = $this->actingAs($user)->getJson('/tasks/paginated?page=1&per_page=50');
+        $response = $this->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -68,6 +69,7 @@ class InfiniteScrollTest extends TestCase
     public function test_2ページ目が正常に取得できる(): void
     {
         $user = User::factory()->create();
+        Sanctum::actingAs($user);
         
         // 100件のタスクを作成
         Task::factory()->count(100)->create([
@@ -77,7 +79,7 @@ class InfiniteScrollTest extends TestCase
         ]);
 
         // 2ページ目取得
-        $response = $this->actingAs($user)->getJson('/tasks/paginated?page=2&per_page=50');
+        $response = $this->getJson('/api/tasks/paginated?page=2&per_page=50');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -101,8 +103,9 @@ class InfiniteScrollTest extends TestCase
     public function test_データが存在しない場合に空配列を返す(): void
     {
         $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $response = $this->actingAs($user)->getJson('/tasks/paginated?page=1&per_page=50');
+        $response = $this->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -125,9 +128,10 @@ class InfiniteScrollTest extends TestCase
     public function test_per_pageが範囲外の場合にエラーを返す(): void
     {
         $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
         // 101件は範囲外
-        $response = $this->actingAs($user)->getJson('/tasks/paginated?page=1&per_page=101');
+        $response = $this->getJson('/api/tasks/paginated?page=1&per_page=101');
 
         $response->assertStatus(422)
             ->assertJson([
@@ -142,8 +146,9 @@ class InfiniteScrollTest extends TestCase
     public function test_ページ番号が0以下の場合にエラーを返す(): void
     {
         $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
-        $response = $this->actingAs($user)->getJson('/tasks/paginated?page=0&per_page=50');
+        $response = $this->getJson('/api/tasks/paginated?page=0&per_page=50');
 
         $response->assertStatus(422)
             ->assertJson([
@@ -157,7 +162,7 @@ class InfiniteScrollTest extends TestCase
      */
     public function test_未認証ユーザーはアクセスできない(): void
     {
-        $response = $this->getJson('/tasks/paginated?page=1&per_page=50');
+        $response = $this->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(401);
     }
@@ -168,6 +173,7 @@ class InfiniteScrollTest extends TestCase
     public function test_フィルター付きでページネーションが動作する(): void
     {
         $user = User::factory()->create();
+        Sanctum::actingAs($user);
         
         // 優先度1のタスクを30件、優先度3のタスクを30件作成
         Task::factory()->count(30)->create([
@@ -185,7 +191,7 @@ class InfiniteScrollTest extends TestCase
         ]);
 
         // 優先度1でフィルタリング
-        $response = $this->actingAs($user)->getJson('/tasks/paginated?page=1&per_page=20&priority=1');
+        $response = $this->getJson('/api/tasks/paginated?page=1&per_page=20&priority=1');
 
         $response->assertStatus(200);
         
@@ -204,6 +210,7 @@ class InfiniteScrollTest extends TestCase
     public function test_完了済みタスクは除外される(): void
     {
         $user = User::factory()->create();
+        Sanctum::actingAs($user);
         
         // 未完了タスク50件
         Task::factory()->count(50)->create([
@@ -219,7 +226,7 @@ class InfiniteScrollTest extends TestCase
             'span' => 1,
         ]);
 
-        $response = $this->actingAs($user)->getJson('/tasks/paginated?page=1&per_page=50');
+        $response = $this->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(200);
         
@@ -239,6 +246,7 @@ class InfiniteScrollTest extends TestCase
     public function test_タスクデータ構造が正しい(): void
     {
         $user = User::factory()->create();
+        Sanctum::actingAs($user);
         
         Task::factory()->create([
             'user_id' => $user->id,
@@ -246,7 +254,7 @@ class InfiniteScrollTest extends TestCase
             'span' => 1,
         ]);
 
-        $response = $this->actingAs($user)->getJson('/tasks/paginated?page=1&per_page=50');
+        $response = $this->getJson('/api/tasks/paginated?page=1&per_page=50');
 
         $response->assertStatus(200)
             ->assertJsonStructure([

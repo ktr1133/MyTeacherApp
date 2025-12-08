@@ -6,7 +6,7 @@
 class InfiniteScrollManager {
     constructor(options = {}) {
         // 設定
-        this.apiEndpoint = options.apiEndpoint || '/api/tasks/paginated';
+        this.apiEndpoint = options.apiEndpoint || '/tasks/paginated';
         this.container = options.container || document.getElementById('task-list');
         this.loadingElement = options.loadingElement || document.getElementById('loading-indicator');
         this.perPage = options.perPage || 50;

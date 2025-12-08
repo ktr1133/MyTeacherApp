@@ -139,21 +139,27 @@ Route::middleware('auth:sanctum')->group(function () {
     // タスクAPI
     Route::prefix('tasks')->group(function () {
         Route::get('/', IndexTaskApiAction::class)->name('api.tasks.index');
+        
+        // 検索・ページネーション（/{task}より前に配置）
+        Route::post('/search', SearchTasksApiAction::class)->name('api.tasks.search');
+        Route::get('/paginated', GetTasksPaginatedApiAction::class)->name('api.tasks.paginated');
+        
+        // 承認フロー（一覧は/{task}より前）
+        Route::get('/approvals/pending', ListPendingApprovalsApiAction::class)->name('api.tasks.approvals.pending');
+        
+        // 個別タスク操作
+        Route::get('/{task}', ShowTaskApiAction::class)->name('api.tasks.show');
+        // 個別タスク操作
         Route::get('/{task}', ShowTaskApiAction::class)->name('api.tasks.show');
         Route::post('/', StoreTaskApiAction::class)->name('api.tasks.store');
         Route::put('/{task}', UpdateTaskApiAction::class)->name('api.tasks.update');
         Route::delete('/{task}', DestroyTaskApiAction::class)->name('api.tasks.destroy');
         Route::patch('/{task}/toggle', ToggleTaskCompletionApiAction::class)->name('api.tasks.toggle');
         
-        // 検索・ページネーション
-        Route::post('/search', SearchTasksApiAction::class)->name('api.tasks.search');
-        Route::get('/paginated', GetTasksPaginatedApiAction::class)->name('api.tasks.paginated');
-        
         // 承認フロー
         Route::post('/{task}/approve', ApproveTaskApiAction::class)->name('api.tasks.approve');
         Route::post('/{task}/reject', RejectTaskApiAction::class)->name('api.tasks.reject');
         Route::post('/{task}/request-approval', RequestApprovalApiAction::class)->name('api.tasks.request-approval');
-        Route::get('/approvals/pending', ListPendingApprovalsApiAction::class)->name('api.tasks.approvals.pending');
         
         // 一括操作
         Route::patch('/bulk-complete', BulkCompleteTasksApiAction::class)->name('api.tasks.bulk-complete');

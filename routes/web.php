@@ -120,6 +120,7 @@ use App\Http\Actions\Task\ToggleTaskCompletionAction;
 use App\Http\Actions\Task\UpdateTaskAction;
 use App\Http\Actions\Task\UpdateTaskDescriptionAction;
 use App\Http\Actions\Task\UploadTaskImageAction;
+use App\Http\Actions\Task\GetTasksPaginatedAction;
 use App\Http\Actions\Token\ApproveTokenPurchaseRequestAction;
 use App\Http\Actions\Token\CancelTokenPurchaseRequestAction;
 use App\Http\Actions\Token\CreateTokenCheckoutSessionAction;
@@ -216,6 +217,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tasks/search/results', TaskSearchResultsAction::class)->name('tasks.search.results');
     Route::patch('/tasks/{task}/toggle', ToggleTaskCompletionAction::class)->name('tasks.toggle');
     Route::post('/tasks/bulk-complete', BulkCompleteTasksAction::class)->name('tasks.bulk-complete');
+
+    // タスク無限スクロール用ページネーションAPI（Web版 - セッション認証）
+    Route::get('/tasks/paginated', GetTasksPaginatedAction::class)->name('tasks.paginated');
 
     // タスク承認関連
     Route::post('/tasks/{task}/request-approval', RequestApprovalAction::class)->name('tasks.request-approval');
