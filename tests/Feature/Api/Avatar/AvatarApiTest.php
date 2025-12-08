@@ -341,6 +341,7 @@ class AvatarApiTest extends TestCase
                 'data' => [
                     'comment',
                     'image_url',
+                    'animation',
                 ],
             ]);
     }
@@ -392,6 +393,7 @@ class AvatarApiTest extends TestCase
                 'data' => [
                     'comment' => '',
                     'image_url' => null,
+                    'animation' => 'avatar-idle',
                 ],
             ]);
     }

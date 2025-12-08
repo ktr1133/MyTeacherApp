@@ -133,9 +133,11 @@ class TeacherAvatarApiResponder
         
         return response()->json([
             'success' => true,
-            'comment' => $comment,
-            'imageUrl' => $imageUrl,
-            'animation' => $animation,
+            'data' => [
+                'comment' => $comment,
+                'image_url' => $imageUrl,
+                'animation' => $animation,
+            ],
         ], 200);
     }
 
