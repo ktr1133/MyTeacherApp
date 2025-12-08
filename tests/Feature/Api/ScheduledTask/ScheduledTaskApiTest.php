@@ -67,6 +67,7 @@ class ScheduledTaskApiTest extends TestCase
         // Assert
         $response->assertStatus(200)
             ->assertJsonStructure([
+                'success',
                 'message',
                 'data' => [
                     'scheduled_tasks' => [
@@ -79,7 +80,8 @@ class ScheduledTaskApiTest extends TestCase
                         ],
                     ],
                 ],
-            ]);
+            ])
+            ->assertJson(['success' => true]);
     }
 
     /**
@@ -267,6 +269,7 @@ class ScheduledTaskApiTest extends TestCase
         // Assert
         $response->assertStatus(200)
             ->assertJson([
+                'success' => true,
                 'message' => 'スケジュールタスクを更新しました。',
             ]);
 

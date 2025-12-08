@@ -21,6 +21,7 @@ class ScheduledTaskApiResponder
     public function index(Collection $scheduledTasks): JsonResponse
     {
         return response()->json([
+            'success' => true,
             'message' => 'スケジュールタスク一覧を取得しました。',
             'data' => [
                 'scheduled_tasks' => $scheduledTasks,
@@ -37,6 +38,7 @@ class ScheduledTaskApiResponder
     public function create(array $data): JsonResponse
     {
         return response()->json([
+            'success' => true,
             'message' => 'スケジュールタスク作成情報を取得しました。',
             'data' => $data,
         ], 200);
@@ -51,6 +53,7 @@ class ScheduledTaskApiResponder
     public function store($scheduledTask): JsonResponse
     {
         return response()->json([
+            'success' => true,
             'message' => 'スケジュールタスクを作成しました。',
             'data' => [
                 'scheduled_task' => $scheduledTask,
@@ -67,6 +70,7 @@ class ScheduledTaskApiResponder
     public function edit(array $data): JsonResponse
     {
         return response()->json([
+            'success' => true,
             'message' => 'スケジュールタスク編集情報を取得しました。',
             'data' => $data,
         ], 200);
@@ -81,6 +85,7 @@ class ScheduledTaskApiResponder
     public function update($scheduledTask): JsonResponse
     {
         return response()->json([
+            'success' => true,
             'message' => 'スケジュールタスクを更新しました。',
             'data' => [
                 'scheduled_task' => $scheduledTask,
@@ -96,6 +101,7 @@ class ScheduledTaskApiResponder
     public function delete(): JsonResponse
     {
         return response()->json([
+            'success' => true,
             'message' => 'スケジュールタスクを削除しました。',
         ], 200);
     }
@@ -109,6 +115,7 @@ class ScheduledTaskApiResponder
     public function pause($scheduledTask): JsonResponse
     {
         return response()->json([
+            'success' => true,
             'message' => 'スケジュールタスクを一時停止しました。',
             'data' => [
                 'scheduled_task' => $scheduledTask,
@@ -125,6 +132,7 @@ class ScheduledTaskApiResponder
     public function resume($scheduledTask): JsonResponse
     {
         return response()->json([
+            'success' => true,
             'message' => 'スケジュールタスクを再開しました。',
             'data' => [
                 'scheduled_task' => $scheduledTask,
@@ -142,6 +150,7 @@ class ScheduledTaskApiResponder
     public function history($scheduledTask, $executions): JsonResponse
     {
         return response()->json([
+            'success' => true,
             'message' => '実行履歴を取得しました。',
             'data' => [
                 'scheduled_task' => [
@@ -163,6 +172,7 @@ class ScheduledTaskApiResponder
     public function error(string $message, int $code = 400): JsonResponse
     {
         return response()->json([
+            'success' => false,
             'message' => $message,
         ], $code);
     }
