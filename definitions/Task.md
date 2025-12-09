@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-09 | GitHub Copilot | モバイルアプリのAIタスク分解機能（TaskDecompositionScreen）実装完了、モバイルAPI追加 |
 | 2025-12-05 | GitHub Copilot | 初版作成: タスク登録関連機能の要件定義 |
 | 2025-12-05 | GitHub Copilot | 子ども向け画面（テーマ）仕様を追加 |
 | 2025-12-05 | GitHub Copilot | パフォーマンス最適化実装完了（Redis接続プール、複合インデックス、キャッシュTTL延長） |
@@ -190,8 +191,10 @@ public function create(array $data): Task
 **概要**: OpenAI APIを使用して大規模タスクを複数の小タスクに自動分解する機能。
 
 **アクセスルート**: 
-- `POST /tasks/propose` → `ProposeTaskAction` (提案生成)
-- `POST /tasks/adopt-proposal` → `AdoptProposalAction` (提案採用)
+- **Webアプリ**: `POST /tasks/propose` → `ProposeTaskAction` (提案生成)
+- **Webアプリ**: `POST /tasks/adopt-proposal` → `AdoptProposalAction` (提案採用)
+- **モバイルAPI**: `POST /api/tasks/propose` → `ProposeTaskApiAction` (提案生成)
+- **モバイルAPI**: `POST /api/tasks/adopt` → `AdoptProposalApiAction` (提案採用)
 
 ### 3.1.1 提案生成フロー（ProposeTaskAction）
 
@@ -305,6 +308,70 @@ CREATE TABLE task_proposals (
     INDEX (uuid)
 );
 ```
+
+### 3.3 モバイルアプリ実装（TaskDecompositionScreen）
+
+**実装日**: 2025-12-09
+
+**ファイル**: `/home/ktr/mtdev/mobile/src/screens/tasks/TaskDecompositionScreen.tsx`
+
+**機能概要**: モバイルアプリ用のAIタスク分解画面。3段階のフロー（入力→提案→編集・採用）で大きなタスクを複数の小タスクに分解し、一括作成できる。
+
+**画面フロー**:
+1. **入力段階（input）**: タイトル、期間（span）、期限（due_date）、コンテキストを入力
+2. **提案段階（decomposition）**: AI提案を表示、タスク選択・編集可能、再提案可能
+3. **改善段階（refine）**: 再提案時の改善要望入力
+
+**主要機能**:
+- ✅ タスク分解提案（ProposeTask API）
+- ✅ 再提案機能（`is_refinement=true`）
+- ✅ 提案タスクの選択・編集（span/due_date変更可能）
+- ✅ 選択タスクの一括作成（AdoptProposal API）
+- ✅ アバターイベント連携（`task_decomposition_complete`）
+- ✅ 分解元タイトルを自動的にタグとして設定
+
+**API連携**:
+```typescript
+// 提案API呼び出し
+const response: ProposeTaskResponse = await taskService.proposeTask({
+  title: title.trim(),
+  span,
+  due_date: dueDate.trim() || undefined,
+  context: context.trim() || undefined,
+  is_refinement: false,  // 再提案時はtrue
+});
+
+// 採用API呼び出し
+const response = await taskService.adoptProposal({
+  proposal_id: proposalId,
+  tasks: selectedTasks.map(task => ({
+    title: task.title,
+    span: task.span,
+    priority: task.priority || 3,
+    due_date: task.due_date || undefined,
+    tags: [originalTitle.trim()],  // 分解元をタグ化
+  })),
+});
+```
+
+**編集可能な項目**:
+- タイトル: 提案後も編集可能
+- span（期間）: 短期/中期/長期を変更可能
+- due_date（期限）: spanに応じたフォーマットで編集可能
+  - 短期（span=1）: YYYY-MM-DD形式
+  - 中期（span=2）: YYYY-MM形式
+  - 長期（span=3）: 任意文字列
+
+**UI特徴**:
+- テーマ対応（子ども/大人）
+- リアルタイムバリデーション
+- ローディング状態の表示
+- エラーメッセージのアラート表示
+- 選択済みタスクのチェックマーク表示
+
+**テスト**: `/home/ktr/mtdev/mobile/__tests__/screens/TaskDecompositionScreen.test.tsx` - 14 tests passing
+
+**参考レポート**: `/home/ktr/mtdev/docs/reports/2025-12-09-mobile-task-decomposition-implementation-report.md`
 
 ---
 

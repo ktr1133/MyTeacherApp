@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-09 | GitHub Copilot | IndexTaskApiActionのデフォルトstatus変更（'all'→'pending'）を反映、Web/Mobile整合性確保 |
 | 2025-12-07 | GitHub Copilot | 初版作成: Phase 2.B-5 Step 1 完了後の質疑応答結果を要件化 |
 | 2025-12-07 | GitHub Copilot | 画像機能に関する追記（画像アップロード機能は実装済み、IndexTaskApiAction修正） |
 | 2025-12-07 | GitHub Copilot | タスク一覧画面に関連しない項目を削除（通知機能、テスト修正は別ファイルに記載） |
@@ -96,8 +97,11 @@ MyTeacherモバイルアプリのタスク一覧画面（TaskListScreen）の機
 |------|------|
 | エンドポイント | `GET /api/tasks?status=pending` |
 | パラメータ | `status=pending`（未完了のみ） |
+| デフォルト動作 | パラメータ省略時も`status=pending`が適用される（2025-12-09変更） |
 | ページネーション | 20件/ページ（デフォルト） |
 | レスポンス | Task[]（is_completed, completed_at, tags配列） |
+
+**重要**: 2025-12-09に`IndexTaskApiAction`のデフォルト値を`'all'`から`'pending'`に変更し、WebアプリとモバイルアプリでAPI動作を統一しました。これにより、`status`パラメータを省略した場合でも未完了タスクのみが返却されます。
 
 #### 2.3.2 取得データ項目
 
