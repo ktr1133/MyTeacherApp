@@ -13,7 +13,7 @@
  * - テーマ対応UI（adult/child）
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -29,6 +29,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import useProfile from '../../hooks/useProfile';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * パスワード変更画面コンポーネント
@@ -37,6 +39,11 @@ const PasswordChangeScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { updatePassword, isLoading, error } = useProfile(theme);
+
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   // フォーム状態
   const [currentPassword, setCurrentPassword] = useState<string>('');
@@ -346,80 +353,80 @@ const PasswordChangeScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    padding: getSpacing(20, width),
   },
   header: {
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: getFontSize(14, width, theme),
+    lineHeight: getFontSize(20, width, theme),
   },
   fieldGroup: {
-    marginBottom: 20,
+    marginBottom: getSpacing(20, width),
   },
   label: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   inputWrapper: {
     position: 'relative',
   },
   input: {
-    height: 48,
+    height: getSpacing(48, width),
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingRight: 48,
-    fontSize: 16,
+    borderRadius: getBorderRadius(8, width),
+    paddingHorizontal: getSpacing(12, width),
+    paddingRight: getSpacing(48, width),
+    fontSize: getFontSize(16, width, theme),
   },
   eyeIcon: {
     position: 'absolute',
-    right: 12,
-    top: 12,
-    padding: 4,
+    right: getSpacing(12, width),
+    top: getSpacing(12, width),
+    padding: getSpacing(4, width),
   },
   eyeIconText: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
   },
   errorText: {
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: getFontSize(12, width, theme),
+    marginTop: getSpacing(4, width),
   },
   submitButton: {
-    height: 48,
-    borderRadius: 8,
+    height: getSpacing(48, width),
+    borderRadius: getBorderRadius(8, width),
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: getSpacing(8, width),
   },
   submitButtonDisabled: {
     opacity: 0.6,
   },
   submitButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
   cancelButton: {
-    height: 48,
+    height: getSpacing(48, width),
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: getSpacing(12, width),
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
   },
 });
 

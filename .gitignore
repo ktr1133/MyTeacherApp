@@ -238,3 +238,12 @@ mobile/*.tsbuildinfo
 mobile/ios/
 mobile/android/
 mobile/coverage/
+
+# Firebase configuration files (DO NOT COMMIT)
+mobile/GoogleService-Info.plist
+mobile/google-services.json
+
+# Firebase Admin SDK credentials (DO NOT COMMIT)
+storage/app/firebase/credentials.json
+storage/app/firebase/*.json
+!storage/app/firebase/.gitkeep

@@ -13,7 +13,7 @@
  * Web版: /resources/views/avatars/create.blade.php
  */
 
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -48,6 +49,7 @@ import {
  */
 export const AvatarCreateScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { width } = useResponsive();
   const { theme } = useTheme();
   const { createAvatar, isLoading, error } = useAvatarManagement();
 
@@ -70,6 +72,9 @@ export const AvatarCreateScreen: React.FC = () => {
   const [drawModelVersion, setDrawModelVersion] = useState<AvatarDrawModelVersion>('anything-v4.0');
   const [isTransparent] = useState(true); // 固定: 背景透過ON
   const [isChibi] = useState(false); // 固定: デフォルメOFF
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
 
   // 推定トークン消費量を取得
   const getEstimatedTokenUsage = (): number => {
@@ -449,7 +454,7 @@ export const AvatarCreateScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -458,67 +463,63 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8DC',
   },
   content: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   header: {
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   childTitle: {
-    fontSize: 26,
+    fontSize: getFontSize(26, width, theme),
     color: '#FF6B35',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#666',
   },
   childSubtitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#FF8C42',
   },
   section: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(16, width),
+    ...getShadow(3, width),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   childSectionTitle: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     color: '#FF6B35',
   },
   formGroup: {
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   label: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   childLabel: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#FF8C42',
   },
   pickerWrapper: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#fff',
     minHeight: 50,
     justifyContent: 'center',
@@ -534,9 +535,9 @@ const styles = StyleSheet.create({
   },
   warning: {
     backgroundColor: '#FFF3CD',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    marginTop: getSpacing(8, width),
     borderWidth: 1,
     borderColor: '#FFC107',
   },
@@ -545,34 +546,34 @@ const styles = StyleSheet.create({
     borderColor: '#FFD93D',
   },
   warningText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#856404',
     textAlign: 'center',
   },
   childWarningText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#FF6B35',
     fontWeight: 'bold',
   },
   errorContainer: {
     backgroundColor: '#F8D7DA',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    marginBottom: getSpacing(16, width),
     borderWidth: 1,
     borderColor: '#F5C6CB',
   },
   errorText: {
     color: '#721C24',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     textAlign: 'center',
   },
   button: {
     backgroundColor: '#8B5CF6',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   childButton: {
     backgroundColor: '#FF6B35',
@@ -582,14 +583,14 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
   },
   childButtonText: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
   },
   footer: {
-    height: 32,
+    height: getSpacing(32, width),
   },
 });
 

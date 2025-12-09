@@ -7,7 +7,7 @@
  * @module screens/subscriptions/SubscriptionManageScreen
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow, getHeaderTitleProps } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 import type { SubscriptionPlan } from '../../types/subscription.types';
 
 /**
@@ -40,6 +42,9 @@ import type { SubscriptionPlan } from '../../types/subscription.types';
 const SubscriptionManageScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { theme } = useTheme();
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
   const {
     plans,
     currentSubscription,
@@ -53,6 +58,9 @@ const SubscriptionManageScreen: React.FC = () => {
 
   // 追加メンバー数（エンタープライズプラン用）
   const [additionalMembers, setAdditionalMembers] = useState(0);
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   // 画面フォーカス時にデータ更新
   useEffect(() => {
@@ -200,7 +208,9 @@ const SubscriptionManageScreen: React.FC = () => {
       >
         {/* ヘッダー */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>{labels.title}</Text>
+          <Text style={styles.headerTitle} {...getHeaderTitleProps()}>
+            {labels.title}
+          </Text>
         </View>
 
         {/* 現在のサブスク情報（加入中のみ表示） */}
@@ -294,7 +304,14 @@ const SubscriptionManageScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+/**
+ * レスポンシブスタイル生成関数
+ * 
+ * @param width - 画面幅
+ * @param theme - テーマ (adult | child)
+ * @returns StyleSheet
+ */
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
@@ -304,86 +321,82 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#4A90E2',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    paddingVertical: getSpacing(20, width),
+    paddingHorizontal: getSpacing(16, width),
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   currentSubscriptionCard: {
     backgroundColor: '#FFFFFF',
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    margin: getSpacing(16, width),
+    padding: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
+    ...getShadow(4),
   },
   currentSubscriptionLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#666666',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   currentSubscriptionPlan: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
     color: '#333333',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   currentSubscriptionStatus: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#666666',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   currentSubscriptionEnd: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#666666',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   cancelWarning: {
     backgroundColor: '#FFF3CD',
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 12,
+    padding: getSpacing(12, width),
+    borderRadius: getBorderRadius(4, width),
+    marginBottom: getSpacing(12, width),
   },
   cancelWarningText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#856404',
   },
   endsAtWarning: {
-    marginTop: 12,
-    marginBottom: 16,
-    padding: 16,
+    marginTop: getSpacing(12, width),
+    marginBottom: getSpacing(16, width),
+    padding: getSpacing(16, width),
     backgroundColor: '#FEE2E2',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
     borderColor: '#EF4444',
   },
   endsAtWarningTitle: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#991B1B',
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   endsAtWarningDate: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     color: '#DC2626',
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   endsAtWarningNote: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#991B1B',
   },
   cancelButton: {
     backgroundColor: '#DC3545',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(24, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
   },
   cancelButtonDisabled: {
@@ -392,7 +405,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
   },
   cancelButtonTextDisabled: {
@@ -400,39 +413,31 @@ const styles = StyleSheet.create({
   },
   noSubscriptionCard: {
     backgroundColor: '#FFFFFF',
-    margin: 16,
-    padding: 24,
-    borderRadius: 8,
+    margin: getSpacing(16, width),
+    padding: getSpacing(24, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...getShadow(4),
   },
   noSubscriptionText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#666666',
   },
   plansContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: getSpacing(16, width),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#333333',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   planCard: {
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    padding: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
+    marginBottom: getSpacing(16, width),
+    ...getShadow(4),
   },
   currentPlanCard: {
     borderWidth: 2,
@@ -442,48 +447,48 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   planName: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
     color: '#333333',
   },
   currentBadge: {
     backgroundColor: '#4A90E2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: getSpacing(8, width),
+    paddingVertical: getSpacing(4, width),
+    borderRadius: getBorderRadius(4, width),
   },
   currentBadgeText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     fontWeight: 'bold',
   },
   planPrice: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#4A90E2',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   planDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#666666',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   featuresContainer: {
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   featureText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#333333',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   selectButton: {
     backgroundColor: '#4A90E2',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(24, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
   },
   selectButtonDisabled: {
@@ -491,7 +496,7 @@ const styles = StyleSheet.create({
   },
   selectButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
   },
   selectButtonTextDisabled: {
@@ -499,20 +504,16 @@ const styles = StyleSheet.create({
   },
   invoicesButton: {
     backgroundColor: '#FFFFFF',
-    margin: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    margin: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
+    paddingHorizontal: getSpacing(24, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...getShadow(4),
   },
   invoicesButtonText: {
     color: '#4A90E2',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
   },
 });

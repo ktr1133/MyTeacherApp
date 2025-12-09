@@ -4,6 +4,8 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-09 | GitHub Copilot | レスポンシブ設計方針を全面刷新: Dimensions API積極使用、Android/iOS/タブレット対応 |
+| 2025-12-09 | GitHub Copilot | 画面デザイン方針の詳細化、Tailwind CSS変換規則追加 |
 | 2025-12-08 | GitHub Copilot | テストコード規約に型安全性に関する禁止事項を追加 |
 | 2025-12-07 | GitHub Copilot | バックエンド齟齬対応方針を追加（総則8項） |
 | 2025-12-07 | GitHub Copilot | 画像機能に関する注意事項を追加（総則7項） |
@@ -467,6 +469,7 @@
    - テストファイル配置: `/home/ktr/mtdev/mobile/__tests__/{機能名}/`
    - テストフレームワーク: Jest（Expoデフォルト）
    - カバレッジ目標: 80%以上
+   - ファイル作成後、TypeScriptの警告を確認
    - テストパターン:
      - **単体テスト**: Services, Hooks, Utils
      - **統合テスト**: API通信
@@ -474,6 +477,7 @@
 
 10. **実装完了後の全体確認（必須）**
    - コード修正後、必ず以下を実行：
+     - TypeScriptの警告を確認
      - TypeScript型チェック: `npx tsc --noEmit`
      - 静的解析: ESLint実行（Phase 2.B-3で設定）
      - テスト実行: `npm test`
@@ -481,8 +485,195 @@
      - 未使用変数・インポートの削除
    - `/home/ktr/mtdev/.github/copilot-instructions.md` の「コード修正時の遵守事項」に従う
 
-11. **画面のデザイン方針**
-   - web版のレスポンシブデザインと同等の画面とすること
+11. **画面デザイン方針（重要）**
+   
+   **原則**: モバイルアプリの各画面は、**Webアプリのレスポンシブデザイン（375px幅相当）と同等の画面構成**とすること。
+   
+   **実装前の必須手順**:
+   
+   **Step 1: 対象Bladeファイルの特定**
+   ```bash
+   # 例: タスク一覧画面の場合
+   ls -la /home/ktr/mtdev/resources/views/tasks/
+   # 結果: index.blade.php を確認
+   ```
+   
+   **Step 2: Bladeファイルの全文読解**
+   - 対象ファイルを **1行目から最終行まで** 読み、UIパーツを抽出
+   - `read_file` ツールで複数回に分けて全体を確認
+   - **見落とし防止**: `<form>`, `<a>`, `<button>`, `@include`, `@if` の全出現箇所をリストアップ
+   
+   **Step 3: Tailwind CSSクラスの抽出**
+   ```bash
+   # レスポンシブブレークポイントの確認
+   grep -E "sm:|md:|lg:|xl:" /home/ktr/mtdev/resources/views/tasks/index.blade.php
+   
+   # 375px幅相当のクラスを確認（sm:未満 = モバイル幅）
+   # Tailwind CSS: sm = 640px, md = 768px
+   # モバイル向けは sm: なしのクラスを使用
+   ```
+   
+   **Step 4: UI要素の構造化リスト作成**
+   
+   | # | 種別 | ラベル/テキスト | Tailwind CSS クラス | 遷移先/アクション | Blade行番号 | モバイル実装 |
+   |---|------|---------------|-------------------|----------------|-----------|------------|
+   | 1 | ヘッダー | 「タスクリスト」 | `text-2xl font-bold` | - | 10 | Header.tsx |
+   | 2 | ボタン | 「新規作成」 | `bg-blue-600 rounded-lg px-4 py-2` | `/tasks/create` | 25 | FAB |
+   | 3 | リスト | タスクカード | `bg-white shadow rounded-lg p-4` | `/tasks/{id}` | 50-80 | TaskCard.tsx |
+   | 4 | バッジ | 優先度 | `bg-red-500 text-white px-2 py-1 rounded` | - | 65 | Badge.tsx |
+   
+   **Step 5: React Native実装への変換規則**
+   
+   | Tailwind CSS | React Native StyleSheet | 備考 |
+   |-------------|------------------------|------|
+   | `flex` | `display: 'flex'` | デフォルトでflex |
+   | `flex-col` | `flexDirection: 'column'` | - |
+   | `gap-4` | `gap: 16` | 1単位 = 4px |
+   | `p-4` | `padding: 16` | 1単位 = 4px |
+   | `rounded-lg` | `borderRadius: 8` | lg = 8px |
+   | `shadow` | `shadowColor: '#000', shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.1, shadowRadius: 4` | iOS/Android両対応 |
+   | `bg-blue-600` | `backgroundColor: '#2563EB'` | Tailwind色定義参照 |
+   | `text-2xl` | `fontSize: 24` | 2xl = 24px |
+   | `font-bold` | `fontWeight: 'bold'` | - |
+   
+   **Step 6: レスポンシブ対応の実装（Dimensions API使用）**
+   
+   **原則**: **レスポンシブ対応を最優先**とし、Dimensions APIを積極的に使用してデバイス間の表示差異を吸収する。
+   
+   **必須参照ドキュメント**: `/home/ktr/mtdev/definitions/mobile/ResponsiveDesignGuideline.md`
+   
+   **実装手順**:
+   
+   1. **useResponsive() Hookのインポート**
+      ```typescript
+      import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '@/utils/responsive';
+      import { useChildTheme } from '@/hooks/useChildTheme';
+      
+      const MyComponent = () => {
+        const { width, deviceSize, isPortrait } = useResponsive();
+        const isChildTheme = useChildTheme();
+        const theme = isChildTheme ? 'child' : 'adult';
+      ```
+   
+   2. **フォントサイズの動的計算**
+      ```typescript
+      const styles = StyleSheet.create({
+        title: {
+          fontSize: getFontSize(18, width, theme), // Web版 text-lg (18px) ベース
+        },
+        body: {
+          fontSize: getFontSize(14, width, theme), // Web版 text-sm (14px) ベース
+        },
+      });
+      ```
+      
+      **子ども向けテーマ**: 大人向けより20%大きいフォント（わかりやすさ重視）
+   
+   3. **余白の動的計算**
+      ```typescript
+      const styles = StyleSheet.create({
+        container: {
+          padding: getSpacing(16, width), // Web版 p-4 (16px) ベース
+        },
+        card: {
+          marginBottom: getSpacing(12, width), // Web版 mb-3 (12px) ベース
+        },
+      });
+      ```
+      
+      **最小余白**: baseSpacingの50%（視認性確保）
+   
+   4. **角丸の動的計算**
+      ```typescript
+      const styles = StyleSheet.create({
+        card: {
+          borderRadius: getBorderRadius(16, width), // Web版 rounded-2xl (16px) ベース
+        },
+      });
+      ```
+   
+   5. **シャドウのプラットフォーム別対応**
+      ```typescript
+      const styles = StyleSheet.create({
+        card: {
+          ...getShadow(4), // elevation 4 相当（iOS/Android自動判定）
+          backgroundColor: '#fff',
+        },
+      });
+      ```
+   
+   6. **画面回転リスナーの実装**
+      ```typescript
+      const { isPortrait, isLandscape } = useResponsive();
+      
+      const styles = StyleSheet.create({
+        container: {
+          flexDirection: isLandscape ? 'row' : 'column',
+        },
+      });
+      ```
+   
+   **ブレークポイント定義**（Android端末考慮済み）:
+   
+   | カテゴリ | 画面幅範囲 | 対象デバイス例 |
+   |---------|-----------|--------------|
+   | 超小型 | 〜320px | Galaxy Fold (280px), iPhone SE 1st (320px) |
+   | 小型 | 321px〜374px | iPhone SE 2nd/3rd (375px), Pixel 4a (393px) |
+   | 標準 | 375px〜413px | iPhone 12/13/14 (390px), Pixel 7 (412px) |
+   | 大型 | 414px〜767px | iPhone Pro Max (430px) |
+   | タブレット小 | 768px〜1023px | iPad mini (768px) |
+   | タブレット | 1024px〜 | iPad Pro (1024px) |
+   
+   **Platform.select() 使用場面**:
+   - カレンダー選択（DateTimePicker）
+   - 時刻選択（DateTimePicker）
+   - セレクトボックス（iOS: カスタム実装、Android: 標準Picker）
+   - キーボード回避（KeyboardAvoidingView）
+   - Safe Area対応（iOS）
+   
+   **Web CSS → React Native 変換**:
+   
+   | Web CSS | React Native StyleSheet |
+   |---------|------------------------|
+   | `text-lg` (18px) | `fontSize: getFontSize(18, width, theme)` |
+   | `p-4` (16px) | `padding: getSpacing(16, width)` |
+   | `rounded-2xl` (16px) | `borderRadius: getBorderRadius(16, width)` |
+   | `shadow` | `...getShadow(4)` |
+   | `bg-gradient-to-r from-[#59B9C6] to-purple-600` | `<LinearGradient colors={['#59B9C6', '#9333EA']} />` |
+   
+   **Step 7: Webアプリとの差分確認**
+   
+   - ✅ **実装済み**: Webアプリの全UI要素をモバイル版に実装
+   - ❌ **未実装**: Webアプリに存在するがモバイル版に未実装の要素（理由を明記）
+   - ⚠️ **モバイル独自**: モバイル特有のUI要素（FAB、スワイプ等）
+   
+   **禁止事項**:
+   - ❌ Bladeファイルを読まずに推測でデザイン実装
+   - ❌ Tailwind CSSクラスを無視して独自デザイン実装
+   - ❌ レスポンシブブレークポイントを確認せず375px幅以外を基準にする
+   - ❌ Webアプリに存在する要素をモバイル版で省略（情報の過不足は不可）
+   
+   **チェックリスト**:
+   - [ ] Bladeファイルを1行目から最終行まで読解した
+   - [ ] app.css、dashboard.css等のすべてのCSSファイルを参照した
+   - [ ] JavaScript動的生成のHTML/スタイルも確認した
+   - [ ] Tailwind CSSクラスを抽出し、React Native StyleSheetに変換した
+   - [ ] **`useResponsive()` Hookを実装した**
+   - [ ] **`getFontSize()` でフォントサイズを動的計算した**
+   - [ ] **`getSpacing()` で余白を動的計算した**
+   - [ ] **`getBorderRadius()` で角丸を動的計算した**
+   - [ ] **`getShadow()` でPlatform別シャドウを設定した**
+   - [ ] **画面回転リスナーを実装した**
+   - [ ] **子ども向けテーマでフォントを1.2倍に拡大した**
+   - [ ] **ヘッダータイトルの折り返し対策を実装した**（adjustsFontSizeToFit使用）
+   - [ ] **モーダルカードの見切れ対策を実装した**（Android対応）
+   - [ ] UI要素を構造化リスト（表形式）にまとめた
+   - [ ] Webアプリの全UI要素をモバイル版に実装した
+   - [ ] Webアプリとの差分を明記した
+   - [ ] **Android実機テスト**（Pixel 7、Galaxy S21、Galaxy Fold）
+   - [ ] **iOS実機テスト**（iPhone SE、iPhone 12、iPhone Pro Max）
+   - [ ] **タブレット実機テスト**（iPad mini、iPad Pro）
+   - [ ] **画面回転テスト**（縦向き・横向き両方）
 
 12. **API追加時の手順（必須）**
    
@@ -665,7 +856,7 @@ MyTeacher モバイルアプリ
 
 #### 参照ファイル
 
-- **要件定義**: `/home/ktr/mtdev/definitions/Task.md`（認証機能の記載あり）
+- **要件定義**: `/home/ktr/mtdev/definitions/*.md`（認証機能の記載あり）
 - **OpenAPI**: `/home/ktr/mtdev/docs/api/openapi.yaml`（**認証APIは未定義 - 追加必要**）
 - **マイグレーション**: `/home/ktr/mtdev/database/migrations/0001_01_01_000000_create_users_table.php`
 - **モデル**: `/home/ktr/mtdev/app/Models/User.php`

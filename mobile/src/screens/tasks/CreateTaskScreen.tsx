@@ -5,7 +5,7 @@
  * 通常タスク: 報酬・承認の有無・画像必須の設定なし
  * グループタスク: 報酬・承認の有無・画像必須の設定あり、グループメンバー必須
  */
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -28,6 +28,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import api from '../../services/api';
 import { useAvatar } from '../../hooks/useAvatar';
 import AvatarWidget from '../../components/common/AvatarWidget';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * ナビゲーションスタック型定義
@@ -59,6 +61,9 @@ interface GroupMember {
 export default function CreateTaskScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
   const { createTask, isLoading, error, clearError } = useTasks();
   const {
     isVisible: avatarVisible,
@@ -66,6 +71,9 @@ export default function CreateTaskScreen() {
     dispatchAvatarEvent,
     hideAvatar,
   } = useAvatar();
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -735,7 +743,7 @@ export default function CreateTaskScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
@@ -744,44 +752,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: getSpacing(40, width),
+    height: getSpacing(40, width),
     justifyContent: 'center',
     alignItems: 'center',
   },
   backButtonText: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     color: '#4F46E5',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#111827',
   },
   headerSpacer: {
-    width: 40,
+    width: getSpacing(40, width),
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   fieldContainer: {
-    marginBottom: 20,
+    marginBottom: getSpacing(20, width),
   },
   label: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   required: {
     color: '#EF4444',
@@ -790,25 +798,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
+    borderRadius: getBorderRadius(8, width),
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(10, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#111827',
   },
   textArea: {
-    height: 100,
-    paddingTop: 10,
+    height: getSpacing(100, width),
+    paddingTop: getSpacing(10, width),
   },
   segmentContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   segmentButton: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: getSpacing(10, width),
+    paddingHorizontal: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
     borderWidth: 1,
@@ -819,7 +827,7 @@ const styles = StyleSheet.create({
     borderColor: '#4F46E5',
   },
   segmentButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#6B7280',
   },
@@ -827,27 +835,27 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   helpText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#9CA3AF',
-    marginTop: 4,
+    marginTop: getSpacing(4, width),
   },
   dateButton: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    borderRadius: getBorderRadius(8, width),
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(12, width),
   },
   dateButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#111827',
   },
   pickerContainer: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     overflow: 'hidden',
     minHeight: Platform.OS === 'ios' ? 150 : 50,
   },
@@ -857,20 +865,20 @@ const styles = StyleSheet.create({
   },
   pickerItem: {
     height: Platform.OS === 'ios' ? 150 : 50,
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#111827',
   },
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   tagChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(8, width),
+    borderRadius: getBorderRadius(16, width),
     backgroundColor: '#F3F4F6',
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -880,7 +888,7 @@ const styles = StyleSheet.create({
     borderColor: '#4F46E5',
   },
   tagChipText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
     color: '#6B7280',
   },
@@ -889,85 +897,85 @@ const styles = StyleSheet.create({
   },
   tagRemoveIcon: {
     color: '#FFFFFF',
-    fontSize: 12,
-    marginLeft: 4,
+    fontSize: getFontSize(12, width, theme),
+    marginLeft: getSpacing(4, width),
   },
   selectedTagsContainer: {
-    marginBottom: 12,
-    padding: 12,
+    marginBottom: getSpacing(12, width),
+    padding: getSpacing(12, width),
     backgroundColor: '#F0F9FF',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
     borderColor: '#BFDBFE',
   },
   selectedTagsLabel: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
     color: '#1E40AF',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   tagSearchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   tagSearchInput: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 14,
+    borderRadius: getBorderRadius(8, width),
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(8, width),
+    fontSize: getFontSize(14, width, theme),
     color: '#111827',
   },
   tagSearchClear: {
     position: 'absolute',
-    right: 8,
-    padding: 4,
+    right: getSpacing(8, width),
+    padding: getSpacing(4, width),
   },
   tagSearchClearText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#9CA3AF',
   },
   tagExpandButton: {
     backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(10, width),
+    paddingHorizontal: getSpacing(12, width),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
   tagExpandButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#4F46E5',
   },
   tagListContainer: {
-    marginTop: 8,
+    marginTop: getSpacing(8, width),
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    maxHeight: 200,
+    maxHeight: getSpacing(200, width),
   },
   tagListItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
   tagListItemText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
   },
   tagListEmptyText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#9CA3AF',
     textAlign: 'center',
-    paddingVertical: 16,
+    paddingVertical: getSpacing(16, width),
   },
   switchRow: {
     flexDirection: 'row',
@@ -975,7 +983,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   switchLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#374151',
   },
@@ -983,29 +991,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
     borderColor: '#4F46E5',
-    borderRadius: 8,
-    paddingVertical: 14,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(14, width),
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: getSpacing(8, width),
   },
   decomposeButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#4F46E5',
   },
   createButton: {
     backgroundColor: '#4F46E5',
-    borderRadius: 8,
-    paddingVertical: 14,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(14, width),
     alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 40,
+    marginTop: getSpacing(12, width),
+    marginBottom: getSpacing(40, width),
   },
   createButtonDisabled: {
     backgroundColor: '#9CA3AF',
   },
   createButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#FFFFFF',
   },

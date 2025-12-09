@@ -4,7 +4,7 @@
  * タグ別バケット表示（Web版整合性）
  * 検索時のみタスクカード表示に切り替え
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAvatar } from '../../hooks/useAvatar';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import BucketCard from '../../components/tasks/BucketCard';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow, getHeaderTitleProps } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * バケット型定義
@@ -53,6 +55,10 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export default function TaskListScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
+  const { width, deviceSize } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
+  
   const {
     tasks,
     isLoading,
@@ -77,6 +83,12 @@ export default function TaskListScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+
+  /**
+   * タブレット対応: 1カラム固定（視認性優先）
+   * ResponsiveDesignGuideline.md Section 9参照
+   */
+  const numColumns = 1;
 
   /**
    * タスクをタグ別にグループ化してバケットを生成
@@ -404,11 +416,20 @@ export default function TaskListScreen() {
     );
   }, [isLoadingMore]);
 
+  /**
+   * レスポンシブスタイル生成
+   * 画面幅・デバイスサイズ・テーマに基づいて動的に計算
+   */
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+
   return (
     <View style={styles.container}>
       {/* ヘッダー */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>
+        <Text 
+          style={styles.headerTitle}
+          {...getHeaderTitleProps()}
+        >
           {theme === 'child' ? 'やること' : 'タスク一覧'}
         </Text>
         <TouchableOpacity style={styles.createButton} onPress={navigateToCreate}>
@@ -464,10 +485,13 @@ export default function TaskListScreen() {
       ) : (
         /* 通常時: バケット表示（100件超のユーザーのみ無限スクロール） */
         <FlatList
+          key={numColumns} // numColumns変更時に再レンダリング
           data={buckets}
           renderItem={renderBucketItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContent}
+          numColumns={numColumns} // タブレット対応: 2カラム表示
+          columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#4F46E5']} />
           }
@@ -489,9 +513,14 @@ export default function TaskListScreen() {
   );
 }
 
-
-
-const styles = StyleSheet.create({
+/**
+ * レスポンシブスタイル生成関数
+ * 
+ * @param width - 画面幅
+ * @param theme - テーマタイプ
+ * @returns StyleSheet
+ */
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
@@ -500,98 +529,102 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: getFontSize(24, width, theme),
+    fontWeight: 'bold' as const,
     color: '#111827',
   },
   createButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: getSpacing(40, width),
+    height: getSpacing(40, width),
+    borderRadius: getBorderRadius(20, width),
     backgroundColor: '#4F46E5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   createButtonText: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(8, width),
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
   searchInput: {
     flex: 1,
-    height: 40,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    height: getSpacing(40, width),
+    paddingHorizontal: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#F3F4F6',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#111827',
   },
   clearButton: {
-    marginLeft: 8,
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginLeft: getSpacing(8, width),
+    width: getSpacing(32, width),
+    height: getSpacing(32, width),
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   clearButtonText: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     color: '#9CA3AF',
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
   },
   searchResultContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(8, width),
     backgroundColor: '#EEF2FF',
   },
   searchResultText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#4F46E5',
-    fontWeight: '600',
+    fontWeight: '600' as const,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between' as const,
+    gap: getSpacing(16, width),
   },
   filterContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    flexDirection: 'row' as const,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#FFFFFF',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   filterButton: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: getSpacing(8, width),
+    paddingHorizontal: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#F3F4F6',
-    alignItems: 'center',
+    alignItems: 'center' as const,
   },
   filterButtonActive: {
     backgroundColor: '#4F46E5',
   },
   filterButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '600' as const,
     color: '#6B7280',
   },
   filterButtonTextActive: {
     color: '#FFFFFF',
   },
   listContent: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   taskItem: {
     backgroundColor: '#FFFFFF',
@@ -618,13 +651,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   completedText: {
-    textDecorationLine: 'line-through',
+    textDecorationLine: 'line-through' as const,
     color: '#9CA3AF',
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: getSpacing(8, width),
+    paddingVertical: getSpacing(4, width),
+    borderRadius: getBorderRadius(4, width),
   },
   statusPending: {
     backgroundColor: '#FEF3C7',
@@ -639,85 +672,85 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEE2E2',
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: getFontSize(12, width, theme),
+    fontWeight: '600' as const,
     color: '#374151',
   },
   taskDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
-    marginBottom: 12,
-    lineHeight: 20,
+    marginBottom: getSpacing(12, width),
+    lineHeight: getFontSize(20, width, theme),
   },
   tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: getSpacing(8, width),
+    marginBottom: getSpacing(12, width),
   },
   tagBadge: {
     backgroundColor: '#E0E7FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: getSpacing(10, width),
+    paddingVertical: getSpacing(4, width),
+    borderRadius: getBorderRadius(12, width),
   },
   tagText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#4F46E5',
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   taskFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
   },
   taskReward: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '600' as const,
     color: '#F59E0B',
   },
   taskDueDate: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#9CA3AF',
   },
   completeButton: {
-    marginTop: 12,
+    marginTop: getSpacing(12, width),
     backgroundColor: '#10B981',
-    borderRadius: 8,
-    paddingVertical: 10,
-    alignItems: 'center',
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(10, width),
+    alignItems: 'center' as const,
   },
   completeButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '600' as const,
     color: '#FFFFFF',
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    paddingVertical: getSpacing(60, width),
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: getFontSize(18, width, theme),
+    fontWeight: '600' as const,
     color: '#6B7280',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#9CA3AF',
   },
   footerLoading: {
-    paddingVertical: 20,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
+    paddingVertical: getSpacing(20, width),
+    alignItems: 'center' as const,
+    flexDirection: 'row' as const,
+    justifyContent: 'center' as const,
+    gap: getSpacing(10, width),
   },
   loadingText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
-    marginLeft: 8,
+    marginLeft: getSpacing(8, width),
   },
 });

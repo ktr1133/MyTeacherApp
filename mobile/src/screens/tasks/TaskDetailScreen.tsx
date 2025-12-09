@@ -3,7 +3,7 @@
  * 
  * タスク詳細表示、承認/却下機能、画像アップロード
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
 import { useAvatar } from '../../hooks/useAvatar';
 import AvatarWidget from '../../components/common/AvatarWidget';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * ナビゲーションスタック型定義
@@ -43,6 +45,9 @@ export default function TaskDetailScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { theme } = useTheme();
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
   const {
     tasks,
     isLoading,
@@ -71,6 +76,9 @@ export default function TaskDetailScreen() {
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   /**
    * Pull-to-Refresh処理
@@ -629,7 +637,10 @@ const getStatusStyle = (status: string) => {
   }
 };
 
-const styles = StyleSheet.create({
+/**
+ * レスポンシブスタイル生成関数
+ */
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
@@ -638,8 +649,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
@@ -651,11 +662,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButtonText: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     color: '#4F46E5',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#111827',
   },
@@ -666,27 +677,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteButtonText: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   section: {
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(6, width),
     alignSelf: 'flex-start',
   },
   statusPending: {
@@ -702,49 +713,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEE2E2',
   },
   statusText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#374151',
   },
   sectionLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#6B7280',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   description: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#374151',
-    lineHeight: 24,
+    lineHeight: getFontSize(24, width, theme),
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#6B7280',
-    marginRight: 8,
+    marginRight: getSpacing(8, width),
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#111827',
   },
   badge: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
     color: '#4F46E5',
     backgroundColor: '#EEF2FF',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: getSpacing(8, width),
+    paddingVertical: getSpacing(4, width),
+    borderRadius: getBorderRadius(4, width),
   },
   imageGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: getSpacing(12, width),
   },
   imageContainer: {
     position: 'relative',
@@ -754,12 +765,12 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   imageDeleteButton: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: getSpacing(4, width),
+    right: getSpacing(4, width),
     width: 24,
     height: 24,
     borderRadius: 12,
@@ -769,118 +780,118 @@ const styles = StyleSheet.create({
   },
   imageDeleteButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: 'bold',
   },
   uploadButton: {
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
     borderColor: '#4F46E5',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(12, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   uploadButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#4F46E5',
   },
   completeButton: {
     backgroundColor: '#10B981',
-    borderRadius: 8,
-    paddingVertical: 14,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(14, width),
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   completeButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#FFFFFF',
   },
   approvalSection: {
-    marginTop: 12,
+    marginTop: getSpacing(12, width),
   },
   approvalButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: getSpacing(12, width),
   },
   approveButton: {
     flex: 1,
     backgroundColor: '#10B981',
-    borderRadius: 8,
-    paddingVertical: 14,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(14, width),
     alignItems: 'center',
   },
   approveButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#FFFFFF',
   },
   rejectButton: {
     flex: 1,
     backgroundColor: '#EF4444',
-    borderRadius: 8,
-    paddingVertical: 14,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(14, width),
     alignItems: 'center',
   },
   rejectButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#FFFFFF',
   },
   commentContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(16, width),
   },
   commentInput: {
     backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    fontSize: getFontSize(14, width, theme),
     color: '#111827',
     height: 80,
     textAlignVertical: 'top',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   commentButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: getSpacing(12, width),
   },
   cancelButton: {
     flex: 1,
     backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(12, width),
     alignItems: 'center',
   },
   cancelButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#6B7280',
   },
   submitApproveButton: {
     flex: 1,
     backgroundColor: '#10B981',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(12, width),
     alignItems: 'center',
   },
   submitApproveButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#FFFFFF',
   },
   submitRejectButton: {
     flex: 1,
     backgroundColor: '#EF4444',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(12, width),
     alignItems: 'center',
   },
   submitRejectButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#FFFFFF',
   },
@@ -896,14 +907,14 @@ const styles = StyleSheet.create({
   },
   loadingBox: {
     backgroundColor: '#fff',
-    padding: 24,
-    borderRadius: 12,
+    padding: getSpacing(24, width),
+    borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
     minWidth: 200,
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#374151',
     textAlign: 'center',
   },

@@ -4,7 +4,7 @@
  * 既存のスケジュールタスクを編集
  * フォーム構造はScheduledTaskCreateScreenと同じ
  */
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
   Switch,
   Platform,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useScheduledTasks } from '../../hooks/useScheduledTasks';
@@ -61,7 +62,9 @@ const MONTH_DATES = Array.from({ length: 31 }, (_, i) => i + 1);
 export default function ScheduledTaskEditScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<ScreenRouteProp>();
+  const { width } = useResponsive();
   const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
   const { getEditFormData, updateScheduledTask, isLoading, error } = useScheduledTasks();
 
   const scheduledTaskId = route.params?.scheduledTaskId;
@@ -672,13 +675,13 @@ export default function ScheduledTaskEditScreen() {
 /**
  * スタイル定義（ScheduledTaskCreateScreenと同じ）
  */
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6',
   },
   contentContainer: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   centerContainer: {
     flex: 1,
@@ -687,32 +690,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
   },
   section: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(16, width),
+    ...getShadow(3, width),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   label: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
-    marginBottom: 8,
-    marginTop: 12,
+    marginBottom: getSpacing(8, width),
+    marginTop: getSpacing(12, width),
   },
   required: {
     color: '#EF4444',
@@ -721,156 +720,156 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#1F2937',
   },
   textArea: {
-    height: 80,
+    height: getSpacing(80, width),
     textAlignVertical: 'top',
   },
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 12,
-    paddingVertical: 8,
+    marginTop: getSpacing(12, width),
+    paddingVertical: getSpacing(8, width),
   },
   switchLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
   },
   scheduleCard: {
     backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    marginBottom: getSpacing(12, width),
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
   scheduleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   scheduleLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
-    width: 60,
+    width: getSpacing(60, width),
   },
   pickerContainer: {
     flex: 1,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     overflow: 'hidden',
   },
   picker: {
-    height: 40,
+    height: getSpacing(40, width),
   },
   timeInput: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 8,
-    fontSize: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(8, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#1F2937',
   },
   weekdayContainer: {
-    marginTop: 12,
+    marginTop: getSpacing(12, width),
   },
   weekdayLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   weekdayButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   weekdayButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(8, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    marginRight: 8,
-    marginBottom: 8,
+    marginRight: getSpacing(8, width),
+    marginBottom: getSpacing(8, width),
   },
   weekdayButtonSelected: {
     backgroundColor: '#3B82F6',
     borderColor: '#3B82F6',
   },
   weekdayButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
   },
   weekdayButtonTextSelected: {
     color: '#FFFFFF',
   },
   monthDateContainer: {
-    marginTop: 12,
+    marginTop: getSpacing(12, width),
   },
   monthDateLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   monthDateScroll: {
-    maxHeight: 120,
+    maxHeight: getSpacing(120, width),
   },
   monthDateButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   monthDateButton: {
-    width: 40,
-    height: 40,
+    width: getSpacing(40, width),
+    height: getSpacing(40, width),
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    marginRight: 8,
-    marginBottom: 8,
+    marginRight: getSpacing(8, width),
+    marginBottom: getSpacing(8, width),
   },
   monthDateButtonSelected: {
     backgroundColor: '#3B82F6',
     borderColor: '#3B82F6',
   },
   monthDateButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
   },
   monthDateButtonTextSelected: {
     color: '#FFFFFF',
   },
   removeScheduleButton: {
-    marginTop: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    marginTop: getSpacing(12, width),
+    paddingVertical: getSpacing(8, width),
+    paddingHorizontal: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#FEE2E2',
     alignSelf: 'flex-start',
   },
   removeScheduleButtonText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#991B1B',
   },
   addScheduleButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#DBEAFE',
     alignItems: 'center',
   },
   addScheduleButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#1E40AF',
     fontWeight: 'bold',
   },
@@ -882,74 +881,74 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: getSpacing(8, width),
   },
   durationField: {
     flex: 1,
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 8,
-    fontSize: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(8, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#1F2937',
-    marginLeft: 8,
+    marginLeft: getSpacing(8, width),
   },
   durationUnit: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
-    marginLeft: 4,
+    marginLeft: getSpacing(4, width),
   },
   dateButton: {
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
   },
   dateButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#1F2937',
   },
   errorContainer: {
     backgroundColor: '#FEE2E2',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    marginBottom: getSpacing(16, width),
   },
   errorText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#991B1B',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 16,
-    marginBottom: 32,
+    marginTop: getSpacing(16, width),
+    marginBottom: getSpacing(32, width),
   },
   cancelButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
+    paddingVertical: getSpacing(14, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#F3F4F6',
-    marginRight: 8,
+    marginRight: getSpacing(8, width),
     alignItems: 'center',
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#374151',
     fontWeight: 'bold',
   },
   submitButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
+    paddingVertical: getSpacing(14, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#3B82F6',
-    marginLeft: 8,
+    marginLeft: getSpacing(8, width),
     alignItems: 'center',
   },
   submitButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#FFFFFF',
     fontWeight: 'bold',
   },

@@ -11,7 +11,7 @@
  * @see /home/ktr/mtdev/docs/mobile/mobile-rules.md (モバイル開発規則)
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTagTasks } from '../../hooks/useTagTasks';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -38,7 +39,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'TagDetail'>;
  */
 export const TagDetailScreen: React.FC<Props> = ({ route }) => {
   const { tag } = route.params;
-  const { theme } = useTheme();
+  const { theme, themeType } = useTheme();
+  const { width } = useResponsive();
   const {
     linkedTasks,
     availableTasks,
@@ -52,6 +54,9 @@ export const TagDetailScreen: React.FC<Props> = ({ route }) => {
     clearError,
   } = useTagTasks();
   const [refreshing, setRefreshing] = useState(false);
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
 
   /**
    * 初回データ取得
@@ -274,7 +279,7 @@ export const TagDetailScreen: React.FC<Props> = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
@@ -286,60 +291,56 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
   },
   header: {
     backgroundColor: '#FFFFFF',
-    padding: 16,
+    padding: getSpacing(16, width),
     borderLeftWidth: 4,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...getShadow(3, width),
   },
   tagName: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
     color: '#1F2937',
   },
   taskCountBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(12, width),
   },
   taskCountText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
   section: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    marginTop: 8,
-    padding: 16,
+    marginTop: getSpacing(8, width),
+    padding: getSpacing(16, width),
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   sectionCount: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
     fontWeight: 'normal',
   },
   taskCard: {
     backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
+    padding: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
+    marginBottom: getSpacing(8, width),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -348,16 +349,16 @@ const styles = StyleSheet.create({
   },
   taskInfo: {
     flex: 1,
-    marginRight: 12,
+    marginRight: getSpacing(12, width),
   },
   taskTitle: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#1F2937',
   },
   actionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(8, width),
+    borderRadius: getBorderRadius(6, width),
   },
   attachButton: {
     backgroundColor: '#10B981',
@@ -368,7 +369,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
   },
   emptyList: {
     flexGrow: 1,
@@ -377,10 +378,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 48,
+    paddingVertical: getSpacing(48, width),
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#9CA3AF',
     textAlign: 'center',
   },

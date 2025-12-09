@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { notificationService } from '../../services/notification.service';
@@ -32,13 +33,17 @@ type NotificationDetailRouteProp = RouteProp<RootStackParamList, 'NotificationDe
  */
 export default function NotificationDetailScreen() {
   const route = useRoute<NotificationDetailRouteProp>();
-  const { theme } = useTheme();
+  const { theme, themeType } = useTheme();
+  const { width } = useResponsive();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [notification, setNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const { notificationId } = route.params;
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
 
   const loadNotification = useCallback(async () => {
     // 認証チェック中は待機
@@ -192,7 +197,7 @@ export default function NotificationDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6',
@@ -207,118 +212,118 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: getSpacing(24, width),
     backgroundColor: '#F3F4F6',
   },
   errorIcon: {
-    fontSize: 48,
-    marginBottom: 16,
+    fontSize: getFontSize(48, width, theme),
+    marginBottom: getSpacing(16, width),
   },
   errorText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   retryButton: {
     backgroundColor: '#59B9C6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: getSpacing(24, width),
+    paddingVertical: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
   content: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   statusBadge: {
     backgroundColor: '#E5E7EB',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(4, width),
+    borderRadius: getBorderRadius(12, width),
   },
   statusText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#6B7280',
     fontWeight: '600',
   },
   dateText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#9CA3AF',
   },
   priorityBadge: {
     backgroundColor: '#FEE2E2',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(6, width),
     alignSelf: 'flex-start',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   priorityText: {
     color: '#DC2626',
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     fontWeight: '700',
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   categoryContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    gap: 8,
+    marginBottom: getSpacing(16, width),
+    gap: getSpacing(8, width),
   },
   categoryLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
     fontWeight: '600',
   },
   categoryValue: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#59B9C6',
     fontWeight: '600',
   },
   contentBox: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(16, width),
   },
   contentLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   contentText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#1F2937',
-    lineHeight: 24,
+    lineHeight: getFontSize(24, width, theme),
   },
   readInfo: {
     backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
   },
   readInfoLabel: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#6B7280',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   readInfoValue: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#1F2937',
   },
 });

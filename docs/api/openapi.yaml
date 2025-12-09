@@ -1835,6 +1835,317 @@ paths:
                 success: false
                 message: "パスワードの更新に失敗しました"
 
+  /profile/fcm-token:
+    post:
+      summary: FCMトークン登録
+      description: |
+        Firebase Cloud Messaging (FCM) デバイストークンを登録または更新します。
+        アプリ起動時に自動的に呼び出され、Push通知受信のためにトークンをバックエンドに登録します。
+        
+        **処理フロー**:
+        1. 既存トークンがある場合: `last_used_at`を更新、`is_active=TRUE`に設定
+        2. 新規トークンの場合: 新規レコードを作成
+        
+        **マルチデバイス対応**: 同一ユーザーが複数デバイスでログインした場合、全デバイスにPush通知が送信されます。
+      tags: [Profile]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_token, device_type]
+              properties:
+                device_token:
+                  type: string
+                  description: FCMデバイストークン
+                  example: "eXwZ1234abcd5678efgh9012ijkl3456mnop7890qrst1234uvwx5678yzAB"
+                device_type:
+                  type: string
+                  enum: [ios, android]
+                  description: デバイス種別
+                  example: "ios"
+                device_name:
+                  type: string
+                  maxLength: 100
+                  description: デバイス名（オプション）
+                  example: "iPhone 15 Pro"
+                app_version:
+                  type: string
+                  maxLength: 20
+                  description: アプリバージョン（オプション）
+                  example: "1.0.0"
+      responses:
+        '200':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "FCMトークンを登録しました。"
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "入力内容に誤りがあります"
+                errors:
+                  device_type: ["デバイス種別はiosまたはandroidのいずれかを指定してください。"]
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: FCMトークン削除
+      description: |
+        Firebase Cloud Messaging (FCM) デバイストークンを削除（非アクティブ化）します。
+        ログアウト時に呼び出され、該当デバイスへのPush通知送信を停止します。
+        
+        **処理内容**: `is_active = FALSE` に更新（物理削除はしない）
+      tags: [Profile]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_token]
+              properties:
+                device_token:
+                  type: string
+                  description: 削除するFCMデバイストークン
+                  example: "eXwZ1234abcd5678efgh9012ijkl3456mnop7890qrst1234uvwx5678yzAB"
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "FCMトークンを削除しました。"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: トークンが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "指定されたトークンは存在しません"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /profile/notification-settings:
+    get:
+      summary: 通知設定取得
+      description: |
+        ユーザーの通知設定を取得します。
+        設定が存在しない場合は、デフォルト設定（すべてON）を返します。
+        
+        **デフォルト設定**:
+        ```json
+        {
+          "push_enabled": true,
+          "push_task_enabled": true,
+          "push_group_enabled": true,
+          "push_token_enabled": true,
+          "push_system_enabled": true,
+          "push_sound_enabled": true,
+          "push_vibration_enabled": true
+        }
+        ```
+      tags: [Profile]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      push_enabled:
+                        type: boolean
+                        description: Push通知全体のON/OFF
+                        example: true
+                      push_task_enabled:
+                        type: boolean
+                        description: タスク通知のON/OFF
+                        example: true
+                      push_group_enabled:
+                        type: boolean
+                        description: グループ通知のON/OFF
+                        example: true
+                      push_token_enabled:
+                        type: boolean
+                        description: トークン通知のON/OFF
+                        example: true
+                      push_system_enabled:
+                        type: boolean
+                        description: システム通知のON/OFF
+                        example: true
+                      push_sound_enabled:
+                        type: boolean
+                        description: 通知音のON/OFF
+                        example: true
+                      push_vibration_enabled:
+                        type: boolean
+                        description: バイブレーションのON/OFF（Android）
+                        example: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      summary: 通知設定更新
+      description: |
+        ユーザーの通知設定を更新します。
+        
+        **設定可能な項目**:
+        - `push_enabled`: Push通知全体のON/OFF（これがOFFの場合、他の設定に関わらずPush通知は送信されない）
+        - `push_task_enabled`: タスク関連通知（完了申請、承認、却下、割当等）
+        - `push_group_enabled`: グループ関連通知（招待、参加承認等）
+        - `push_token_enabled`: トークン関連通知（残高警告、購入完了）
+        - `push_system_enabled`: システム通知（メンテナンス、アップデート）
+        - `push_sound_enabled`: 通知音
+        - `push_vibration_enabled`: バイブレーション（Android）
+        
+        **注意**: 部分更新可能。指定されたキーのみを更新し、他の設定はそのまま維持されます。
+      tags: [Profile]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                push_enabled:
+                  type: boolean
+                  description: Push通知全体のON/OFF
+                  example: true
+                push_task_enabled:
+                  type: boolean
+                  description: タスク通知のON/OFF
+                  example: true
+                push_group_enabled:
+                  type: boolean
+                  description: グループ通知のON/OFF
+                  example: false
+                push_token_enabled:
+                  type: boolean
+                  description: トークン通知のON/OFF
+                  example: true
+                push_system_enabled:
+                  type: boolean
+                  description: システム通知のON/OFF
+                  example: true
+                push_sound_enabled:
+                  type: boolean
+                  description: 通知音のON/OFF
+                  example: false
+                push_vibration_enabled:
+                  type: boolean
+                  description: バイブレーションのON/OFF
+                  example: true
+            examples:
+              全通知OFF:
+                value:
+                  push_enabled: false
+              グループ通知のみOFF:
+                value:
+                  push_group_enabled: false
+              音とバイブレーションOFF:
+                value:
+                  push_sound_enabled: false
+                  push_vibration_enabled: false
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "通知設定を更新しました。"
+                  data:
+                    type: object
+                    description: 更新後の通知設定（全項目）
+                    properties:
+                      push_enabled:
+                        type: boolean
+                        example: true
+                      push_task_enabled:
+                        type: boolean
+                        example: true
+                      push_group_enabled:
+                        type: boolean
+                        example: false
+                      push_token_enabled:
+                        type: boolean
+                        example: true
+                      push_system_enabled:
+                        type: boolean
+                        example: true
+                      push_sound_enabled:
+                        type: boolean
+                        example: false
+                      push_vibration_enabled:
+                        type: boolean
+                        example: true
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "入力内容に誤りがあります"
+                errors:
+                  settings: ["不正な設定キーが含まれています: invalid_key"]
+                  push_enabled: ["設定値はtrue/falseのいずれかを指定してください。"]
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   # ============================================================
   # Tags API（4エンドポイント）
   # ============================================================

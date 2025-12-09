@@ -6,7 +6,7 @@
  * @module screens/tokens/TokenBalanceScreen
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTokens } from '../../hooks/useTokens';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * トークン残高画面コンポーネント
@@ -37,6 +39,11 @@ const TokenBalanceScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { theme } = useTheme();
   const { balance, refreshBalance, isLoading } = useTokens();
+
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   // 画面フォーカス時に残高を更新
   useEffect(() => {
@@ -166,7 +173,7 @@ const TokenBalanceScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -175,95 +182,87 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingTop: 12,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
+    paddingTop: getSpacing(12, width),
+    paddingBottom: getSpacing(16, width),
+    paddingHorizontal: getSpacing(16, width),
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#333333',
   },
   warningBanner: {
     backgroundColor: '#fff3cd',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 8,
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    marginHorizontal: getSpacing(16, width),
+    marginTop: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
     borderColor: '#ffc107',
   },
   warningText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#856404',
     fontWeight: '600',
   },
   balanceCard: {
     backgroundColor: '#ffffff',
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 24,
-    borderRadius: 12,
+    marginHorizontal: getSpacing(16, width),
+    marginTop: getSpacing(16, width),
+    padding: getSpacing(24, width),
+    borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...getShadow(3),
   },
   balanceLabel: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#666666',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   balanceAmount: {
-    fontSize: 48,
+    fontSize: getFontSize(48, width, theme),
     fontWeight: 'bold',
     color: '#3b82f6',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   balanceUnit: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     color: '#999999',
   },
   freeMonthlyCard: {
     backgroundColor: '#ffffff',
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginHorizontal: getSpacing(16, width),
+    marginTop: getSpacing(16, width),
+    padding: getSpacing(20, width),
+    borderRadius: getBorderRadius(12, width),
+    ...getShadow(3),
   },
   freeMonthlyHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   freeMonthlyLabel: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#333333',
   },
   freeMonthlyAmount: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
     color: '#10b981',
   },
   progressBarContainer: {
-    height: 8,
+    height: getSpacing(8, width),
     backgroundColor: '#e0e0e0',
-    borderRadius: 4,
+    borderRadius: getBorderRadius(4, width),
     overflow: 'hidden',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   progressBar: {
     height: '100%',
@@ -273,53 +272,49 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   usageLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#666666',
   },
   usageAmount: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#333333',
   },
   resetDate: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#999999',
-    marginTop: 4,
+    marginTop: getSpacing(4, width),
   },
   purchaseButton: {
     backgroundColor: '#3b82f6',
-    marginHorizontal: 16,
-    marginTop: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
+    marginHorizontal: getSpacing(16, width),
+    marginTop: getSpacing(24, width),
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
-    shadowColor: '#3b82f6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    ...getShadow(5),
   },
   purchaseButtonText: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#ffffff',
   },
   historyButton: {
     backgroundColor: '#ffffff',
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
+    marginHorizontal: getSpacing(16, width),
+    marginTop: getSpacing(12, width),
+    marginBottom: getSpacing(24, width),
+    paddingVertical: getSpacing(14, width),
+    borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#3b82f6',
   },
   historyButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#3b82f6',
   },

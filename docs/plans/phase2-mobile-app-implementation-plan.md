@@ -29,6 +29,7 @@
 | 2025-12-08 | GitHub Copilot | Phase 2.B-7完了: スケジュールタスク3画面+グループ管理1画面実装、不具合2件修正（3,899行、57テスト成功、6コミット）、完了レポート作成 |
 | 2025-12-09 | GitHub Copilot | Phase 2.B-7完了: アバター管理UI実装完了（3画面、2,287行）、タップ拡大機能・画像並び替え実装、9テスト修正完了、完了レポート作成 |
 | 2025-12-09 | GitHub Copilot | Phase 2.B-7.5詳細計画策定: Push通知要件定義書作成（PushNotification.md）、Firebase/FCM統合・デバイス管理・通知設定実装計画 |
+| 2025-12-09 | GitHub Copilot | Phase 2.B-7.5中断: バックエンド実装完了（FCMサービス・Push送信ジョブ・OpenAPI更新）、Apple Developer未登録のため実装中断、中間レポート作成 |
 
 ---
 
@@ -161,26 +162,34 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
       - `docs/reports/mobile/2025-12-08-phase2-b6-performance-screen-completion-report.md`
       - `docs/reports/mobile/2025-12-08-phase2-b6-token-subscription-mobile-implementation-report.md`
       - `docs/reports/mobile/2025-12-07-phase2-b6-tag-feature-complete-implementation-report.md`
-  - 🎯 **Phase 2.B-7.5**: Push通知機能（Firebase/FCM）（1週間、2025-12-09～）
+  - ⏸️ **Phase 2.B-7.5中断**: Push通知機能（Firebase/FCM）（1週間、2025-12-09～）
     - **要件定義**: `/home/ktr/mtdev/definitions/mobile/PushNotification.md`（2025-12-09作成）
-    - **Firebase統合**: iOS/Android設定、FCMトークン登録、デバイス管理
-    - **バックエンドAPI実装**: 
-      - FCMトークン管理API（`POST /api/v1/profile/fcm-token`, `DELETE /api/v1/profile/fcm-token`）
-      - 通知設定API（`GET /api/v1/profile/notification-settings`, `PUT /api/v1/profile/notification-settings`）
-      - Push送信ジョブ（`SendPushNotificationJob`）
-      - デバイストークンテーブル（`user_device_tokens`）
-    - **モバイル実装**:
-      - FCMトークン登録・更新処理（アプリ起動時）
-      - Push通知受信処理（フォアグラウンド・バックグラウンド・アプリ終了時）
-      - 通知タップ時の画面遷移（通知詳細画面、action_url対応）
-      - 通知設定画面（`NotificationSettingsScreen.tsx`）
-      - カテゴリ別ON/OFF設定（タスク・グループ・トークン・システム）
-    - **テスト実装**:
-      - Laravel: 15テスト（FCMトークンAPI 6 + 通知設定API 5 + Push送信ジョブ 7）
-      - Mobile: 20テスト（Service 8 + Hook 6 + UI 6）
-      - 実機テスト（iOS TestFlight + Android内部テスト）
-    - **実装予定工数**: 5日（環境構築0.5日、バックエンド1.5日、モバイル2日、テスト1日）
-  - 🎯 **Phase 2.B-8**: 総合テスト・バグ修正（1週間）
+    - **実装完了（バックエンド）**:
+      - ✅ Firebase Admin SDK統合（kreait/firebase-php v7.0）
+      - ✅ FCMサービス実装（FcmService.php、280行）
+      - ✅ Push送信ジョブ（SendPushNotificationJob.php、240行、リトライ機能付き）
+      - ✅ OpenAPI仕様書更新（4エンドポイント定義、300行追加）
+      - ✅ DIコンテナ設定（AppServiceProvider）
+      - ✅ セキュリティ設定（.gitignore、credentials.json除外）
+      - ✅ ドキュメント（storage/app/firebase/README.md、セットアップ手順）
+    - **中断理由**: 
+      - ❌ **Apple Developer Program未登録**（年額14,800円）
+      - ❌ APNs認証キー（.p8ファイル）取得不可
+      - ❌ iOS実機テスト不可（APNs証明書必須）
+    - **未実装項目（モバイル・テスト）**:
+      - ❌ モバイルFCMトークン登録処理（0.5日）
+      - ❌ モバイルPush通知受信処理（1日）
+      - ❌ 通知設定画面（NotificationSettingsScreen.tsx、0.5日）
+      - ❌ Laravelテスト（15テスト、0.5日）
+      - ❌ Mobileテスト（20テスト、0.5日）
+      - ❌ 実機テスト（iOS TestFlight + Android内部テスト、0.5日）
+    - **残工数**: 4日（モバイル3日 + テスト1日）
+    - **再開条件**: Apple Developer Program登録完了 → APNs認証キー取得 → Firebase Console設定
+    - **中間レポート**: `docs/reports/mobile/2025-12-09-phase2-b7-5-push-notification-interim-report.md`
+  - 🎯 **Phase 2.B-8**: デザイン修正・総合テスト・バグ修正等（1週間）
+    - **モバイル画面修正**:  モバイルのレスポンシブ対応を行うとともにスタイルをWeb版スタイルに寄せる。
+      - 関連ドキュメント１：　Web版スタイル統一計画書: `/home/ktr/mtdev/docs/plans/phase2-b8-web-style-alignment-plan.  md`に基づき対応
+      - 関連ドキュメント２：　モバイルアプリレスポンシブ設計ガイドライン `/home/ktr/mtdev/definitions/mobile/ResponsiveDesignGuideline.md`
     - **PDF生成・共有機能実装**: react-native-html-to-pdf、expo-sharing
     - **月次レポートPDF出力**: Web版と同じレイアウト、日本語フォント対応
     - **ネイティブ共有ダイアログ**: メール、クラウドストレージ、メッセージアプリ連携

@@ -3,7 +3,7 @@
  * 
  * 特定のタグに紐づくタスクを一覧表示
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,8 @@ import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navig
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAvatar } from '../../hooks/useAvatar';
 import AvatarWidget from '../../components/common/AvatarWidget';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * ナビゲーションスタック型定義
@@ -44,6 +46,9 @@ export default function TagTasksScreen() {
   const route = useRoute<TagTasksRouteProp>();
   const { tagId, tagName } = route.params;
   const { theme } = useTheme();
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
   const {
     tasks,
     isLoading,
@@ -62,6 +67,9 @@ export default function TagTasksScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   /**
    * 初回データ取得
@@ -126,9 +134,22 @@ export default function TagTasksScreen() {
       if (success) {
         // アバターイベント発火（アバターが完了を通知）
         dispatchAvatarEvent('task_completed');
+        
+        // タスク完了後、このタグのタスクが0件になった場合はタスク一覧に戻る
+        const remainingTasks = filteredTasks.filter(task => 
+          task.id !== taskId && !task.is_completed
+        );
+        
+        if (remainingTasks.length === 0) {
+          console.log('[TagTasksScreen] No remaining tasks, navigating back to TaskList');
+          // 少し遅延させてアバター表示を見せる
+          setTimeout(() => {
+            navigation.navigate('TaskList');
+          }, 500);
+        }
       }
     },
-    [toggleComplete, dispatchAvatarEvent]
+    [toggleComplete, dispatchAvatarEvent, filteredTasks, navigation]
   );
 
   /**
@@ -317,7 +338,14 @@ export default function TagTasksScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+/**
+ * レスポンシブスタイル生成関数
+ * 
+ * @param width - 画面幅
+ * @param theme - テーマ (adult | child)
+ * @returns StyleSheet
+ */
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
@@ -325,9 +353,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingTop: getSpacing(12, width),
+    paddingBottom: getSpacing(16, width),
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
@@ -337,10 +365,10 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: getSpacing(8, width),
   },
   backButtonText: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     color: '#4F46E5',
     fontWeight: 'bold',
   },
@@ -350,76 +378,72 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
     color: '#111827',
     flex: 1,
-    marginRight: 8,
+    marginRight: getSpacing(8, width),
   },
   badge: {
     backgroundColor: '#8B5CF6',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    borderRadius: getBorderRadius(12, width),
+    paddingHorizontal: getSpacing(10, width),
+    paddingVertical: getSpacing(4, width),
     minWidth: 32,
     alignItems: 'center',
   },
   badgeText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
   },
   listContent: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   taskItem: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(12, width),
+    ...getShadow(2),
   },
   taskHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   taskTitle: {
     flex: 1,
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#111827',
-    marginRight: 8,
+    marginRight: getSpacing(8, width),
   },
   completedText: {
     textDecorationLine: 'line-through',
     color: '#9CA3AF',
   },
   taskDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
-    marginBottom: 12,
-    lineHeight: 20,
+    marginBottom: getSpacing(12, width),
+    lineHeight: getFontSize(20, width, theme),
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
+    gap: getSpacing(8, width),
+    marginBottom: getSpacing(12, width),
   },
   tagBadge: {
     backgroundColor: '#E0E7FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: getSpacing(10, width),
+    paddingVertical: getSpacing(4, width),
+    borderRadius: getBorderRadius(12, width),
   },
   tagText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#4F46E5',
     fontWeight: '600',
   },
@@ -429,23 +453,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   taskReward: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#F59E0B',
   },
   taskDueDate: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#9CA3AF',
   },
   completeButton: {
-    marginTop: 12,
+    marginTop: getSpacing(12, width),
     backgroundColor: '#10B981',
-    borderRadius: 8,
-    paddingVertical: 10,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(10, width),
     alignItems: 'center',
   },
   completeButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#FFFFFF',
   },
@@ -453,15 +477,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: getSpacing(60, width),
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
     color: '#6B7280',
   },
   footerLoading: {
-    paddingVertical: 20,
+    paddingVertical: getSpacing(20, width),
     alignItems: 'center',
   },
 });

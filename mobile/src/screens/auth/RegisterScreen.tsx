@@ -1,7 +1,7 @@
 /**
  * 新規登録画面
  */
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 export default function RegisterScreen({ navigation }: any) {
   const [name, setName] = useState('');
@@ -21,6 +23,11 @@ export default function RegisterScreen({ navigation }: any) {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
+
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   const handleRegister = async () => {
     if (!name || !email || !password || !passwordConfirm) {
@@ -115,60 +122,60 @@ export default function RegisterScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f3f4f6',
   },
   content: {
-    padding: 24,
-    paddingTop: 48,
+    padding: getSpacing(24, width),
+    paddingTop: getSpacing(48, width),
   },
   title: {
-    fontSize: 32,
+    fontSize: getFontSize(32, width, theme),
     fontWeight: 'bold',
     color: '#1f2937',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#6b7280',
     textAlign: 'center',
-    marginBottom: 48,
+    marginBottom: getSpacing(48, width),
   },
   form: {
-    gap: 16,
+    gap: getSpacing(16, width),
   },
   input: {
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(16, width),
+    fontSize: getFontSize(16, width, theme),
   },
   button: {
     backgroundColor: '#3b82f6',
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(16, width),
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: getSpacing(8, width),
   },
   buttonDisabled: {
     backgroundColor: '#9ca3af',
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
   linkButton: {
-    padding: 8,
+    padding: getSpacing(8, width),
     alignItems: 'center',
   },
   linkText: {
     color: '#3b82f6',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
 });

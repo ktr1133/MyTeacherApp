@@ -78,6 +78,17 @@ return [
         'admin_client_id' => env('COGNITO_ADMIN_CLIENT_ID'),
     ],
 
+    /**
+     * Firebase Cloud Messaging (FCM) 設定
+     * 
+     * Push通知送信に使用するFirebase Admin SDKの認証情報。
+     * 
+     * @see https://firebase.google.com/docs/admin/setup
+     */
+    'firebase' => [
+        'credentials' => env('FIREBASE_CREDENTIALS_PATH', storage_path('app/firebase/credentials.json')),
+    ],
+
     // ------------------------------------------
     // 教師アバター描画設定項目
     // ------------------------------------------

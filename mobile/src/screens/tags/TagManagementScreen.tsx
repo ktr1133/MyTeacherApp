@@ -11,7 +11,7 @@
  * @see /home/ktr/mtdev/resources/views/tags-list.blade.php (Web版)
  * @see /home/ktr/mtdev/docs/mobile/mobile-rules.md (モバイル開発規則)
  */
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import {
   TextInput,
   Dimensions,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTags } from '../../hooks/useTags';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -45,7 +46,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'TagManagement'>;
  * タグ管理画面コンポーネント
  */
 export default function TagManagementScreen({ navigation }: Props) {
-  const { theme } = useTheme();
+  const { theme, themeType } = useTheme();
+  const { width } = useResponsive();
   const {
     tags,
     isLoading,
@@ -69,6 +71,9 @@ export default function TagManagementScreen({ navigation }: Props) {
   const [editingTagId, setEditingTagId] = useState<number | null>(null);
   const [editingTagName, setEditingTagName] = useState('');
   const DEFAULT_TAG_COLOR = '#3B82F6'; // Web版準拠: 色選択機能なし、デフォルト色固定
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
 
   /**
    * 初回データ取得
@@ -456,7 +461,7 @@ export default function TagManagementScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6',
@@ -465,49 +470,49 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#111827',
   },
   createButton: {
     backgroundColor: '#3B82F6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(8, width),
+    borderRadius: getBorderRadius(8, width),
   },
   createButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
   errorContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FEE2E2',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 8,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(12, width),
+    marginHorizontal: getSpacing(16, width),
+    marginTop: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
   },
   errorText: {
     flex: 1,
     color: '#991B1B',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
   errorDismiss: {
     color: '#991B1B',
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    marginLeft: 8,
+    marginLeft: getSpacing(8, width),
   },
   loadingContainer: {
     flex: 1,
@@ -515,64 +520,60 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
   },
   tagCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(12, width),
+    ...getShadow(2, width),
   },
   tagInfo: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   editForm: {
     flex: 1,
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   editInput: {
     borderWidth: 1,
     borderColor: '#3B82F6',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 16,
+    borderRadius: getBorderRadius(6, width),
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(8, width),
+    fontSize: getFontSize(16, width, theme),
     backgroundColor: '#F9FAFB',
   },
   tagName: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
     color: '#111827',
     flex: 1,
   },
   taskCountBadge: {
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    borderRadius: getBorderRadius(12, width),
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(4, width),
   },
   taskCountText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
   tagActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 6,
+    paddingVertical: getSpacing(8, width),
+    borderRadius: getBorderRadius(6, width),
     alignItems: 'center',
   },
   editButton: {
@@ -596,7 +597,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
   buttonTextDisabled: {
     color: '#9CA3AF',
@@ -604,13 +605,13 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: getSpacing(60, width),
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: getFontSize(24, width, theme),
   },
   modalOverlay: {
     flex: 1,
@@ -620,42 +621,42 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 24,
-    width: width - 48,
+    borderRadius: getBorderRadius(16, width),
+    padding: getSpacing(24, width),
+    width: width - getSpacing(48, width),
     maxWidth: 400,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 20,
+    marginBottom: getSpacing(20, width),
     textAlign: 'center',
   },
   input: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 12,
+    borderRadius: getBorderRadius(8, width),
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
+    marginBottom: getSpacing(12, width),
     backgroundColor: '#F9FAFB',
   },
   colorNote: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#6B7280',
-    marginBottom: 20,
+    marginBottom: getSpacing(20, width),
     textAlign: 'center',
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: getSpacing(12, width),
   },
   modalButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
   },
   modalCancelButton: {
@@ -664,7 +665,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: '#111827',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
   },
   modalSaveButton: {
     backgroundColor: '#3B82F6',
@@ -672,6 +673,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
   },
 });

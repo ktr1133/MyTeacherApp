@@ -4,7 +4,7 @@
  * グループのスケジュールタスク一覧を表示
  * カード形式でステータス（有効・一時停止）、スケジュール、報酬を表示
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,8 @@ import { ScheduledTask } from '../../types/scheduled-task.types';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * ナビゲーションスタック型定義
@@ -43,6 +45,9 @@ export default function ScheduledTaskListScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<ScreenRouteProp>();
   const { theme } = useTheme();
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
   const {
     scheduledTasks,
     isLoading,
@@ -55,6 +60,9 @@ export default function ScheduledTaskListScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const groupId = route.params?.groupId || 1; // デフォルトはグループID=1
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   /**
    * 初回データ取得
@@ -470,9 +478,9 @@ export default function ScheduledTaskListScreen() {
 }
 
 /**
- * スタイル定義
+ * レスポンシブスタイル生成関数
  */
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6',
@@ -482,79 +490,75 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F3F4F6',
-    padding: 20,
+    padding: getSpacing(20, width),
   },
   listContainer: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   header: {
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(12, width),
+    ...getShadow(3),
   },
   statusBadge: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    top: getSpacing(12, width),
+    right: getSpacing(12, width),
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(4, width),
+    borderRadius: getBorderRadius(12, width),
   },
   statusText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     fontWeight: 'bold',
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
     marginRight: 80, // ステータスバッジ分のスペース
   },
   cardDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
-    marginBottom: 12,
-    lineHeight: 20,
+    marginBottom: getSpacing(12, width),
+    lineHeight: getFontSize(20, width, theme),
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
     width: 100,
     flexShrink: 0,
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#1F2937',
     flex: 1,
   },
   rewardValue: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#F59E0B',
     fontWeight: 'bold',
     flex: 1,
@@ -562,41 +566,41 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 8,
-    marginBottom: 12,
+    marginTop: getSpacing(8, width),
+    marginBottom: getSpacing(12, width),
   },
   tag: {
     backgroundColor: '#DBEAFE',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 6,
-    marginBottom: 6,
+    paddingHorizontal: getSpacing(8, width),
+    paddingVertical: getSpacing(4, width),
+    borderRadius: getBorderRadius(12, width),
+    marginRight: getSpacing(6, width),
+    marginBottom: getSpacing(6, width),
   },
   tagText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#1E40AF',
   },
   moreTagsText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#6B7280',
     alignSelf: 'center',
   },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: getSpacing(12, width),
+    paddingTop: getSpacing(12, width),
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: getSpacing(8, width),
+    paddingHorizontal: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#F3F4F6',
-    marginHorizontal: 4,
+    marginHorizontal: getSpacing(4, width),
   },
   pauseButton: {
     backgroundColor: '#FEF3C7',
@@ -608,7 +612,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEE2E2',
   },
   actionButtonText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     textAlign: 'center',
     color: '#1F2937',
   },
@@ -616,72 +620,72 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: getSpacing(32, width),
   },
   emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16,
+    fontSize: getFontSize(64, width, theme),
+    marginBottom: getSpacing(16, width),
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
     color: '#1F2937',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
     textAlign: 'center',
   },
   emptyDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
+    marginBottom: getSpacing(24, width),
+    lineHeight: getFontSize(20, width, theme),
   },
   createButton: {
     backgroundColor: '#3B82F6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: getSpacing(24, width),
+    paddingVertical: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
   },
   createButtonBottom: {
     backgroundColor: '#3B82F6',
-    paddingVertical: 16,
-    borderRadius: 8,
-    marginTop: 16,
-    marginBottom: 32,
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
+    marginTop: getSpacing(16, width),
+    marginBottom: getSpacing(32, width),
   },
   createButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
     textAlign: 'center',
   },
   errorText: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#EF4444',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
     textAlign: 'center',
   },
   errorMessage: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   retryButton: {
     backgroundColor: '#3B82F6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: getSpacing(24, width),
+    paddingVertical: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
   },
 });

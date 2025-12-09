@@ -1,6 +1,7 @@
 /**
  * ホーム画面（認証後）
  */
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,10 +11,16 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../utils/responsive';
+import { useChildTheme } from '../hooks/useChildTheme';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { user, logout } = useAuth();
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   return (
     <View style={styles.container}>
@@ -95,165 +102,165 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f3f4f6',
   },
   content: {
     flex: 1,
-    padding: 24,
+    padding: getSpacing(24, width),
     justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: '600',
     color: '#1f2937',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   userName: {
-    fontSize: 32,
+    fontSize: getFontSize(32, width, theme),
     fontWeight: 'bold',
     color: '#3b82f6',
-    marginBottom: 32,
+    marginBottom: getSpacing(32, width),
   },
   infoBox: {
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 24,
+    padding: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
+    marginBottom: getSpacing(24, width),
   },
   infoLabel: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#6b7280',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   infoValue: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#1f2937',
   },
   statusBox: {
     backgroundColor: '#d1fae5',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 32,
+    padding: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
+    marginBottom: getSpacing(32, width),
     alignItems: 'center',
   },
   statusText: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
     color: '#059669',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   statusSubtext: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#059669',
   },
   taskButton: {
     backgroundColor: '#10b981',
-    paddingVertical: 16,
-    borderRadius: 8,
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   taskButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
   },
   avatarButton: {
     backgroundColor: '#EC4899',
-    paddingVertical: 16,
-    borderRadius: 8,
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   avatarButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
   },
   notificationButton: {
     backgroundColor: '#59B9C6',
-    paddingVertical: 16,
-    borderRadius: 8,
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   notificationButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
   },
   tagButton: {
     backgroundColor: '#8B5CF6',
-    paddingVertical: 16,
-    borderRadius: 8,
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   tagButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
   },
   performanceButton: {
     backgroundColor: '#06b6d4',
-    paddingVertical: 16,
-    borderRadius: 8,
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   performanceButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
   },
   tokenButton: {
     backgroundColor: '#f97316',
-    paddingVertical: 16,
-    borderRadius: 8,
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   tokenButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
   },
   subscriptionButton: {
     backgroundColor: '#6366f1',
-    paddingVertical: 16,
-    borderRadius: 8,
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   subscriptionButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
   },
   profileButton: {
     backgroundColor: '#3b82f6',
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(16, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   profileButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#fff',
   },
   logoutButton: {
     backgroundColor: '#ef4444',
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(16, width),
     alignItems: 'center',
   },
   logoutButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
 });

@@ -6,7 +6,7 @@
  * @module screens/tokens/TokenPackageListScreen
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -37,6 +38,8 @@ const TokenPackageListScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { theme } = useTheme();
   const { packages, loadPackages, isLoading, error } = useTokens();
+  const { width } = useResponsive();
+  const styles = useMemo(() => createStyles(width), [width]);
 
   // 画面フォーカス時にパッケージを更新
   useEffect(() => {
@@ -201,7 +204,7 @@ const TokenPackageListScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f3f4f6',
@@ -209,23 +212,23 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
   backButton: {
-    paddingVertical: 8,
-    paddingRight: 16,
+    paddingVertical: getSpacing(8, width),
+    paddingRight: getSpacing(16, width),
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     color: '#3b82f6',
     fontWeight: '600',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, {}),
     fontWeight: '600',
     color: '#1f2937',
     flex: 1,
@@ -234,90 +237,86 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   errorContainer: {
     backgroundColor: '#fee2e2',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
+    padding: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
+    marginBottom: getSpacing(16, width),
   },
   errorText: {
     color: '#991b1b',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, {}),
   },
   emptyContainer: {
-    padding: 32,
+    padding: getSpacing(32, width),
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     color: '#6b7280',
   },
   packageCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(20, width),
+    marginBottom: getSpacing(16, width),
+    ...getShadow(3, width),
   },
   packageName: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, {}),
     fontWeight: '700',
     color: '#1f2937',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   packageDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, {}),
     color: '#6b7280',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   packageInfoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   packageInfoLabel: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     color: '#6b7280',
   },
   packageTokens: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, {}),
     fontWeight: '700',
     color: '#3b82f6',
   },
   packagePrice: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, {}),
     fontWeight: '600',
     color: '#1f2937',
   },
   discountBadge: {
     backgroundColor: '#fef3c7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(12, width),
     alignSelf: 'flex-start',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   discountText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, {}),
     fontWeight: '600',
     color: '#92400e',
   },
   purchaseButton: {
     backgroundColor: '#3b82f6',
-    paddingVertical: 14,
-    borderRadius: 8,
+    paddingVertical: getSpacing(14, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: getSpacing(8, width),
   },
   purchaseButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '600',
     color: '#ffffff',
   },

@@ -50,6 +50,11 @@ use App\Repositories\Portal\FaqRepositoryInterface;
 use App\Repositories\Portal\EloquentFaqRepository;
 use App\Repositories\Portal\AppUpdateRepositoryInterface;
 use App\Repositories\Portal\EloquentAppUpdateRepository;
+// Firebase FCM
+use App\Repositories\DeviceToken\DeviceTokenRepositoryInterface;
+use App\Repositories\DeviceToken\DeviceTokenEloquentRepository;
+use App\Repositories\NotificationSettings\NotificationSettingsRepositoryInterface;
+use App\Repositories\NotificationSettings\NotificationSettingsEloquentRepository;
 // サービスのインポート
 use App\Services\Admin\UserServiceInterface;
 use App\Services\Admin\UserService;
@@ -163,6 +168,12 @@ class AppServiceProvider extends ServiceProvider
         // --- Notification ---
         $this->app->bind(NotificationRepositoryInterface::class, NotificationRepository::class);
 
+        // --- DeviceToken ---
+        $this->app->bind(DeviceTokenRepositoryInterface::class, DeviceTokenEloquentRepository::class);
+
+        // --- NotificationSettings ---
+        $this->app->bind(NotificationSettingsRepositoryInterface::class, NotificationSettingsEloquentRepository::class);
+
         // --- Payment ---
         $this->app->bind(PaymentHistoryRepositoryInterface::class, PaymentHistoryEloquentRepository::class);
 
@@ -250,6 +261,15 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Notification ---
         $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
+
+        // --- DeviceToken ---
+        $this->app->bind(\App\Services\DeviceToken\DeviceTokenManagementServiceInterface::class, \App\Services\DeviceToken\DeviceTokenManagementService::class);
+
+        // --- NotificationSettings ---
+        $this->app->bind(\App\Services\NotificationSettings\NotificationSettingsServiceInterface::class, \App\Services\NotificationSettings\NotificationSettingsService::class);
+
+        // --- FCM (Firebase Cloud Messaging) ---
+        $this->app->bind(\App\Services\Fcm\FcmServiceInterface::class, \App\Services\Fcm\FcmService::class);
 
         // --- Token ---
         $this->app->bind(TokenPurchaseApprovalServiceInterface::class, TokenPurchaseApprovalService::class);

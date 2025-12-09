@@ -64,18 +64,6 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
 
       const response: NotificationListResponse = await notificationService.getNotifications(page);
 
-      // デバッグ: レスポンスデータ確認
-      console.log('[useNotifications] Response data:', {
-        notifications_count: response.data.notifications.length,
-        unread_count: response.data.unread_count,
-        all_notifications: response.data.notifications.map(n => ({
-          id: n.id,
-          has_template: n.template != null,
-          template_title: n.template?.title,
-          template_content: n.template?.content,
-        })),
-      });
-
       if (page === 1) {
         // 最初のページは上書き
         setNotifications(response.data.notifications);
@@ -218,7 +206,6 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
   const startPolling = useCallback(() => {
     // 認証チェック
     if (!isAuthenticated) {
-      console.log('[useNotifications] Cannot start polling: not authenticated');
       return;
     }
 
@@ -226,8 +213,6 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
-
-    console.log('[useNotifications] Starting polling...');
 
     // 30秒間隔でポーリング
     pollingIntervalRef.current = setInterval(async () => {
@@ -244,7 +229,6 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
 
         // 未読件数が増えた場合は通知一覧を再取得
         if (newUnreadCount > unreadCount) {
-          console.log('[useNotifications] New notifications detected, refreshing...');
           await fetchNotifications(1);
         } else {
           // 未読件数のみ更新
@@ -272,7 +256,6 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
    */
   const stopPolling = useCallback(() => {
     if (pollingIntervalRef.current) {
-      console.log('[useNotifications] Stopping polling...');
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
@@ -282,7 +265,6 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
   useEffect(() => {
     // 認証チェック完了待機
     if (authLoading) {
-      console.log('[useNotifications] Waiting for auth check...');
       return;
     }
 
@@ -294,8 +276,6 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
       if (enablePolling) {
         startPolling();
       }
-    } else {
-      console.log('[useNotifications] Not authenticated, skipping notification fetch');
     }
 
     // クリーンアップ時にポーリング停止

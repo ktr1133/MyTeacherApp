@@ -6,7 +6,7 @@
  * - 再提案: 追加の改善要望を入力して再度提案
  * - 採用: 提案されたタスクを選択して一括作成
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -67,7 +68,9 @@ interface EditableTask extends ProposedTask {
 export default function TaskDecompositionScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<TaskDecompositionRouteProp>();
+  const { width } = useResponsive();
   const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
   const { dispatchAvatarEvent } = useAvatar();
 
   // ルートパラメータから初期値を取得
@@ -779,7 +782,7 @@ export default function TaskDecompositionScreen() {
 /**
  * スタイル定義
  */
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: any) => StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -788,74 +791,74 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   container: {
     flex: 1,
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
     color: '#333',
   },
   titleChild: {
-    fontSize: 28,
+    fontSize: getFontSize(28, width, theme),
     color: '#FF6B6B',
   },
   description: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#666',
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: getSpacing(20, width),
   },
   label: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
     color: '#333',
   },
   required: {
     color: '#FF6B6B',
   },
   helperText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#999',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
     fontStyle: 'italic',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     backgroundColor: '#fff',
   },
   textArea: {
-    height: 100,
+    height: getSpacing(100, width),
     textAlignVertical: 'top',
   },
   infoBox: {
     backgroundColor: '#E3F2FD',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 20,
+    padding: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
+    marginBottom: getSpacing(20, width),
   },
   infoText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#1976D2',
   },
   taskList: {
-    marginBottom: 20,
+    marginBottom: getSpacing(20, width),
   },
   taskCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(12, width),
     borderWidth: 2,
     borderColor: '#ddd',
   },
@@ -866,70 +869,70 @@ const styles = StyleSheet.create({
   taskCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   checkbox: {
-    width: 24,
-    height: 24,
+    width: getSpacing(24, width),
+    height: getSpacing(24, width),
     borderWidth: 2,
     borderColor: '#4CAF50',
-    borderRadius: 4,
-    marginRight: 12,
+    borderRadius: getBorderRadius(4, width),
+    marginRight: getSpacing(12, width),
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
     color: '#4CAF50',
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
   },
   taskTitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#333',
     flex: 1,
   },
   taskDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#666',
-    marginBottom: 8,
-    marginLeft: 36,
+    marginBottom: getSpacing(8, width),
+    marginLeft: getSpacing(36, width),
   },
   taskMeta: {
     flexDirection: 'row',
-    marginLeft: 36,
-    marginTop: 8,
+    marginLeft: getSpacing(36, width),
+    marginTop: getSpacing(8, width),
   },
   taskMetaText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#999',
-    marginRight: 16,
+    marginRight: getSpacing(16, width),
   },
   taskEditGroup: {
-    marginTop: 8,
-    marginLeft: 36,
+    marginTop: getSpacing(8, width),
+    marginLeft: getSpacing(36, width),
   },
   taskEditLabel: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
     color: '#666',
   },
   taskHelperText: {
-    fontSize: 10,
+    fontSize: getFontSize(10, width, theme),
     color: '#999',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
     fontStyle: 'italic',
   },
   spanButtonGroup: {
     flexDirection: 'row',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   spanButton: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 4,
+    paddingVertical: getSpacing(8, width),
+    paddingHorizontal: getSpacing(12, width),
+    borderRadius: getBorderRadius(4, width),
     borderWidth: 1,
     borderColor: '#ddd',
     backgroundColor: '#fff',
@@ -940,14 +943,14 @@ const styles = StyleSheet.create({
     borderColor: '#4CAF50',
   },
   spanButtonText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#666',
     fontWeight: '500',
   },
   spanButtonSubText: {
-    fontSize: 10,
+    fontSize: getFontSize(10, width, theme),
     color: '#999',
-    marginTop: 2,
+    marginTop: getSpacing(2, width),
   },
   spanButtonTextActive: {
     color: '#fff',
@@ -956,16 +959,16 @@ const styles = StyleSheet.create({
   taskInput: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 4,
-    padding: 8,
-    fontSize: 14,
+    borderRadius: getBorderRadius(4, width),
+    padding: getSpacing(8, width),
+    fontSize: getFontSize(14, width, theme),
     backgroundColor: '#fff',
   },
   button: {
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(16, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   primaryButton: {
     backgroundColor: '#4CAF50',
@@ -980,12 +983,12 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
   buttonTextSecondary: {
     color: '#333',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
 });

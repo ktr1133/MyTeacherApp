@@ -35,15 +35,9 @@ class TaskService {
    */
   async getTasks(filters?: TaskFilters): Promise<TaskListResponse['data']> {
     try {
-      console.log('[TaskService] getTasks called, filters:', filters);
-      console.log('[TaskService] API base URL:', api.defaults.baseURL);
-      
       const response = await api.get<TaskListResponse>('/tasks', {
         params: filters,
       });
-
-      console.log('[TaskService] getTasks response status:', response.status);
-      console.log('[TaskService] getTasks response data:', JSON.stringify(response.data).substring(0, 200));
 
       if (!response.data.success) {
         console.error('[TaskService] getTasks failed: success=false');

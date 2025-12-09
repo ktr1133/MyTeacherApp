@@ -4,7 +4,7 @@
  * 通常タスク専用の編集画面
  * グループタスクは編集不可（TaskDetailScreenで表示のみ）
  */
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -26,6 +26,8 @@ import { TaskSpan, Task } from '../../types/task.types';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import api from '../../services/api';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * ナビゲーションスタック型定義
@@ -45,6 +47,9 @@ export default function TaskEditScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const { theme } = useTheme();
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
   const { dispatchAvatarEvent } = useAvatarContext();
   const { tasks, updateTask, deleteTask, getTask, isLoading } = useTasks();
 
@@ -52,6 +57,9 @@ export default function TaskEditScreen() {
   const [task, setTask] = useState<Task | null>(null);
   const [loadingTask, setLoadingTask] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -96,19 +104,12 @@ export default function TaskEditScreen() {
   const loadTask = async () => {
     setLoadingTask(true);
     try {
-      console.log('[TaskEditScreen] loadTask - taskId:', taskId);
-      console.log('[TaskEditScreen] loadTask - tasks count:', tasks.length);
-      
       let foundTask: Task | undefined = tasks.find((t) => t.id === taskId);
       
       // tasksが空、またはタスクが見つからない場合はgetTaskでAPI取得
       if (!foundTask) {
-        console.log('[TaskEditScreen] Task not found in current tasks, calling getTask API...');
         const result = await getTask(taskId);
         foundTask = result ?? undefined;
-        console.log('[TaskEditScreen] getTask result:', foundTask ? `id=${foundTask.id}` : 'null');
-      } else {
-        console.log('[TaskEditScreen] foundTask from existing tasks:', `id=${foundTask.id}`);
       }
       
       if (!foundTask) {
@@ -674,13 +675,16 @@ export default function TaskEditScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+/**
+ * レスポンシブスタイル生成関数
+ */
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
   contentContainer: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   loadingContainer: {
     flex: 1,
@@ -689,13 +693,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   formGroup: {
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   label: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   required: {
     color: '#EF4444',
@@ -703,9 +707,9 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     backgroundColor: '#fff',
     color: '#111827',
   },
@@ -715,13 +719,13 @@ const styles = StyleSheet.create({
   },
   spanButtonGroup: {
     flexDirection: 'row',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   spanButton: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(8, width),
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
     borderColor: '#D1D5DB',
     backgroundColor: '#fff',
@@ -732,14 +736,14 @@ const styles = StyleSheet.create({
     borderColor: '#4F46E5',
   },
   spanButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
     fontWeight: '600',
   },
   spanButtonSubText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#6B7280',
-    marginTop: 2,
+    marginTop: getSpacing(2, width),
   },
   spanButtonTextActive: {
     color: '#fff',
@@ -747,7 +751,7 @@ const styles = StyleSheet.create({
   pickerContainer: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#fff',
     overflow: 'hidden',
   },
@@ -756,59 +760,59 @@ const styles = StyleSheet.create({
   },
   pickerItem: {
     height: 150,
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
   },
   dateButton: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
     backgroundColor: '#fff',
   },
   dateButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#111827',
   },
   tagCount: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#4F46E5',
     fontWeight: '600',
   },
   tagSearchInput: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    fontSize: getFontSize(14, width, theme),
     backgroundColor: '#fff',
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   selectedTagsContainer: {
-    marginBottom: 12,
-    padding: 12,
+    marginBottom: getSpacing(12, width),
+    padding: getSpacing(12, width),
     backgroundColor: '#F9FAFB',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
   selectedTagsLabel: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
     color: '#6B7280',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   tagExpandButton: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
     backgroundColor: '#fff',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   tagExpandButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#4F46E5',
     fontWeight: '600',
   },
@@ -816,21 +820,21 @@ const styles = StyleSheet.create({
     maxHeight: 200,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
     backgroundColor: '#FAFAFA',
   },
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   tagChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(16, width),
     backgroundColor: '#E5E7EB',
     borderWidth: 1,
     borderColor: '#D1D5DB',
@@ -840,26 +844,26 @@ const styles = StyleSheet.create({
     borderColor: '#4F46E5',
   },
   tagChipText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
   },
   tagRemoveIcon: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#fff',
     fontWeight: 'bold',
-    marginLeft: 4,
+    marginLeft: getSpacing(4, width),
   },
   noResultsText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#9CA3AF',
     textAlign: 'center',
-    paddingVertical: 16,
+    paddingVertical: getSpacing(16, width),
   },
   button: {
-    padding: 16,
-    borderRadius: 8,
+    padding: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: getSpacing(8, width),
   },
   updateButton: {
     backgroundColor: '#4F46E5',
@@ -869,7 +873,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
   loadingOverlay: {
@@ -884,14 +888,14 @@ const styles = StyleSheet.create({
   },
   loadingBox: {
     backgroundColor: '#fff',
-    padding: 24,
-    borderRadius: 12,
+    padding: getSpacing(24, width),
+    borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
     minWidth: 200,
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#374151',
     textAlign: 'center',
   },

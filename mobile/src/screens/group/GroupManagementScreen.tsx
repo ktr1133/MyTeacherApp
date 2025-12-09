@@ -11,7 +11,7 @@
  * Profile → GroupManagement → ScheduledTaskList
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow, getHeaderTitleProps } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * GroupManagementScreen コンポーネント
@@ -31,12 +33,18 @@ export const GroupManagementScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { user } = useAuth();
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
 
   // グループ情報（userから取得）
   const groupId = user?.group_id;
   const groupName = user?.group?.name || 'マイグループ';
   const isGroupMaster = user?.group_edit_flg ?? false;
   const [refreshing, setRefreshing] = useState(false);
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   /**
    * Pull-to-Refresh処理
@@ -90,7 +98,7 @@ export const GroupManagementScreen: React.FC = () => {
       <View style={styles.content}>
         {/* ヘッダー */}
         <View style={styles.header}>
-          <Text style={styles.title}>
+          <Text style={styles.title} {...getHeaderTitleProps()}>
             {theme === 'child' ? 'グループかんり' : 'グループ管理'}
           </Text>
         </View>
@@ -245,74 +253,73 @@ export const GroupManagementScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+/**
+ * レスポンシブスタイル生成関数
+ * 
+ * @param width - 画面幅
+ * @param theme - テーマ (adult | child)
+ * @returns StyleSheet
+ */
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
   },
   content: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   header: {
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#1e293b',
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(24, width),
+    ...getShadow(2),
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#475569',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: getSpacing(12, width),
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#64748b',
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#1e293b',
   },
   menuSection: {
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#1e293b',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   menuItem: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(12, width),
+    ...getShadow(1),
   },
   menuItemDisabled: {
     opacity: 0.6,
@@ -328,48 +335,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuIcon: {
-    fontSize: 24,
-    marginRight: 12,
+    fontSize: getFontSize(24, width, theme),
+    marginRight: getSpacing(12, width),
   },
   menuItemTitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#1e293b',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   menuItemDescription: {
-    fontSize: 13,
+    fontSize: getFontSize(13, width, theme),
     color: '#64748b',
   },
   comingSoonBadge: {
-    fontSize: 11,
+    fontSize: getFontSize(11, width, theme),
     color: '#f59e0b',
     fontWeight: '600',
-    marginTop: 4,
+    marginTop: getSpacing(4, width),
   },
   menuArrow: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     color: '#cbd5e1',
     fontWeight: '300',
   },
   helpSection: {
     backgroundColor: '#f0f9ff',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
     borderWidth: 1,
     borderColor: '#bae6fd',
   },
   helpTitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#0284c7',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   helpText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#0369a1',
-    lineHeight: 20,
-    marginBottom: 8,
+    lineHeight: getFontSize(20, width, theme),
+    marginBottom: getSpacing(8, width),
   },
 });
 

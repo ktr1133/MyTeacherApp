@@ -109,13 +109,11 @@ export const useTasks = (): UseTasksReturn => {
   const fetchTasks = useCallback(
     async (filters?: TaskFilters): Promise<Task[]> => {
       try {
-        console.log('[useTasks] fetchTasks started, filters:', filters);
         setIsLoading(true);
         setError(null);
         setCurrentFilters(filters);
 
         const response = await taskService.getTasks(filters);
-        console.log('[useTasks] fetchTasks success, tasks count:', response.tasks.length);
         setTasks(response.tasks);
         setPagination(response.pagination);
         return response.tasks; // 取得したタスク配列を返す

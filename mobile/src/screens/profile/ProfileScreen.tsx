@@ -9,7 +9,7 @@
  * - テーマ対応UI（adult/child）
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useProfile } from '../../hooks/useProfile';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * ProfileScreen コンポーネント
@@ -39,6 +41,11 @@ export const ProfileScreen: React.FC = () => {
     updateProfile,
     deleteProfile,
   } = useProfile(theme);
+
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [username, setUsername] = useState('');
@@ -337,13 +344,13 @@ export const ProfileScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
   },
   content: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   loadingContainer: {
     flex: 1,
@@ -352,63 +359,63 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#64748b',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#1e293b',
   },
   editButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(8, width),
     backgroundColor: '#3b82f6',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   editButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
   },
   errorContainer: {
-    padding: 12,
+    padding: getSpacing(12, width),
     backgroundColor: '#fef2f2',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderLeftWidth: 4,
     borderLeftColor: '#ef4444',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   errorText: {
     color: '#dc2626',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
   form: {
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   fieldGroup: {
-    marginBottom: 20,
+    marginBottom: getSpacing(20, width),
   },
   label: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#475569',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   input: {
-    padding: 12,
+    padding: getSpacing(12, width),
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#cbd5e1',
-    borderRadius: 8,
-    fontSize: 16,
+    borderRadius: getBorderRadius(8, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#1e293b',
   },
   inputDisabled: {
@@ -416,18 +423,18 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
   textArea: {
-    height: 100,
+    height: getSpacing(100, width),
     textAlignVertical: 'top',
   },
   buttonGroup: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
+    gap: getSpacing(12, width),
+    marginBottom: getSpacing(24, width),
   },
   button: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
+    paddingVertical: getSpacing(14, width),
+    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
   },
   cancelButton: {
@@ -439,7 +446,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3b82f6',
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#475569',
   },
@@ -447,44 +454,44 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   groupButton: {
-    paddingVertical: 14,
+    paddingVertical: getSpacing(14, width),
     backgroundColor: '#f0fdf4',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
     borderColor: '#bbf7d0',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   groupButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#16a34a',
   },
   passwordButton: {
-    paddingVertical: 14,
+    paddingVertical: getSpacing(14, width),
     backgroundColor: '#f0f9ff',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
     borderColor: '#bae6fd',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   passwordButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#0284c7',
   },
   deleteButton: {
-    paddingVertical: 14,
+    paddingVertical: getSpacing(14, width),
     backgroundColor: '#fef2f2',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
     borderColor: '#fecaca',
     alignItems: 'center',
   },
   deleteButtonText: {
     color: '#dc2626',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
 });

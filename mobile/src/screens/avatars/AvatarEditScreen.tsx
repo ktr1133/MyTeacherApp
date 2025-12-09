@@ -15,7 +15,7 @@
  *      Phase 2.B-7範囲では個別実装とする（リファクタリングは次フェーズで検討）
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAvatarManagement } from '../../hooks/useAvatarManagement';
@@ -59,7 +60,8 @@ type AvatarEditScreenRouteProp = RouteProp<RootStackParamList, 'AvatarEdit'>;
 export const AvatarEditScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<AvatarEditScreenRouteProp>();
-  const { theme } = useTheme();
+  const { theme, themeType } = useTheme();
+  const { width } = useResponsive();
   const { updateAvatar, isLoading, error } = useAvatarManagement();
 
   const avatar = route.params?.avatar;
@@ -91,6 +93,9 @@ export const AvatarEditScreen: React.FC = () => {
   const [modalTitle, setModalTitle] = useState('');
   const [modalOptions, setModalOptions] = useState<Array<{value: string, label: string, emoji?: string}>>([]);
   const [modalOnSelect, setModalOnSelect] = useState<(value: string) => void>(() => () => {});
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
 
   useEffect(() => {
     if (!avatar) {
@@ -559,7 +564,7 @@ export const AvatarEditScreen: React.FC = () => {
 };
 
 // スタイル定義（AvatarCreateScreenと同一）
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -568,67 +573,63 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8DC',
   },
   content: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   header: {
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   childTitle: {
-    fontSize: 26,
+    fontSize: getFontSize(26, width, theme),
     color: '#FF6B35',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#666',
   },
   childSubtitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#FF8C42',
   },
   section: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(16, width),
+    ...getShadow(3, width),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   childSectionTitle: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     color: '#FF6B35',
   },
   formGroup: {
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   label: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   childLabel: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#FF8C42',
   },
   pickerWrapper: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#fff',
     minHeight: 50,
     justifyContent: 'center',
@@ -644,13 +645,13 @@ const styles = StyleSheet.create({
   },
   pickerItem: {
     height: 120,
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
   },
   warning: {
     backgroundColor: '#E0F2FE',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    marginTop: getSpacing(8, width),
     borderWidth: 1,
     borderColor: '#38BDF8',
   },
@@ -659,34 +660,34 @@ const styles = StyleSheet.create({
     borderColor: '#FFD93D',
   },
   warningText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#075985',
     textAlign: 'center',
   },
   childWarningText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#FF6B35',
     fontWeight: 'bold',
   },
   errorContainer: {
     backgroundColor: '#F8D7DA',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    marginBottom: getSpacing(16, width),
     borderWidth: 1,
     borderColor: '#F5C6CB',
   },
   errorText: {
     color: '#721C24',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     textAlign: 'center',
   },
   button: {
     backgroundColor: '#8B5CF6',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   childButton: {
     backgroundColor: '#FF6B35',
@@ -696,14 +697,14 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
   },
   childButtonText: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
   },
   footer: {
-    height: 32,
+    height: getSpacing(32, width),
   },
   selectButton: {
     flexDirection: 'row',
@@ -711,9 +712,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#fff',
-    padding: 15,
+    padding: getSpacing(15, width),
     minHeight: 50,
   },
   childSelectButton: {
@@ -721,11 +722,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   selectButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#1F2937',
   },
   selectButtonArrow: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#9CA3AF',
   },
   modalOverlay: {
@@ -735,43 +736,43 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: getBorderRadius(20, width),
+    borderTopRightRadius: getBorderRadius(20, width),
     maxHeight: '70%',
-    paddingBottom: 20,
+    paddingBottom: getSpacing(20, width),
   },
   childModalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: getBorderRadius(24, width),
+    borderTopRightRadius: getBorderRadius(24, width),
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: getSpacing(20, width),
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#1F2937',
   },
   childModalTitle: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     color: '#FF6B35',
   },
   modalClose: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     color: '#9CA3AF',
   },
   modalOption: {
-    padding: 16,
+    padding: getSpacing(16, width),
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
   modalOptionText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#1F2937',
   },
 });

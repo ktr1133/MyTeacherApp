@@ -6,7 +6,7 @@
  * @module screens/subscriptions/SubscriptionInvoicesScreen
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
   SafeAreaView,
   Linking,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -42,6 +43,8 @@ const SubscriptionInvoicesScreen: React.FC = () => {
     loadInvoices,
     isLoading,
   } = useSubscription();
+  const { width } = useResponsive();
+  const styles = useMemo(() => createStyles(width), [width]);
 
   // 画面フォーカス時にデータ更新
   useEffect(() => {
@@ -219,7 +222,7 @@ const SubscriptionInvoicesScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
@@ -229,85 +232,81 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#4A90E2',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    paddingVertical: getSpacing(20, width),
+    paddingHorizontal: getSpacing(16, width),
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, {}),
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   emptyContainer: {
-    padding: 40,
+    padding: getSpacing(40, width),
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     color: '#999999',
   },
   invoicesList: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   invoiceCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: getBorderRadius(8, width),
+    marginBottom: getSpacing(16, width),
+    ...getShadow(3, width),
   },
   invoiceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: getSpacing(16, width),
     borderBottomWidth: 1,
     borderBottomColor: '#EEEEEE',
   },
   invoiceDate: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: 'bold',
     color: '#333333',
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(12, width),
   },
   statusText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, {}),
     fontWeight: 'bold',
   },
   invoiceBody: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   amountRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   amountLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, {}),
     color: '#666666',
   },
   amountValue: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, {}),
     fontWeight: 'bold',
     color: '#333333',
   },
   pdfButton: {
     backgroundColor: '#4A90E2',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+    paddingVertical: getSpacing(10, width),
+    paddingHorizontal: getSpacing(16, width),
+    borderRadius: getBorderRadius(6, width),
     alignItems: 'center',
   },
   pdfButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, {}),
     fontWeight: 'bold',
   },
 });

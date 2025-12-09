@@ -9,7 +9,7 @@
  * - テーマ対応UI（adult/child）
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,8 @@ import { Picker } from '@react-native-picker/picker';
 import { useProfile } from '../../hooks/useProfile';
 import { useTheme } from '../../contexts/ThemeContext';
 import { userService } from '../../services/user.service';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
  * SettingsScreen コンポーネント
@@ -36,6 +38,11 @@ export const SettingsScreen: React.FC = () => {
     getTimezoneSettings,
     updateTimezone,
   } = useProfile(theme);
+
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   const [currentTheme, setCurrentTheme] = useState<'adult' | 'child'>(theme);
   const [timezone, setTimezone] = useState('');
@@ -298,63 +305,59 @@ export const SettingsScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
   },
   content: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#1e293b',
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   errorContainer: {
-    padding: 12,
+    padding: getSpacing(12, width),
     backgroundColor: '#fef2f2',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderLeftWidth: 4,
     borderLeftColor: '#ef4444',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   errorText: {
     color: '#dc2626',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
   section: {
-    marginBottom: 32,
-    padding: 16,
+    marginBottom: getSpacing(32, width),
+    padding: getSpacing(16, width),
     backgroundColor: '#fff',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    borderRadius: getBorderRadius(12, width),
+    ...getShadow(2),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
     color: '#1e293b',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   sectionDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#64748b',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   themeButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: getSpacing(12, width),
   },
   themeButton: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#f1f5f9',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 2,
     borderColor: '#cbd5e1',
     alignItems: 'center',
@@ -364,7 +367,7 @@ const styles = StyleSheet.create({
     borderColor: '#3b82f6',
   },
   themeButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#475569',
   },
@@ -374,12 +377,12 @@ const styles = StyleSheet.create({
   pickerContainer: {
     borderWidth: 1,
     borderColor: '#cbd5e1',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#fff',
     overflow: 'hidden',
   },
   picker: {
-    height: 50,
+    height: getSpacing(50, width),
   },
   settingRow: {
     flexDirection: 'row',
@@ -388,41 +391,41 @@ const styles = StyleSheet.create({
   },
   settingInfo: {
     flex: 1,
-    marginRight: 16,
+    marginRight: getSpacing(16, width),
   },
   settingTitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#1e293b',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   settingDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#64748b',
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: getSpacing(12, width),
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
   infoLabel: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#475569',
   },
   infoValue: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#1e293b',
   },
   linkButton: {
-    paddingVertical: 12,
+    paddingVertical: getSpacing(12, width),
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
   linkButtonText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#3b82f6',
     fontWeight: '500',
   },

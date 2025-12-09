@@ -38,8 +38,6 @@ api.interceptors.request.use(
 // レスポンスインターセプター（401エラー処理）
 api.interceptors.response.use(
   (response) => {
-    console.log('[API] Response status:', response.status);
-    console.log('[API] Response data preview:', JSON.stringify(response.data).substring(0, 150));
     return response;
   },
   async (error) => {

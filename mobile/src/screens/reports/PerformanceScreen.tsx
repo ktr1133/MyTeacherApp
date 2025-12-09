@@ -5,7 +5,7 @@
  * Web版Performance.mdの要件定義に基づく
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
   Modal,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -28,7 +29,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 export default function PerformanceScreen() {
   const navigation = useNavigation();
-  const { theme } = useTheme();
+  const { theme, themeType } = useTheme();
+  const { width } = useResponsive();
   const { dispatchAvatarEvent } = useAvatarContext();
   const {
     data,
@@ -49,6 +51,9 @@ export default function PerformanceScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const hasShownAvatar = useRef(false);
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
 
   /**
    * 初回マウント時のアバター表示
@@ -544,13 +549,13 @@ export default function PerformanceScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f3f4f6',
   },
   scrollContent: {
-    paddingBottom: 24,
+    paddingBottom: getSpacing(24, width),
   },
   loadingContainer: {
     flex: 1,
@@ -558,79 +563,79 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#6b7280',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: getSpacing(24, width),
   },
   errorText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#ef4444',
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    marginTop: getSpacing(16, width),
+    paddingHorizontal: getSpacing(24, width),
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#59B9C6',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: '700',
     color: '#1f2937',
   },
   monthlyReportButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(8, width),
     backgroundColor: '#59B9C6',
-    borderRadius: 8,
-    gap: 4,
+    borderRadius: getBorderRadius(8, width),
+    gap: getSpacing(4, width),
   },
   monthlyReportButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
   },
   tabContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#fff',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   tab: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: getSpacing(8, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#f3f4f6',
-    gap: 4,
+    gap: getSpacing(4, width),
   },
   tabActive: {
     backgroundColor: '#59B9C6',
@@ -639,7 +644,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   tabText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#6b7280',
   },
@@ -648,17 +653,17 @@ const styles = StyleSheet.create({
   },
   taskTypeContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#fff',
-    gap: 8,
+    gap: getSpacing(8, width),
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
   taskTypeTab: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: getSpacing(8, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#f3f4f6',
     alignItems: 'center',
   },
@@ -666,7 +671,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#8B5CF6',
   },
   taskTypeTabText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#6b7280',
   },
@@ -677,14 +682,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#fff',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   navButton: {
-    padding: 8,
-    borderRadius: 8,
+    padding: getSpacing(8, width),
+    borderRadius: getBorderRadius(8, width),
     backgroundColor: '#f3f4f6',
     position: 'relative',
   },
@@ -697,111 +702,103 @@ const styles = StyleSheet.create({
     right: 2,
   },
   periodLabel: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#1f2937',
   },
   summaryContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginTop: 8,
-    gap: 8,
+    paddingHorizontal: getSpacing(16, width),
+    marginTop: getSpacing(8, width),
+    gap: getSpacing(8, width),
   },
   summaryCard: {
     flex: 1,
-    padding: 16,
+    padding: getSpacing(16, width),
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    ...getShadow(2, width),
   },
   summaryLabel: {
-    marginTop: 8,
-    fontSize: 12,
+    marginTop: getSpacing(8, width),
+    fontSize: getFontSize(12, width, theme),
     color: '#6b7280',
   },
   summaryValue: {
-    marginTop: 4,
-    fontSize: 18,
+    marginTop: getSpacing(4, width),
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '700',
     color: '#1f2937',
   },
   subscriptionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 16,
+    marginHorizontal: getSpacing(16, width),
+    marginTop: getSpacing(16, width),
+    padding: getSpacing(16, width),
     backgroundColor: '#f3e8ff',
-    borderRadius: 12,
+    borderRadius: getBorderRadius(12, width),
     borderWidth: 1,
     borderColor: '#8B5CF6',
   },
   subscriptionBannerContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: getSpacing(12, width),
   },
   subscriptionBannerTitle: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#6b21a8',
   },
   subscriptionBannerText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#7c3aed',
-    marginTop: 2,
+    marginTop: getSpacing(2, width),
   },
   subscriptionBannerButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(8, width),
     backgroundColor: '#8B5CF6',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   subscriptionBannerButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
   },
   // メンバー選択
   memberSelectContainer: {
-    marginHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: getSpacing(16, width),
+    marginBottom: getSpacing(16, width),
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    ...getShadow(3, width),
   },
   memberSelectHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   memberSelectLabel: {
-    marginLeft: 8,
-    fontSize: 14,
+    marginLeft: getSpacing(8, width),
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#374151',
   },
   lockBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    marginLeft: getSpacing(8, width),
+    paddingHorizontal: getSpacing(8, width),
+    paddingVertical: getSpacing(4, width),
     backgroundColor: '#f3e8ff',
-    borderRadius: 12,
+    borderRadius: getBorderRadius(12, width),
   },
   lockBadgeText: {
-    marginLeft: 4,
-    fontSize: 10,
+    marginLeft: getSpacing(4, width),
+    fontSize: getFontSize(10, width, theme),
     fontWeight: '600',
     color: '#8B5CF6',
   },
@@ -809,15 +806,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#d1d5db',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   memberSelectButtonText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#374151',
     fontWeight: '500',
   },
@@ -829,32 +826,32 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: getBorderRadius(20, width),
+    borderTopRightRadius: getBorderRadius(20, width),
     maxHeight: '70%',
-    paddingBottom: 20,
+    paddingBottom: getSpacing(20, width),
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(20, width),
+    paddingVertical: getSpacing(16, width),
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '700',
     color: '#1f2937',
   },
   modalList: {
-    paddingHorizontal: 20,
+    paddingHorizontal: getSpacing(20, width),
   },
   memberItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: getSpacing(16, width),
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
@@ -863,8 +860,8 @@ const styles = StyleSheet.create({
   },
   memberItemText: {
     flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
+    marginLeft: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#374151',
   },
   memberItemTextSelected: {
@@ -874,7 +871,7 @@ const styles = StyleSheet.create({
   pickerContainer: {
     borderWidth: 1,
     borderColor: '#d1d5db',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     overflow: 'hidden',
     backgroundColor: '#f9fafb',
   },
@@ -882,21 +879,21 @@ const styles = StyleSheet.create({
     height: 50,
   },
   pickerItem: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
   lockedMemberSelect: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
     backgroundColor: '#f9fafb',
     borderWidth: 2,
     borderColor: '#d8b4fe',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   lockedMemberSelectText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6b7280',
   },
 });

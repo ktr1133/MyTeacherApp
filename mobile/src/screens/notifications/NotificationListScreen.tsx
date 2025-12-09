@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,8 @@ import { Notification, getNotificationTypeLabel } from '../../types/notification
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 type RootStackParamList = {
   NotificationList: undefined;
@@ -57,6 +59,11 @@ export default function NotificationListScreen() {
     loadMore,
     refresh,
   } = useNotifications(true); // ポーリング有効化（30秒間隔）
+
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -356,7 +363,7 @@ const formatDate = (dateString: string, theme: 'adult' | 'child'): string => {
   return `${year}/${month}/${day}`;
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
@@ -365,8 +372,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
@@ -374,76 +381,72 @@ const styles = StyleSheet.create({
   headerTitle: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   headerTitleText: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
     color: '#1F2937',
   },
   unreadBadge: {
     backgroundColor: '#59B9C6',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    minWidth: 24,
+    borderRadius: getBorderRadius(12, width),
+    paddingHorizontal: getSpacing(8, width),
+    paddingVertical: getSpacing(2, width),
+    minWidth: getSpacing(24, width),
     alignItems: 'center',
   },
   unreadBadgeText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     fontWeight: 'bold',
   },
   markAllReadButton: {
     backgroundColor: '#59B9C6',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    borderRadius: getBorderRadius(8, width),
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(8, width),
   },
   markAllReadButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
   },
   searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
   searchInput: {
     backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
+    borderRadius: getBorderRadius(8, width),
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(10, width),
+    fontSize: getFontSize(14, width, theme),
     color: '#1F2937',
   },
   errorContainer: {
     backgroundColor: '#FEE2E2',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginTop: 12,
-    borderRadius: 8,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(12, width),
+    marginHorizontal: getSpacing(16, width),
+    marginTop: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
   },
   errorText: {
     color: '#DC2626',
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
   },
   notificationItem: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 6,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    padding: getSpacing(16, width),
+    marginHorizontal: getSpacing(16, width),
+    marginVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(12, width),
+    ...getShadow(2),
   },
   notificationItemUnread: {
     backgroundColor: '#EFF6FF',
@@ -451,57 +454,57 @@ const styles = StyleSheet.create({
     borderLeftColor: '#59B9C6',
   },
   notificationIndicator: {
-    width: 12,
+    width: getSpacing(12, width),
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingTop: 4,
+    paddingTop: getSpacing(4, width),
   },
   unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: getSpacing(8, width),
+    height: getSpacing(8, width),
+    borderRadius: getBorderRadius(4, width),
     backgroundColor: '#59B9C6',
   },
   notificationContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: getSpacing(12, width),
   },
   priorityBadge: {
     backgroundColor: '#FEE2E2',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: getSpacing(8, width),
+    paddingVertical: getSpacing(2, width),
+    borderRadius: getBorderRadius(4, width),
     alignSelf: 'flex-start',
-    marginBottom: 6,
+    marginBottom: getSpacing(6, width),
   },
   priorityText: {
     color: '#DC2626',
-    fontSize: 11,
+    fontSize: getFontSize(11, width, theme),
     fontWeight: '700',
   },
   notificationTitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#1F2937',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   notificationMessage: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   notificationMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   notificationCategory: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#59B9C6',
     fontWeight: '600',
   },
   notificationDate: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#9CA3AF',
   },
   emptyListContent: {
@@ -511,25 +514,25 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 80,
+    paddingVertical: getSpacing(80, width),
   },
   emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16,
+    fontSize: getFontSize(64, width, theme),
+    marginBottom: getSpacing(16, width),
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
     color: '#1F2937',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   emptyDescription: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#6B7280',
     textAlign: 'center',
   },
   loadingFooter: {
-    paddingVertical: 20,
+    paddingVertical: getSpacing(20, width),
     alignItems: 'center',
   },
 });

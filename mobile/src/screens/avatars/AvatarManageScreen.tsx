@@ -15,7 +15,7 @@
  * Web版: /resources/views/avatars/edit.blade.php
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -31,6 +31,7 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAvatarManagement } from '../../hooks/useAvatarManagement';
@@ -44,7 +45,8 @@ const { width } = Dimensions.get('window');
  */
 export const AvatarManageScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { theme } = useTheme();
+  const { theme, themeType } = useTheme();
+  const { width } = useResponsive();
   const {
     avatar,
     isLoading,
@@ -59,6 +61,9 @@ export const AvatarManageScreen: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // レスポンシブスタイル生成
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
 
   /**
    * Pull-to-Refresh処理
@@ -605,7 +610,7 @@ export const AvatarManageScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -618,39 +623,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    padding: 16,
+    padding: getSpacing(16, width),
   },
   header: {
-    marginBottom: 24,
+    marginBottom: getSpacing(24, width),
   },
   title: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#333',
   },
   childTitle: {
-    fontSize: 26,
+    fontSize: getFontSize(26, width, theme),
     color: '#FF6B35',
   },
   section: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(16, width),
+    ...getShadow(3, width),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   childSectionTitle: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     color: '#FF6B35',
   },
   carousel: {
@@ -666,8 +667,8 @@ const styles = StyleSheet.create({
   },
   imageWrapper: {
     position: 'relative',
-    width: width - 32,
-    height: width - 32,
+    width: width - getSpacing(32, width),
+    height: width - getSpacing(32, width),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -675,49 +676,49 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: getBorderRadius(12, width),
   },
   placeholderContainer: {
     width: '100%',
     height: '100%',
     backgroundColor: '#E5E7EB',
-    borderRadius: 12,
+    borderRadius: getBorderRadius(12, width),
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#9CA3AF',
   },
   imageLabel: {
     position: 'absolute',
-    top: 8,
-    left: 8,
+    top: getSpacing(8, width),
+    left: getSpacing(8, width),
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(6, width),
   },
   imageLabelText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#FFFFFF',
     fontWeight: '600',
   },
   thumbnailWrapper: {
-    marginTop: 16,
-    paddingHorizontal: 16,
+    marginTop: getSpacing(16, width),
+    paddingHorizontal: getSpacing(16, width),
     overflow: 'hidden',
   },
   thumbnailContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 10,
+    gap: getSpacing(10, width),
   },
   thumbnail: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
+    width: getSpacing(64, width),
+    height: getSpacing(64, width),
+    borderRadius: getBorderRadius(8, width),
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -727,7 +728,7 @@ const styles = StyleSheet.create({
   thumbnailImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 6,
+    borderRadius: getBorderRadius(6, width),
   },
   placeholderThumbnail: {
     backgroundColor: '#E5E7EB',
@@ -735,38 +736,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholderThumbText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#9CA3AF',
   },
   statusContainer: {
-    paddingVertical: 32,
+    paddingVertical: getSpacing(32, width),
     alignItems: 'center',
   },
   statusText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#666',
   },
   statusTextError: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#DC2626',
   },
   visibilityContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 16,
-    paddingTop: 16,
+    marginTop: getSpacing(16, width),
+    paddingTop: getSpacing(16, width),
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
   label: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#333',
   },
   childLabel: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#FF8C42',
   },
   infoGrid: {
@@ -775,26 +776,26 @@ const styles = StyleSheet.create({
   },
   infoItem: {
     width: '50%',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   infoLabel: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#666',
-    marginBottom: 4,
+    marginBottom: getSpacing(4, width),
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, theme),
     color: '#333',
     fontWeight: '600',
   },
   buttonContainer: {
-    marginTop: 8,
+    marginTop: getSpacing(8, width),
   },
   button: {
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   buttonPrimary: {
     backgroundColor: '#8B5CF6',
@@ -810,36 +811,36 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
   },
   childButtonText: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, theme),
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(16, width, theme),
     color: '#666',
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     color: '#666',
     textAlign: 'center',
   },
   footer: {
-    height: 32,
+    height: getSpacing(32, width),
   },
   tapHint: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: getSpacing(8, width),
+    right: getSpacing(8, width),
     backgroundColor: 'rgba(139, 92, 246, 0.9)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: getSpacing(8, width),
+    paddingVertical: getSpacing(4, width),
+    borderRadius: getBorderRadius(4, width),
   },
   tapHintText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, theme),
     color: '#FFFFFF',
     fontWeight: '600',
   },
@@ -857,30 +858,30 @@ const styles = StyleSheet.create({
   },
   modalHeader: {
     position: 'absolute',
-    top: 60,
+    top: getSpacing(60, width),
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: getSpacing(20, width),
     zIndex: 10,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: getSpacing(40, width),
+    height: getSpacing(40, width),
+    borderRadius: getBorderRadius(20, width),
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeButtonText: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, theme),
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
@@ -896,27 +897,27 @@ const styles = StyleSheet.create({
   },
   navigationButtons: {
     position: 'absolute',
-    bottom: 60,
+    bottom: getSpacing(60, width),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '90%',
-    paddingHorizontal: 20,
+    paddingHorizontal: getSpacing(20, width),
   },
   navButton: {
     backgroundColor: 'rgba(139, 92, 246, 0.9)',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: getSpacing(20, width),
+    paddingVertical: getSpacing(12, width),
+    borderRadius: getBorderRadius(8, width),
   },
   navButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
   pageIndicator: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
 });

@@ -28,6 +28,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PieChart, LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import { MemberSummaryData } from '../../types/performance.types';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 
 type RootStackParamList = {
   MemberSummary: { data: MemberSummaryData };
@@ -44,6 +45,8 @@ export default function MemberSummaryScreen() {
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation<MemberSummaryScreenNavigationProp>();
   const route = useRoute<MemberSummaryScreenRouteProp>();
+  const { width } = useResponsive();
+  const styles = useMemo(() => createStyles(width), [width]);
   const { data } = route.params;
 
   const screenWidth = Dimensions.get('window').width;
@@ -261,7 +264,7 @@ export default function MemberSummaryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (width: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
@@ -270,22 +273,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#111827',
   },
   contentContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: getSpacing(16, width),
+    paddingBottom: getSpacing(32, width),
   },
   headerButton: {
-    padding: 8,
+    padding: getSpacing(8, width),
   },
   section: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(16, width),
+    ...getShadow(2, width),
   },
   sectionDark: {
     backgroundColor: '#1f2937',
@@ -293,43 +292,43 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '600',
     color: '#111827',
-    marginLeft: 8,
+    marginLeft: getSpacing(8, width),
   },
   sectionTitleDark: {
     color: '#f3f4f6',
   },
   commentText: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: getFontSize(14, width, {}),
+    lineHeight: getFontSize(22, width, {}),
     color: '#374151',
   },
   commentTextDark: {
     color: '#d1d5db',
   },
   chartContainer: {
-    marginTop: 12,
+    marginTop: getSpacing(12, width),
     alignItems: 'center',
   },
   lineChart: {
-    borderRadius: 12,
+    borderRadius: getBorderRadius(12, width),
   },
   tokensContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: getSpacing(12, width),
     backgroundColor: '#eff6ff',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   tokensText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, {}),
     color: '#374151',
-    marginLeft: 8,
+    marginLeft: getSpacing(8, width),
     flex: 1,
   },
   tokensTextDark: {
@@ -344,30 +343,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#3b82f6',
-    padding: 14,
-    borderRadius: 8,
+    padding: getSpacing(14, width),
+    borderRadius: getBorderRadius(8, width),
   },
   pdfButtonDisabled: {
     backgroundColor: '#e5e7eb',
   },
   pdfButtonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: getSpacing(8, width),
   },
   pdfButtonTextDisabled: {
     color: '#9ca3af',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: getSpacing(8, width),
   },
   footer: {
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: getSpacing(8, width),
   },
   footerText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, {}),
     color: '#6b7280',
   },
   footerTextDark: {

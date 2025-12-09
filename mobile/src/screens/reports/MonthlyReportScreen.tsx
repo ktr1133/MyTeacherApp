@@ -5,7 +5,7 @@
  * Web版Performance.mdの要件定義に基づく
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -26,6 +27,8 @@ import { Dimensions } from 'react-native';
 
 export default function MonthlyReportScreen() {
   const navigation = useNavigation();
+  const { width } = useResponsive();
+  const styles = useMemo(() => createStyles(width), [width]);
   const {
     report,
     isLoading,
@@ -345,13 +348,13 @@ export default function MonthlyReportScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (width: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f3f4f6',
   },
   scrollContent: {
-    paddingBottom: 24,
+    paddingBottom: getSpacing(24, width),
   },
   loadingContainer: {
     flex: 1,
@@ -359,213 +362,213 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(16, width, {}),
     color: '#6b7280',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: getSpacing(24, width),
   },
   errorText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(16, width, {}),
     color: '#ef4444',
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    marginTop: getSpacing(16, width),
+    paddingHorizontal: getSpacing(24, width),
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#59B9C6',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '600',
   },
   lockContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: getSpacing(32, width),
   },
   lockTitle: {
-    marginTop: 16,
-    fontSize: 24,
+    marginTop: getSpacing(16, width),
+    fontSize: getFontSize(24, width, {}),
     fontWeight: '700',
     color: '#1f2937',
   },
   lockMessage: {
-    marginTop: 8,
-    fontSize: 16,
+    marginTop: getSpacing(8, width),
+    fontSize: getFontSize(16, width, {}),
     color: '#6b7280',
     textAlign: 'center',
   },
   lockNote: {
-    marginTop: 16,
-    fontSize: 14,
+    marginTop: getSpacing(16, width),
+    fontSize: getFontSize(14, width, {}),
     color: '#9ca3af',
     textAlign: 'center',
   },
   subscribeButton: {
-    marginTop: 24,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
+    marginTop: getSpacing(24, width),
+    paddingHorizontal: getSpacing(32, width),
+    paddingVertical: getSpacing(12, width),
     backgroundColor: '#8B5CF6',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   subscribeButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '600',
   },
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: getFontSize(24, width, {}),
     fontWeight: '700',
     color: '#1f2937',
   },
   groupName: {
-    marginTop: 4,
-    fontSize: 14,
+    marginTop: getSpacing(4, width),
+    fontSize: getFontSize(14, width, {}),
     color: '#6b7280',
   },
   monthSelector: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#fff',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   monthSelectorLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, {}),
     fontWeight: '600',
     color: '#1f2937',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   picker: {
     backgroundColor: '#f3f4f6',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
   },
   summarySection: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#fff',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width, {}),
     fontWeight: '700',
     color: '#1f2937',
-    marginBottom: 16,
+    marginBottom: getSpacing(16, width),
   },
   summaryCards: {
     flexDirection: 'row',
-    gap: 12,
+    gap: getSpacing(12, width),
   },
   summaryCard: {
     flex: 1,
-    padding: 16,
+    padding: getSpacing(16, width),
     backgroundColor: '#f9fafb',
-    borderRadius: 12,
+    borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
   },
   summaryCardValue: {
-    marginTop: 8,
-    fontSize: 24,
+    marginTop: getSpacing(8, width),
+    fontSize: getFontSize(24, width, {}),
     fontWeight: '700',
     color: '#1f2937',
   },
   summaryCardLabel: {
-    marginTop: 4,
-    fontSize: 12,
+    marginTop: getSpacing(4, width),
+    fontSize: getFontSize(12, width, {}),
     color: '#6b7280',
   },
   summaryDetailCards: {
     flexDirection: 'row',
-    marginTop: 12,
-    gap: 12,
+    marginTop: getSpacing(12, width),
+    gap: getSpacing(12, width),
   },
   summaryDetailCard: {
     flex: 1,
-    padding: 12,
+    padding: getSpacing(12, width),
     backgroundColor: '#f9fafb',
-    borderRadius: 8,
+    borderRadius: getBorderRadius(8, width),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   summaryDetailLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width, {}),
     color: '#6b7280',
   },
   summaryDetailValue: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '600',
     color: '#1f2937',
   },
   trendSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#fff',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   chart: {
-    marginVertical: 8,
-    borderRadius: 16,
+    marginVertical: getSpacing(8, width),
+    borderRadius: getBorderRadius(16, width),
   },
   memberSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
     backgroundColor: '#fff',
-    marginBottom: 8,
+    marginBottom: getSpacing(8, width),
   },
   memberCard: {
-    marginBottom: 12,
-    padding: 16,
+    marginBottom: getSpacing(12, width),
+    padding: getSpacing(16, width),
     backgroundColor: '#f9fafb',
-    borderRadius: 12,
+    borderRadius: getBorderRadius(12, width),
   },
   memberHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: getSpacing(12, width),
   },
   memberName: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '600',
     color: '#1f2937',
   },
   summaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(6, width),
     backgroundColor: '#f3e8ff',
-    borderRadius: 8,
-    gap: 4,
+    borderRadius: getBorderRadius(8, width),
+    gap: getSpacing(4, width),
   },
   summaryButtonText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, {}),
     fontWeight: '600',
     color: '#8B5CF6',
   },
   memberStatsContainer: {
-    gap: 8,
+    gap: getSpacing(8, width),
   },
   memberStatsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: getSpacing(12, width),
   },
   memberStat: {
     flex: 1,
@@ -574,46 +577,46 @@ const styles = StyleSheet.create({
   memberStatWide: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: getSpacing(4, width),
   },
   memberStatLabel: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width, {}),
     color: '#6b7280',
   },
   memberStatValue: {
-    marginTop: 4,
-    fontSize: 16,
+    marginTop: getSpacing(4, width),
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '600',
     color: '#1f2937',
   },
   aiSummarySection: {
-    marginHorizontal: 16,
-    marginBottom: 8,
-    padding: 16,
+    marginHorizontal: getSpacing(16, width),
+    marginBottom: getSpacing(8, width),
+    padding: getSpacing(16, width),
     backgroundColor: '#f3e8ff',
-    borderRadius: 12,
+    borderRadius: getBorderRadius(12, width),
     borderWidth: 1,
     borderColor: '#8B5CF6',
   },
   aiSummaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 8,
+    marginBottom: getSpacing(12, width),
+    gap: getSpacing(8, width),
   },
   aiSummaryTitle: {
-    fontSize: 16,
+    fontSize: getFontSize(16, width, {}),
     fontWeight: '700',
     color: '#6b21a8',
   },
   aiSummaryContent: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: getFontSize(14, width, {}),
+    lineHeight: getFontSize(22, width, {}),
     color: '#1f2937',
   },
   aiSummaryMeta: {
-    marginTop: 12,
-    fontSize: 12,
+    marginTop: getSpacing(12, width),
+    fontSize: getFontSize(12, width, {}),
     color: '#7c3aed',
   },
 });

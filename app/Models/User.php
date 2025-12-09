@@ -41,6 +41,7 @@ class User extends Authenticatable
         'last_login_at',
         'theme',
         'timezone',
+        'notification_settings',
         'cognito_sub',
         'auth_provider',
         // セキュリティ関連カラム（Stripe要件対応）
@@ -75,6 +76,7 @@ class User extends Authenticatable
         'password' => 'hashed',
         'group_edit_flg' => 'boolean',
         'last_login_at' => 'datetime',
+        'notification_settings' => 'array',
         // セキュリティ関連のキャスト
         'is_locked' => 'boolean',
         'locked_at' => 'datetime',
@@ -116,6 +118,22 @@ class User extends Authenticatable
     public function assignedTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'assigned_by_user_id');
+    }
+
+    /**
+     * このユーザーのデバイストークンを取得する。
+     */
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(UserDeviceToken::class);
+    }
+
+    /**
+     * このユーザーのアクティブなデバイストークンを取得する。
+     */
+    public function activeDeviceTokens(): HasMany
+    {
+        return $this->hasMany(UserDeviceToken::class)->active();
     }
 
     /**
