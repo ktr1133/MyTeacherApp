@@ -15,13 +15,14 @@
  * Web版: /resources/views/avatars/edit.blade.php
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  RefreshControl,
   Alert,
   ActivityIndicator,
   Image,
@@ -56,7 +57,20 @@ export const AvatarManageScreen: React.FC = () => {
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  /**
+   * Pull-to-Refresh処理
+   */
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchAvatar();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchAvatar]);
 
   // 表情順にソートする関数
   const getEmotionOrder = (emotion: string | null): number => {
@@ -94,18 +108,6 @@ export const AvatarManageScreen: React.FC = () => {
   useEffect(() => {
     loadAvatar();
   }, []);
-
-  // デバッグ: アバターデータをログ出力
-  useEffect(() => {
-    if (avatar) {
-      console.log('🎭 [AvatarManageScreen] Avatar loaded:', {
-        id: avatar.id,
-        generation_status: avatar.generation_status,
-        images_count: avatar.images?.length || 0,
-        sortedImages_count: sortedImages.length,
-      });
-    }
-  }, [avatar, sortedImages]);
 
   /**
    * アバター読み込み
@@ -287,7 +289,17 @@ export const AvatarManageScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView style={[styles.container, isChild && styles.childContainer]}>
+    <ScrollView
+      style={[styles.container, isChild && styles.childContainer]}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#4F46E5']}
+          tintColor="#4F46E5"
+        />
+      }
+    >
       <View style={styles.content}>
         {/* ヘッダー */}
         <View style={styles.header}>

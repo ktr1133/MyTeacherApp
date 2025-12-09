@@ -38,7 +38,6 @@ export const AvatarWidget: React.FC<AvatarWidgetProps> = ({
   position = 'center',
   enableAnimation = true,
 }) => {
-  console.log('🎭 [AvatarWidget] Rendered with props:', { visible, hasData: !!data, position, enableAnimation });
   
   // アニメーション値
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -49,9 +48,7 @@ export const AvatarWidget: React.FC<AvatarWidgetProps> = ({
    * 表示アニメーション
    */
   useEffect(() => {
-    console.log('🎭 [AvatarWidget] useEffect triggered:', { visible, enableAnimation });
     if (visible && enableAnimation) {
-      console.log('🎭 [AvatarWidget] Starting animation');
       // フェードイン + スケールアップ
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -199,11 +196,13 @@ export const AvatarWidget: React.FC<AvatarWidgetProps> = ({
   };
 
   if (!data) {
-    console.log('🎭 [AvatarWidget] No data provided, returning null');
     return null;
   }
 
-  console.log('🎭 [AvatarWidget] Rendering modal with data:', data);
+  // visible=falseの時はモーダルをレンダリングしない（完全に削除）
+  if (!visible) {
+    return null;
+  }
   
   return (
     <Modal
@@ -213,42 +212,51 @@ export const AvatarWidget: React.FC<AvatarWidgetProps> = ({
       onRequestClose={onClose}
       testID="avatar-modal"
     >
-      <View style={[styles.overlay, getModalPosition()]}>
-        <Animated.View
-          style={[
-            styles.container,
-            {
-              opacity: fadeAnim,
-              transform: [
-                { scale: scaleAnim },
-                { translateY: avatarAnim },
-              ],
-            },
-          ]}
+      <TouchableOpacity
+        style={[styles.overlay, getModalPosition()]}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
         >
-          {/* 吹き出し */}
-          <View style={styles.bubble}>
-            <Text style={styles.bubbleText}>{data.comment}</Text>
-            <View style={styles.bubbleArrow} />
-          </View>
-
-          {/* アバター画像 */}
-          <Image
-            source={{ uri: data.imageUrl }}
-            style={styles.avatarImage}
-            resizeMode="contain"
-          />
-
-          {/* 閉じるボタン */}
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-            activeOpacity={0.8}
+          <Animated.View
+            style={[
+              styles.container,
+              {
+                opacity: fadeAnim,
+                transform: [
+                  { scale: scaleAnim },
+                  { translateY: avatarAnim },
+                ],
+              },
+            ]}
           >
-            <Text style={styles.closeButtonText}>✕</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
+            {/* 吹き出し */}
+            <View style={styles.bubble}>
+              <Text style={styles.bubbleText}>{data.comment}</Text>
+              <View style={styles.bubbleArrow} />
+            </View>
+
+            {/* アバター画像 */}
+            <Image
+              source={{ uri: data.imageUrl }}
+              style={styles.avatarImage}
+              resizeMode="contain"
+            />
+
+            {/* 閉じるボタン */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };

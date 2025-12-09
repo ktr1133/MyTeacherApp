@@ -122,8 +122,61 @@ class TaskModalController {
     /**
      * タグチェックボックスのUI制御
      * チェック状態に応じてタグチップのスタイルを変更（アクティブ: グラデーション）
+     * 検索・展開機能を含む
      */
     setupTagHandling() {
+        // タグ検索
+        const searchInput = this.form.querySelector(`#tag-search-${this.taskId}`);
+        const expandBtn = this.form.querySelector(`#tag-expand-btn-${this.taskId}`);
+        const tagList = this.form.querySelector(`#tag-list-${this.taskId}`);
+        const selectedTagsContainer = this.form.querySelector(`#selected-tags-${this.taskId}`);
+        const tagCount = this.form.querySelector(`[data-tag-count-${this.taskId}]`);
+        
+        let isExpanded = false;
+        
+        // 展開ボタンのクリック処理
+        if (expandBtn && tagList) {
+            expandBtn.addEventListener('click', () => {
+                isExpanded = !isExpanded;
+                if (isExpanded) {
+                    tagList.classList.remove('hidden');
+                    expandBtn.querySelector('[data-expand-text]').textContent = 'タグを追加 ▲';
+                } else {
+                    tagList.classList.add('hidden');
+                    expandBtn.querySelector('[data-expand-text]').textContent = 'タグを追加 ▼';
+                }
+            });
+        }
+        
+        // タグ検索処理
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase();
+                const availableTags = tagList?.querySelectorAll('[data-available-tags] .tag-chip');
+                let visibleCount = 0;
+                
+                availableTags?.forEach(tag => {
+                    const tagName = tag.getAttribute('data-tag-name')?.toLowerCase() || '';
+                    if (tagName.includes(query)) {
+                        tag.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        tag.classList.add('hidden');
+                    }
+                });
+                
+                // 検索結果なしメッセージ
+                const noResults = tagList?.querySelector('[data-no-results]');
+                if (noResults) {
+                    if (visibleCount === 0) {
+                        noResults.classList.remove('hidden');
+                    } else {
+                        noResults.classList.add('hidden');
+                    }
+                }
+            });
+        }
+        
         const tagCheckboxes = this.form.querySelectorAll('input[name="tags[]"]');
         
         tagCheckboxes.forEach(checkbox => {
@@ -136,8 +189,74 @@ class TaskModalController {
             // 変更時の処理
             checkbox.addEventListener('change', () => {
                 this.updateTagUI(checkbox, label);
+                this.updateTagSelection(checkbox, label);
+            });
+            
+            // ラベルクリックでチェックボックスをトグル
+            label.addEventListener('click', (e) => {
+                e.preventDefault();
+                checkbox.checked = !checkbox.checked;
+                checkbox.dispatchEvent(new Event('change'));
             });
         });
+        
+        // タグ選択状態の更新
+        this.updateSelectedTagsDisplay();
+    }
+    
+    /**
+     * タグ選択状態の更新
+     * 選択/解除時に選択済みエリアと未選択エリア間でタグを移動
+     */
+    updateTagSelection(checkbox, label) {
+        const selectedTagsContainer = this.form.querySelector(`#selected-tags-${this.taskId}`);
+        const tagList = this.form.querySelector(`#tag-list-${this.taskId}`);
+        const tagCount = this.form.querySelector(`[data-tag-count-${this.taskId}]`);
+        const selectedTagsArea = selectedTagsContainer?.querySelector('[data-selected-tags]');
+        const availableTagsArea = tagList?.querySelector('[data-available-tags]');
+        
+        if (checkbox.checked) {
+            // 選択済みエリアに移動
+            if (selectedTagsArea && label.parentElement === availableTagsArea) {
+                selectedTagsArea.appendChild(label);
+                selectedTagsContainer?.classList.remove('hidden');
+            }
+        } else {
+            // 未選択エリアに戻す
+            if (availableTagsArea && label.parentElement === selectedTagsArea) {
+                availableTagsArea.appendChild(label);
+            }
+        }
+        
+        this.updateSelectedTagsDisplay();
+    }
+    
+    /**
+     * 選択済みタグ表示の更新
+     * 選択数のカウント表示と選択済みコンテナの表示/非表示を制御
+     */
+    updateSelectedTagsDisplay() {
+        const selectedTagsContainer = this.form.querySelector(`#selected-tags-${this.taskId}`);
+        const tagCount = this.form.querySelector(`[data-tag-count-${this.taskId}]`);
+        const selectedCheckboxes = this.form.querySelectorAll('input[name="tags[]"]:checked');
+        
+        // カウント表示更新
+        if (tagCount) {
+            if (selectedCheckboxes.length > 0) {
+                tagCount.textContent = `(${selectedCheckboxes.length})`;
+            } else {
+                tagCount.textContent = '';
+            }
+        }
+        
+        // 選択済みコンテナの表示/非表示
+        if (selectedTagsContainer) {
+            if (selectedCheckboxes.length > 0) {
+                selectedTagsContainer.classList.remove('hidden');
+            } else {
+                selectedTagsContainer.classList.add('hidden');
+            }
+        }
     }
     
     /**

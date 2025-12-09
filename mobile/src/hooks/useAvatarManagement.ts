@@ -30,21 +30,17 @@ export const useAvatarManagement = () => {
    * @returns アバター情報（取得成功時）、null（未作成時）
    */
   const fetchAvatar = useCallback(async (): Promise<Avatar | null> => {
-    console.log('🎭 [useAvatarManagement] fetchAvatar called');
     setIsLoading(true);
     setError(null);
 
     try {
       const data = await avatarService.getAvatar();
-      console.log('🎭 [useAvatarManagement] Avatar fetched:', data);
       setAvatar(data);
       return data;
     } catch (err: any) {
-      console.error('🎭 [useAvatarManagement] fetchAvatar error:', err);
       
       // 404エラー（未作成）の場合はエラーとしない
       if (err.response?.status === 404) {
-        console.log('🎭 [useAvatarManagement] Avatar not found (not created yet)');
         setAvatar(null);
         return null;
       }
@@ -65,17 +61,14 @@ export const useAvatarManagement = () => {
    * @throws {Error} 作成失敗時
    */
   const createAvatar = useCallback(async (data: CreateAvatarRequest): Promise<Avatar> => {
-    console.log('🎭 [useAvatarManagement] createAvatar called:', data);
     setIsLoading(true);
     setError(null);
 
     try {
       const createdAvatar = await avatarService.createAvatar(data);
-      console.log('🎭 [useAvatarManagement] Avatar created:', createdAvatar);
       setAvatar(createdAvatar);
       return createdAvatar;
     } catch (err: any) {
-      console.error('🎭 [useAvatarManagement] createAvatar error:', err);
       const errorMessage = err.response?.data?.message || 'アバターの作成に失敗しました。';
       setError(errorMessage);
       throw err;
@@ -92,17 +85,14 @@ export const useAvatarManagement = () => {
    * @throws {Error} 更新失敗時
    */
   const updateAvatar = useCallback(async (data: UpdateAvatarRequest): Promise<Avatar> => {
-    console.log('🎭 [useAvatarManagement] updateAvatar called:', data);
     setIsLoading(true);
     setError(null);
 
     try {
       const updatedAvatar = await avatarService.updateAvatar(data);
-      console.log('🎭 [useAvatarManagement] Avatar updated:', updatedAvatar);
       setAvatar(updatedAvatar);
       return updatedAvatar;
     } catch (err: any) {
-      console.error('🎭 [useAvatarManagement] updateAvatar error:', err);
       const errorMessage = err.response?.data?.message || 'アバターの更新に失敗しました。';
       setError(errorMessage);
       throw err;
@@ -117,16 +107,13 @@ export const useAvatarManagement = () => {
    * @throws {Error} 削除失敗時
    */
   const deleteAvatar = useCallback(async (): Promise<void> => {
-    console.log('🎭 [useAvatarManagement] deleteAvatar called');
     setIsLoading(true);
     setError(null);
 
     try {
       await avatarService.deleteAvatar();
-      console.log('🎭 [useAvatarManagement] Avatar deleted');
       setAvatar(null);
     } catch (err: any) {
-      console.error('🎭 [useAvatarManagement] deleteAvatar error:', err);
       const errorMessage = err.response?.data?.message || 'アバターの削除に失敗しました。';
       setError(errorMessage);
       throw err;
@@ -142,17 +129,14 @@ export const useAvatarManagement = () => {
    * @throws {Error} 再生成失敗時
    */
   const regenerateImages = useCallback(async (): Promise<Avatar> => {
-    console.log('🎭 [useAvatarManagement] regenerateImages called');
     setIsLoading(true);
     setError(null);
 
     try {
       const regeneratedAvatar = await avatarService.regenerateImages();
-      console.log('🎭 [useAvatarManagement] Avatar images regenerated:', regeneratedAvatar);
       setAvatar(regeneratedAvatar);
       return regeneratedAvatar;
     } catch (err: any) {
-      console.error('🎭 [useAvatarManagement] regenerateImages error:', err);
       const errorMessage = err.response?.data?.message || 'アバター画像の再生成に失敗しました。';
       setError(errorMessage);
       throw err;
@@ -169,17 +153,14 @@ export const useAvatarManagement = () => {
    * @throws {Error} 切替失敗時
    */
   const toggleVisibility = useCallback(async (isVisible: boolean): Promise<Avatar> => {
-    console.log('🎭 [useAvatarManagement] toggleVisibility called:', isVisible);
     setIsLoading(true);
     setError(null);
 
     try {
       const updatedAvatar = await avatarService.toggleVisibility(isVisible);
-      console.log('🎭 [useAvatarManagement] Avatar visibility toggled:', updatedAvatar);
       setAvatar(updatedAvatar);
       return updatedAvatar;
     } catch (err: any) {
-      console.error('🎭 [useAvatarManagement] toggleVisibility error:', err);
       const errorMessage = err.response?.data?.message || '表示設定の切替に失敗しました。';
       setError(errorMessage);
       throw err;

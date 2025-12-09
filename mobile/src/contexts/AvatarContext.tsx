@@ -100,17 +100,14 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children, config
    */
   const showAvatar = useCallback(
     (data: AvatarDisplayData) => {
-      console.log('🎭 [AvatarContext] showAvatar called with data:', data);
       setState({
         isVisible: true,
         currentData: data,
         isLoading: false,
       });
-      console.log('🎭 [AvatarContext] State updated: isVisible=true');
 
       // 自動非表示タイマーを設定
       setAutoHideTimer();
-      console.log('🎭 [AvatarContext] Auto-hide timer set');
     },
     [setAutoHideTimer]
   );
@@ -119,7 +116,6 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children, config
    * アバターを非表示
    */
   const hideAvatar = useCallback(() => {
-    console.log('🎭 [AvatarContext] hideAvatar called');
     setState((prev) => ({
       ...prev,
       isVisible: false,
@@ -134,13 +130,10 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children, config
    */
   const dispatchAvatarEvent = useCallback(
     async (eventType: AvatarEventType) => {
-      console.log('🎭 [AvatarContext] dispatchAvatarEvent called:', { eventType });
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
-        console.log('🎭 [AvatarContext] State set to loading');
 
         const response = await avatarService.getCommentForEvent(eventType);
-        console.log('🎭 [AvatarContext] API response received:', response);
 
         const displayData: AvatarDisplayData = {
           comment: response.comment,
@@ -149,12 +142,10 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children, config
           eventType,
           timestamp: Date.now(),
         };
-        console.log('🎭 [AvatarContext] Display data prepared:', displayData);
 
         showAvatar(displayData);
-        console.log('🎭 [AvatarContext] showAvatar called');
       } catch (error) {
-        console.error('🎭 [AvatarContext] Failed to fetch avatar comment:', error);
+        console.error('[AvatarContext] Failed to fetch avatar comment:', error);
         setState((prev) => ({ ...prev, isLoading: false }));
       }
     },
@@ -176,12 +167,6 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children, config
       animation: string,
       eventType: AvatarEventType = 'task_created'
     ) => {
-      console.log('🎭 [AvatarContext] showAvatarDirect called:', {
-        comment,
-        imageUrl,
-        animation,
-        eventType,
-      });
       const displayData: AvatarDisplayData = {
         comment,
         imageUrl,

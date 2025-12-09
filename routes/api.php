@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Actions\Task\ProposeTaskAction;
+use App\Http\Actions\Task\AdoptProposalAction;
 use App\Http\Actions\Api\Task\StoreTaskApiAction;
 use App\Http\Actions\Api\Task\IndexTaskApiAction;
 use App\Http\Actions\Api\Task\ShowTaskApiAction;
@@ -172,6 +173,7 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // その他
         Route::post('/propose', ProposeTaskAction::class)->name('api.tasks.propose');
+        Route::post('/adopt', AdoptProposalAction::class)->name('api.tasks.adopt');
     });
 
     // グループ管理API

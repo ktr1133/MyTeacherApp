@@ -16,6 +16,10 @@ import {
   ApprovalResponse,
   ImageUploadResponse,
   TaskFilters,
+  ProposeTaskData,
+  ProposeTaskResponse,
+  AdoptProposalData,
+  AdoptProposalResponse,
 } from '../types/task.types';
 
 /**
@@ -416,6 +420,121 @@ class TaskService {
         throw error;
       }
       throw new Error('NETWORK_ERROR');
+    }
+  }
+
+  /**
+   * AIタスク分解提案
+   * 
+   * @param data - タスク分解提案リクエストデータ
+   * @returns 提案されたタスク配列と提案ID
+   * @throws Error - エラーコードを投げる（UI層でテーマ変換）
+   */
+  async proposeTask(data: ProposeTaskData): Promise<ProposeTaskResponse> {
+    try {
+      console.log('[TaskService] proposeTask called, data:', data);
+      
+      const response = await api.post<ProposeTaskResponse>('/tasks/propose', data);
+
+      console.log('[TaskService] proposeTask response status:', response.status);
+      console.log('[TaskService] proposeTask response data:', JSON.stringify(response.data).substring(0, 500));
+
+      if (!response.data.success) {
+        console.error('[TaskService] proposeTask failed: success=false');
+        throw new Error(response.data.error || 'TASK_PROPOSE_FAILED');
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.error('[TaskService] proposeTask error:', error);
+      console.error('[TaskService] proposeTask error response:', error.response);
+      
+      if (error.response?.status === 402) {
+        // トークン残高不足
+        throw new Error('TOKEN_INSUFFICIENT');
+      }
+      if (error.response?.status === 422) {
+        // バリデーションエラー
+        const errors = error.response.data.errors;
+        if (errors?.title) {
+          throw new Error('TITLE_REQUIRED');
+        }
+        if (errors?.span) {
+          throw new Error('SPAN_REQUIRED');
+        }
+        throw new Error('VALIDATION_ERROR');
+      }
+      if (error.response?.status === 401) {
+        throw new Error('AUTH_REQUIRED');
+      }
+      if (error.message && (
+        error.message.startsWith('TASK_') || 
+        error.message.startsWith('TOKEN_') || 
+        error.message.startsWith('VALIDATION_') ||
+        error.message.startsWith('TITLE_') ||
+        error.message.startsWith('SPAN_')
+      )) {
+        throw error;
+      }
+      if (!error.response) {
+        throw new Error('NETWORK_ERROR');
+      }
+      throw new Error('TASK_PROPOSE_FAILED');
+    }
+  }
+
+  /**
+   * AIタスク提案を採用（複数タスク一括作成）
+   * 
+   * @param data - タスク採用リクエストデータ
+   * @returns 作成されたタスク配列
+   * @throws Error - エラーコードを投げる（UI層でテーマ変換）
+   */
+  async adoptProposal(data: AdoptProposalData): Promise<AdoptProposalResponse> {
+    try {
+      console.log('[TaskService] adoptProposal called, data:', data);
+      
+      const response = await api.post<AdoptProposalResponse>('/tasks/adopt', data);
+
+      console.log('[TaskService] adoptProposal response status:', response.status);
+      console.log('[TaskService] adoptProposal response data:', JSON.stringify(response.data).substring(0, 500));
+
+      if (!response.data.success) {
+        console.error('[TaskService] adoptProposal failed: success=false');
+        throw new Error(response.data.error || 'TASK_ADOPT_FAILED');
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.error('[TaskService] adoptProposal error:', error);
+      console.error('[TaskService] adoptProposal error response:', error.response);
+      
+      if (error.response?.status === 422) {
+        // バリデーションエラー
+        const errors = error.response.data.errors;
+        if (errors?.proposal_id) {
+          throw new Error('PROPOSAL_ID_INVALID');
+        }
+        if (errors?.tasks) {
+          throw new Error('TASKS_REQUIRED');
+        }
+        throw new Error('VALIDATION_ERROR');
+      }
+      if (error.response?.status === 401) {
+        throw new Error('AUTH_REQUIRED');
+      }
+      if (error.message && (
+        error.message.startsWith('TASK_') || 
+        error.message.startsWith('PROPOSAL_') || 
+        error.message.startsWith('TASKS_') ||
+        error.message.startsWith('VALIDATION_')
+      )) {
+        throw error;
+      }
+      if (!error.response) {
+        throw new Error('NETWORK_ERROR');
+      }
+      throw new Error('TASK_ADOPT_FAILED');
     }
   }
 }

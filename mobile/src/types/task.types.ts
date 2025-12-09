@@ -196,3 +196,75 @@ export interface TaskFilters {
   page?: number;
   per_page?: number;
 }
+
+/**
+ * AIタスク分解提案リクエストデータ
+ */
+export interface ProposeTaskData {
+  title: string;
+  span: TaskSpan;
+  due_date?: string;
+  context?: string;
+  is_refinement?: boolean;
+}
+
+/**
+ * AIが提案したタスク
+ * 
+ * ⚠️ OpenAI APIの応答にはspanが含まれないため、span/priorityはオプショナル
+ * 採用時には元の入力値（ProposeTaskData.span）を使用する
+ */
+export interface ProposedTask {
+  title: string;
+  description?: string;
+  span?: TaskSpan; // API応答に含まれない場合あり
+  priority?: TaskPriority;
+}
+
+/**
+ * AIタスク分解提案レスポンス
+ */
+export interface ProposeTaskResponse {
+  success: boolean;
+  proposal_id?: number;
+  original_task?: string;
+  proposed_tasks?: ProposedTask[];
+  model_used?: string;
+  tokens_used?: {
+    prompt: number;
+    completion: number;
+    total: number;
+  };
+  error?: string;
+  message?: string;
+  action_url?: string;
+}
+
+/**
+ * AIタスク採用リクエストデータ
+ */
+export interface AdoptProposalData {
+  proposal_id: number;
+  tasks: {
+    title: string;
+    span: TaskSpan;
+    priority?: TaskPriority;
+    due_date?: string;
+    tags?: string[];
+  }[];
+}
+
+/**
+ * AIタスク採用レスポンス
+ */
+export interface AdoptProposalResponse {
+  success: boolean;
+  message?: string;
+  tasks?: Task[];
+  error?: string;
+  html?: string;
+  avatar_comment?: {
+    comment: string;
+    image_url: string;
+  };
+}

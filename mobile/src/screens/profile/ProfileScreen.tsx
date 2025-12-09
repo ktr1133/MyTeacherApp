@@ -9,13 +9,14 @@
  * - テーマ対応UI（adult/child）
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -43,6 +44,19 @@ export const ProfileScreen: React.FC = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  /**
+   * Pull-to-Refresh処理
+   */
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await getProfile();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [getProfile]);
 
   // 初回プロフィール取得
   useEffect(() => {
@@ -163,7 +177,17 @@ export const ProfileScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#4F46E5']}
+          tintColor="#4F46E5"
+        />
+      }
+    >
       <View style={styles.content}>
         {/* ヘッダー */}
         <View style={styles.header}>

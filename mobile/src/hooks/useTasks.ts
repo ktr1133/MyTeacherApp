@@ -23,6 +23,8 @@ interface UseTasksReturn {
   // 状態
   tasks: Task[];
   isLoading: boolean;
+  isLoadingMore: boolean; // 追加読み込み中フラグ
+  hasMore: boolean; // さらに読み込めるか
   error: string | null;
   pagination: {
     current_page: number;
@@ -33,6 +35,7 @@ interface UseTasksReturn {
 
   // タスク操作
   fetchTasks: (filters?: TaskFilters) => Promise<Task[]>;
+  loadMoreTasks: () => Promise<void>; // 無限スクロール用
   getTask: (taskId: number) => Promise<Task | null>;
   searchTasks: (query: string, filters?: Omit<TaskFilters, 'q'>) => Promise<void>;
   createTask: (data: CreateTaskData) => Promise<Task | null>;
@@ -72,10 +75,14 @@ export const useTasks = (): UseTasksReturn => {
   const { theme } = useTheme();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false); // 追加読み込み中
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<UseTasksReturn['pagination']>(null);
   const [currentFilters, setCurrentFilters] = useState<TaskFilters | undefined>(undefined);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // さらに読み込めるかを判定
+  const hasMore = pagination ? pagination.current_page < pagination.last_page : false;
 
   /**
    * エラーをテーマに応じたメッセージに変換してセット
@@ -194,6 +201,46 @@ export const useTasks = (): UseTasksReturn => {
   const refreshTasks = useCallback(async () => {
     await fetchTasks(currentFilters);
   }, [fetchTasks, currentFilters]);
+
+  /**
+   * 次ページのタスクを読み込む（無限スクロール用）
+   */
+  const loadMoreTasks = useCallback(async () => {
+    // 既に読み込み中、またはこれ以上ページがない場合は何もしない
+    if (isLoadingMore || !hasMore || !pagination) {
+      return;
+    }
+
+    try {
+      console.log('[useTasks] loadMoreTasks: Loading page', pagination.current_page + 1);
+      setIsLoadingMore(true);
+      setError(null);
+
+      // 次ページを取得
+      const nextPage = pagination.current_page + 1;
+      const filters: TaskFilters = {
+        ...currentFilters,
+        page: nextPage,
+      };
+
+      const response = await taskService.getTasks(filters);
+      
+      // 既存のタスクに追加（重複排除）
+      setTasks((prevTasks) => {
+        const existingIds = new Set(prevTasks.map(t => t.id));
+        const newTasks = response.tasks.filter(t => !existingIds.has(t.id));
+        return [...prevTasks, ...newTasks];
+      });
+      
+      setPagination(response.pagination);
+      console.log('[useTasks] loadMoreTasks: Successfully loaded', response.tasks.length, 'tasks');
+    } catch (err: any) {
+      console.error('[useTasks] loadMoreTasks error:', err);
+      handleError(err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, hasMore, pagination, currentFilters, handleError]);
 
   /**
    * タスクを作成
@@ -468,11 +515,14 @@ export const useTasks = (): UseTasksReturn => {
     // 状態
     tasks,
     isLoading,
+    isLoadingMore,
+    hasMore,
     error,
     pagination,
 
     // タスク操作
     fetchTasks,
+    loadMoreTasks,
     getTask,
     searchTasks,
     createTask,

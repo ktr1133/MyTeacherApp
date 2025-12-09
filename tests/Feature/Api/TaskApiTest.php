@@ -135,6 +135,93 @@ class TaskApiTest extends TestCase
 
     /**
      * @test
+     * デフォルトで未完了タスクのみ取得されること（Web版と動作統一）
+     */
+    public function test_retrieves_only_pending_tasks_by_default(): void
+    {
+        // Arrange: 未完了タスク3件、完了タスク2件
+        Task::factory()->count(3)->create([
+            'user_id' => $this->user->id,
+            'is_completed' => false,
+        ]);
+        Task::factory()->count(2)->create([
+            'user_id' => $this->user->id,
+            'is_completed' => true,
+        ]);
+
+        // Act: statusパラメータなしでリクエスト
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/tasks');
+
+        // Assert: 未完了3件のみ返却される
+        $response->assertStatus(200);
+        $data = $response->json('data');
+        
+        $this->assertCount(3, $data['tasks']);
+        foreach ($data['tasks'] as $task) {
+            $this->assertFalse($task['is_completed'], 'デフォルトでは未完了タスクのみ返却される');
+        }
+    }
+
+    /**
+     * @test
+     * status=completedで完了タスクのみ取得できること
+     */
+    public function test_can_retrieve_completed_tasks_with_status_filter(): void
+    {
+        // Arrange
+        Task::factory()->count(2)->create([
+            'user_id' => $this->user->id,
+            'is_completed' => false,
+        ]);
+        Task::factory()->count(3)->create([
+            'user_id' => $this->user->id,
+            'is_completed' => true,
+        ]);
+
+        // Act
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/tasks?status=completed');
+
+        // Assert
+        $response->assertStatus(200);
+        $data = $response->json('data');
+        
+        $this->assertCount(3, $data['tasks']);
+        foreach ($data['tasks'] as $task) {
+            $this->assertTrue($task['is_completed'], 'status=completedで完了タスクのみ返却される');
+        }
+    }
+
+    /**
+     * @test
+     * status=allで全タスク取得できること
+     */
+    public function test_can_retrieve_all_tasks_with_status_all(): void
+    {
+        // Arrange
+        Task::factory()->count(3)->create([
+            'user_id' => $this->user->id,
+            'is_completed' => false,
+        ]);
+        Task::factory()->count(2)->create([
+            'user_id' => $this->user->id,
+            'is_completed' => true,
+        ]);
+
+        // Act
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/tasks?status=all');
+
+        // Assert
+        $response->assertStatus(200);
+        $data = $response->json('data');
+        
+        $this->assertCount(5, $data['tasks'], 'status=allで全タスク（未完了+完了）が返却される');
+    }
+
+    /**
+     * @test
      * タスクを更新できること
      */
     public function test_can_update_task(): void

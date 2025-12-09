@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  RefreshControl,
   Alert,
   ActivityIndicator,
   Image,
@@ -63,15 +64,28 @@ export default function TaskDetailScreen() {
     hideAvatar,
   } = useAvatar();
 
-  // アバター状態をログ出力
-  console.log('🎭 [TaskDetailScreen] Avatar state:', { avatarVisible, hasAvatarData: !!avatarData });
-
   const { taskId } = route.params;
   const [task, setTask] = useState<Task | undefined>(undefined);
   const [approvalComment, setApprovalComment] = useState('');
   const [showApprovalInput, setShowApprovalInput] = useState(false);
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  /**
+   * Pull-to-Refresh処理
+   */
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const fetchedTask = await getTask(taskId);
+      setTask(fetchedTask ?? undefined);
+    } catch (error) {
+      console.error('[TaskDetailScreen] Refresh error:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [taskId, getTask]);
 
   /**
    * タスク詳細を取得
@@ -105,15 +119,11 @@ export default function TaskDetailScreen() {
     if (!task) return;
 
     setIsSubmitting(true);
-    console.log('🎭 [TaskDetailScreen] handleToggleComplete called:', { taskId, taskTitle: task.title });
     const success = await toggleComplete(taskId);
-    console.log('🎭 [TaskDetailScreen] toggleComplete result:', { success });
     
     if (success) {
       // アバターイベント発火
-      console.log('🎭 [TaskDetailScreen] Firing avatar event: task_completed');
       dispatchAvatarEvent('task_completed');
-      console.log('🎭 [TaskDetailScreen] dispatchAvatarEvent called');
 
       // アバター表示後にアラート表示（3秒待機）
       setTimeout(() => {
@@ -316,7 +326,18 @@ export default function TaskDetailScreen() {
         {task?.is_group_task && <View style={styles.deleteButton} />}
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#4F46E5']}
+            tintColor="#4F46E5"
+          />
+        }
+      >
         {/* タイトル */}
         <View style={styles.section}>
           <Text style={styles.title}>{task.title}</Text>

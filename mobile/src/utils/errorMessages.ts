@@ -211,6 +211,32 @@ const ERROR_MESSAGES: Record<string, { adult: string; child: string }> = {
     child: 'せつめいがながすぎるよ',
   },
 
+  // AIタスク分解関連エラー
+  TASK_PROPOSE_FAILED: {
+    adult: 'AIタスク分解に失敗しました',
+    child: 'AIがやることをわけられなかったよ',
+  },
+  TASK_ADOPT_FAILED: {
+    adult: '提案の採用に失敗しました',
+    child: 'やることをつくれなかったよ',
+  },
+  TOKEN_INSUFFICIENT: {
+    adult: 'トークンが不足しています。トークンを購入してください',
+    child: 'トークンがたりないよ。かってね',
+  },
+  SPAN_REQUIRED: {
+    adult: '期間は必須です',
+    child: 'きかんをえらんでね',
+  },
+  PROPOSAL_ID_INVALID: {
+    adult: '提案IDが無効です',
+    child: 'ていあんIDがおかしいよ',
+  },
+  TASKS_REQUIRED: {
+    adult: '作成するタスクを選択してください',
+    child: 'つくるやることをえらんでね',
+  },
+
   // 汎用エラー
   UNKNOWN_ERROR: {
     adult: '予期しないエラーが発生しました',

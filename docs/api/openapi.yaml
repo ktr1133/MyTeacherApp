@@ -1303,8 +1303,11 @@ paths:
 
   /tasks/propose:
     post:
-      summary: AIタスク提案
-      description: AIを使用してタスクを分解・提案します。
+      summary: AIタスク分解提案
+      description: |
+        AIを使用してタスクを分解・提案します。
+        OpenAI APIを使用し、大規模タスクを複数の小タスクに分解します。
+        推定トークン消費量: 1000トークン
       tags: [Tasks]
       security:
         - SanctumAuth: []
@@ -1316,15 +1319,30 @@ paths:
               type: object
               required:
                 - title
+                - span
               properties:
                 title:
                   type: string
-                  description: タスクタイトル
+                  description: 分解対象タスクのタイトル
                   example: "夏休みの宿題を終わらせる"
+                  maxLength: 255
+                span:
+                  type: integer
+                  description: タスク期間（1:短期、2:中期、3:長期）
+                  enum: [1, 2, 3]
+                  example: 2
+                due_date:
+                  type: string
+                  description: 期限（任意）
+                  example: "2025-12"
                 context:
                   type: string
-                  description: タスクのコンテキスト（任意）
-                  example: "算数、国語、理科の3科目"
+                  description: 追加コンテキスト（任意）
+                  example: "算数、国語、理科の3科目があります"
+                is_refinement:
+                  type: boolean
+                  description: 再提案フラグ（true: 細分化モード）
+                  default: false
       responses:
         '200':
           description: 提案成功
@@ -1333,21 +1351,165 @@ paths:
               schema:
                 type: object
                 properties:
-                  subtasks:
+                  success:
+                    type: boolean
+                    example: true
+                  proposal_id:
+                    type: integer
+                    description: 提案ID（adopt時に使用）
+                    example: 123
+                  original_task:
+                    type: string
+                    description: 元のタスクタイトル
+                  proposed_tasks:
                     type: array
+                    description: 提案されたタスク配列
                     items:
                       type: object
                       properties:
                         title:
                           type: string
+                          example: "算数の宿題を終わらせる"
                         description:
                           type: string
-                  usage:
+                          example: "ドリル20ページを解く"
+                        span:
+                          type: integer
+                          example: 1
+                        priority:
+                          type: integer
+                          example: 3
+                  model_used:
+                    type: string
+                    description: 使用したAIモデル
+                    example: "gpt-4o-mini"
+                  tokens_used:
                     type: object
                     description: トークン使用量
-        '400':
-          description: バリデーションエラー
-        '401':
+                    properties:
+                      prompt:
+                        type: integer
+                        example: 150
+                      completion:
+                        type: integer
+                        example: 850
+                      total:
+                        type: integer
+                        example: 1000
+        '402':
+          description: トークン残高不足
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "トークン残高不足"
+                  message:
+                    type: string
+                    example: "トークン残高が不足しています。トークンを購入してください。"
+                  action_url:
+                    type: string
+                    example: "/tokens/purchase"
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          description: AI提案生成エラー
+
+  /tasks/adopt:
+    post:
+      summary: AI提案採用（タスク一括作成）
+      description: |
+        AIが提案したタスクを採用し、複数のタスクを一括作成します。
+        提案IDと採用するタスク配列を指定します。
+      tags: [Tasks]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - proposal_id
+                - tasks
+              properties:
+                proposal_id:
+                  type: integer
+                  description: 提案ID（propose APIの返り値）
+                  example: 123
+                tasks:
+                  type: array
+                  description: 採用するタスク配列
+                  minItems: 1
+                  items:
+                    type: object
+                    required:
+                      - title
+                      - span
+                    properties:
+                      title:
+                        type: string
+                        maxLength: 255
+                        example: "算数の宿題を終わらせる"
+                      span:
+                        type: integer
+                        enum: [1, 2, 3]
+                        example: 1
+                      priority:
+                        type: integer
+                        minimum: 1
+                        maximum: 3
+                        example: 3
+                      due_date:
+                        type: string
+                        example: "2025-12-20"
+                      tags:
+                        type: array
+                        description: タグ名の配列
+                        items:
+                          type: string
+                          maxLength: 255
+                        example: ["宿題", "算数"]
+      responses:
+        '200':
+          description: 採用成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "3件のタスクを作成しました"
+                  tasks:
+                    type: array
+                    description: 作成されたタスク配列
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  html:
+                    type: string
+                    description: Web版用のHTMLレンダリング結果（モバイル版では未使用）
+                  avatar_comment:
+                    type: object
+                    description: アバターコメント
+                    properties:
+                      comment:
+                        type: string
+                      image_url:
+                        type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          description: タスク作成エラー
           description: 認証エラー
         '402':
           description: トークン不足

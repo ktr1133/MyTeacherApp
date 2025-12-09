@@ -121,25 +121,14 @@ export default function TagTasksScreen() {
    */
   const handleToggleComplete = useCallback(
     async (taskId: number) => {
-      console.log('🎭 [TagTasksScreen] handleToggleComplete called:', { taskId });
       const success = await toggleComplete(taskId);
-      console.log('🎭 [TagTasksScreen] toggleComplete result:', { success });
       
       if (success) {
-        // アバターイベント発火
-        console.log('🎭 [TagTasksScreen] Firing avatar event: task_completed');
+        // アバターイベント発火（アバターが完了を通知）
         dispatchAvatarEvent('task_completed');
-
-        // アバター表示後にアラート表示（3秒待機）
-        setTimeout(() => {
-          Alert.alert(
-            theme === 'child' ? 'やったね!' : '完了',
-            theme === 'child' ? 'やることをおわらせたよ!' : 'タスクを完了しました'
-          );
-        }, 3000);
       }
     },
-    [toggleComplete, theme, dispatchAvatarEvent]
+    [toggleComplete, dispatchAvatarEvent]
   );
 
   /**

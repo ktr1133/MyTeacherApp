@@ -29,9 +29,6 @@ export default function LoginScreen({ navigation }: any) {
     hideAvatar,
   } = useAvatar();
 
-  // アバター状態をログ出力
-  console.log('🎭 [LoginScreen] Avatar state:', { avatarVisible, hasAvatarData: !!avatarData });
-
   const handleLogin = async () => {
     setError('');
     
@@ -42,15 +39,11 @@ export default function LoginScreen({ navigation }: any) {
 
     setLoading(true);
     try {
-      console.log('🎭 [LoginScreen] Attempting login:', { username });
       const result = await login(username, password);
-      console.log('🎭 [LoginScreen] Login result:', { success: result.success });
       
       if (result.success) {
         // アバターイベント発火
-        console.log('🎭 [LoginScreen] Firing avatar event: login');
         dispatchAvatarEvent('login');
-        console.log('🎭 [LoginScreen] dispatchAvatarEvent called');
       } else if (result.error) {
         setError(result.error);
       }

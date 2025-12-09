@@ -16,6 +16,7 @@ import TaskListScreen from '../screens/tasks/TaskListScreen';
 import TaskDetailScreen from '../screens/tasks/TaskDetailScreen';
 import TaskEditScreen from '../screens/tasks/TaskEditScreen';
 import CreateTaskScreen from '../screens/tasks/CreateTaskScreen';
+import TaskDecompositionScreen from '../screens/tasks/TaskDecompositionScreen';
 import NotificationListScreen from '../screens/notifications/NotificationListScreen';
 import NotificationDetailScreen from '../screens/notifications/NotificationDetailScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
@@ -150,6 +151,13 @@ export default function AppNavigator() {
           component={CreateTaskScreen}
           options={{
             title: 'タスク作成',
+          }}
+        />
+        <Stack.Screen
+          name="TaskDecomposition"
+          component={TaskDecompositionScreen}
+          options={{
+            title: 'AIタスク分解',
           }}
         />
         <Stack.Screen

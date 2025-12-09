@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  RefreshControl,
   Alert,
   ActivityIndicator,
   Platform,
@@ -65,6 +66,21 @@ export default function TaskEditScreen() {
   const [availableTags, setAvailableTags] = useState<Array<{ id: number; name: string; color?: string }>>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
+  const [tagSearchQuery, setTagSearchQuery] = useState('');
+  const [isTagExpanded, setIsTagExpanded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  /**
+   * Pull-to-Refresh処理
+   */
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([loadTask(), fetchTags()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   /**
    * 初回マウント時: タスク取得とタグ一覧取得
@@ -261,7 +277,6 @@ export default function TaskEditScreen() {
 
       if (updatedTask) {
         // アバターイベント発火
-        console.log('🎭 [TaskEditScreen] Firing avatar event: task_updated');
         dispatchAvatarEvent('task_updated');
         
         // アバター表示後にアラート表示（3秒待機）
@@ -309,7 +324,6 @@ export default function TaskEditScreen() {
             const success = await deleteTask(taskId);
             if (success) {
               // アバターイベント発火
-              console.log('🎭 [TaskEditScreen] Firing avatar event: task_deleted');
               dispatchAvatarEvent('task_deleted');
               
               // アバター表示後に画面遷移（3秒待機）
@@ -362,7 +376,18 @@ export default function TaskEditScreen() {
 
   return (
     <>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#4F46E5']}
+            tintColor="#4F46E5"
+          />
+        }
+      >
       {/* タイトル */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>
@@ -398,17 +423,40 @@ export default function TaskEditScreen() {
         <Text style={styles.label}>
           {theme === 'child' ? 'ながさ' : 'スパン'} <Text style={styles.required}>*</Text>
         </Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={span}
-            onValueChange={(value) => setSpan(value as TaskSpan)}
-            style={styles.picker}
-            itemStyle={styles.pickerItem}
+        <View style={styles.spanButtonGroup}>
+          <TouchableOpacity
+            style={[styles.spanButton, span === 1 && styles.spanButtonActive]}
+            onPress={() => setSpan(1)}
           >
-            <Picker.Item label={theme === 'child' ? 'みじかい（1しゅうかん）' : '短期（1週間）'} value={1} />
-            <Picker.Item label={theme === 'child' ? 'ちゅうくらい（1ねん）' : '中期（1年）'} value={2} />
-            <Picker.Item label={theme === 'child' ? 'ながい（5ねんいじょう）' : '長期（5年以上）'} value={3} />
-          </Picker>
+            <Text style={[styles.spanButtonText, span === 1 && styles.spanButtonTextActive]}>
+              {theme === 'child' ? 'みじかい' : '短期'}
+            </Text>
+            <Text style={[styles.spanButtonSubText, span === 1 && styles.spanButtonTextActive]}>
+              {theme === 'child' ? '1しゅうかん' : '1週間'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.spanButton, span === 2 && styles.spanButtonActive]}
+            onPress={() => setSpan(2)}
+          >
+            <Text style={[styles.spanButtonText, span === 2 && styles.spanButtonTextActive]}>
+              {theme === 'child' ? 'ちゅうくらい' : '中期'}
+            </Text>
+            <Text style={[styles.spanButtonSubText, span === 2 && styles.spanButtonTextActive]}>
+              {theme === 'child' ? '1ねん' : '1年'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.spanButton, span === 3 && styles.spanButtonActive]}
+            onPress={() => setSpan(3)}
+          >
+            <Text style={[styles.spanButtonText, span === 3 && styles.spanButtonTextActive]}>
+              {theme === 'child' ? 'ながい' : '長期'}
+            </Text>
+            <Text style={[styles.spanButtonSubText, span === 3 && styles.spanButtonTextActive]}>
+              {theme === 'child' ? '5ねんいじょう' : '5年以上'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -494,30 +542,93 @@ export default function TaskEditScreen() {
         <View style={styles.formGroup}>
           <Text style={styles.label}>
             {theme === 'child' ? 'タグ' : 'タグ'}
+            {selectedTagIds.length > 0 && (
+              <Text style={styles.tagCount}> ({selectedTagIds.length})</Text>
+            )}
           </Text>
+
           {isLoadingTags ? (
             <ActivityIndicator size="small" color="#4F46E5" />
           ) : (
-            <View style={styles.tagContainer}>
-              {availableTags.map((tag) => (
-                <TouchableOpacity
-                  key={tag.id}
-                  style={[
-                    styles.tagChip,
-                    selectedTagIds.includes(tag.id) && styles.tagChipSelected,
-                  ]}
-                  onPress={() => toggleTagSelection(tag.id)}
-                >
-                  <Text
-                    style={[
-                      styles.tagChipText,
-                      selectedTagIds.includes(tag.id) && { color: '#fff' },
-                    ]}
-                  >
-                    {tag.name}
+            <View>
+              {/* 検索ボックス */}
+              <TextInput
+                style={styles.tagSearchInput}
+                value={tagSearchQuery}
+                onChangeText={setTagSearchQuery}
+                placeholder={theme === 'child' ? '🔍 タグをさがす...' : '🔍 タグを検索...'}
+                placeholderTextColor="#9CA3AF"
+              />
+
+              {/* 選択済みタグ */}
+              {selectedTagIds.length > 0 && (
+                <View style={styles.selectedTagsContainer}>
+                  <Text style={styles.selectedTagsLabel}>
+                    {theme === 'child' ? 'えらんだタグ' : '選択中'}
                   </Text>
-                </TouchableOpacity>
-              ))}
+                  <View style={styles.tagContainer}>
+                    {availableTags
+                      .filter((tag) => selectedTagIds.includes(tag.id))
+                      .map((tag) => (
+                        <TouchableOpacity
+                          key={tag.id}
+                          style={[styles.tagChip, styles.tagChipSelected]}
+                          onPress={() => toggleTagSelection(tag.id)}
+                        >
+                          <Text style={[styles.tagChipText, { color: '#fff' }]}>
+                            {tag.name}
+                          </Text>
+                          <Text style={styles.tagRemoveIcon}> ×</Text>
+                        </TouchableOpacity>
+                      ))}
+                  </View>
+                </View>
+              )}
+
+              {/* 展開可能なタグリスト */}
+              <TouchableOpacity
+                style={styles.tagExpandButton}
+                onPress={() => setIsTagExpanded(!isTagExpanded)}
+              >
+                <Text style={styles.tagExpandButtonText}>
+                  {theme === 'child' ? 'タグをついか' : 'タグを追加'} {isTagExpanded ? '▲' : '▼'}
+                </Text>
+              </TouchableOpacity>
+
+              {isTagExpanded && (
+                <ScrollView
+                  style={styles.tagScrollView}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator={true}
+                >
+                  <View style={styles.tagContainer}>
+                    {availableTags
+                      .filter(
+                        (tag) =>
+                          !selectedTagIds.includes(tag.id) &&
+                          tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
+                      )
+                      .map((tag) => (
+                        <TouchableOpacity
+                          key={tag.id}
+                          style={styles.tagChip}
+                          onPress={() => toggleTagSelection(tag.id)}
+                        >
+                          <Text style={styles.tagChipText}>{tag.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                  </View>
+                  {availableTags.filter(
+                    (tag) =>
+                      !selectedTagIds.includes(tag.id) &&
+                      tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
+                  ).length === 0 && (
+                    <Text style={styles.noResultsText}>
+                      {theme === 'child' ? 'タグがみつかりません' : 'タグが見つかりません'}
+                    </Text>
+                  )}
+                </ScrollView>
+              )}
             </View>
           )}
         </View>
@@ -602,6 +713,37 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
+  spanButtonGroup: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  spanButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  spanButtonActive: {
+    backgroundColor: '#4F46E5',
+    borderColor: '#4F46E5',
+  },
+  spanButtonText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+  },
+  spanButtonSubText: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  spanButtonTextActive: {
+    color: '#fff',
+  },
   pickerContainer: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
@@ -627,12 +769,65 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
   },
+  tagCount: {
+    fontSize: 14,
+    color: '#4F46E5',
+    fontWeight: '600',
+  },
+  tagSearchInput: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    backgroundColor: '#fff',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  selectedTagsContainer: {
+    marginBottom: 12,
+    padding: 12,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  selectedTagsLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  tagExpandButton: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  tagExpandButtonText: {
+    fontSize: 14,
+    color: '#4F46E5',
+    fontWeight: '600',
+  },
+  tagScrollView: {
+    maxHeight: 200,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#FAFAFA',
+  },
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
   tagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -647,6 +842,18 @@ const styles = StyleSheet.create({
   tagChipText: {
     fontSize: 14,
     color: '#374151',
+  },
+  tagRemoveIcon: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
+    marginLeft: 4,
+  },
+  noResultsText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    paddingVertical: 16,
   },
   button: {
     padding: 16,

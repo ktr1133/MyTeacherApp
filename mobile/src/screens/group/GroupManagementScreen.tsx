@@ -11,11 +11,13 @@
  * Profile → GroupManagement → ScheduledTaskList
  */
 
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
   StyleSheet,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -34,6 +36,18 @@ export const GroupManagementScreen: React.FC = () => {
   const groupId = user?.group_id;
   const groupName = user?.group?.name || 'マイグループ';
   const isGroupMaster = user?.group_edit_flg ?? false;
+  const [refreshing, setRefreshing] = useState(false);
+
+  /**
+   * Pull-to-Refresh処理
+   */
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    // ユーザー情報は自動的に更新されるので、少し待ってから終了
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 500);
+  }, []);
 
   /**
    * スケジュールタスク管理画面へ遷移
@@ -62,7 +76,17 @@ export const GroupManagementScreen: React.FC = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#4F46E5']}
+          tintColor="#4F46E5"
+        />
+      }
+    >
       <View style={styles.content}>
         {/* ヘッダー */}
         <View style={styles.header}>

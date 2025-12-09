@@ -56,8 +56,11 @@ export default function TaskListScreen() {
   const {
     tasks,
     isLoading,
+    isLoadingMore,
+    hasMore,
     error,
     fetchTasks,
+    loadMoreTasks,
     toggleComplete,
     clearError,
     refreshTasks,
@@ -68,9 +71,6 @@ export default function TaskListScreen() {
     dispatchAvatarEvent,
     hideAvatar,
   } = useAvatar();
-
-  // アバター状態をログ出力
-  console.log('🎭 [TaskListScreen] Avatar state:', { avatarVisible, hasAvatarData: !!avatarData });
 
   const [selectedStatus] = useState<'pending'>('pending'); // 未完了のみ表示
   const [refreshing, setRefreshing] = useState(false);
@@ -115,36 +115,36 @@ export default function TaskListScreen() {
   }, [theme]);
 
   /**
+   * タスク一覧を取得（未完了のみ）
+   * バケット表示のため全件取得（per_page=100で明示）
+   */
+  const loadTasks = useCallback(async () => {
+    await fetchTasks({ status: 'pending', per_page: 100 });
+  }, [fetchTasks]);
+
+  /**
    * 初回データ取得
    */
   useEffect(() => {
-    console.log('[TaskListScreen] Mounting, loading tasks...');
-    try {
-      loadTasks();
-    } catch (err) {
-      console.error('[TaskListScreen] Error loading tasks:', err);
-    }
-  }, [selectedStatus]);
+    loadTasks();
+  }, [loadTasks]);
 
   /**
    * 画面フォーカス時: タスクリストを再同期
-   * （削除後に前画面に戻った際、削除されたタスクを即座に消すため）
+   * （編集・削除後に前画面に戻った際、変更を即座に反映するため）
    */
   useFocusEffect(
     useCallback(() => {
-      // 画面がフォーカスされたら、未完了タスクを再取得
-      fetchTasks({ status: 'pending' });
-    }, [fetchTasks])
+      loadTasks();
+    }, [loadTasks])
   );
 
   /**
    * タスクデータまたは検索クエリ変更時にフィルタリング
    */
   useEffect(() => {
-    console.log('[TaskListScreen] Filtering tasks, query:', searchQuery, 'tasks count:', tasks.length);
-    
     if (searchQuery.trim()) {
-      // 検索クエリがある場合: タイトル、説明、タグ名で部分一致フィルタリング
+      // 検索クエリがある場合: ローカルフィルタリング
       const query = searchQuery.toLowerCase();
       const filtered = tasks.filter(task => {
         // タイトルで検索
@@ -161,9 +161,8 @@ export default function TaskListScreen() {
         }
         return false;
       });
-      console.log('[TaskListScreen] Filtered tasks count:', filtered.length);
       setFilteredTasks(filtered);
-      setBuckets([]); // 検索時はバケット表示をクリア
+      setBuckets([]);
     } else {
       // 検索クエリがない場合: バケット表示
       setFilteredTasks([]);
@@ -172,43 +171,38 @@ export default function TaskListScreen() {
   }, [searchQuery, tasks, groupTasksIntoBuckets]);
 
   /**
-   * タスク一覧を取得（未完了のみ）
-   */
-  const loadTasks = useCallback(() => {
-    fetchTasks({ status: 'pending' });
-  }, [fetchTasks]);
-
-  /**
    * Pull-to-Refresh
+   * バケット表示用の全件取得を実行
    */
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refreshTasks();
+    await loadTasks();
     setRefreshing(false);
-  }, [refreshTasks]);
+  }, [loadTasks]);
+
+  /**
+   * 無限スクロール: リスト末尾到達時の処理
+   * 現状は全件取得（per_page=100）のため、基本的に無効
+   * 100件超のユーザーのみ動作
+   */
+  const handleLoadMore = useCallback(() => {
+    // バケット表示時のみ（検索時は全件ローカルフィルタ済み）
+    if (!searchQuery.trim() && !isLoadingMore && hasMore) {
+      console.log('[TaskListScreen] Loading more tasks... (over 100 tasks)');
+      loadMoreTasks();
+    }
+  }, [searchQuery, isLoadingMore, hasMore, loadMoreTasks]);
 
   /**
    * タスク完了切り替え
    */
   const handleToggleComplete = useCallback(
     async (taskId: number) => {
-      console.log('🎭 [TaskListScreen] handleToggleComplete called:', { taskId });
       const success = await toggleComplete(taskId);
-      console.log('🎭 [TaskListScreen] toggleComplete result:', { success });
       
       if (success) {
-        // アバターイベント発火
-        console.log('🎭 [TaskListScreen] Firing avatar event: task_completed');
+        // アバターイベント発火（アバターが完了を通知）
         dispatchAvatarEvent('task_completed');
-        console.log('🎭 [TaskListScreen] dispatchAvatarEvent called');
-
-        // アバター表示後にアラート表示（3秒待機）
-        setTimeout(() => {
-          Alert.alert(
-            theme === 'child' ? 'やったね!' : '完了',
-            theme === 'child' ? 'やることをおわらせたよ!' : 'タスクを完了しました'
-          );
-        }, 3000);
       }
     },
     [toggleComplete, theme, dispatchAvatarEvent]
@@ -271,7 +265,6 @@ export default function TaskListScreen() {
           tagName={item.name}
           tasks={item.tasks}
           onPress={() => {
-            console.log('[TaskListScreen] Bucket pressed:', item.id, item.name);
             navigation.navigate('TagTasks', { tagId: item.id, tagName: item.name });
           }}
           theme={theme}
@@ -396,19 +389,20 @@ export default function TaskListScreen() {
   }, [isLoading, theme, searchQuery]);
 
   /**
-   * フッターローディング表示
+   * フッターローディング表示（無限スクロール用）
    */
   const renderFooter = useCallback(() => {
-    if (!isLoading) {
+    if (!isLoadingMore) {
       return null;
     }
 
     return (
       <View style={styles.footerLoading}>
         <ActivityIndicator size="small" color="#4F46E5" />
+        <Text style={styles.loadingText}>読み込み中...</Text>
       </View>
     );
-  }, [isLoading]);
+  }, [isLoadingMore]);
 
   return (
     <View style={styles.container}>
@@ -456,7 +450,7 @@ export default function TaskListScreen() {
 
       {/* バケット一覧 or タスク一覧 */}
       {searchQuery.trim() ? (
-        /* 検索時: タスクカード表示 */
+        /* 検索時: タスクカード表示（ローカルフィルタのため無限スクロール不要） */
         <FlatList
           data={filteredTasks}
           renderItem={renderTaskItem}
@@ -466,10 +460,9 @@ export default function TaskListScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#4F46E5']} />
           }
           ListEmptyComponent={renderEmptyList}
-          ListFooterComponent={renderFooter}
         />
       ) : (
-        /* 通常時: バケット表示 */
+        /* 通常時: バケット表示（100件超のユーザーのみ無限スクロール） */
         <FlatList
           data={buckets}
           renderItem={renderBucketItem}
@@ -480,6 +473,8 @@ export default function TaskListScreen() {
           }
           ListEmptyComponent={renderEmptyList}
           ListFooterComponent={renderFooter}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.3}
         />
       )}
 
@@ -716,5 +711,13 @@ const styles = StyleSheet.create({
   footerLoading: {
     paddingVertical: 20,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginLeft: 8,
   },
 });

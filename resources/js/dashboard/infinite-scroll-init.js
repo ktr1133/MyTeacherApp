@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 無限スクロールマネージャーを初期化
     const scrollManager = new DashboardInfiniteScroll({
-        apiEndpoint: '/api/tasks/paginated',
+        apiEndpoint: '/tasks/paginated',
         container: container,
         loadingElement: loadingIndicator,
         perPage: perPage,

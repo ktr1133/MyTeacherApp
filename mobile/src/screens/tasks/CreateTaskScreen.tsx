@@ -35,6 +35,11 @@ import AvatarWidget from '../../components/common/AvatarWidget';
 type RootStackParamList = {
   TaskList: undefined;
   CreateTask: undefined;
+  TaskDecomposition: {
+    initialTitle?: string;
+    initialSpan?: TaskSpan;
+    initialDueDate?: string;
+  };
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -62,9 +67,6 @@ export default function CreateTaskScreen() {
     hideAvatar,
   } = useAvatar();
 
-  // アバター状態をログ出力
-  console.log('🎭 [CreateTaskScreen] Avatar state:', { avatarVisible, hasAvatarData: !!avatarData });
-
   // フォーム状態
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -82,6 +84,8 @@ export default function CreateTaskScreen() {
   const [availableTags, setAvailableTags] = useState<Array<{ id: number; name: string; color?: string }>>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
+  const [tagSearchQuery, setTagSearchQuery] = useState(''); // タグ検索クエリ
+  const [isTagListExpanded, setIsTagListExpanded] = useState(false); // タグリスト展開状態
   
   // グループメンバー状態
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
@@ -262,9 +266,7 @@ export default function CreateTaskScreen() {
     if (newTask) {
       // アバターイベント発火（グループタスク or 通常タスク）
       const eventType = isGroupTask ? 'group_task_created' : 'task_created';
-      console.log('🎭 [CreateTaskScreen] Firing avatar event:', { eventType, isGroupTask });
       dispatchAvatarEvent(eventType);
-      console.log('🎭 [CreateTaskScreen] dispatchAvatarEvent called');
 
       // アバター表示後に画面遷移（3秒待機）
       setTimeout(() => {
@@ -294,6 +296,27 @@ export default function CreateTaskScreen() {
     theme,
     navigation,
   ]);
+
+  /**
+   * AIタスク分解画面に遷移
+   */
+  const handleDecompose = useCallback(() => {
+    // タイトルが入力されていない場合は警告
+    if (!title.trim()) {
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        theme === 'child' ? 'やることのなまえをいれてね' : 'タイトルを入力してください'
+      );
+      return;
+    }
+
+    // AIタスク分解画面に遷移（初期値を渡す）
+    navigation.navigate('TaskDecomposition', {
+      initialTitle: title.trim(),
+      initialSpan: span,
+      initialDueDate: dueDate.trim(),
+    });
+  }, [title, span, dueDate, theme, navigation]);
 
   /**
    * エラー表示
@@ -482,35 +505,108 @@ export default function CreateTaskScreen() {
           <Text style={styles.label}>
             {theme === 'child' ? 'タグ' : 'タグ'}
           </Text>
+          
+          {/* 選択済みタグ表示 */}
+          {selectedTagIds.length > 0 && (
+            <View style={styles.selectedTagsContainer}>
+              <Text style={styles.selectedTagsLabel}>
+                {theme === 'child' ? 'えらんだタグ:' : '選択中:'}
+              </Text>
+              <View style={styles.tagContainer}>
+                {availableTags
+                  .filter((tag) => selectedTagIds.includes(tag.id))
+                  .map((tag) => (
+                    <TouchableOpacity
+                      key={tag.id}
+                      style={[styles.tagChip, styles.tagChipSelected]}
+                      onPress={() => toggleTagSelection(tag.id)}
+                    >
+                      <Text style={styles.tagChipTextSelected}>{tag.name}</Text>
+                      <Text style={styles.tagRemoveIcon}> ✕</Text>
+                    </TouchableOpacity>
+                  ))}
+              </View>
+            </View>
+          )}
+
           {isLoadingTags ? (
             <ActivityIndicator size="small" color="#4F46E5" />
           ) : availableTags.length > 0 ? (
-            <View style={styles.tagContainer}>
-              {availableTags.map((tag) => {
-                const isSelected = selectedTagIds.includes(tag.id);
-                return (
+            <>
+              {/* タグ検索バー */}
+              <View style={styles.tagSearchContainer}>
+                <TextInput
+                  style={styles.tagSearchInput}
+                  placeholder={theme === 'child' ? 'タグをさがす' : 'タグを検索'}
+                  placeholderTextColor="#9CA3AF"
+                  value={tagSearchQuery}
+                  onChangeText={setTagSearchQuery}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                {tagSearchQuery.length > 0 && (
                   <TouchableOpacity
-                    key={tag.id}
-                    style={[
-                      styles.tagChip,
-                      isSelected && styles.tagChipSelected,
-                      tag.color && { borderColor: tag.color },
-                    ]}
-                    onPress={() => toggleTagSelection(tag.id)}
+                    style={styles.tagSearchClear}
+                    onPress={() => setTagSearchQuery('')}
                   >
-                    <Text
-                      style={[
-                        styles.tagChipText,
-                        isSelected && styles.tagChipTextSelected,
-                        tag.color && isSelected && { color: tag.color },
-                      ]}
-                    >
-                      {tag.name}
-                    </Text>
+                    <Text style={styles.tagSearchClearText}>✕</Text>
                   </TouchableOpacity>
-                );
-              })}
-            </View>
+                )}
+              </View>
+
+              {/* タグリスト展開ボタン */}
+              <TouchableOpacity
+                style={styles.tagExpandButton}
+                onPress={() => setIsTagListExpanded(!isTagListExpanded)}
+              >
+                <Text style={styles.tagExpandButtonText}>
+                  {isTagListExpanded
+                    ? theme === 'child'
+                      ? 'とじる ▲'
+                      : '閉じる ▲'
+                    : theme === 'child'
+                    ? 'タグをみる ▼'
+                    : 'タグ一覧を表示 ▼'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* 展開可能なタグリスト */}
+              {isTagListExpanded && (
+                <View style={styles.tagListContainer}>
+                  {availableTags
+                    .filter(
+                      (tag) =>
+                        tagSearchQuery === '' ||
+                        tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
+                    )
+                    .filter((tag) => !selectedTagIds.includes(tag.id)) // 未選択のみ表示
+                    .map((tag) => (
+                      <TouchableOpacity
+                        key={tag.id}
+                        style={styles.tagListItem}
+                        onPress={() => {
+                          toggleTagSelection(tag.id);
+                          setTagSearchQuery(''); // 選択後に検索クエリをクリア
+                        }}
+                      >
+                        <Text style={styles.tagListItemText}>{tag.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  {availableTags.filter(
+                    (tag) =>
+                      (tagSearchQuery === '' ||
+                        tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())) &&
+                      !selectedTagIds.includes(tag.id)
+                  ).length === 0 && (
+                    <Text style={styles.tagListEmptyText}>
+                      {theme === 'child'
+                        ? 'タグがみつからないよ'
+                        : '該当するタグがありません'}
+                    </Text>
+                  )}
+                </View>
+              )}
+            </>
           ) : (
             <Text style={styles.helpText}>
               {theme === 'child' ? 'タグがないよ' : 'タグがありません'}
@@ -600,6 +696,17 @@ export default function CreateTaskScreen() {
               : 'グループメンバー全員に同じタスクを割り当てます'}
           </Text>
         </View>
+
+        {/* AIタスク分解ボタン */}
+        <TouchableOpacity
+          style={[styles.decomposeButton]}
+          onPress={handleDecompose}
+          disabled={isLoading}
+        >
+          <Text style={styles.decomposeButtonText}>
+            🤖 {theme === 'child' ? 'AIでこまかくする' : 'AIでタスク分解'}
+          </Text>
+        </TouchableOpacity>
 
         {/* 作成ボタン */}
         <TouchableOpacity
@@ -759,6 +866,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 16,
@@ -778,6 +887,88 @@ const styles = StyleSheet.create({
   tagChipTextSelected: {
     color: '#FFFFFF',
   },
+  tagRemoveIcon: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  selectedTagsContainer: {
+    marginBottom: 12,
+    padding: 12,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  selectedTagsLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1E40AF',
+    marginBottom: 8,
+  },
+  tagSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  tagSearchInput: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+    color: '#111827',
+  },
+  tagSearchClear: {
+    position: 'absolute',
+    right: 8,
+    padding: 4,
+  },
+  tagSearchClearText: {
+    fontSize: 16,
+    color: '#9CA3AF',
+  },
+  tagExpandButton: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  tagExpandButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4F46E5',
+  },
+  tagListContainer: {
+    marginTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    maxHeight: 200,
+  },
+  tagListItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  tagListItemText: {
+    fontSize: 14,
+    color: '#374151',
+  },
+  tagListEmptyText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    paddingVertical: 16,
+  },
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -787,6 +978,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
+  },
+  decomposeButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#4F46E5',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  decomposeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4F46E5',
   },
   createButton: {
     backgroundColor: '#4F46E5',

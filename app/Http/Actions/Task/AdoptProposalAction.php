@@ -79,6 +79,7 @@ final class AdoptProposalAction
             $html = view('dashboard.partials.task-bento', [
                 'tasks' => $allTasks,
                 'tags' => $allTags,
+                'isChildTheme' => $user->useChildTheme(),
             ])->render();
 
             // アバターコメントを取得

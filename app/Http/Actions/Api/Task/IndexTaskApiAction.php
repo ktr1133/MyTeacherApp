@@ -36,8 +36,8 @@ class IndexTaskApiAction
             }
 
             // クエリパラメータ
-            $status = $request->query('status'); // 'pending', 'completed'
-            $perPage = min((int) $request->query('per_page', 20), 100); // 最大100件
+            $status = $request->query('status', 'pending'); // デフォルト: 未完了のみ（Web版と統一）
+            $perPage = min((int) $request->query('per_page', 50), 100); // デフォルト50件（Web版と統一）、最大100件
             $page = (int) $request->query('page', 1);
 
             // タスククエリ
@@ -46,10 +46,15 @@ class IndexTaskApiAction
                 ->orderBy('created_at', 'desc');
 
             // ステータスフィルタ（is_completedカラムを使用）
-            if ($status === 'pending') {
-                $query->where('is_completed', false);
-            } elseif ($status === 'completed') {
+            // デフォルトは未完了のみ表示（Web版の動作に統一）
+            if ($status === 'completed') {
                 $query->where('is_completed', true);
+            } elseif ($status === 'all') {
+                // 'all'が明示的に指定された場合のみ全件表示
+                // フィルタなし
+            } else {
+                // 'pending'またはその他の値: 未完了のみ
+                $query->where('is_completed', false);
             }
 
             // ページネーション

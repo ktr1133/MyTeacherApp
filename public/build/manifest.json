@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-CkjIxp8b.css",
+    "file": "assets/app-DFx2JVBc.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -190,7 +190,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-Qb_1Ixom.js",
+    "file": "assets/app-DIsSRONT.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -293,7 +293,7 @@
     "isEntry": true
   },
   "resources/js/dashboard/infinite-scroll-init.js": {
-    "file": "assets/infinite-scroll-init-BMVdEH0w.js",
+    "file": "assets/infinite-scroll-init-Cm22MRqP.js",
     "name": "infinite-scroll-init",
     "src": "resources/js/dashboard/infinite-scroll-init.js",
     "isEntry": true,
@@ -320,7 +320,7 @@
     "isEntry": true
   },
   "resources/js/dashboard/task-modal.js": {
-    "file": "assets/task-modal-BoSeDoOX.js",
+    "file": "assets/task-modal-OtEwSkqz.js",
     "name": "task-modal",
     "src": "resources/js/dashboard/task-modal.js",
     "isEntry": true

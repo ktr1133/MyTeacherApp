@@ -202,19 +202,68 @@
                                 <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                             </svg>
                             タグ
+                            <span class="ml-1 text-[#4F46E5] font-semibold" data-tag-count-{{ $task->id }}>
+                                @if($task->tags->count() > 0)({{ $task->tags->count() }})@endif
+                            </span>
                         </label>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($tags ?? [] as $tag)
-                                <label class="tag-chip inline-flex items-center px-4 py-2 rounded-xl cursor-pointer transition {{ $task->tags->contains($tag->id) ? 'bg-gradient-to-r from-[#59B9C6] to-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }}">
-                                    <input 
-                                        type="checkbox" 
-                                        name="tags[]" 
-                                        value="{{ $tag->id }}"
-                                        @checked($task->tags->contains($tag->id))
-                                        class="sr-only">
-                                    <span class="text-sm font-medium">{{ $tag->name }}</span>
-                                </label>
-                            @endforeach
+
+                        {{-- 検索ボックス --}}
+                        <input type="text" 
+                               id="tag-search-{{ $task->id }}"
+                               placeholder="🔍 タグを検索..."
+                               class="w-full px-4 py-2 mb-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent transition text-sm placeholder-gray-400">
+
+                        {{-- 選択済みタグ --}}
+                        <div id="selected-tags-{{ $task->id }}" class="mb-3 @if($task->tags->count() == 0) hidden @endif">
+                            <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">選択中</p>
+                                <div class="flex flex-wrap gap-2" data-selected-tags>
+                                    @foreach($tags ?? [] as $tag)
+                                        @if($task->tags->contains($tag->id))
+                                        <label class="tag-chip inline-flex items-center px-4 py-2 rounded-xl cursor-pointer transition bg-gradient-to-r from-[#59B9C6] to-purple-600 text-white" data-tag-id="{{ $tag->id }}">
+                                            <input 
+                                                type="checkbox" 
+                                                name="tags[]" 
+                                                value="{{ $tag->id }}"
+                                                checked
+                                                class="sr-only tag-checkbox">
+                                            <span class="text-sm font-medium">{{ $tag->name }}</span>
+                                            <span class="ml-2 text-base font-bold">×</span>
+                                        </label>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- 展開ボタン --}}
+                        <button type="button"
+                                id="tag-expand-btn-{{ $task->id }}"
+                                class="w-full px-4 py-2 mb-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm font-semibold text-[#4F46E5]">
+                            <span data-expand-text>タグを追加 ▼</span>
+                        </button>
+
+                        {{-- 展開可能なタグリスト --}}
+                        <div id="tag-list-{{ $task->id }}" class="hidden">
+                            <div class="max-h-48 overflow-y-auto p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 custom-scrollbar">
+                                <div class="flex flex-wrap gap-2" data-available-tags>
+                                    @foreach($tags ?? [] as $tag)
+                                        @if(!$task->tags->contains($tag->id))
+                                        <label class="tag-chip inline-flex items-center px-4 py-2 rounded-xl cursor-pointer transition bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600" data-tag-id="{{ $tag->id }}" data-tag-name="{{ $tag->name }}">
+                                            <input 
+                                                type="checkbox" 
+                                                name="tags[]" 
+                                                value="{{ $tag->id }}"
+                                                class="sr-only tag-checkbox">
+                                            <span class="text-sm font-medium">{{ $tag->name }}</span>
+                                        </label>
+                                        @endif
+                                    @endforeach
+                                </div>
+                                <p class="hidden text-sm text-gray-500 dark:text-gray-400 text-center py-4" data-no-results>
+                                    タグが見つかりません
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </form>
