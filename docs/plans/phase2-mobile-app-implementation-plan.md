@@ -28,6 +28,7 @@
 | 2025-12-08 | GitHub Copilot | Phase 2.B-7要件定義修正: Q&A反映（グループ削除削除、Responder方針明記、テスト数110に修正） |
 | 2025-12-08 | GitHub Copilot | Phase 2.B-7完了: スケジュールタスク3画面+グループ管理1画面実装、不具合2件修正（3,899行、57テスト成功、6コミット）、完了レポート作成 |
 | 2025-12-09 | GitHub Copilot | Phase 2.B-7完了: アバター管理UI実装完了（3画面、2,287行）、タップ拡大機能・画像並び替え実装、9テスト修正完了、完了レポート作成 |
+| 2025-12-09 | GitHub Copilot | Phase 2.B-7.5詳細計画策定: Push通知要件定義書作成（PushNotification.md）、Firebase/FCM統合・デバイス管理・通知設定実装計画 |
 
 ---
 
@@ -160,10 +161,25 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
       - `docs/reports/mobile/2025-12-08-phase2-b6-performance-screen-completion-report.md`
       - `docs/reports/mobile/2025-12-08-phase2-b6-token-subscription-mobile-implementation-report.md`
       - `docs/reports/mobile/2025-12-07-phase2-b6-tag-feature-complete-implementation-report.md`
-  - 🎯 **Phase 2.B-7.5**: Push通知機能（Firebase/FCM）（1週間）
-    - **Firebase統合**: iOS/Android設定、FCMトークン登録
-    - **Push通知受信**: フォアグラウンド・バックグラウンド通知
-    - **通知権限管理**: iOS/Android権限リクエスト
+  - 🎯 **Phase 2.B-7.5**: Push通知機能（Firebase/FCM）（1週間、2025-12-09～）
+    - **要件定義**: `/home/ktr/mtdev/definitions/mobile/PushNotification.md`（2025-12-09作成）
+    - **Firebase統合**: iOS/Android設定、FCMトークン登録、デバイス管理
+    - **バックエンドAPI実装**: 
+      - FCMトークン管理API（`POST /api/v1/profile/fcm-token`, `DELETE /api/v1/profile/fcm-token`）
+      - 通知設定API（`GET /api/v1/profile/notification-settings`, `PUT /api/v1/profile/notification-settings`）
+      - Push送信ジョブ（`SendPushNotificationJob`）
+      - デバイストークンテーブル（`user_device_tokens`）
+    - **モバイル実装**:
+      - FCMトークン登録・更新処理（アプリ起動時）
+      - Push通知受信処理（フォアグラウンド・バックグラウンド・アプリ終了時）
+      - 通知タップ時の画面遷移（通知詳細画面、action_url対応）
+      - 通知設定画面（`NotificationSettingsScreen.tsx`）
+      - カテゴリ別ON/OFF設定（タスク・グループ・トークン・システム）
+    - **テスト実装**:
+      - Laravel: 15テスト（FCMトークンAPI 6 + 通知設定API 5 + Push送信ジョブ 7）
+      - Mobile: 20テスト（Service 8 + Hook 6 + UI 6）
+      - 実機テスト（iOS TestFlight + Android内部テスト）
+    - **実装予定工数**: 5日（環境構築0.5日、バックエンド1.5日、モバイル2日、テスト1日）
   - 🎯 **Phase 2.B-8**: 総合テスト・バグ修正（1週間）
     - **PDF生成・共有機能実装**: react-native-html-to-pdf、expo-sharing
     - **月次レポートPDF出力**: Web版と同じレイアウト、日本語フォント対応
@@ -1550,32 +1566,288 @@ DELETE /api/groups/members/{userId}               # メンバー削除
 
 ---
 
-### 2.B-7.5: Push通知機能（Firebase/FCM）（1週間）
+### 2.B-7.5: Push通知機能（Firebase/FCM）（1週間、2025-12-09～）
 
 #### 実装背景
 
 **Phase 2.B-5 Step 2で基本実装（通知一覧・既読管理）を完了後、Push通知機能を追加**
-- Phase 2.B-5 Step 2: 通知一覧・既読管理（Laravel API連携）
-- Phase 2.B-7.5: Firebase/FCM統合（Push通知受信）
+- Phase 2.B-5 Step 2: 通知一覧・既読管理（Laravel API連携）✅ 完了
+- Phase 2.B-7.5: Firebase/FCM統合（Push通知受信）🎯 次タスク
 
-#### 実装内容
+**要件定義書**: `/home/ktr/mtdev/definitions/mobile/PushNotification.md`（2025-12-09作成）
 
-1. **Firebase設定**
-   - Firebase プロジェクト作成
-   - iOS: GoogleService-Info.plist 追加
-   - Android: google-services.json 追加
-   - @react-native-firebase/messaging インストール
+#### 実装スケジュール（5日間）
 
-2. **Push通知受信**
-   - FCMトークン取得・登録
-   - フォアグラウンド通知受信
-   - バックグラウンド通知受信
-   - 通知タップ時の画面遷移
+| ステップ | タスク | 工数 | 主要ファイル |
+|---------|-------|------|------------|
+| **Step 1: 環境構築** | Firebase Console設定、SDK導入 | 0.5日 | GoogleService-Info.plist, google-services.json |
+| **Step 2: バックエンド実装** | FCMトークン管理API、通知設定API、Push送信ジョブ | 1.5日 | RegisterFcmTokenAction, NotificationSettingsAction, SendPushNotificationJob |
+| **Step 3: モバイル実装** | FCMトークン登録、Push通知受信、通知設定画面 | 2日 | fcmToken.service.ts, usePushNotifications.ts, NotificationSettingsScreen.tsx |
+| **Step 4: テスト** | 単体・統合・実機テスト | 1日 | FcmTokenApiTest.php, usePushNotifications.test.ts, 実機確認 |
 
-3. **通知権限管理**
-   - iOS: 通知権限リクエスト
-   - Android: 通知権限リクエスト
-   - 権限状態管理
+#### 実装内容詳細
+
+##### Step 1: Firebase環境構築（0.5日）
+
+**Firebase Console設定**:
+1. Firebase プロジェクト作成（MyTeacher Mobile）
+2. iOS アプリ追加
+   - Bundle ID: `com.myteacher.mobile`
+   - GoogleService-Info.plist ダウンロード → `mobile/ios/GoogleService-Info.plist`
+   - APNs認証キー設定（Apple Developer Console経由）
+3. Android アプリ追加
+   - Package name: `com.myteacher.mobile`
+   - google-services.json ダウンロード → `mobile/android/app/google-services.json`
+   - SHA-1証明書指紋登録
+
+**パッケージインストール**:
+```bash
+cd /home/ktr/mtdev/mobile
+npm install @react-native-firebase/app @react-native-firebase/messaging
+npx pod-install  # iOS
+```
+
+##### Step 2: バックエンドAPI実装（1.5日）
+
+**2-1. デバイストークンテーブル作成**:
+
+**マイグレーション**: `database/migrations/YYYY_MM_DD_create_user_device_tokens_table.php`
+```php
+Schema::create('user_device_tokens', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->string('device_token', 255)->unique();
+    $table->enum('device_type', ['ios', 'android']);
+    $table->string('device_name', 100)->nullable();
+    $table->string('app_version', 20)->nullable();
+    $table->boolean('is_active')->default(true);
+    $table->timestamp('last_used_at')->nullable();
+    $table->timestamps();
+    
+    $table->index(['user_id', 'is_active']);
+});
+```
+
+**2-2. FCMトークン管理API**:
+
+**Action**: `app/Http/Actions/Profile/RegisterFcmTokenApiAction.php`
+```php
+public function __invoke(RegisterFcmTokenRequest $request): JsonResponse
+{
+    $user = $request->user();
+    $this->deviceTokenService->registerToken(
+        $user,
+        $request->input('device_token'),
+        $request->input('device_type'),
+        $request->input('device_name'),
+        $request->input('app_version')
+    );
+    
+    return $this->responder->success(null, 'FCMトークンを登録しました。');
+}
+```
+
+**Service**: `app/Services/DeviceToken/DeviceTokenService.php` + Interface
+**Repository**: `app/Repositories/DeviceToken/DeviceTokenEloquentRepository.php` + Interface
+
+**2-3. 通知設定API**:
+
+**Action**: `app/Http/Actions/Profile/NotificationSettingsApiAction.php`（GET/PUT両対応）
+```php
+// GET /api/v1/profile/notification-settings
+public function show(Request $request): JsonResponse
+{
+    $user = $request->user();
+    $settings = $user->notification_settings ?? $this->getDefaultSettings();
+    return $this->responder->success($settings);
+}
+
+// PUT /api/v1/profile/notification-settings
+public function update(UpdateNotificationSettingsRequest $request): JsonResponse
+{
+    $user = $request->user();
+    $this->profileService->updateNotificationSettings($user, $request->validated());
+    return $this->responder->success(null, '通知設定を更新しました。');
+}
+```
+
+**2-4. Push送信ジョブ**:
+
+**Job**: `app/Jobs/SendPushNotificationJob.php`
+```php
+class SendPushNotificationJob implements ShouldQueue
+{
+    public $tries = 3;
+    public $backoff = [60, 300];
+    
+    public function __construct(private int $notificationId) {}
+    
+    public function handle(FcmServiceInterface $fcmService): void
+    {
+        $notification = UserNotification::find($this->notificationId);
+        
+        // 通知設定チェック
+        if (!$this->shouldSendPush($notification)) return;
+        
+        // デバイストークン取得
+        $tokens = $this->getActiveDeviceTokens($notification->user_id);
+        
+        // FCM送信
+        foreach ($tokens as $token) {
+            $fcmService->send($token, $this->buildPayload($notification));
+        }
+    }
+}
+```
+
+**Service**: `app/Services/Fcm/FcmService.php`（FCM HTTP v1 API呼び出し）
+
+##### Step 3: モバイル実装（2日）
+
+**3-1. FCMトークン登録処理**:
+
+**Service**: `mobile/src/services/fcmToken.service.ts`
+```typescript
+export const fcmTokenService = {
+  async initialize() {
+    const hasPermission = await this.requestPermission();
+    if (!hasPermission) return;
+    
+    const token = await messaging().getToken();
+    await this.registerToken(token);
+    
+    // トークン更新時のリスナー
+    messaging().onTokenRefresh(async (newToken) => {
+      await this.registerToken(newToken);
+    });
+  },
+  
+  async requestPermission(): Promise<boolean> {
+    const authStatus = await messaging().requestPermission();
+    return authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+           authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  },
+  
+  async registerToken(token: string) {
+    const deviceName = await Device.getDeviceNameAsync();
+    const appVersion = Application.nativeApplicationVersion;
+    
+    await api.post('/profile/fcm-token', {
+      device_token: token,
+      device_type: Platform.OS,
+      device_name: deviceName,
+      app_version: appVersion,
+    });
+    
+    await storage.setItem('fcm_token', token);
+  },
+};
+```
+
+**3-2. Push通知受信処理**:
+
+**Hook**: `mobile/src/hooks/usePushNotifications.ts`
+```typescript
+export const usePushNotifications = () => {
+  useEffect(() => {
+    // フォアグラウンド通知
+    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+      Alert.alert(
+        remoteMessage.notification?.title || '',
+        remoteMessage.notification?.body || ''
+      );
+    });
+    
+    // バックグラウンド通知タップ
+    messaging().onNotificationOpenedApp((remoteMessage) => {
+      handleNotificationPress(remoteMessage);
+    });
+    
+    // アプリ終了時の通知タップ
+    messaging().getInitialNotification().then((remoteMessage) => {
+      if (remoteMessage) {
+        handleNotificationPress(remoteMessage);
+      }
+    });
+    
+    return unsubscribe;
+  }, []);
+  
+  const handleNotificationPress = (remoteMessage: any) => {
+    const notificationId = remoteMessage.data.notification_id;
+    navigation.navigate('NotificationDetail', { id: notificationId });
+  };
+};
+```
+
+**3-3. 通知設定画面**:
+
+**Screen**: `mobile/src/screens/notifications/NotificationSettingsScreen.tsx`
+```typescript
+export default function NotificationSettingsScreen() {
+  const [settings, setSettings] = useState({
+    push_enabled: true,
+    push_task_enabled: true,
+    push_group_enabled: true,
+    push_token_enabled: true,
+    push_system_enabled: true,
+    push_sound_enabled: true,
+    push_vibration_enabled: true,
+  });
+  
+  const { updateSettings } = useNotificationSettings();
+  
+  const handleToggle = async (key: string, value: boolean) => {
+    const newSettings = { ...settings, [key]: value };
+    setSettings(newSettings);
+    await updateSettings(newSettings);
+  };
+  
+  return (
+    <ScrollView>
+      <Switch
+        label="Push通知を有効化"
+        value={settings.push_enabled}
+        onValueChange={(value) => handleToggle('push_enabled', value)}
+      />
+      
+      <Text>カテゴリ別設定</Text>
+      <Switch label="タスク通知" value={settings.push_task_enabled} />
+      <Switch label="グループ通知" value={settings.push_group_enabled} />
+      <Switch label="トークン通知" value={settings.push_token_enabled} />
+      <Switch label="システム通知" value={settings.push_system_enabled} />
+      
+      <Text>詳細設定</Text>
+      <Switch label="通知音" value={settings.push_sound_enabled} />
+      <Switch label="バイブレーション" value={settings.push_vibration_enabled} />
+    </ScrollView>
+  );
+}
+```
+
+##### Step 4: テスト実装（1日）
+
+**Laravel単体テスト**: `tests/Feature/Api/Profile/FcmTokenApiTest.php`（6テスト）
+1. FCMトークンを登録できること
+2. 同じトークンを再登録した場合は更新されること
+3. FCMトークンを削除できること
+4. 未認証の場合は401エラー
+5. device_type不正値は400エラー
+6. 他ユーザーのトークンは削除できないこと
+
+**モバイル統合テスト**: `mobile/__tests__/hooks/usePushNotifications.test.ts`（8テスト）
+1. アプリ起動時にFCMトークンを取得してAPIに送信すること
+2. 権限拒否時にエラーハンドリングが動作すること
+3. フォアグラウンド時にPush通知を受信して表示すること
+4. 通知タップ時に通知詳細画面に遷移すること
+5. action_urlがある場合に適切な画面に遷移すること
+
+**実機テスト（iOS/Android）**:
+- TestFlight（iOS）、内部テスト（Android）配信
+- 通知権限リクエスト確認
+- フォアグラウンド・バックグラウンド・終了状態での通知受信確認
+- 通知タップ時の画面遷移確認
+- 通知音・バイブレーション動作確認
 
 #### コード例（Push通知）
 
@@ -1614,27 +1886,50 @@ export const fcmService = {
 
 #### チェックリスト
 
-**Firebase設定**:
+**Step 1: Firebase環境構築（0.5日）**:
 - [ ] Firebase プロジェクト作成
-- [ ] iOS設定（GoogleService-Info.plist、証明書）
-- [ ] Android設定（google-services.json、FCM設定）
+- [ ] iOS設定（GoogleService-Info.plist、APNs証明書）
+- [ ] Android設定（google-services.json、SHA-1登録）
 - [ ] @react-native-firebase/messaging インストール
 
-**Push通知実装**:
-- [ ] FCMトークン取得・登録実装
-- [ ] フォアグラウンド通知受信実装
-- [ ] バックグラウンド通知受信実装
-- [ ] 通知タップ時の画面遷移実装
-- [ ] 通知権限管理実装
+**Step 2: バックエンド実装（1.5日）**:
+- [ ] user_device_tokensテーブル作成（マイグレーション）
+- [ ] FCMトークン登録API実装（POST /api/v1/profile/fcm-token）
+- [ ] FCMトークン削除API実装（DELETE /api/v1/profile/fcm-token）
+- [ ] 通知設定取得API実装（GET /api/v1/profile/notification-settings）
+- [ ] 通知設定更新API実装（PUT /api/v1/profile/notification-settings）
+- [ ] SendPushNotificationJob実装
+- [ ] FcmService実装（FCM HTTP v1 API）
+- [ ] DeviceTokenService + Repository実装（Interface付き）
+- [ ] AppServiceProvider DIバインディング追加
 
-**テスト**:
-- [ ] Push通知テスト作成（10テスト）
+**Step 3: モバイル実装（2日）**:
+- [ ] fcmToken.service.ts実装（トークン取得・登録）
+- [ ] usePushNotifications.ts実装（Push受信・権限管理）
+- [ ] NotificationSettingsScreen.tsx実装（通知設定画面）
+- [ ] useNotificationSettings.ts実装（設定管理Hook）
+- [ ] notification.types.ts更新（Push関連型追加）
+- [ ] App.tsx初期化処理追加（FCMトークン登録）
+- [ ] ナビゲーション追加（Settings → NotificationSettings）
+
+**Step 4: テスト（1日）**:
+- [ ] Laravel単体テスト作成（15テスト）
+  - [ ] FcmTokenApiTest.php（6テスト）
+  - [ ] NotificationSettingsApiTest.php（5テスト）
+  - [ ] SendPushNotificationJobTest.php（7テスト）
+- [ ] モバイル統合テスト作成（20テスト）
+  - [ ] fcmToken.service.test.ts（4テスト）
+  - [ ] usePushNotifications.test.ts（8テスト）
+  - [ ] NotificationSettingsScreen.test.tsx（6テスト）
+  - [ ] useNotificationSettings.test.ts（4テスト）
 - [ ] TypeScript型チェック（0エラー）
-- [ ] 実機テスト（iOS: 通知受信・タップ動作）
-- [ ] 実機テスト（Android: 通知受信・タップ動作）
+- [ ] 実機テスト（iOS: TestFlight配信、通知受信確認）
+- [ ] 実機テスト（Android: 内部テスト配信、通知受信確認）
 
 **総合**:
-- [ ] 完了レポート作成
+- [ ] 完了レポート作成（docs/reports/mobile/2025-12-XX-phase2-b7-5-push-notification-completion-report.md）
+- [ ] 要件定義書更新（PushNotification.md実装完了記録）
+- [ ] 計画書更新（phase2-mobile-app-implementation-plan.md完了記録）
 
 ---
 
