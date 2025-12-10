@@ -1,0 +1,4 @@
+
+# Firebase config files (managed via EAS environment variables)
+google-services.json
+GoogleService-Info.plist
