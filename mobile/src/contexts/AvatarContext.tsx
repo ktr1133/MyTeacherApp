@@ -135,6 +135,14 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children, config
 
         const response = await avatarService.getCommentForEvent(eventType);
 
+        // アバター画像未生成または非表示の場合、APIは空のコメントを返す
+        // 空のコメントの場合は表示しない
+        if (!response.comment || response.comment.trim() === '') {
+          console.log('[AvatarContext] Avatar not available or no comment for event:', eventType);
+          setState((prev) => ({ ...prev, isLoading: false }));
+          return;
+        }
+
         const displayData: AvatarDisplayData = {
           comment: response.comment,
           imageUrl: response.imageUrl,

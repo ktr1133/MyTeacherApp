@@ -64,11 +64,15 @@ class GetAvatarCommentApiAction
             Log::info('🎭 [GetAvatarCommentApiAction] Avatar retrieved', [
                 'hasAvatar' => !!$avatar,
                 'isVisible' => $avatar?->is_visible ?? false,
+                'generationStatus' => $avatar?->generation_status ?? null,
             ]);
 
-            if (!$avatar || !$avatar->is_visible) {
-                // アバター未作成または非表示の場合は空のレスポンス
-                Log::warning('🎭 [GetAvatarCommentApiAction] Avatar not available');
+            // アバター未作成、非表示、または画像生成未完了の場合は空のレスポンス
+            if (!$avatar || !$avatar->is_visible || $avatar->generation_status !== 'completed') {
+                Log::warning('🎭 [GetAvatarCommentApiAction] Avatar not available', [
+                    'reason' => !$avatar ? 'avatar_not_found' : (!$avatar->is_visible ? 'not_visible' : 'generation_incomplete'),
+                    'generationStatus' => $avatar?->generation_status ?? null,
+                ]);
                 return $this->responder->comment('', null, 'avatar-idle');
             }
 

@@ -370,35 +370,41 @@ php artisan optimize:clear
 
 ### テスト
 
-**重要**: テスト実行時は必ず`CACHE_STORE=array`を指定してRedis接続を回避する。
+**重要**: テスト実行時は必ず`CACHE_STORE=array`と`DB_CONNECTION=sqlite`を指定してRedis・PostgreSQL接続を回避する。
 
 ```bash
-# ✅ 正しいテスト実行方法（Redisキャッシュを回避）
-CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test
+# ✅ 正しいテスト実行方法（SQLiteインメモリ使用 - 推奨）
+CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test
 
 # 全テスト実行 (Pest)
-CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test
+CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test
 
 # 特定テストファイルのみ実行
-CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test tests/Feature/Task/StoreTaskTest.php
+CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test tests/Feature/Task/StoreTaskTest.php
 
 # 特定テストケースのみ実行（フィルタ）
-CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test --filter="通常タスクを新規登録できる"
+CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --filter="通常タスクを新規登録できる"
 
 # カバレッジレポート
-CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test --coverage
+CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --coverage
 
 # 最初の失敗で停止
-CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test --stop-on-failure
+CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --stop-on-failure
 
 # エラー詳細表示
-CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test --display-errors
+CACHE_STORE=array DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --display-errors
 
 # ❌ NG: 環境変数なしで実行するとRedis接続でハングする
 php artisan test  # Redis接続待ちで無限ループ
+
+# ❌ NG: PostgreSQLを使用するとDB_HOST=dbの名前解決でハングする
+CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test  # ホスト側からはPostgreSQL接続不可
 ```
 
-**注意**: `phpunit.xml`に`CACHE_STORE=array`が設定されているが、`artisan test`コマンドでは環境変数を明示的に指定する必要がある。
+**注意**: 
+- `phpunit.xml`に`CACHE_STORE=array`と`DB_CONNECTION=sqlite`が設定されているが、`.env`ファイルの設定が優先されるため、コマンドラインで明示的に環境変数を指定する必要がある
+- `.env`の`CACHE_STORE=redis`と`DB_HOST=db`はDocker環境用の設定であり、変更してはならない
+- テスト実行前に設定キャッシュをクリアする場合: `CACHE_STORE=array php artisan config:clear`
 
 ### テストデータ作成時の注意事項（重要）
 

@@ -1,4 +1,4 @@
-@if($avatar && $avatar->is_visible)
+@if($avatar && $avatar->is_visible && $avatar->generation_status === 'completed')
     @php
         // ちびキャラの場合は全身画像、通常キャラの場合はバストアップ画像を使用
         $isChibi = $avatar->is_chibi ?? false;

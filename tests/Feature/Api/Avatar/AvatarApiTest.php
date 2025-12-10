@@ -397,4 +397,57 @@ class AvatarApiTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * @test
+     * アバター画像生成未完了の場合は空のコメントを返すこと
+     */
+    public function test_returns_empty_comment_when_avatar_generation_is_incomplete(): void
+    {
+        // Arrange
+        $avatar = TeacherAvatar::factory()->create([
+            'user_id' => $this->user->id,
+            'is_visible' => true,
+            'generation_status' => 'pending', // 画像生成未完了
+        ]);
+
+        // Act
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/avatar/comment/task_created');
+
+        // Assert
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'comment' => '',
+                    'image_url' => null,
+                    'animation' => 'avatar-idle',
+                ],
+            ]);
+    }
+
+    /**
+     * @test
+     * アバター未作成の場合は空のコメントを返すこと
+     */
+    public function test_returns_empty_comment_when_avatar_does_not_exist(): void
+    {
+        // Arrange: アバター未作成（何もしない）
+
+        // Act
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/avatar/comment/task_created');
+
+        // Assert
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'comment' => '',
+                    'image_url' => null,
+                    'animation' => 'avatar-idle',
+                ],
+            ]);
+    }
 }
