@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "59209979450",
+    "project_id": "my-teacher-bcb8d",
+    "storage_bucket": "my-teacher-bcb8d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:59209979450:android:30aa1396bb1fe6ff9b0703",
+        "android_client_info": {
+          "package_name": "com.myteacher.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAG4XUlpQ_9xx_wg0PTSjNa_B6xCUTeUQo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
