@@ -30,6 +30,7 @@ describe('TaskListScreen - バケット表示機能', () => {
   const mockNavigation = {
     navigate: jest.fn(),
     goBack: jest.fn(),
+    setOptions: jest.fn(), // React Navigation ヘッダーカスタマイズ用
   };
 
   const mockTasks: Task[] = [

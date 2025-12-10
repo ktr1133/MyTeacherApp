@@ -38,26 +38,44 @@
 
 ## 2. 実装方針
 
-### 2.1 並行実施戦略
+### 2.1 基本原則（mobile-rules.md 総則4項準拠）
+
+**原則**: **レスポンシブ対応を最優先**とし、Dimensions APIを積極的に使用してデバイス間の表示差異を吸収する。
+
+**優先順位**:
+```
+優先度1: レスポンシブ対応（構造調整） > 優先度2: Web版スタイル統一（装飾）
+```
+
+**理由**: 
+- 表示崩れはユーザー体験を大きく損なう（即修正必要）
+- 装飾の差異は機能性に影響しない（段階的実施可能）
+- **レスポンシブ対応は全32画面で完了済み**（2025-12-09）
+
+### 2.2 実装手順（mobile-rules.md 総則4項 Step 6準拠）
 
 各画面ごとに以下の順序で実施:
 
 ```
-Step 1: レスポンシブ対応（必須） → Step 2: Web版スタイル適用（推奨） → Step 3: 動作確認 → 次の画面へ
+Step 1: レスポンシブ対応（✅完了） → Step 2: Web版スタイル適用（🎯実施中） → Step 3: 動作確認 → 次の画面へ
 ```
 
-**メリット**:
-- 1画面ずつ完全に仕上げる（中途半端な画面が残らない）
-- 進捗が明確（10画面中5画面完了 等）
-- レビュー・テストが段階的に実施可能
+**Step 2詳細（Web版スタイル適用）**:
+1. Bladeファイルを読み、Tailwind CSSクラスを抽出
+2. responsive.ts の関数（getFontSize, getSpacing等）で動的計算
+3. カラーパレット統一（colors.ts参照）
+4. グラデーション効果適用（LinearGradient使用）
+5. Platform別対応（iOS/Android両対応）
+6. Android/iOS実機テスト
 
-### 2.2 関連ドキュメント
+### 2.3 関連ドキュメント
 
 | ドキュメント | 用途 | ステータス |
 |------------|------|----------|
-| `/home/ktr/mtdev/definitions/mobile/ResponsiveDesignGuideline.md` | レスポンシブ対応の技術仕様（605行） | ✅ 実装完了 |
+| `/home/ktr/mtdev/docs/mobile/mobile-rules.md` | モバイルアプリ開発規則（1416行、レスポンシブ・デザイン方針含む） | ✅ 参照必須 |
+| `/home/ktr/mtdev/definitions/mobile/ResponsiveDesignGuideline.md` | レスポンシブ対応の詳細技術仕様（605行、Dimensions API使用） | ✅ 実装完了 |
+| `/home/ktr/mtdev/.github/copilot-instructions.md` | プロジェクト全体規約（不具合対応方針、コード修正規則等） | ✅ 遵守必須 |
 | `/home/ktr/mtdev/docs/reports/mobile/2025-12-09-responsive-implementation-completion-report.md` | レスポンシブ実装完了レポート（全32画面、335テスト） | ✅ 作成済み |
-| `/home/ktr/mtdev/definitions/mobile/ScreenDesignTemplate.md` | Tailwind CSS → React Native 変換表（409行） | 🎯 参照予定 |
 | `/home/ktr/mtdev/docs/plans/phase2-mobile-app-implementation-plan.md` | Phase 2全体計画書 | ✅ 更新済み |
 
 ---
@@ -106,10 +124,36 @@ Step 1: レスポンシブ対応（必須） → Step 2: Web版スタイル適�
 **実装方法**:
 
 ```typescript
-// mobile/src/constants/colors.ts (新規作成)
-export const colors = {
-  primary: {
-    main: '#2563EB',
+// カラーは直接StyleSheetに記述（constants/colors.tsは作成しない）
+import { StyleSheet } from 'react-native';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '@/utils/responsive';
+import { useChildTheme } from '@/hooks/useChildTheme';
+
+const MyComponent = () => {
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  
+  const styles = StyleSheet.create({
+    button: {
+      backgroundColor: '#2563EB', // Web版 bg-blue-600
+      borderRadius: getBorderRadius(8, width),
+      paddingVertical: getSpacing(12, width),
+      paddingHorizontal: getSpacing(24, width),
+    },
+    buttonText: {
+      color: '#FFFFFF',
+      fontSize: getFontSize(16, width, isChildTheme ? 'child' : 'adult'),
+    },
+  });
+  
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.button, pressed && { opacity: 0.7 }]}
+    >
+      <Text style={styles.buttonText}>ボタン</Text>
+    </Pressable>
+  );
+};
     hover: '#1D4ED8',
     light: '#EFF6FF',
   },
@@ -143,34 +187,41 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
   },
-});
 ```
+
+**注意**: `constants/colors.ts` は作成せず、各コンポーネントで直接HEXコードを記述する。これにより、Web版Bladeファイルとの対応関係が明確になり、保守性が向上する。
 
 ### 3.2 グラデーション効果（バケットカード）
 
 **Web版**: `bg-gradient-to-br from-blue-50 to-purple-50`
 
-**モバイル実装**:
+**モバイル実装**（ResponsiveDesignGuideline.md 準拠）:
 
 ```typescript
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '@/constants/colors';
+import { useResponsive, getBorderRadius, getSpacing, getShadow } from '@/utils/responsive';
 
-// バケットカード背景グラデーション
-<LinearGradient
-  colors={['#EFF6FF', '#FAF5FF']} // blue-50 → purple-50
-  start={{ x: 0, y: 0 }}
-  end={{ x: 1, y: 1 }}
-  style={styles.cardGradient}
->
-  {/* カード内容 */}
-</LinearGradient>
+const MyComponent = () => {
+  const { width } = useResponsive();
+  
+  // バケットカード背景グラデーション
+  return (
+    <LinearGradient
+      colors={['#EFF6FF', '#FAF5FF']} // blue-50 → purple-50
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.cardGradient}
+    >
+      {/* カード内容 */}
+    </LinearGradient>
+  );
+};
 
-const styles = StyleSheet.create({
+const createStyles = (width: number) => StyleSheet.create({
   cardGradient: {
-    borderRadius: getBorderRadius(16, width),
-    padding: getSpacing(16, width),
-    ...getShadow(4),
+    borderRadius: getBorderRadius(16, width), // Web版 rounded-2xl
+    padding: getSpacing(16, width),           // Web版 p-4
+    ...getShadow(4),                          // Web版 shadow-md
   },
 });
 ```
@@ -213,42 +264,45 @@ const styles = StyleSheet.create({
 
 **Web版**: hover効果 + transition-colors
 
-**モバイル実装**: Pressableでopacity調整
+**モバイル実装**: Pressableでopacity調整（mobile-rules.md 準拠）
 
 ```typescript
 import { Pressable, Text, StyleSheet } from 'react-native';
-import { colors } from '@/constants/colors';
-import { getFontSize, getSpacing, getBorderRadius } from '@/utils/responsive';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '@/utils/responsive';
+import { useChildTheme } from '@/hooks/useChildTheme';
 
-const PrimaryButton = ({ title, onPress, width, theme }) => (
-  <Pressable
-    onPress={onPress}
-    style={({ pressed }) => [
-      styles.button,
-      pressed && styles.buttonPressed, // Web版のhover効果を再現
-    ]}
-  >
-    <Text style={styles.buttonText}>{title}</Text>
-  </Pressable>
-);
-
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: colors.primary.main,
-    paddingVertical: getSpacing(12, width),
-    paddingHorizontal: getSpacing(24, width),
-    borderRadius: getBorderRadius(8, width),
-    alignItems: 'center',
-  },
-  buttonPressed: {
-    opacity: 0.7, // Web版のhover:bg-blue-700を再現
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: getFontSize(16, width, theme),
-    fontWeight: '600',
-  },
-});
+const PrimaryButton = ({ title, onPress }) => {
+  const { width } = useResponsive();
+  const isChildTheme = useChildTheme();
+  const theme = isChildTheme ? 'child' : 'adult';
+  
+  const styles = StyleSheet.create({
+    button: {
+      backgroundColor: '#2563EB', // Web版 bg-blue-600
+      paddingVertical: getSpacing(12, width),
+      paddingHorizontal: getSpacing(24, width),
+      borderRadius: getBorderRadius(8, width),
+      alignItems: 'center',
+    },
+    buttonText: {
+      color: '#FFFFFF',
+      fontSize: getFontSize(16, width, theme),
+      fontWeight: '600',
+    },
+  });
+  
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        pressed && { opacity: 0.7 }, // Web版のhover:bg-blue-700を再現
+      ]}
+    >
+      <Text style={styles.buttonText}>{title}</Text>
+    </Pressable>
+  );
+};
 ```
 
 **ボタンバリエーション**:
@@ -352,42 +406,75 @@ import { colors } from '@/constants/colors';
 
 ---
 
-## 4. 実装スケジュール（2週間）
+## 4. 実装スケジュール（3週間）
 
-**レスポンシブ対応完了により、Web版スタイル統一のみに集中可能**
+**前提**: レスポンシブ対応完了（全32画面、2025-12-09）により、Web版スタイル統一のみに集中可能
 
-### Week 1: 主要画面のスタイル統一（優先度1） - 6画面
+**原則**: mobile-rules.md 総則4項に基づき、各画面でBladeファイル読解→Tailwind CSS抽出→React Native変換→実機テストを実施
 
-| 画面 | レスポンシブ対応 | Web版スタイル適用 | 工数 |
-|------|---------------|----------------|------|
-| タスク一覧画面（BucketCard） | ✅ **完了** | カラー、グラデーション、シャドウ統一 | 0.5日 |
-| タスク詳細画面 | ✅ **完了** | カラー、ボタン統一 | 0.5日 |
-| タスク作成画面 | ✅ **完了** | フォーム要素デザイン統一 | 0.5日 |
-| タスク編集画面 | ✅ **完了** | DatePicker Platform対応 | 0.5日 |
-| サブスクリプション管理画面 | ✅ **完了** | グラデーション、カラー統一 | 1日 |
-| 承認待ち一覧画面 | ✅ **完了** | カラー、シャドウ、ボタン統一 | 0.5日 |
+### Week 1: コアタスク機能のスタイル統一（優先度：最高） - 10画面
 
-### Week 2: 管理系画面のスタイル統一（優先度2） + テスト - 6画面 + 全体テスト
+| # | 画面 | 参照Bladeファイル | Web版スタイル適用内容 | 工数 |
+|---|------|-----------------|-------------------|------|
+| 1 | タスク一覧画面（BucketCard） | `resources/views/tasks/index.blade.php` | カラー、グラデーション、シャドウ統一 | 0.5日 |
+| 2 | タスク詳細画面 | `resources/views/tasks/show.blade.php` | カラー、ボタン統一 | 0.5日 |
+| 3 | タスク作成画面 | `resources/views/tasks/create.blade.php` | フォーム要素デザイン統一 | 0.5日 |
+| 4 | タスク編集画面 | `resources/views/tasks/edit.blade.php` | DatePicker Platform対応 | 0.5日 |
+| 5 | タスク承認待ち一覧 | `resources/views/task_approvals/index.blade.php` | カラー、シャドウ、ボタン統一 | 0.5日 |
+| 6 | タスク承認詳細 | `resources/views/task_approvals/show.blade.php` | カラー、ボタン統一 | 0.5日 |
+| 7 | グループタスク作成 | `resources/views/tasks/create.blade.php` | ユーザー選択UIデザイン統一 | 0.5日 |
+| 8 | タグ管理 | `resources/views/tags/index.blade.php` | カラー統一 | 0.5日 |
+| 9 | タグ編集 | `resources/views/tags/edit.blade.php` | フォーム要素デザイン統一 | 0.5日 |
+| 10 | タグバケット詳細 | `resources/views/tasks/index.blade.php` | カード・モーダルデザイン統一 | 0.5日 |
 
-| 画面 | レスポンシブ対応 | Web版スタイル適用 | 工数 |
-|------|---------------|----------------|------|
-| 通知一覧画面 | ✅ **完了** | アバターサイズ最適化 | 0.5日 |
-| 通知詳細画面 | ✅ **完了** | ボタン配置最適化 | 0.5日 |
-| グループ管理画面 | ✅ **完了** | メンバーカードデザイン統一 | 0.5日 |
-| タスク自動作成の設定画面 | ✅ **完了** | フォーム要素デザイン統一 | 1日 |
-| パフォーマンスレポート画面 | ✅ **完了** | 統計カードデザイン統一 | 1日 |
-| タグ管理画面 | ✅ **完了** | カラー統一 | 0.5日 |
-| アバター管理画面 | ✅ **完了** | グリッド表示デザイン | 0.5日 |
-| **全画面テスト** | ✅ **完了** | デザイン統一確認 | 1日 |
-| **ドキュメント作成** | - | 完了レポート作成 | 0.5日 |
+### Week 2: 管理・設定画面のスタイル統一（優先度：高） - 11画面
 
-**合計工数**: 9日（2週間）
+| # | 画面 | 参照Bladeファイル | Web版スタイル適用内容 | 工数 |
+|---|------|-----------------|-------------------|------|
+| 11 | グループ管理 | `resources/views/groups/index.blade.php` | メンバーカードデザイン統一 | 0.5日 |
+| 12 | グループ詳細 | `resources/views/groups/show.blade.php` | カラー、ボタン統一 | 0.5日 |
+| 13 | グループ作成 | `resources/views/groups/create.blade.php` | フォーム要素デザイン統一 | 0.5日 |
+| 14 | グループ編集 | `resources/views/groups/edit.blade.php` | フォーム要素デザイン統一 | 0.5日 |
+| 15 | タスク自動作成設定 | `resources/views/scheduled_tasks/index.blade.php` | フォーム要素デザイン統一 | 1日 |
+| 16 | タスク自動作成編集 | `resources/views/scheduled_tasks/edit.blade.php` | フォーム要素デザイン統一 | 1日 |
+| 17 | 通知一覧 | `resources/views/notifications/index.blade.php` | アバターサイズ最適化 | 0.5日 |
+| 18 | 通知詳細 | `resources/views/notifications/show.blade.php` | ボタン配置最適化 | 0.5日 |
+| 19 | アバター管理 | `resources/views/avatars/index.blade.php` | グリッド表示デザイン | 0.5日 |
+| 20 | アバター作成 | `resources/views/avatars/create.blade.php` | フォーム要素デザイン統一 | 0.5日 |
+| 21 | アバター編集 | `resources/views/avatars/edit.blade.php` | フォーム要素デザイン統一 | 0.5日 |
+
+### Week 3: 課金・レポート画面のスタイル統一 + テスト（優先度：中） - 11画面 + テスト
+
+| # | 画面 | 参照Bladeファイル | Web版スタイル適用内容 | 工数 |
+|---|------|-----------------|-------------------|------|
+| 22 | サブスクリプション管理 | `resources/views/subscription/manage.blade.php` | グラデーション、カラー統一 | 1日 |
+| 23 | プラン選択 | `resources/views/subscription/plans.blade.php` | プランカードデザイン統一 | 0.5日 |
+| 24 | 決済履歴 | `resources/views/subscription/history.blade.php` | テーブルデザイン統一 | 0.5日 |
+| 25 | トークン購入 | `resources/views/tokens/purchase.blade.php` | ボタン、カードデザイン統一 | 0.5日 |
+| 26 | トークン履歴 | `resources/views/tokens/history.blade.php` | テーブルデザイン統一 | 0.5日 |
+| 27 | パフォーマンスレポート | `resources/views/reports/performance.blade.php` | 統計カードデザイン統一 | 1日 |
+| 28 | 月次レポート | `resources/views/reports/monthly.blade.php` | グラフ・カードデザイン統一 | 1日 |
+| 29 | プロフィール | `resources/views/profile/edit.blade.php` | フォーム要素デザイン統一 | 0.5日 |
+| 30 | プロフィール設定 | `resources/views/profile/settings.blade.php` | スイッチ・ボタンデザイン統一 | 0.5日 |
+| 31 | ログイン画面 | `resources/views/auth/login.blade.php` | カラー、ボタン統一 | 0.5日 |
+| 32 | 登録画面 | `resources/views/auth/register.blade.php` | フォーム要素デザイン統一 | 0.5日 |
+| - | **全画面デバイステスト** | - | 7デバイス × 縦横向き確認 | 1.5日 |
+| - | **スクリーンショット比較** | - | Web版と目視確認 | 0.5日 |
+| - | **ドキュメント作成** | - | 完了レポート作成 | 0.5日 |
+
+**合計工数**: 18日（3週間）
+
+**工数内訳**:
+- Web版スタイル適用: 15日（全32画面 × 平均0.47日/画面）
+- テスト・検証: 2.5日
+- ドキュメント: 0.5日
 
 **工数削減理由**:
-- ✅ レスポンシブ対応が完了済み（全32画面）
-- ✅ ユーティリティ関数が実装済み（responsive.ts、useChildTheme.ts）
-- ✅ 実装パターンが確立済み（createStyles(width)）
-- → Web版スタイル適用のみに集中可能
+- ✅ レスポンシブ対応が完了済み（全32画面、responsive.ts 9,014行）
+- ✅ ユーティリティ関数が実装済み（getFontSize, getSpacing, getBorderRadius, getShadow）
+- ✅ 実装パターンが確立済み（createStyles(width)パターン）
+- ✅ テストフレームワーク整備済み（335テストケース、99.7%成功率）
+- → Web版Bladeファイル読解 + Tailwind CSS変換のみに集中可能
 
 ---
 
@@ -625,20 +712,69 @@ const getTitleFontSize = (
 
 ## 9. 完了条件
 
+### 9.1 実装完了条件
+
 - [x] **全32画面でレスポンシブ対応完了**（2025-12-09）
   - [x] responsive.ts実装（9,014行）
   - [x] useChildTheme.ts実装（1,283行）
   - [x] createStyles(width)パターン統一
   - [x] 335テストケース成功（99.7%）
   - [x] レスポンシブ実装完了レポート作成
-- [ ] 全32画面でWeb版スタイル適用完了（🎯 次フェーズ）
-  - [ ] カラーパレット統一（colors.ts作成）
+
+- [ ] **全32画面でWeb版スタイル適用完了**（🎯 実施中）
+  - [ ] 各画面でBladeファイル読解完了（mobile-rules.md 総則4項準拠）
+  - [ ] Tailwind CSSクラス抽出完了（grep_searchによる機械的検出）
+  - [ ] React Native StyleSheet変換完了（responsive.ts関数使用）
+  - [ ] カラーパレット統一（HEXコード直接記述）
   - [ ] グラデーション効果適用（LinearGradient）
-  - [ ] ボタンスタイル統一（Pressable）
+  - [ ] ボタンスタイル統一（Pressable + opacity）
   - [ ] アニメーション統一（Animated API）
-- [ ] 7デバイスで動作確認完了
-- [ ] スクリーンショット比較で差異なし
-- [ ] Web版スタイル統一完了レポート作成
+  - [ ] Platform別対応完了（iOS/Android両対応）
+
+### 9.2 テスト完了条件
+
+- [ ] **デバイス別動作確認完了**（7デバイス × 縦横向き）
+  - [ ] iPhone SE 1st (320px) - 縦向き
+  - [ ] iPhone 12/13/14 (390px) - 縦向き・横向き
+  - [ ] iPhone 14 Pro Max (430px) - 縦向き・横向き
+  - [ ] Pixel 7 (412px) - 縦向き・横向き
+  - [ ] Galaxy Fold (280px) - 縦向き
+  - [ ] iPad mini (768px) - 縦向き・横向き
+  - [ ] iPad Pro (1024px) - 縦向き・横向き
+
+- [ ] **スクリーンショット比較完了**
+  - [ ] Web版（375px幅）とモバイル版（iPhone 12）で並べて比較
+  - [ ] カラー、余白、角丸、シャドウの差異なし確認
+  - [ ] フォントサイズ・ファミリーの統一性確認
+  - [ ] 子ども向けテーマの1.2倍フォント適用確認
+
+### 9.3 ドキュメント完了条件（copilot-instructions.md レポート作成規則準拠）
+
+- [ ] **完了レポート作成**（`docs/reports/mobile/2025-12-XX-web-style-alignment-completion-report.md`）
+  - [ ] 更新履歴セクション（冒頭配置）
+  - [ ] 概要セクション（達成した目標、主要な成果）
+  - [ ] 計画との対応関係（phase2-b8-web-style-alignment-plan.mdとの対応表）
+  - [ ] 実施内容詳細（全32画面の作業内容、使用ツール、成果物）
+  - [ ] 成果と効果（定量的・定性的効果）
+  - [ ] 未完了項目・次のステップ（残作業、今後の推奨事項）
+
+- [ ] **計画書の更新履歴に完了日記載**
+  - [ ] phase2-b8-web-style-alignment-plan.md の更新履歴に完了日追加
+  - [ ] phase2-mobile-app-implementation-plan.md の更新
+
+### 9.4 品質保証条件
+
+- [ ] **静的解析ツールによる検証**（copilot-instructions.md コード修正規則準拠）
+  - [ ] Intelephense: 警告・エラーなし
+  - [ ] 未使用変数・インポートの削除
+  - [ ] 未定義メソッド・プロパティの修正
+  - [ ] 型不一致の解消
+  - [ ] 名前空間エラーの修正
+
+- [ ] **コードレビュー完了**
+  - [ ] mobile-rules.md 総則4項チェックリスト全項目確認
+  - [ ] ResponsiveDesignGuideline.md 実装チェックリスト全項目確認
+  - [ ] copilot-instructions.md 禁止事項の違反なし確認
 
 ---
 

@@ -41,6 +41,7 @@ import MemberSummaryScreen from '../screens/reports/MemberSummaryScreen';
 import { AvatarCreateScreen } from '../screens/avatars/AvatarCreateScreen';
 import { AvatarManageScreen } from '../screens/avatars/AvatarManageScreen';
 import { AvatarEditScreen } from '../screens/avatars/AvatarEditScreen';
+import PendingApprovalsScreen from '../screens/approvals/PendingApprovalsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -89,7 +90,13 @@ export default function AppNavigator() {
   return (
     <>
       <NavigationContainer key="authenticated">
-        <Stack.Navigator>
+        <Stack.Navigator
+          screenOptions={{
+            headerBackTitleVisible: false, // 戻るボタンのタイトルを非表示
+            headerBackTitle: '', // iOS: 戻るボタンのテキストを空文字
+            gestureEnabled: true, // スワイプで戻る機能を有効化
+          }}
+        >
           <Stack.Screen
             name="Home"
             component={HomeScreen}
@@ -298,6 +305,13 @@ export default function AppNavigator() {
           component={ScheduledTaskEditScreen}
           options={{
             title: 'スケジュール編集',
+          }}
+        />
+        <Stack.Screen
+          name="PendingApprovals"
+          component={PendingApprovalsScreen}
+          options={{
+            title: '承認待ち一覧',
           }}
         />
       </Stack.Navigator>

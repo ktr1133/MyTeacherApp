@@ -149,14 +149,14 @@
                 <div id="template-task-form" style="display: none;" class="space-y-4">
                     <div>
                         <label for="taskTemplate" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            過去のタスクから選択
+                            過去のグループタスクから選択
                         </label>
                         <select id="taskTemplate" name="template_task_id"
                                 class="w-full px-4 py-2.5 border border-purple-200 dark:border-purple-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-sm">
                             <option value="">選択してください</option>
-                            @foreach(Auth::user()->tasks()->orderBy('created_at', 'desc')->take(50)->get() as $task)
-                                <option value="{{ $task->id }}" data-title="{{ $task->title }}" data-description="{{ $task->description }}">
-                                    {{ $task->title }}
+                            @foreach($groupTaskTemplates ?? [] as $template)
+                                <option value="{{ $template->id }}" data-title="{{ $template->title }}" data-description="{{ $template->description }}" data-reward="{{ $template->reward }}">
+                                    {{ $template->title }}
                                 </option>
                             @endforeach
                         </select>

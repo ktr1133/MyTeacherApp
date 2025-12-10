@@ -56,9 +56,22 @@ class IndexTaskAction
         // 未読通知件数を取得
         $notificationData = $this->notificationService->getUnreadCountWithNew($userId);
 
+        // グループタスクテンプレート取得（件名・説明・報酬の組み合わせ単位で一意）
+        $groupTaskTemplates = $user->assignedTasks()
+            ->whereNotNull('group_task_id')
+            ->select('id', 'title', 'description', 'group_task_id', 'reward')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->unique(function ($task) {
+                return $task->title . '|' . $task->description . '|' . $task->reward;
+            })
+            ->take(50)
+            ->values();
+
         $data = [
             'tasks' => $paginatedResult['tasks'],
             'tags' => $tags,
+            'groupTaskTemplates' => $groupTaskTemplates,
             'notificationCount' => $notificationData['unread_count'] ?? 0,
             'hasMore' => $paginatedResult['has_more'],
             'nextPage' => $paginatedResult['next_page'],

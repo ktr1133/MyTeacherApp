@@ -88,6 +88,13 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={styles.approvalButton}
+          onPress={() => navigation.navigate('PendingApprovals' as never)}
+        >
+          <Text style={styles.approvalButtonText}>✓ 承認待ち一覧</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile' as never)}
         >
@@ -236,6 +243,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(12, width),
   },
   subscriptionButtonText: {
+    color: '#fff',
+    fontSize: getFontSize(18, width, theme),
+    fontWeight: '600',
+  },
+  approvalButton: {
+    backgroundColor: '#28a745',
+    paddingVertical: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
+    alignItems: 'center',
+    marginBottom: getSpacing(12, width),
+  },
+  approvalButtonText: {
     color: '#fff',
     fontSize: getFontSize(18, width, theme),
     fontWeight: '600',

@@ -2,8 +2,9 @@
  * タスク詳細画面
  * 
  * タスク詳細表示、承認/却下機能、画像アップロード
+ * Web版スタイル統一: グラデーション背景、ボーダー、ボタンスタイル
  */
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -15,7 +16,10 @@ import {
   ActivityIndicator,
   Image,
   TextInput,
+  Pressable,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Task, TaskStatus } from '../../types/task.types';
@@ -79,6 +83,53 @@ export default function TaskDetailScreen() {
 
   // レスポンシブスタイル生成
   const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+
+  /**
+   * ヘッダーカスタマイズ: 削除ボタン（グラデーションテキスト）
+   */
+  useLayoutEffect(() => {
+    // タスクがまだロードされていない、またはグループタスクの場合は削除ボタンを表示しない
+    if (!task || task.is_group_task) {
+      navigation.setOptions({
+        headerRight: undefined,
+      });
+      return;
+    }
+
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          onPress={handleDelete}
+          style={{
+            padding: getSpacing(8, width),
+            marginRight: getSpacing(6, width),
+          }}
+        >
+          <MaskedView
+            maskElement={
+              <Text
+                style={{
+                  fontSize: getFontSize(36, width, themeType),
+                  fontWeight: '700',
+                  backgroundColor: 'transparent',
+                }}
+              >
+                🗑️
+              </Text>
+            }
+            style={{ flexDirection: 'row', height: getFontSize(36, width, themeType) }}
+          >
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flex: 1 }}
+            />
+          </MaskedView>
+        </Pressable>
+      ),
+    });
+  }, [navigation, task, theme, width, themeType]);
 
   /**
    * Pull-to-Refresh処理
@@ -317,23 +368,6 @@ export default function TaskDetailScreen() {
 
   return (
     <View style={styles.container}>
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {theme === 'child' ? 'やることのくわしいこと' : 'タスク詳細'}
-        </Text>
-        {/* グループタスクは削除ボタン非表示 */}
-        {!task?.is_group_task && (
-          <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-            <Text style={styles.deleteButtonText}>🗑️</Text>
-          </TouchableOpacity>
-        )}
-        {task?.is_group_task && <View style={styles.deleteButton} />}
-      </View>
-
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
@@ -341,15 +375,22 @@ export default function TaskDetailScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#4F46E5']}
-            tintColor="#4F46E5"
+            colors={isChildTheme ? ['#F59E0B'] : ['#59B9C6']}
+            tintColor={isChildTheme ? '#F59E0B' : '#59B9C6'}
           />
         }
       >
         {/* タイトル */}
         <View style={styles.section}>
           <Text style={styles.title}>{task.title}</Text>
-          <View style={[styles.statusBadge, getStatusStyle(displayStatus)]}>
+          <View style={[
+            styles.statusBadge,
+            displayStatus === 'pending' ? styles.statusPending :
+            displayStatus === 'completed' ? styles.statusCompleted :
+            displayStatus === 'approved' ? styles.statusApproved :
+            displayStatus === 'rejected' ? styles.statusRejected :
+            styles.statusPending
+          ]}>
             <Text style={styles.statusText}>{getStatusLabel(displayStatus, theme)}</Text>
           </View>
         </View>
@@ -447,15 +488,22 @@ export default function TaskDetailScreen() {
 
         {/* アクションボタン */}
         {isPending && (
-          <TouchableOpacity
-            style={styles.completeButton}
-            onPress={handleToggleComplete}
-            disabled={isLoading || isSubmitting}
+          <LinearGradient
+            colors={['#59B9C6', '#9333EA']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.completeButton, getShadow(8)]}
           >
-            <Text style={styles.completeButtonText}>
-              {theme === 'child' ? 'できた!' : '完了にする'}
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleToggleComplete}
+              disabled={isLoading || isSubmitting}
+              style={styles.completeButtonInner}
+            >
+              <Text style={styles.completeButtonText}>
+                {theme === 'child' ? 'できた!' : '完了にする'}
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
         )}
 
         {/* 承認/却下ボタン（完了済みタスクのみ） */}
@@ -463,16 +511,24 @@ export default function TaskDetailScreen() {
           <View style={styles.approvalSection}>
             {!showApprovalInput && !showRejectInput && (
               <View style={styles.approvalButtons}>
-                <TouchableOpacity
-                  style={styles.approveButton}
-                  onPress={() => setShowApprovalInput(true)}
+                <LinearGradient
+                  colors={['#59B9C6', '#9333EA']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[styles.approveButton, getShadow(8)]}
                 >
-                  <Text style={styles.approveButtonText}>
-                    {theme === 'child' ? 'OK!' : '承認'}
-                  </Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setShowApprovalInput(true)}
+                    style={styles.approveButtonInner}
+                  >
+                    <Text style={styles.approveButtonText}>
+                      {theme === 'child' ? 'OK!' : '承認'}
+                    </Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+                
                 <TouchableOpacity
-                  style={styles.rejectButton}
+                  style={[styles.rejectButton, getShadow(8)]}
                   onPress={() => setShowRejectInput(true)}
                 >
                   <Text style={styles.rejectButtonText}>
@@ -486,7 +542,12 @@ export default function TaskDetailScreen() {
             {showApprovalInput && (
               <View style={styles.commentContainer}>
                 <TextInput
-                  style={styles.commentInput}
+                  style={[
+                    styles.commentInput,
+                    {
+                      borderColor: isChildTheme ? '#FCD34D' : 'rgba(89, 185, 198, 0.3)', // border-amber-300 : border-[#59B9C6]/30
+                    }
+                  ]}
                   value={approvalComment}
                   onChangeText={setApprovalComment}
                   placeholder={
@@ -499,25 +560,41 @@ export default function TaskDetailScreen() {
                 />
                 <View style={styles.commentButtons}>
                   <TouchableOpacity
-                    style={styles.cancelButton}
+                    style={[
+                      styles.cancelButton,
+                      {
+                        borderColor: isChildTheme ? 'rgba(251, 191, 36, 0.3)' : 'rgba(89, 185, 198, 0.3)', // border-amber-300/30 : border-[#59B9C6]/30
+                      }
+                    ]}
                     onPress={() => {
                       setShowApprovalInput(false);
                       setApprovalComment('');
                     }}
                   >
-                    <Text style={styles.cancelButtonText}>
+                    <Text style={[
+                      styles.cancelButtonText,
+                      { color: isChildTheme ? '#92400E' : '#374151' } // text-amber-800 : text-gray-700
+                    ]}>
                       {theme === 'child' ? 'やめる' : 'キャンセル'}
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.submitApproveButton}
-                    onPress={handleApprove}
-                    disabled={isLoading}
+                  
+                  <LinearGradient
+                    colors={['#59B9C6', '#9333EA']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.submitApproveButton, getShadow(8)]}
                   >
-                    <Text style={styles.submitApproveButtonText}>
-                      {theme === 'child' ? 'OK!' : '承認'}
-                    </Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={handleApprove}
+                      disabled={isLoading}
+                      style={styles.submitApproveButtonInner}
+                    >
+                      <Text style={styles.submitApproveButtonText}>
+                        {theme === 'child' ? 'OK!' : '承認'}
+                      </Text>
+                    </TouchableOpacity>
+                  </LinearGradient>
                 </View>
               </View>
             )}
@@ -526,7 +603,12 @@ export default function TaskDetailScreen() {
             {showRejectInput && (
               <View style={styles.commentContainer}>
                 <TextInput
-                  style={styles.commentInput}
+                  style={[
+                    styles.commentInput,
+                    {
+                      borderColor: isChildTheme ? '#FCD34D' : 'rgba(89, 185, 198, 0.3)', // border-amber-300 : border-[#59B9C6]/30
+                    }
+                  ]}
                   value={approvalComment}
                   onChangeText={setApprovalComment}
                   placeholder={
@@ -539,18 +621,27 @@ export default function TaskDetailScreen() {
                 />
                 <View style={styles.commentButtons}>
                   <TouchableOpacity
-                    style={styles.cancelButton}
+                    style={[
+                      styles.cancelButton,
+                      {
+                        borderColor: isChildTheme ? 'rgba(251, 191, 36, 0.3)' : 'rgba(89, 185, 198, 0.3)', // border-amber-300/30 : border-[#59B9C6]/30
+                      }
+                    ]}
                     onPress={() => {
                       setShowRejectInput(false);
                       setApprovalComment('');
                     }}
                   >
-                    <Text style={styles.cancelButtonText}>
+                    <Text style={[
+                      styles.cancelButtonText,
+                      { color: isChildTheme ? '#92400E' : '#374151' } // text-amber-800 : text-gray-700
+                    ]}>
                       {theme === 'child' ? 'やめる' : 'キャンセル'}
                     </Text>
                   </TouchableOpacity>
+                  
                   <TouchableOpacity
-                    style={styles.submitRejectButton}
+                    style={[styles.submitRejectButton, getShadow(8)]}
                     onPress={handleReject}
                     disabled={isLoading}
                   >
@@ -620,67 +711,17 @@ const getStatusLabel = (status: string, theme: 'adult' | 'child'): string => {
 };
 
 /**
- * ステータスに応じたスタイルを取得
- */
-const getStatusStyle = (status: string) => {
-  switch (status) {
-    case 'pending':
-      return styles.statusPending;
-    case 'completed':
-      return styles.statusCompleted;
-    case 'approved':
-      return styles.statusApproved;
-    case 'rejected':
-      return styles.statusRejected;
-    default:
-      return styles.statusPending;
-  }
-};
-
-/**
  * レスポンシブスタイル生成関数
+ * Web版スタイル統一: グラデーション、ボーダー、シャドウ
  */
 const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: getSpacing(16, width),
-    paddingVertical: getSpacing(16, width),
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: getFontSize(24, width, theme),
-    color: '#4F46E5',
-  },
-  headerTitle: {
-    fontSize: getFontSize(18, width, theme),
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  deleteButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    fontSize: getFontSize(20, width, theme),
   },
   content: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   contentContainer: {
     padding: getSpacing(16, width),
@@ -697,20 +738,20 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   statusBadge: {
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(6, width),
-    borderRadius: getBorderRadius(6, width),
+    borderRadius: getBorderRadius(16, width), // rounded-full
     alignSelf: 'flex-start',
   },
   statusPending: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: theme === 'child' ? '#FEF3C7' : '#DBEAFE', // bg-yellow-100 : bg-blue-100
   },
   statusCompleted: {
-    backgroundColor: '#D1FAE5',
+    backgroundColor: '#D1FAE5', // bg-green-100
   },
   statusApproved: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: theme === 'child' ? '#D1FAE5' : '#DBEAFE', // bg-green-100 : bg-blue-100
   },
   statusRejected: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: '#FEE2E2', // bg-red-100
   },
   statusText: {
     fontSize: getFontSize(14, width, theme),
@@ -746,8 +787,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   badge: {
     fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
-    color: '#4F46E5',
-    backgroundColor: '#EEF2FF',
+    color: theme === 'child' ? '#92400E' : '#59B9C6', // text-amber-800 : text-[#59B9C6]
+    backgroundColor: theme === 'child' ? '#FEF3C7' : 'rgba(89, 185, 198, 0.1)', // bg-amber-100 : bg-[#59B9C6]/10
     paddingHorizontal: getSpacing(8, width),
     paddingVertical: getSpacing(4, width),
     borderRadius: getBorderRadius(4, width),
@@ -786,7 +827,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   uploadButton: {
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
-    borderColor: '#4F46E5',
+    borderColor: theme === 'child' ? '#F59E0B' : '#59B9C6', // border-amber-500 : border-[#59B9C6]
     borderRadius: getBorderRadius(8, width),
     paddingVertical: getSpacing(12, width),
     alignItems: 'center',
@@ -795,14 +836,16 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   uploadButtonText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#4F46E5',
+    color: theme === 'child' ? '#B45309' : '#59B9C6', // text-amber-700 : text-[#59B9C6]
   },
   completeButton: {
-    backgroundColor: '#10B981',
     borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+    marginBottom: getSpacing(24, width),
+  },
+  completeButtonInner: {
     paddingVertical: getSpacing(14, width),
     alignItems: 'center',
-    marginBottom: getSpacing(24, width),
   },
   completeButtonText: {
     fontSize: getFontSize(16, width, theme),
@@ -818,8 +861,10 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   approveButton: {
     flex: 1,
-    backgroundColor: '#10B981',
     borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
+  approveButtonInner: {
     paddingVertical: getSpacing(14, width),
     alignItems: 'center',
   },
@@ -830,7 +875,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   rejectButton: {
     flex: 1,
-    backgroundColor: '#EF4444',
+    backgroundColor: '#EF4444', // bg-red-500
     borderRadius: getBorderRadius(8, width),
     paddingVertical: getSpacing(14, width),
     alignItems: 'center',
@@ -846,7 +891,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     padding: getSpacing(16, width),
   },
   commentInput: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     fontSize: getFontSize(14, width, theme),
@@ -861,7 +907,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
     borderRadius: getBorderRadius(8, width),
     paddingVertical: getSpacing(12, width),
     alignItems: 'center',
@@ -869,12 +916,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   cancelButtonText: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#6B7280',
   },
   submitApproveButton: {
     flex: 1,
-    backgroundColor: '#10B981',
     borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
+  submitApproveButtonInner: {
     paddingVertical: getSpacing(12, width),
     alignItems: 'center',
   },
@@ -885,7 +933,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   submitRejectButton: {
     flex: 1,
-    backgroundColor: '#EF4444',
+    backgroundColor: '#EF4444', // bg-red-500
     borderRadius: getBorderRadius(8, width),
     paddingVertical: getSpacing(12, width),
     alignItems: 'center',
@@ -901,7 +949,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: theme === 'child' ? 'rgba(254, 243, 199, 0.95)' : 'rgba(255, 255, 255, 0.95)', // bg-amber-50/95 : bg-white/95
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -915,7 +963,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   loadingText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#374151',
+    color: theme === 'child' ? '#78350F' : '#374151', // text-amber-900 : text-gray-700
     textAlign: 'center',
   },
 });

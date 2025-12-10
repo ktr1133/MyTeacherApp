@@ -539,6 +539,193 @@ components:
           example: "price_XYZ789"
 
     # ============================================================
+    # Approval関連スキーマ（承認待ち一覧統合API用）
+    # ============================================================
+
+    TaskApprovalItem:
+      type: object
+      description: タスク承認待ちアイテム
+      required:
+        - id
+        - type
+        - title
+        - requester_name
+        - requester_id
+        - requested_at
+        - model
+      properties:
+        id:
+          type: integer
+          description: 承認アイテムID（タスクID）
+          example: 1
+        type:
+          type: string
+          enum: [task]
+          description: アイテム種別（固定値: task）
+          example: task
+        title:
+          type: string
+          description: タスクタイトル
+          example: "部屋の掃除"
+        requester_name:
+          type: string
+          description: 申請者名
+          example: "太郎"
+        requester_id:
+          type: integer
+          description: 申請者のユーザーID
+          example: 10
+        requested_at:
+          type: string
+          format: date-time
+          description: 申請日時（タスク完了日時）
+          example: "2025-12-09T10:00:00Z"
+        description:
+          type: string
+          nullable: true
+          description: タスクの説明
+          example: "リビングと自分の部屋を掃除する"
+        reward:
+          type: integer
+          nullable: true
+          description: 報酬（トークン）
+          example: 1000
+        has_images:
+          type: boolean
+          description: 添付画像の有無
+          example: true
+        images_count:
+          type: integer
+          description: 添付画像の枚数
+          example: 2
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+          description: 期限
+          example: "2025-12-10T23:59:59Z"
+        tags:
+          type: array
+          description: タグ一覧
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 1
+              name: "家事"
+            - id: 2
+              name: "緊急"
+        model:
+          type: object
+          description: 元のタスクオブジェクト（フル情報）
+          properties:
+            id:
+              type: integer
+              example: 123
+            title:
+              type: string
+              example: "部屋の掃除"
+            description:
+              type: string
+              nullable: true
+              example: "リビングと自分の部屋を掃除する"
+            reward:
+              type: integer
+              nullable: true
+              example: 1000
+            completed_at:
+              type: string
+              format: date-time
+              nullable: true
+            user_id:
+              type: integer
+            assigned_by_user_id:
+              type: integer
+            requires_approval:
+              type: boolean
+            approval_status:
+              type: string
+              enum: [pending, approved, rejected]
+
+    TokenApprovalItem:
+      type: object
+      description: トークン購入申請承認待ちアイテム
+      required:
+        - id
+        - type
+        - package_name
+        - requester_name
+        - requester_id
+        - requested_at
+        - token_amount
+        - price
+        - model
+      properties:
+        id:
+          type: integer
+          description: 承認アイテムID（購入リクエストID）
+          example: 2
+        type:
+          type: string
+          enum: [token]
+          description: アイテム種別（固定値: token）
+          example: token
+        package_name:
+          type: string
+          description: トークンパッケージ名
+          example: "スタンダードパック"
+        requester_name:
+          type: string
+          description: 申請者名
+          example: "花子"
+        requester_id:
+          type: integer
+          description: 申請者のユーザーID
+          example: 11
+        requested_at:
+          type: string
+          format: date-time
+          description: 申請日時（リクエスト作成日時）
+          example: "2025-12-09T11:00:00Z"
+        token_amount:
+          type: integer
+          description: トークン数量
+          example: 10000
+        price:
+          type: integer
+          description: 金額（円）
+          example: 500
+        model:
+          type: object
+          description: 元のトークン購入リクエストオブジェクト（フル情報）
+          properties:
+            id:
+              type: integer
+              example: 456
+            user_id:
+              type: integer
+            package_id:
+              type: integer
+            status:
+              type: string
+              enum: [pending, approved, rejected, completed]
+              example: pending
+            created_at:
+              type: string
+              format: date-time
+            approved_at:
+              type: string
+              format: date-time
+              nullable: true
+            approved_by_user_id:
+              type: integer
+              nullable: true
+
+    # ============================================================
     # Report関連スキーマ
     # ============================================================
 
@@ -958,8 +1145,23 @@ paths:
   /tasks:
     get:
       summary: タスク一覧取得
-      description: ユーザーの全タスクを取得します。
+      description: |
+        ユーザーの全タスクを取得します。
+        
+        **フィルタリングオプション**:
+        - `filter=group_templates`: グループタスクテンプレート用にフィルタリング（ユーザーが作成したグループタスクのみ）
       tags: [Tasks]
+      parameters:
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [group_templates]
+          description: |
+            タスクのフィルタリングモード
+            - `group_templates`: ユーザーが作成したグループタスクのみを取得（assigned_by_user_id = user_id AND group_task_id IS NOT NULL）
+          example: group_templates
       responses:
         '200':
           description: 成功
@@ -974,6 +1176,55 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/Task'
+              examples:
+                normal:
+                  summary: 通常のタスク一覧
+                  value:
+                    success: true
+                    message: "タスク一覧を取得しました"
+                    data:
+                      - id: 1
+                        title: "宿題をする"
+                        description: "数学の問題集"
+                        due_date: "2025-12-10"
+                        priority: 3
+                        status: "incomplete"
+                        group_task_id: null
+                        assigned_by_user_id: 1
+                      - id: 2
+                        title: "買い物に行く"
+                        description: "野菜を買う"
+                        due_date: "2025-12-08"
+                        priority: 2
+                        status: "incomplete"
+                        group_task_id: null
+                        assigned_by_user_id: 1
+                group_templates:
+                  summary: グループタスクテンプレート（filter=group_templates）
+                  value:
+                    success: true
+                    message: "タスク一覧を取得しました"
+                    data:
+                      - id: 10
+                        title: "部屋の掃除"
+                        description: "リビングと寝室"
+                        due_date: "2025-12-15"
+                        priority: 3
+                        status: "incomplete"
+                        group_task_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                        assigned_by_user_id: 1
+                        requires_approval: true
+                        requires_image: false
+                      - id: 11
+                        title: "週報提出"
+                        description: "今週の活動まとめ"
+                        due_date: "2025-12-20"
+                        priority: 4
+                        status: "completed"
+                        group_task_id: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                        assigned_by_user_id: 1
+                        requires_approval: true
+                        requires_image: true
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
@@ -1280,11 +1531,35 @@ paths:
 
   /tasks/approvals/pending:
     get:
-      summary: 承認待ちタスク一覧取得
-      description: 承認待ち状態のタスク一覧を取得します。
+      summary: 承認待ち一覧取得（統合API）
+      description: |
+        タスク承認とトークン購入申請の承認待ち一覧を統合して取得します。
+        親ユーザー（グループ管理者）専用APIです。
+        
+        **レスポンス形式**:
+        - タスク承認: type='task'
+        - トークン購入申請: type='token'
+        
+        **ページネーション**:
+        - デフォルト: 15件/ページ
+        - 最大: 50件/ページ
       tags: [Tasks]
       security:
         - SanctumAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: ページ番号
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+            maximum: 50
+          description: 1ページあたりの件数
       responses:
         '200':
           description: 成功
@@ -1293,13 +1568,46 @@ paths:
               schema:
                 type: object
                 properties:
-                  tasks:
-                    type: array
-                    items:
-                      type: object
-                      description: タスクオブジェクト
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      approvals:
+                        type: array
+                        description: タスク承認とトークン購入申請の統合配列
+                        items:
+                          oneOf:
+                            - $ref: '#/components/schemas/TaskApprovalItem'
+                            - $ref: '#/components/schemas/TokenApprovalItem'
+                      total:
+                        type: integer
+                        description: 全件数
+                        example: 25
+                      page:
+                        type: integer
+                        description: 現在のページ番号
+                        example: 1
+                      per_page:
+                        type: integer
+                        description: 1ページあたりの件数
+                        example: 15
         '401':
           description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 権限エラー（親ユーザーのみアクセス可能）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: 親ユーザーのみアクセスできます。
 
   /tasks/propose:
     post:

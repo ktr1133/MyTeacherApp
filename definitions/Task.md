@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-10 | GitHub Copilot | グループタスクテンプレート機能追加: タイトル・説明・報酬をコピー、テンプレート一意化条件を変更（group_task_id → 件名・説明・報酬の組み合わせ） |
 | 2025-12-09 | GitHub Copilot | モバイルアプリのAIタスク分解機能（TaskDecompositionScreen）実装完了、モバイルAPI追加 |
 | 2025-12-05 | GitHub Copilot | 初版作成: タスク登録関連機能の要件定義 |
 | 2025-12-05 | GitHub Copilot | 子ども向け画面（テーマ）仕様を追加 |
@@ -462,6 +463,100 @@ CREATE TABLE group_monthly_counters (
 - `group_task_id` (UUID): 同一グループタスクは同じUUIDを共有
 - `assigned_by_user_id`: タスク割当者（≠ user_id: タスク所有者）
 - `reward`: トークン報酬額（完了時に付与）
+
+### 4.3 グループタスクテンプレート機能
+
+**概要**: 過去に作成したグループタスクから、タイトル・説明・報酬をコピーして新規タスクを作成する機能。
+
+**対象画面**:
+- Web版: グループタスク登録モーダル（`resources/views/dashboard/modal-group-task.blade.php`）
+- モバイル版: タスク作成画面（`mobile/src/screens/tasks/CreateTaskScreen.tsx`）
+
+**テンプレートデータ取得条件**:
+```php
+// Web版: IndexTaskAction
+$groupTaskTemplates = $user->assignedTasks()
+    ->whereNotNull('group_task_id')
+    ->select('id', 'title', 'description', 'reward', 'group_task_id')
+    ->orderBy('created_at', 'desc')
+    ->get()
+    ->unique(function ($task) {
+        return $task->title . '|' . $task->description . '|' . $task->reward;
+    })
+    ->take(50)
+    ->values();
+
+// モバイルAPI版: IndexTaskApiAction (filter=group_templates)
+$tasks = Task::query()
+    ->where('assigned_by_user_id', $user->id)
+    ->whereNotNull('group_task_id')
+    ->with(['tags', 'images'])
+    ->orderBy('created_at', 'desc')
+    ->get()
+    ->unique(function ($task) {
+        return $task->title . '|' . $task->description . '|' . $task->reward;
+    })
+    ->take($perPage)
+    ->values();
+```
+
+**一意化条件**: 
+- **変更前**: `group_task_id`単位（同じグループタスクIDで1件のみ）
+- **変更後**: `title`・`description`・`reward`の組み合わせで一意（同じ内容のタスクが複数回作成されても1件のみ表示）
+
+**テンプレート適用項目**:
+
+| 項目 | コピー | 手動入力 | 説明 |
+|------|--------|----------|------|
+| `title` | ✅ | - | タスク名 |
+| `description` | ✅ | - | タスク説明 |
+| `reward` | ✅ | - | 報酬額（トークン） |
+| `due_date` | - | ✅ | 期限（毎回手動入力） |
+| `tags` | - | ✅ | タグ（毎回選択） |
+| `requires_image` | - | ✅ | 画像必須フラグ |
+| `requires_approval` | - | ✅ | 承認必須フラグ |
+| `assigned_user_id` | - | ✅ | 割当先ユーザー |
+
+**Web版の処理フロー**:
+```
+1. モーダル開く
+2. テンプレート選択プルダウン表示
+   - 過去のグループタスク（title・description・rewardの組み合わせで一意）
+3. ユーザーがテンプレート選択
+4. JavaScriptでフィールドに自動入力
+   - プレビューエリアに表示（タイトル・説明）
+   - 報酬フィールドに値を設定（taskReward input）
+5. 期限・タグ・承認設定等は手動入力
+6. フォーム送信時、選択したテンプレートの値を使用
+```
+
+**モバイル版の処理フロー**:
+```
+1. タスク作成画面でテンプレートタブを選択
+2. API: GET /api/tasks?filter=group_templates
+3. テンプレート一覧表示（title・description・rewardで一意）
+4. ユーザーがテンプレート選択
+5. フォームに自動入力
+   - title, description, reward
+6. 期限・タグ等は手動入力
+7. タスク作成API送信
+```
+
+**実装ファイル**:
+- **Web版**:
+  - Action: `app/Http/Actions/Task/IndexTaskAction.php`（テンプレートデータ取得）
+  - Responder: `app/Responders/Task/TaskListResponder.php`（ビューに渡す）
+  - View: `resources/views/dashboard/modal-group-task.blade.php`（テンプレート選択UI）
+  - JavaScript: `resources/js/dashboard/group-task.js`（テンプレート適用処理）
+  
+- **モバイル版**:
+  - API: `app/Http/Actions/Api/Task/IndexTaskApiAction.php`（`filter=group_templates`対応）
+  - UI: `mobile/src/screens/tasks/CreateTaskScreen.tsx`（テンプレート選択・適用）
+
+**テスト**:
+- `tests/Feature/Api/Task/IndexTaskApiActionTest.php`
+  - `test_グループタスクテンプレートのみをフィルタリングできる`
+  - `test_複数のグループタスクIDをフィルタリングできる`
 
 ---
 

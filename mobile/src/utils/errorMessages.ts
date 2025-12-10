@@ -112,6 +112,10 @@ const ERROR_MESSAGES: Record<string, { adult: string; child: string }> = {
     adult: '承認権限がありません',
     child: 'しょうにんできないよ',
   },
+  PERMISSION_DENIED: {
+    adult: '権限がありません',
+    child: 'これはできないよ',
+  },
   ALREADY_APPROVED: {
     adult: '既に承認済みです',
     child: 'もうOKをだしているよ',
@@ -119,6 +123,42 @@ const ERROR_MESSAGES: Record<string, { adult: string; child: string }> = {
   ALREADY_REJECTED: {
     adult: '既に却下済みです',
     child: 'もうだめっていったよ',
+  },
+  TASK_APPROVE_FAILED: {
+    adult: 'タスクの承認に失敗しました',
+    child: 'OKをだせなかったよ',
+  },
+  TASK_REJECT_FAILED: {
+    adult: 'タスクの却下に失敗しました',
+    child: 'だめっていえなかったよ',
+  },
+  TASK_ALREADY_PROCESSED: {
+    adult: 'タスクは既に処理済みです',
+    child: 'もうおわっているよ',
+  },
+  TOKEN_APPROVE_FAILED: {
+    adult: 'トークン購入の承認に失敗しました',
+    child: 'トークンのOKをだせなかったよ',
+  },
+  TOKEN_REJECT_FAILED: {
+    adult: 'トークン購入の却下に失敗しました',
+    child: 'トークンのだめっていえなかったよ',
+  },
+  PURCHASE_REQUEST_NOT_FOUND: {
+    adult: '購入リクエストが見つかりません',
+    child: 'かうおねがいがみつからないよ',
+  },
+  PURCHASE_ALREADY_PROCESSED: {
+    adult: '購入リクエストは既に処理済みです',
+    child: 'もうおわっているよ',
+  },
+  APPROVAL_FETCH_FAILED: {
+    adult: '承認待ち一覧の取得に失敗しました',
+    child: 'まってるものがとれなかったよ',
+  },
+  COUNT_FETCH_FAILED: {
+    adult: '件数の取得に失敗しました',
+    child: 'かずがとれなかったよ',
   },
 
   // 画像操作エラー

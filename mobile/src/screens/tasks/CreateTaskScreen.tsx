@@ -56,6 +56,19 @@ interface GroupMember {
 }
 
 /**
+ * テンプレートタスク情報
+ */
+interface TemplateTask {
+  id: number;
+  title: string;
+  description: string | null;
+  reward: number | null;
+  due_date: string | null;
+  requires_approval: boolean;
+  requires_image: boolean;
+}
+
+/**
  * タスク作成画面コンポーネント
  */
 export default function CreateTaskScreen() {
@@ -87,6 +100,12 @@ export default function CreateTaskScreen() {
   const [requiresApproval, setRequiresApproval] = useState(false);
   const [requiresImage, setRequiresImage] = useState(false);
   const [isGroupTask, setIsGroupTask] = useState(false);
+  
+  // タスク作成方式（新規 or テンプレート）
+  const [taskMode, setTaskMode] = useState<'new' | 'template'>('new');
+  const [templateTasks, setTemplateTasks] = useState<TemplateTask[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
   
   // タグ状態
   const [availableTags, setAvailableTags] = useState<Array<{ id: number; name: string; color?: string }>>([]);
@@ -134,11 +153,12 @@ export default function CreateTaskScreen() {
   }, []);
 
   /**
-   * グループタスク切り替え時のメンバーチェック
+   * グループタスク切り替え時のメンバーチェック + テンプレート取得
    */
   useEffect(() => {
     if (isGroupTask) {
       checkGroupMembers();
+      fetchTemplateTasks(); // テンプレート一覧を取得
     }
   }, [isGroupTask]);
 
@@ -178,6 +198,47 @@ export default function CreateTaskScreen() {
       setIsLoadingMembers(false);
     }
   };
+
+  /**
+   * テンプレートタスク一覧取得
+   */
+  const fetchTemplateTasks = async () => {
+    setIsLoadingTemplates(true);
+    try {
+      const response = await api.get('/tasks', {
+        params: {
+          filter: 'group_templates',
+          per_page: 50,
+        },
+      });
+      
+      if (response.data.success && response.data.data.tasks) {
+        setTemplateTasks(response.data.data.tasks);
+        console.log('[CreateTaskScreen] テンプレートタスク取得成功:', response.data.data.tasks.length, '件');
+      }
+    } catch (error: any) {
+      console.error('[CreateTaskScreen] テンプレートタスク取得エラー:', error);
+      // エラー時は空配列のままで続行（テンプレート選択は任意機能）
+    } finally {
+      setIsLoadingTemplates(false);
+    }
+  };
+
+  /**
+   * テンプレート選択時の処理
+   */
+  const handleTemplateSelect = useCallback((templateId: number) => {
+    const template = templateTasks.find(t => t.id === templateId);
+    if (template) {
+      setSelectedTemplateId(templateId);
+      setTitle(template.title);
+      setDescription(template.description || '');
+      setReward(template.reward?.toString() || '10');
+      setRequiresApproval(template.requires_approval);
+      setRequiresImage(template.requires_image);
+      console.log('[CreateTaskScreen] テンプレート適用:', template.title);
+    }
+  }, [templateTasks]);
 
   /**
    * DateTimePicker変更ハンドラー（短期用）
@@ -705,6 +766,112 @@ export default function CreateTaskScreen() {
           </Text>
         </View>
 
+        {/* タスク作成方法選択（グループタスクのみ） */}
+        {isGroupTask && (
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>
+              {theme === 'child' ? 'つくりかた' : 'タスク作成方法'}
+            </Text>
+            <View style={styles.segmentContainer}>
+              <TouchableOpacity
+                style={[styles.segmentButton, taskMode === 'new' && styles.segmentButtonActive]}
+                onPress={() => {
+                  setTaskMode('new');
+                  setSelectedTemplateId(null);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.segmentButtonText,
+                    taskMode === 'new' && styles.segmentButtonTextActive,
+                  ]}
+                >
+                  {theme === 'child' ? 'あたらしく' : '新規作成'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.segmentButton, taskMode === 'template' && styles.segmentButtonActive]}
+                onPress={() => setTaskMode('template')}
+              >
+                <Text
+                  style={[
+                    styles.segmentButtonText,
+                    taskMode === 'template' && styles.segmentButtonTextActive,
+                  ]}
+                >
+                  {theme === 'child' ? 'まえのをつかう' : 'テンプレート'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* テンプレート選択（グループタスク + テンプレートモード） */}
+        {isGroupTask && taskMode === 'template' && (
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>
+              {theme === 'child' ? 'まえのやることからえらぶ' : '過去のグループタスクから選択'}
+            </Text>
+            {isLoadingTemplates ? (
+              <ActivityIndicator size="small" color="#4F46E5" />
+            ) : templateTasks.length > 0 ? (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={selectedTemplateId}
+                  onValueChange={(value) => {
+                    if (value !== null) {
+                      handleTemplateSelect(value as number);
+                    }
+                  }}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
+                >
+                  <Picker.Item
+                    label={theme === 'child' ? 'えらんでね' : '選択してください'}
+                    value={null}
+                    color={Platform.OS === 'ios' ? '#9CA3AF' : undefined}
+                  />
+                  {templateTasks.map((template) => (
+                    <Picker.Item
+                      key={template.id}
+                      label={template.title}
+                      value={template.id}
+                      color={Platform.OS === 'ios' ? '#111827' : undefined}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            ) : (
+              <Text style={styles.helpText}>
+                {theme === 'child'
+                  ? 'まえのやることがないよ'
+                  : '過去のグループタスクがありません'}
+              </Text>
+            )}
+            {selectedTemplateId && (
+              <View style={styles.templatePreview}>
+                <Text style={styles.templatePreviewLabel}>
+                  {theme === 'child' ? 'プレビュー' : 'プレビュー'}
+                </Text>
+                <Text style={styles.templatePreviewText}>
+                  <Text style={styles.templatePreviewKey}>
+                    {theme === 'child' ? 'なまえ: ' : 'タイトル: '}
+                  </Text>
+                  {title}
+                </Text>
+                {description && (
+                  <Text style={styles.templatePreviewText}>
+                    <Text style={styles.templatePreviewKey}>
+                      {theme === 'child' ? 'せつめい: ' : '説明: '}
+                    </Text>
+                    {description}
+                  </Text>
+                )}
+              </View>
+            )}
+          </View>
+        )}
+
         {/* AIタスク分解ボタン */}
         <TouchableOpacity
           style={[styles.decomposeButton]}
@@ -1016,5 +1183,28 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  templatePreview: {
+    marginTop: getSpacing(12, width),
+    padding: getSpacing(12, width),
+    backgroundColor: '#F0F9FF',
+    borderRadius: getBorderRadius(8, width),
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  templatePreviewLabel: {
+    fontSize: getFontSize(12, width, theme),
+    fontWeight: '600',
+    color: '#1E40AF',
+    marginBottom: getSpacing(8, width),
+  },
+  templatePreviewText: {
+    fontSize: getFontSize(14, width, theme),
+    color: '#374151',
+    marginBottom: getSpacing(4, width),
+  },
+  templatePreviewKey: {
+    fontWeight: '600',
+    color: '#1E40AF',
   },
 });

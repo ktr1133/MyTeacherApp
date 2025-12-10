@@ -4,7 +4,7 @@
  * タグ別バケット表示（Web版整合性）
  * 検索時のみタスクカード表示に切り替え
  */
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,10 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
+  Pressable,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Task } from '../../types/task.types';
@@ -89,6 +92,67 @@ export default function TaskListScreen() {
    * ResponsiveDesignGuideline.md Section 9参照
    */
   const numColumns = 1;
+
+  /**
+   * タスク作成画面へ遷移
+   */
+  const navigateToCreate = useCallback(() => {
+    navigation.navigate('CreateTask');
+  }, [navigation]);
+
+  /**
+   * React Navigationヘッダーのカスタマイズ
+   * Web版デザイン（カラー、ボタン配置）を適用
+   */
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: theme === 'child' ? 'やること' : 'タスク一覧',
+      headerLeft: () => null, // 戻るボタンを完全に非表示（スワイプで戻れる）
+      headerBackVisible: false, // iOS: 戻るボタンを非表示
+      headerRight: () => (
+        <Pressable
+          onPress={navigateToCreate}
+          style={({ pressed }) => ({
+            marginRight: 0,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <MaskedView
+            maskElement={
+              <Text style={{
+                fontSize: 36,
+                fontWeight: '700',
+                lineHeight: 36,
+                backgroundColor: 'transparent',
+              }}>
+                ＋
+              </Text>
+            }
+          >
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']} // タグアイコンと同じグラデーション
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                width: 36,
+                height: 36,
+              }}
+            />
+          </MaskedView>
+        </Pressable>
+      ),
+      headerStyle: {
+        backgroundColor: '#FFFFFF',
+      },
+      headerTintColor: '#59B9C6',
+      headerTitleStyle: {
+        fontSize: getFontSize(20, width, themeType),
+        fontWeight: '600',
+      },
+    });
+  }, [navigation, theme, width, themeType, navigateToCreate]);
 
   /**
    * タスクをタグ別にグループ化してバケットを生成
@@ -245,13 +309,6 @@ export default function TaskListScreen() {
     },
     [tasks, navigation]
   );
-
-  /**
-   * タスク作成画面へ遷移
-   */
-  const navigateToCreate = useCallback(() => {
-    navigation.navigate('CreateTask');
-  }, [navigation]);
 
   /**
    * エラー表示時のアラート
@@ -424,19 +481,6 @@ export default function TaskListScreen() {
 
   return (
     <View style={styles.container}>
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <Text 
-          style={styles.headerTitle}
-          {...getHeaderTitleProps()}
-        >
-          {theme === 'child' ? 'やること' : 'タスク一覧'}
-        </Text>
-        <TouchableOpacity style={styles.createButton} onPress={navigateToCreate}>
-          <Text style={styles.createButtonText}>＋</Text>
-        </TouchableOpacity>
-      </View>
-
       {/* 検索バー */}
       <View style={styles.searchContainer}>
         <TextInput
@@ -524,34 +568,6 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: getSpacing(16, width),
-    paddingVertical: getSpacing(16, width),
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerTitle: {
-    fontSize: getFontSize(24, width, theme),
-    fontWeight: 'bold' as const,
-    color: '#111827',
-  },
-  createButton: {
-    width: getSpacing(40, width),
-    height: getSpacing(40, width),
-    borderRadius: getBorderRadius(20, width),
-    backgroundColor: '#4F46E5',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-  },
-  createButtonText: {
-    fontSize: getFontSize(24, width, theme),
-    color: '#FFFFFF',
-    fontWeight: 'bold' as const,
   },
   searchContainer: {
     flexDirection: 'row' as const,

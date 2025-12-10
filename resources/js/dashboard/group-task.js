@@ -17,6 +17,11 @@ const templateTaskForm = document.getElementById('template-task-form');
 const taskTemplateSelect = document.getElementById('taskTemplate');
 const templatePreview = document.getElementById('template-preview');
 
+// 初期状態の設定（テンプレート選択のrequired属性をfalseに）
+if (taskTemplateSelect) {
+    taskTemplateSelect.required = false;
+}
+
 // モーダル開く
 if (openGroupModalBtn) {
     openGroupModalBtn.addEventListener('click', () => {
@@ -66,7 +71,7 @@ taskModeRadios.forEach(radio => {
     });
 });
 
-// テンプレート選択時のプレビュー表示
+// テンプレート選択時のプレビュー表示と報酬フィールドへの反映
 if (taskTemplateSelect) {
     taskTemplateSelect.addEventListener('change', (e) => {
         const selectedOption = e.target.options[e.target.selectedIndex];
@@ -74,12 +79,24 @@ if (taskTemplateSelect) {
         if (selectedOption.value) {
             const title = selectedOption.dataset.title || '';
             const description = selectedOption.dataset.description || '説明なし';
+            const reward = selectedOption.dataset.reward || '0';
             
             document.getElementById('preview-title').textContent = title;
             document.getElementById('preview-description').textContent = description;
             templatePreview.style.display = 'block';
+            
+            // 報酬フィールドに値を設定
+            const rewardInput = document.getElementById('taskReward');
+            if (rewardInput) {
+                rewardInput.value = reward;
+            }
         } else {
             templatePreview.style.display = 'none';
+            // 報酬フィールドをクリア
+            const rewardInput = document.getElementById('taskReward');
+            if (rewardInput) {
+                rewardInput.value = '';
+            }
         }
     });
 }
@@ -98,6 +115,7 @@ if (groupTaskForm) {
             const selectedOption = taskTemplateSelect.options[taskTemplateSelect.selectedIndex];
             formData.set('title', selectedOption.dataset.title);
             formData.set('description', selectedOption.dataset.description || '');
+            formData.set('reward', selectedOption.dataset.reward || '0');
         }
         
         // spanは短期固定
@@ -147,6 +165,14 @@ function resetForm() {
         newTaskForm.style.display = 'block';
         templateTaskForm.style.display = 'none';
         templatePreview.style.display = 'none';
+        
+        // required属性を初期状態に戻す
+        if (document.getElementById('groupTaskTitle')) {
+            document.getElementById('groupTaskTitle').required = true;
+        }
+        if (taskTemplateSelect) {
+            taskTemplateSelect.required = false;
+        }
     }
 }
 
