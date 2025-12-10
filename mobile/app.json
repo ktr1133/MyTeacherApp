@@ -24,8 +24,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.myteacher.app",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.myteacher.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -33,6 +32,11 @@
     "plugins": [
       "@react-native-firebase/app",
       "@react-native-firebase/messaging"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "293f5236-a789-455d-b73a-e990044fc7f0"
+      }
+    }
   }
 }

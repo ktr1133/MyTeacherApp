@@ -126,6 +126,24 @@ export async function getCachedTokenBalance(): Promise<TokenBalance | null> {
 }
 
 /**
+ * トークンサービスのエクスポート
+ * 
+ * DrawerContentコンポーネントでの使用のため
+ */
+export const tokenService = {
+  getBalance: getTokenBalance,
+  getHistoryStats: getTokenHistoryStats,
+  getPackages: getTokenPackages,
+  createPurchaseRequest,
+  getPurchaseRequests,
+  approvePurchaseRequest,
+  rejectPurchaseRequest,
+  getCachedBalance: getCachedTokenBalance,
+  cacheBalance: cacheTokenBalance,
+  clearBalanceCache: clearTokenBalanceCache,
+};
+
+/**
  * トークン残高をキャッシュに保存
  * 
  * @param balance トークン残高情報
