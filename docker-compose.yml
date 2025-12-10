@@ -10,12 +10,8 @@ services:
     volumes:
       - .:/var/www/html
       - ./docker/apache/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
-    command: >
-      bash -c "
-      chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache &&
-      chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache &&
-      apache2-foreground
-      "
+    # command削除: entrypoint.shで権限設定を行い、apache2-foregroundを実行
+    # Docker Desktop on WSL2のポートバインディングバグ対策
     environment:
       - DB_CONNECTION=pgsql
       - DB_HOST=db
