@@ -87,111 +87,25 @@
                             </div>
                         </div>
 
-                        {{-- 期間区分選択(Weekly/Monthly/Yearly) --}}
-                        <div class="flex gap-2 shrink-0 flex-wrap">
-                            <a href="?tab={{ $tab }}&period=week&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                            class="period-button {{ $period === 'week' ? 'active' : '' }}"
-                            title="{{ !$isChildTheme ? '週間' : 'Weekly' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                <span class="period-button-text">
-                                    @if(!$isChildTheme)
-                                        週間
-                                    @else
-                                        Weekly
-                                    @endif
-                                </span>
-                            </a>
-                            
-                            @if($hasSubscription)
-                                {{-- サブスク加入者: 月間・年間選択可能 --}}
-                                <a href="?tab={{ $tab }}&period=month&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                                class="period-button {{ $period === 'month' ? 'active' : '' }}"
-                                title="{{ !$isChildTheme ? '月間' : 'Monthly' }}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        {{-- 右側エリア: 月次レポートボタンのみ --}}
+                        <div class="flex items-center gap-2 shrink-0 ml-auto">
+                            {{-- 月次レポートボタン --}}
+                            <div>
+                                <a href="{{ route('reports.monthly.show') }}"
+                                   class="monthly-report-btn inline-flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4AA5B2] hover:to-purple-700 text-white text-xs lg:text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap"
+                                   title="{{ !$isChildTheme ? '月次レポート' : 'レポート' }}">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
-                                    <span class="period-button-text">
+                                    <span class="hidden sm:inline">
                                         @if(!$isChildTheme)
-                                            月間
+                                            月次レポート
                                         @else
-                                            Monthly
+                                            レポート
                                         @endif
                                     </span>
                                 </a>
-                                <a href="?tab={{ $tab }}&period=year&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                                    class="period-button {{ $period === 'year' ? 'active' : '' }}"
-                                    title="{{ !$isChildTheme ? '年間' : 'Yearly' }}"
-                                >
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span class="period-button-text">
-                                        @if(!$isChildTheme)
-                                            年間
-                                        @else
-                                            Yearly
-                                        @endif
-                                    </span>
-                                </a>
-                            @else
-                                {{-- 無料ユーザー: 月間・年間はロック --}}
-                                <button type="button"
-                                        class="period-button opacity-60 hover:opacity-100 relative show-subscription-alert"
-                                        data-feature="period"
-                                        title="{{ !$isChildTheme ? '月間(サブスク限定)' : 'Monthly (Premium)' }}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span class="period-button-text">
-                                        @if(!$isChildTheme)
-                                            月間
-                                        @else
-                                            Monthly
-                                        @endif
-                                    </span>
-                                    <svg class="w-3 h-3 ml-1 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <button type="button"
-                                        class="period-button opacity-60 hover:opacity-100 relative show-subscription-alert"
-                                        data-feature="period"
-                                        title="{{ !$isChildTheme ? '年間(サブスク限定)' : 'Yearly (Premium)' }}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span class="period-button-text">
-                                        @if(!$isChildTheme)
-                                            年間
-                                        @else
-                                            Yearly
-                                        @endif
-                                    </span>
-                                    <svg class="w-3 h-3 ml-1 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            @endif
-                        </div>
-
-                        {{-- 月次レポートボタン --}}
-                        <div class="shrink-0 ml-auto">
-                            <a href="{{ route('reports.monthly.show') }}"
-                               class="monthly-report-btn inline-flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 bg-gradient-to-r from-[#59B9C6] to-purple-600 hover:from-[#4AA5B2] hover:to-purple-700 text-white text-xs lg:text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap"
-                               title="{{ !$isChildTheme ? '月次レポート' : 'レポート' }}">
-                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                                <span class="hidden sm:inline">
-                                    @if(!$isChildTheme)
-                                        月次レポート
-                                    @else
-                                        レポート
-                                    @endif
-                                </span>
-                            </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -289,88 +203,214 @@
                     $periodInfo = $currentData['periodInfo'];
                 @endphp
 
-                {{-- 期間ナビゲーション --}}
+                {{-- 期間ナビゲーション + ドロップダウン --}}
                 <div class="flex items-center justify-between bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-200 dark:border-gray-700 shrink-0">
-                    @if($hasSubscription || $offset === 0)
-                        {{-- サブスク加入者 or 現在週: 通常のナビゲーション --}}
-                        <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset - 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                           class="nav-button {{ !$periodInfo['canGoPrevious'] ? 'disabled' : '' }}"
-                           @if(!$periodInfo['canGoPrevious']) onclick="event.preventDefault(); return false;" @endif>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                            <span class="hidden sm:inline">
-                                @if(!$isChildTheme)
-                                    前へ
-                                @else
-                                    まえ
-                                @endif
-                            </span>
-                        </a>
-                    @else
-                        {{-- 無料ユーザー + 過去週: ロックボタン --}}
-                        <button type="button"
-                                class="show-subscription-alert nav-button opacity-60 hover:opacity-100 flex items-center gap-1"
-                                data-feature="navigation">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                            <span class="hidden sm:inline">
-                                @if(!$isChildTheme)
-                                    前へ
-                                @else
-                                    まえ
-                                @endif
-                            </span>
-                            <svg class="w-3 h-3 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                    @endif
+                    {{-- 期間ナビゲーション --}}
+                    <div class="flex items-center gap-2">
+                        @if($hasSubscription || $offset === 0)
+                            {{-- サブスク加入者 or 現在週: 通常のナビゲーション --}}
+                            <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset - 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                               class="nav-button {{ !$periodInfo['canGoPrevious'] ? 'disabled' : '' }}"
+                               @if(!$periodInfo['canGoPrevious']) onclick="event.preventDefault(); return false;" @endif>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                                <span class="hidden sm:inline">
+                                    @if(!$isChildTheme)
+                                        前へ
+                                    @else
+                                        まえ
+                                    @endif
+                                </span>
+                            </a>
+                        @else
+                            {{-- 無料ユーザー + 過去週: ロックボタン --}}
+                            <button type="button"
+                                    class="show-subscription-alert nav-button opacity-60 hover:opacity-100 flex items-center gap-1"
+                                    data-feature="navigation">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                                <span class="hidden sm:inline">
+                                    @if(!$isChildTheme)
+                                        前へ
+                                    @else
+                                        まえ
+                                    @endif
+                                </span>
+                                <svg class="w-3 h-3 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        @endif
 
-                    <div class="period-display">
-                        <svg class="w-4 h-4 {{ $tab === 'normal' ? 'text-[#59B9C6]' : 'text-purple-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <span class="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">{{ $periodInfo['displayText'] }}</span>
+                        <div class="period-display">
+                            <svg class="w-4 h-4 {{ $tab === 'normal' ? 'text-[#59B9C6]' : 'text-purple-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            {{-- 通常表示（427px以上） --}}
+                            <span class="font-bold text-gray-900 dark:text-white text-xs sm:text-sm hidden min-[427px]:inline">{{ $periodInfo['displayText'] }}</span>
+                            {{-- 短縮表示（426px以下） --}}
+                            <span class="font-bold text-gray-900 dark:text-white text-xs inline min-[427px]:hidden">
+                                @php
+                                    // 短縮表示用のフォーマット生成
+                                    $displayText = $periodInfo['displayText'];
+                                    $shortDisplay = '';
+                                    
+                                    if ($period === 'week') {
+                                        // "2025年12月2週目" → "25/12/2nd"
+                                        if (preg_match('/(\d{4})年(\d+)月(\d+)週目/', $displayText, $matches)) {
+                                            $year = substr($matches[1], -2); // 下2桁
+                                            $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                                            $week = $matches[3];
+                                            $suffix = match($week) {
+                                                '1' => '1st',
+                                                '2' => '2nd',
+                                                '3' => '3rd',
+                                                default => $week . 'th'
+                                            };
+                                            $shortDisplay = "{$year}/{$month}/{$suffix}";
+                                        }
+                                    } elseif ($period === 'month') {
+                                        // "2025年12月" → "25/12"
+                                        if (preg_match('/(\d{4})年(\d+)月/', $displayText, $matches)) {
+                                            $year = substr($matches[1], -2);
+                                            $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                                            $shortDisplay = "{$year}/{$month}";
+                                        }
+                                    } elseif ($period === 'year') {
+                                        // "2025年" → "2025"
+                                        if (preg_match('/(\d{4})年/', $displayText, $matches)) {
+                                            $shortDisplay = $matches[1];
+                                        }
+                                    }
+                                @endphp
+                                {{ $shortDisplay ?: $displayText }}
+                            </span>
+                        </div>
+
+                        @if($hasSubscription || $offset === 0)
+                            {{-- サブスク加入者 or 現在週: 通常のナビゲーション --}}
+                            <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset + 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                               class="nav-button {{ !$periodInfo['canGoNext'] ? 'disabled' : '' }}"
+                               @if(!$periodInfo['canGoNext']) onclick="event.preventDefault(); return false;" @endif>
+                                <span class="hidden sm:inline">
+                                    @if(!$isChildTheme)
+                                        次へ
+                                    @else
+                                        つぎ
+                                    @endif
+                                </span>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        @else
+                            {{-- 無料ユーザー + 過去/未来週: ロックボタン --}}
+                            <button type="button"
+                                    class="show-subscription-alert nav-button opacity-60 hover:opacity-100 flex items-center gap-1"
+                                    data-feature="navigation">
+                                <span class="hidden sm:inline">
+                                    @if(!$isChildTheme)
+                                        次へ
+                                    @else
+                                        つぎ
+                                    @endif
+                                </span>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                                <svg class="w-3 h-3 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        @endif
                     </div>
 
-                    @if($hasSubscription || $offset === 0)
-                        {{-- サブスク加入者 or 現在週: 通常のナビゲーション --}}
-                        <a href="?tab={{ $tab }}&period={{ $period }}&offset={{ $offset + 1 }}{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
-                           class="nav-button {{ !$periodInfo['canGoNext'] ? 'disabled' : '' }}"
-                           @if(!$periodInfo['canGoNext']) onclick="event.preventDefault(); return false;" @endif>
-                            <span class="hidden sm:inline">
-                                @if(!$isChildTheme)
-                                    次へ
+                    {{-- 期間区分選択（ドロップダウン形式） --}}
+                    <div class="relative">
+                        <button type="button" 
+                                class="period-dropdown-toggle period-button flex items-center gap-2"
+                                aria-expanded="false"
+                                aria-haspopup="true"
+                                title="{{ !$isChildTheme ? '期間選択' : 'Select Period' }}">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="period-dropdown-label">
+                                @if($period === 'week')
+                                    {{ !$isChildTheme ? '週間' : 'Weekly' }}
+                                @elseif($period === 'month')
+                                    {{ !$isChildTheme ? '月間' : 'Monthly' }}
                                 @else
-                                    つぎ
+                                    {{ !$isChildTheme ? '年間' : 'Yearly' }}
                                 @endif
                             </span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </a>
-                    @else
-                        {{-- 無料ユーザー + 過去/未来週: ロックボタン --}}
-                        <button type="button"
-                                class="show-subscription-alert nav-button opacity-60 hover:opacity-100 flex items-center gap-1"
-                                data-feature="navigation">
-                            <span class="hidden sm:inline">
-                                @if(!$isChildTheme)
-                                    次へ
-                                @else
-                                    つぎ
-                                @endif
-                            </span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                            <svg class="w-3 h-3 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                            <svg class="w-3 h-3 period-dropdown-arrow transition-transform shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                             </svg>
                         </button>
-                    @endif
+                        
+                        <div class="period-dropdown-menu absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 shadow-xl rounded-lg border border-gray-200 dark:border-gray-700 z-[50] min-w-full hidden overflow-hidden">
+                            <a href="?tab={{ $tab }}&period=week&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                               class="block px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition {{ $period === 'week' ? 'bg-[#59B9C6]/10 text-[#59B9C6] font-semibold' : 'text-gray-700 dark:text-gray-300' }}">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span>{{ !$isChildTheme ? '週間' : 'Weekly' }}</span>
+                                </div>
+                            </a>
+                            
+                            @if($hasSubscription)
+                                <a href="?tab={{ $tab }}&period=month&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                                   class="block px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition {{ $period === 'month' ? 'bg-[#59B9C6]/10 text-[#59B9C6] font-semibold' : 'text-gray-700 dark:text-gray-300' }}">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span>{{ !$isChildTheme ? '月間' : 'Monthly' }}</span>
+                                    </div>
+                                </a>
+                                <a href="?tab={{ $tab }}&period=year&offset=0{{ $tab === 'group' && !$isGroupWhole ? '&user_id=' . $targetUser->id : '' }}"
+                                   class="block px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition {{ $period === 'year' ? 'bg-[#59B9C6]/10 text-[#59B9C6] font-semibold' : 'text-gray-700 dark:text-gray-300' }}">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span>{{ !$isChildTheme ? '年間' : 'Yearly' }}</span>
+                                    </div>
+                                </a>
+                            @else
+                                <button type="button"
+                                        class="w-full px-4 py-2.5 flex items-center justify-between opacity-60 hover:opacity-80 transition text-left show-subscription-alert"
+                                        data-feature="period">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span>{{ !$isChildTheme ? '月間' : 'Monthly' }}</span>
+                                    </div>
+                                    <svg class="w-3 h-3 text-purple-600 dark:text-purple-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <button type="button"
+                                        class="w-full px-4 py-2.5 flex items-center justify-between opacity-60 hover:opacity-80 transition text-left show-subscription-alert"
+                                        data-feature="period">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span>{{ !$isChildTheme ? '年間' : 'Yearly' }}</span>
+                                    </div>
+                                    <svg class="w-3 h-3 text-purple-600 dark:text-purple-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
                 </div>
 
                 {{-- グラフ表示エリア（画面内に収まるように調整） --}}

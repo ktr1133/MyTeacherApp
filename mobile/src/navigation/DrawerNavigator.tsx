@@ -10,6 +10,7 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import DrawerContent from '../components/common/DrawerContent';
+import HeaderNotificationIcon from '../components/common/HeaderNotificationIcon';
 
 // 画面インポート
 import TaskListScreen from '../screens/tasks/TaskListScreen';
@@ -77,6 +78,8 @@ export default function DrawerNavigator() {
         },
         headerBackTitleVisible: false,
         gestureEnabled: true,
+        // Section 3.3: 全画面共通でヘッダー右側に通知アイコンを表示
+        headerRight: () => <HeaderNotificationIcon />,
       }}
     >
       {/* タスク管理 */}

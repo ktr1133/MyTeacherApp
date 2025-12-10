@@ -40,11 +40,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                                 </svg>
                             </div>
-                            <div>
-                                <h1 class="dashboard-header-title text-lg font-bold">
-                                    サブスクリプション管理
+                            <div class="min-w-0">
+                                <h1 class="subscription-header-title text-lg font-bold truncate">
+                                    <span class="hidden min-[380px]:inline">サブスクリプション管理</span>
+                                    <span class="min-[380px]:hidden">サブスク管理</span>
                                 </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
+                                <p class="text-xs text-gray-600 dark:text-gray-400 hidden min-[380px]:block">
                                     グループ機能のプラン選択
                                 </p>
                             </div>

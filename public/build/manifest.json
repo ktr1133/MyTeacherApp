@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-DFx2JVBc.css",
+    "file": "assets/app-CVWjZGw9.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -112,7 +112,7 @@
     ]
   },
   "resources/css/reports/performance.css": {
-    "file": "assets/performance-u0lzThPn.css",
+    "file": "assets/performance-BUlDBGuF.css",
     "src": "resources/css/reports/performance.css",
     "isEntry": true,
     "names": [
@@ -331,6 +331,18 @@
     "src": "resources/js/dashboard/task-search.js",
     "isEntry": true
   },
+  "resources/js/group-tasks/edit.js": {
+    "file": "assets/edit-8pT6Rg_u.js",
+    "name": "edit",
+    "src": "resources/js/group-tasks/edit.js",
+    "isEntry": true
+  },
+  "resources/js/group-tasks/index.js": {
+    "file": "assets/index-C85dgqyY.js",
+    "name": "index",
+    "src": "resources/js/group-tasks/index.js",
+    "isEntry": true
+  },
   "resources/js/infinite-scroll.js": {
     "file": "assets/infinite-scroll-BQXRY6VW.js",
     "name": "infinite-scroll",
@@ -371,7 +383,7 @@
     "isEntry": true
   },
   "resources/js/reports/performance.js": {
-    "file": "assets/performance-D_CfxajU.js",
+    "file": "assets/performance-CevTfmB_.js",
     "name": "performance",
     "src": "resources/js/reports/performance.js",
     "isEntry": true

@@ -179,4 +179,44 @@ interface TaskRepositoryInterface
      * @return Collection
      */
     public function findTasksByGroupTaskId(string $groupTaskId): Collection;
+
+    /**
+     * ユーザーが作成した編集可能なグループタスクを取得（group_task_id単位でグループ化）
+     *
+     * 条件:
+     * - group_task_id IS NOT NULL
+     * - assigned_by_user_id = $userId
+     * - approved_at IS NULL
+     * - deleted_at IS NULL
+     *
+     * @param int $userId
+     * @return SupportCollection groupBy()->map()の結果を返すためSupportCollection
+     */
+    public function findEditableGroupTasksByUser(int $userId): SupportCollection;    /**
+     * 特定のgroup_task_idのタスクを取得（編集可能なもののみ）
+     *
+     * @param string $groupTaskId
+     * @param int $assignedByUserId
+     * @return Collection
+     */
+    public function findEditableTasksByGroupTaskId(string $groupTaskId, int $assignedByUserId): Collection;
+
+    /**
+     * グループタスクを一括更新（同じgroup_task_idのタスク全体）
+     *
+     * @param string $groupTaskId
+     * @param int $assignedByUserId
+     * @param array $data
+     * @return int 更新されたタスク数
+     */
+    public function updateTasksByGroupTaskId(string $groupTaskId, int $assignedByUserId, array $data): int;
+
+    /**
+     * グループタスクを一括論理削除（同じgroup_task_idのタスク全体）
+     *
+     * @param string $groupTaskId
+     * @param int $assignedByUserId
+     * @return int 削除されたタスク数
+     */
+    public function softDeleteTasksByGroupTaskId(string $groupTaskId, int $assignedByUserId): int;
 }

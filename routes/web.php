@@ -98,6 +98,10 @@ use App\Http\Actions\Tags\TagsListAction;
 use App\Http\Actions\Tags\StoreTagAction;
 use App\Http\Actions\Tags\UpdateTagAction;
 use App\Http\Actions\Tags\DestroyTagAction;
+use App\Http\Actions\GroupTask\ListGroupTasksAction;
+use App\Http\Actions\GroupTask\ShowGroupTaskEditFormAction;
+use App\Http\Actions\GroupTask\UpdateGroupTaskAction;
+use App\Http\Actions\GroupTask\DestroyGroupTaskAction;
 use App\Http\Actions\Tags\TagTaskAction;
 use App\Http\Actions\Tags\GetTagTasksAction;
 use App\Http\Actions\Tags\AttachTaskToTagAction;
@@ -231,6 +235,12 @@ Route::middleware(['auth'])->group(function () {
     // 画像アップロード
     Route::post('/tasks/{task}/upload-image', UploadTaskImageAction::class)->name('tasks.upload-image');
     Route::delete('/tasks/images/{image}', DeleteTaskImageAction::class)->name('tasks.delete-image');
+
+    // --- グループタスク管理 ---
+    Route::get('/group-tasks', ListGroupTasksAction::class)->name('group-tasks.index');
+    Route::get('/group-tasks/{group_task_id}/edit', ShowGroupTaskEditFormAction::class)->name('group-tasks.edit');
+    Route::put('/group-tasks/{group_task_id}', UpdateGroupTaskAction::class)->name('group-tasks.update');
+    Route::delete('/group-tasks/{group_task_id}', DestroyGroupTaskAction::class)->name('group-tasks.destroy');
 
     // --- タグ画面 ---
     Route::get('/tags/list', TagsListAction::class)->name('tags.list');

@@ -167,12 +167,26 @@ class User extends Authenticatable
 
     /**
      * グループ編集権限があるかどうか
+     * 
+     * グループ編集権限の判定基準:
+     * 1. group_edit_flgがtrueの場合
+     * 2. グループの管理者（master_user_id）の場合
      *
      * @return bool
      */
     public function canEditGroup(): bool
     {
-        return $this->group_edit_flg === true;
+        // group_edit_flgがtrueの場合
+        if ($this->group_edit_flg) {
+            return true;
+        }
+        
+        // グループの管理者（master_user_id）の場合
+        if ($this->group && $this->group->master_user_id === $this->id) {
+            return true;
+        }
+        
+        return false;
     }
 
     /**

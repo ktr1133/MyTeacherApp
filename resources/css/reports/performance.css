@@ -417,6 +417,74 @@
 }
 
 /* ========================================
+   期間選択ドロップダウンスタイル
+   ======================================== */
+
+/* ドロップダウントグルボタン */
+.period-dropdown-toggle {
+    @apply relative;
+    min-width: max-content;
+}
+
+.period-dropdown-toggle:focus {
+    @apply outline-none ring-2 ring-[#59B9C6]/50;
+}
+
+/* ドロップダウンラベル（レスポンシブ） */
+.period-dropdown-label {
+    @apply inline-block;
+}
+
+/* ドロップダウンメニュー */
+.period-dropdown-menu {
+    @apply whitespace-nowrap;
+    min-width: 200px;
+    z-index: 9000; /* アバターモーダル(9998)より背面、ナビゲーション要素より前面 */
+}
+
+.period-dropdown-menu a,
+.period-dropdown-menu button {
+    @apply text-sm;
+}
+
+.period-dropdown-menu a:first-child {
+    @apply rounded-t-lg;
+}
+
+.period-dropdown-menu a:last-child,
+.period-dropdown-menu button:last-child {
+    @apply rounded-b-lg;
+}
+
+/* ドロップダウンメニューのレスポンシブ対応 */
+@media (max-width: 640px) {
+    .period-dropdown-menu {
+        min-width: 160px;
+    }
+    
+    .period-dropdown-menu a,
+    .period-dropdown-menu button {
+        @apply px-3 py-2 text-xs;
+    }
+}
+
+@media (max-width: 426px) {
+    .period-dropdown-label {
+        display: none;
+    }
+    
+    .period-dropdown-toggle {
+        @apply px-2 py-2;
+    }
+    
+    .period-dropdown-menu {
+        min-width: 140px;
+        right: 0;
+        left: auto;
+    }
+}
+
+/* ========================================
    実績画面専用アバター表示スタイル
    ======================================== */
 

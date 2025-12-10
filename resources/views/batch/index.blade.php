@@ -97,11 +97,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                            <div>
-                                <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-                                    タスク自動作成の設定
+                            <div class="min-w-0">
+                                <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent truncate">
+                                    <span class="hidden min-[413px]:inline">タスク自動作成の設定</span>
+                                    <span class="min-[413px]:hidden">自動作成設定</span>
                                 </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">スケジュール管理</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 hidden min-[413px]:block">スケジュール管理</p>
                             </div>
                         </div>
                     </div>

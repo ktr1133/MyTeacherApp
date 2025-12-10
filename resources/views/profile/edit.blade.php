@@ -39,14 +39,14 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                 </svg>
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 @if (!$isChildTheme)
-                                    <h1 class="dashboard-header-title text-lg font-bold">
+                                    <h1 class="dashboard-header-title text-lg font-bold truncate">
                                         アカウント管理
                                     </h1>
-                                    <p class="text-xs text-gray-600 dark:text-gray-400">プロフィールとセキュリティ設定</p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 hidden min-[380px]:block">プロフィールとセキュリティ設定</p>
                                 @else
-                                    <h1 class="dashboard-header-title text-lg font-bold">
+                                    <h1 class="dashboard-header-title text-lg font-bold truncate">
                                         アカウント
                                     </h1>
                                 @endif

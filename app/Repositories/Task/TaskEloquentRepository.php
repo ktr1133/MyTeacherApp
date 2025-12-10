@@ -409,4 +409,87 @@ class TaskEloquentRepository implements TaskRepositoryInterface
             ->with(['user', 'tags'])
             ->get();
     }
+
+    /**
+     * ユーザーが作成した編集可能なグループタスクを取得（group_task_id単位でグループ化）
+     */
+    public function findEditableGroupTasksByUser(int $userId): \Illuminate\Support\Collection
+    {
+        return Task::whereNotNull('group_task_id')
+            ->where('assigned_by_user_id', $userId)
+            ->whereNull('approved_at')
+            ->with(['user', 'tags', 'assignedBy'])
+            ->get()
+            ->groupBy('group_task_id')
+            ->map(function ($tasks) {
+                // 各グループの代表タスク（最初のタスク）を取得
+                $firstTask = $tasks->first();
+                
+                return [
+                    'group_task_id' => $firstTask->group_task_id,
+                    'title' => $firstTask->title,
+                    'description' => $firstTask->description,
+                    'span' => $firstTask->span,
+                    'due_date' => $firstTask->due_date,
+                    'priority' => $firstTask->priority,
+                    'reward' => $firstTask->reward,
+                    'requires_approval' => $firstTask->requires_approval,
+                    'requires_image' => $firstTask->requires_image,
+                    'assigned_count' => $tasks->count(),
+                    'tags' => $firstTask->tags,
+                    'created_at' => $firstTask->created_at,
+                    'updated_at' => $firstTask->updated_at,
+                    'tasks' => $tasks, // 全タスクも含める
+                ];
+            })
+            ->values();
+    }
+
+    /**
+     * 特定のgroup_task_idのタスクを取得（編集可能なもののみ）
+     */
+    public function findEditableTasksByGroupTaskId(string $groupTaskId, int $assignedByUserId): Collection
+    {
+        return Task::where('group_task_id', $groupTaskId)
+            ->where('assigned_by_user_id', $assignedByUserId)
+            ->whereNull('approved_at')
+            ->with(['user', 'tags', 'assignedBy'])
+            ->get();
+    }
+
+    /**
+     * グループタスクを一括更新（同じgroup_task_idのタスク全体）
+     */
+    public function updateTasksByGroupTaskId(string $groupTaskId, int $assignedByUserId, array $data): int
+    {
+        // タグは除外（別処理）
+        if (isset($data['tags'])) {
+            unset($data['tags']);
+        }
+
+        return Task::where('group_task_id', $groupTaskId)
+            ->where('assigned_by_user_id', $assignedByUserId)
+            ->whereNull('approved_at')
+            ->update($data);
+    }
+
+    /**
+     * グループタスクを一括論理削除（同じgroup_task_idのタスク全体）
+     */
+    public function softDeleteTasksByGroupTaskId(string $groupTaskId, int $assignedByUserId): int
+    {
+        $tasks = Task::where('group_task_id', $groupTaskId)
+            ->where('assigned_by_user_id', $assignedByUserId)
+            ->whereNull('approved_at')
+            ->get();
+
+        $count = 0;
+        foreach ($tasks as $task) {
+            if ($task->delete()) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Services\Task;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 
 /**
  * タスクの作成、更新、AI連携、論理削除などのCRUD操作とビジネスロジックの契約を定義するインターフェース。
@@ -125,4 +126,42 @@ interface TaskManagementServiceInterface
      * @return void
      */
     public function clearUserTaskCache(int $userId): void;
+
+    /**
+     * ユーザーが作成した編集可能なグループタスク一覧を取得（group_task_id単位）
+     *
+     * @param User $user ログインユーザー
+     * @return SupportCollection グループタスクのコレクション
+     */
+    public function getEditableGroupTasks(User $user): SupportCollection;
+
+    /**
+     * 編集可能な特定グループタスクを取得
+     *
+     * @param User $user ログインユーザー
+     * @param string $groupTaskId グループタスクID
+     * @return array|null グループタスク情報、または存在しない場合null
+     */
+    public function findEditableGroupTask(User $user, string $groupTaskId): ?array;
+
+    /**
+     * グループタスクを更新（同じgroup_task_id全体）
+     *
+     * @param User $user ログインユーザー
+     * @param string $groupTaskId グループタスクID
+     * @param array $data 更新データ
+     * @return int 更新されたタスク数
+     * @throws \Exception 権限なし、または対象タスクが存在しない場合
+     */
+    public function updateGroupTask(User $user, string $groupTaskId, array $data): int;
+
+    /**
+     * グループタスクを削除（同じgroup_task_id全体）
+     *
+     * @param User $user ログインユーザー
+     * @param string $groupTaskId グループタスクID
+     * @return int 削除されたタスク数
+     * @throws \Exception 権限なし、または対象タスクが存在しない場合
+     */
+    public function deleteGroupTask(User $user, string $groupTaskId): int;
 }

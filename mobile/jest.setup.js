@@ -21,6 +21,72 @@ jest.mock('@expo/vector-icons', () => {
   };
 });
 
+// React Native Worklets のモック（Reanimatedの依存）
+jest.mock('react-native-worklets', () => ({
+  useSharedValue: jest.fn(),
+  useWorklet: jest.fn(),
+  runOnJS: jest.fn(),
+  runOnUI: jest.fn(),
+}));
+
+// React Native Reanimated のモック
+jest.mock('react-native-reanimated', () => ({
+  default: {
+    View: require('react-native').View,
+    Text: require('react-native').Text,
+    ScrollView: require('react-native').ScrollView,
+    Image: require('react-native').Image,
+    createAnimatedComponent: (component) => component,
+    call: jest.fn(),
+  },
+  useSharedValue: jest.fn(),
+  useAnimatedStyle: jest.fn(() => ({})),
+  withTiming: jest.fn((value) => value),
+  withSpring: jest.fn((value) => value),
+  withDelay: jest.fn((_, value) => value),
+  Easing: {
+    linear: jest.fn(),
+    ease: jest.fn(),
+    quad: jest.fn(),
+    cubic: jest.fn(),
+  },
+}));
+
+// React Native Gesture Handler のモック
+jest.mock('react-native-gesture-handler', () => {
+  const View = require('react-native/Libraries/Components/View/View');
+  return {
+    Swipeable: View,
+    DrawerLayout: View,
+    State: {},
+    ScrollView: View,
+    Slider: View,
+    Switch: View,
+    TextInput: View,
+    ToolbarAndroid: View,
+    ViewPagerAndroid: View,
+    DrawerLayoutAndroid: View,
+    WebView: View,
+    NativeViewGestureHandler: View,
+    TapGestureHandler: View,
+    FlingGestureHandler: View,
+    ForceTouchGestureHandler: View,
+    LongPressGestureHandler: View,
+    PanGestureHandler: View,
+    PinchGestureHandler: View,
+    RotationGestureHandler: View,
+    /* Buttons */
+    RawButton: View,
+    BaseButton: View,
+    RectButton: View,
+    BorderlessButton: View,
+    /* Other */
+    FlatList: View,
+    gestureHandlerRootHOC: jest.fn(),
+    Directions: {},
+  };
+});
+
 // React Navigation のモック
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
@@ -37,6 +103,14 @@ jest.mock('@react-navigation/native', () => ({
   useFocusEffect: (callback) => {
     callback();
   },
+}));
+
+// React Native Safe Area Context のモック
+jest.mock('react-native-safe-area-context', () => ({
+  SafeAreaProvider: ({ children }) => children,
+  SafeAreaView: require('react-native').View,
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+  useSafeAreaFrame: () => ({ x: 0, y: 0, width: 375, height: 812 }),
 }));
 
 // console の出力を抑制（テスト実行時のノイズ削減）

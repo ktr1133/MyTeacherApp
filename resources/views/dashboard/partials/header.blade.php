@@ -22,9 +22,12 @@
                 <div>
                     @if (!$isChildTheme)
                         <h1 class="dashboard-header-title text-lg font-bold">
-                            タスクリスト
+                            {{-- 1024～1133pxでは「ToDo」、1134px以上で「タスクリスト」 --}}
+                            <span class="hidden min-[1134px]:inline">タスクリスト</span>
+                            <span class="inline min-[1134px]:hidden">ToDo</span>
                         </h1>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">タスクの登録と管理</p>
+                        {{-- 1024～1133pxでは副題非表示 --}}
+                        <p class="text-xs text-gray-600 dark:text-gray-400 hidden min-[1134px]:block">タスクの登録と管理</p>
                     @else
                         <h1 class="dashboard-header-title text-lg font-bold">
                             ToDo
@@ -61,12 +64,13 @@
             <button 
                 type="button"
                 data-open-search-modal
-                class="hidden lg:flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                class="hidden lg:flex items-center gap-2 xl-:p-2.5 xl-:rounded-xl min-[1134px]:px-4 min-[1134px]:py-2 min-[1134px]:rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 aria-label="検索">
                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <span class="text-sm text-gray-500 dark:text-gray-400">タスクを検索...</span>
+                {{-- 1024～1133pxではテキスト非表示 --}}
+                <span class="text-sm text-gray-500 dark:text-gray-400 hidden min-[1134px]:inline">タスクを検索...</span>
             </button>
         </div>
 
@@ -105,6 +109,17 @@
                         @endif
                     </span>
                 </button>
+            @endif
+
+            {{-- グループタスク管理ボタン（lg以上で表示） --}}
+            @if(Auth::user()->canEditGroup())
+                <a href="{{ route('group-tasks.index') }}"
+                   class="hidden lg:inline-flex items-center justify-center p-2.5 rounded-xl bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 hover:from-purple-200 hover:to-indigo-200 dark:hover:from-purple-800/40 dark:hover:to-indigo-800/40 border-2 border-purple-300 dark:border-purple-600 hover:border-purple-400 dark:hover:border-purple-500 transition-all duration-300 hover:shadow-lg hover:shadow-purple-200 dark:hover:shadow-purple-900/30 group"
+                   aria-label="{{ !$isChildTheme ? 'グループタスク管理' : 'クエストかんり' }}">
+                    <svg class="w-6 h-6 text-purple-700 dark:text-purple-400 group-hover:text-purple-800 dark:group-hover:text-purple-300 group-hover:scale-110 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                </a>
             @endif
 
             {{-- お知らせ通知ボタン --}}

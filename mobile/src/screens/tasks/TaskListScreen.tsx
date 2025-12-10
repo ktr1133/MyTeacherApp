@@ -25,7 +25,9 @@ import { Task } from '../../types/task.types';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAvatar } from '../../hooks/useAvatar';
+import { useProfile } from '../../hooks/useProfile';
 import AvatarWidget from '../../components/common/AvatarWidget';
+import AvatarCreationBanner from '../../components/common/AvatarCreationBanner';
 import BucketCard from '../../components/tasks/BucketCard';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow, getHeaderTitleProps } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
@@ -61,6 +63,7 @@ export default function TaskListScreen() {
   const { width, deviceSize } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { profile, isLoading: profileLoading } = useProfile();
   
   const {
     tasks,
@@ -481,6 +484,11 @@ export default function TaskListScreen() {
 
   return (
     <View style={styles.container}>
+      {/* アバター未作成バナー（条件付き表示） */}
+      {!profileLoading && profile && !profile.teacher_avatar_id && (
+        <AvatarCreationBanner />
+      )}
+
       {/* 検索バー */}
       <View style={styles.searchContainer}>
         <TextInput

@@ -6,5 +6,5 @@
         </svg>
         <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-600 rounded-full animate-ping"></div>
     </div>
-    <span class="text-xl font-bold gradient-text">MyTeacher</span>
+    <span class="text-xl font-bold bg-gradient-to-r from-[#59B9C6] to-purple-600 bg-clip-text text-transparent">MyTeacher</span>
 </div>

@@ -46,11 +46,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                            <div>
-                                <h1 class="approval-header-title text-lg font-bold">
-                                    承認待ち一覧
+                            <div class="min-w-0">
+                                <h1 class="approval-header-title text-lg font-bold truncate">
+                                    <span class="hidden min-[380px]:inline">承認待ち一覧</span>
+                                    <span class="min-[380px]:hidden">承認待ち</span>
                                 </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">タスク・トークン購入の承認と却下</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 hidden min-[380px]:block">タスク・トークン購入の承認と却下</p>
                             </div>
                         </div>
                     </div>

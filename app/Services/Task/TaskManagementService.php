@@ -436,4 +436,136 @@ class TaskManagementService implements TaskManagementServiceInterface
 
         return $tasks;
     }
+
+    /**
+     * ユーザーが作成した編集可能なグループタスク一覧を取得
+     * 
+     * @param User $user ログインユーザー
+     * @return \Illuminate\Support\Collection グループタスクのコレクション
+     */
+    public function getEditableGroupTasks(User $user): \Illuminate\Support\Collection
+    {
+        return $this->taskRepository->findEditableGroupTasksByUser($user->id);
+    }
+
+    /**
+     * 編集可能な特定グループタスクを取得
+     * 
+     * @param User $user ログインユーザー
+     * @param string $groupTaskId グループタスクID
+     * @return array|null グループタスク情報
+     */
+    public function findEditableGroupTask(User $user, string $groupTaskId): ?array
+    {
+        $tasks = $this->taskRepository->findEditableTasksByGroupTaskId($groupTaskId, $user->id);
+        
+        if ($tasks->isEmpty()) {
+            return null;
+        }
+
+        $firstTask = $tasks->first();
+        
+        // 割当メンバー一覧を取得（user_idでグループ化して重複排除）
+        $assignedUsers = $tasks->map(function ($task) {
+            return $task->user;
+        })->unique('id')->values();
+        
+        return [
+            'group_task_id' => $firstTask->group_task_id,
+            'title' => $firstTask->title,
+            'description' => $firstTask->description,
+            'span' => $firstTask->span,
+            'due_date' => $firstTask->due_date,
+            'priority' => $firstTask->priority,
+            'reward' => $firstTask->reward,
+            'requires_approval' => $firstTask->requires_approval,
+            'requires_image' => $firstTask->requires_image,
+            'assigned_count' => $tasks->count(),
+            'tags' => $firstTask->tags,
+            'created_at' => $firstTask->created_at,
+            'updated_at' => $firstTask->updated_at,
+            'tasks' => $tasks,
+            'assignedUsers' => $assignedUsers,
+        ];
+    }
+
+    /**
+     * グループタスクを更新
+     * 
+     * @param User $user ログインユーザー
+     * @param string $groupTaskId グループタスクID
+     * @param array $data 更新データ
+     * @return int 更新されたタスク数
+     * @throws \Exception
+     */
+    public function updateGroupTask(User $user, string $groupTaskId, array $data): int
+    {
+        return DB::transaction(function () use ($user, $groupTaskId, $data) {
+            // 対象タスクを取得
+            $tasks = $this->taskRepository->findEditableTasksByGroupTaskId($groupTaskId, $user->id);
+            
+            if ($tasks->isEmpty()) {
+                throw new \Exception('指定されたグループタスクが見つかりません。');
+            }
+
+            // タスク本体を更新
+            $updatedCount = $this->taskRepository->updateTasksByGroupTaskId($groupTaskId, $user->id, $data);
+
+            // タグの更新（全タスクに同じタグを設定）
+            if (isset($data['tags'])) {
+                foreach ($tasks as $task) {
+                    $this->tagService->syncTaskTagsByNames($task, $data['tags']);
+                }
+            }
+
+            // キャッシュクリア（各ユーザー分）
+            foreach ($tasks as $task) {
+                $this->clearUserCache($task->user_id);
+            }
+
+            Log::info('グループタスク更新完了', [
+                'group_task_id' => $groupTaskId,
+                'updated_count' => $updatedCount,
+                'assigned_by_user_id' => $user->id,
+            ]);
+
+            return $updatedCount;
+        });
+    }
+
+    /**
+     * グループタスクを削除
+     * 
+     * @param User $user ログインユーザー
+     * @param string $groupTaskId グループタスクID
+     * @return int 削除されたタスク数
+     * @throws \Exception
+     */
+    public function deleteGroupTask(User $user, string $groupTaskId): int
+    {
+        return DB::transaction(function () use ($user, $groupTaskId) {
+            // 対象タスクを取得
+            $tasks = $this->taskRepository->findEditableTasksByGroupTaskId($groupTaskId, $user->id);
+            
+            if ($tasks->isEmpty()) {
+                throw new \Exception('指定されたグループタスクが見つかりません。');
+            }
+
+            // 論理削除実行
+            $deletedCount = $this->taskRepository->softDeleteTasksByGroupTaskId($groupTaskId, $user->id);
+
+            // キャッシュクリア（各ユーザー分）
+            foreach ($tasks as $task) {
+                $this->clearUserCache($task->user_id);
+            }
+
+            Log::info('グループタスク削除完了', [
+                'group_task_id' => $groupTaskId,
+                'deleted_count' => $deletedCount,
+                'assigned_by_user_id' => $user->id,
+            ]);
+
+            return $deletedCount;
+        });
+    }
 }

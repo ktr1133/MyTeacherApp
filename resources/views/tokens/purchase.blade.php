@@ -45,8 +45,8 @@
                                     <span class="text-2xl lg:text-3xl">🪙</span>
                                 @endif
                             </div>
-                            <div>
-                                <h1 class="dashboard-header-title text-lg font-bold">
+                            <div class="min-w-0">
+                                <h1 class="token-header-title text-lg font-bold truncate">
                                     @if(!$isChildTheme)
                                         トークン購入
                                     @else

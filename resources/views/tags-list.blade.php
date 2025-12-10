@@ -50,14 +50,14 @@
                                     <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                                 </svg>
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 @if(!$isChildTheme)
-                                    <h1 class="tag-header-title text-lg font-bold">
+                                    <h1 class="tag-header-title text-lg font-bold truncate">
                                         タグ管理
                                     </h1>
-                                    <p class="text-xs text-gray-600 dark:text-gray-400">タスクの分類と整理</p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 hidden min-[380px]:block">タスクの分類と整理</p>
                                 @else
-                                    <h1 class="tag-header-title text-lg font-bold">
+                                    <h1 class="tag-header-title text-lg font-bold truncate">
                                         タグ
                                     </h1>
                                 @endif
