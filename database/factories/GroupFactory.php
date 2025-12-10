@@ -27,7 +27,7 @@ class GroupFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->company(),
+            'name' => fake()->unique()->company(),
             'master_user_id' => User::factory(),
             // サブスクリプション関連のデフォルト値
             'subscription_active' => false,

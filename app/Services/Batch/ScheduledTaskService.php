@@ -405,7 +405,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
                 $tasks[] = $task;  // 配列に追加
 
                 // タグの紐付け
-                $tagNames = $scheduledTask->getTagNames();
+                $tagNames = $scheduledTask->tag_names;
                 if (!empty($tagNames)) {
                     $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
                 }
@@ -429,7 +429,7 @@ class ScheduledTaskService implements ScheduledTaskServiceInterface
             $tasks[] = $task;  // 配列に追加
 
             // タグの紐付け
-            $tagNames = $scheduledTask->getTagNames();
+            $tagNames = $scheduledTask->tag_names;
             if (!empty($tagNames)) {
                 try {
                     $this->taskRepository->attachTagsForBatch($task->id, $tagNames);
