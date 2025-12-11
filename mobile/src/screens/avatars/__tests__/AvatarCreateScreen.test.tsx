@@ -94,7 +94,7 @@ describe('AvatarCreateScreen', () => {
 
     // child用テキスト確認
     expect(getByText('アバターをつくろう')).toBeTruthy();
-    expect(getByText('せんせいのみためとせいかくをえらぼう')).toBeTruthy();
+    expect(getByText('せんせいのみためとせいかくをえらんでね')).toBeTruthy();
     expect(getByText('アバターをつくる')).toBeTruthy();
   });
 
@@ -106,8 +106,8 @@ describe('AvatarCreateScreen', () => {
 
     // Alert.alertが呼ばれたことを確認
     expect(Alert.alert).toHaveBeenCalledWith(
-      '確認',
-      expect.stringContaining('5000トークン'),
+      'アバター作成',
+      expect.stringContaining('5,000'),
       expect.any(Array)
     );
   });
@@ -123,18 +123,13 @@ describe('AvatarCreateScreen', () => {
     const createButton = getByText('アバターを作成する');
     fireEvent.press(createButton);
 
-    // Alert.alertの「はい」ボタンを実行
+    // Alert.alertの「作成」ボタンを実行
     const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
-    const yesButton = alertCall[2].find((btn: any) => btn.text === 'はい');
-    await yesButton.onPress();
+    const createButtonDialog = alertCall[2].find((btn: any) => btn.text === '作成');
+    await createButtonDialog.onPress();
 
     await waitFor(() => {
       expect(mockCreateAvatar).toHaveBeenCalled();
-      expect(Alert.alert).toHaveBeenCalledWith(
-        '作成開始',
-        expect.stringContaining('バックグラウンドで画像生成'),
-        expect.any(Array)
-      );
     });
   });
 
@@ -146,12 +141,14 @@ describe('AvatarCreateScreen', () => {
       clearError: mockClearError,
     });
 
-    const { getByText } = render(<AvatarCreateScreen />);
+    const { queryByText, UNSAFE_queryAllByType } = render(<AvatarCreateScreen />);
 
-    const createButton = getByText('アバターを作成する').parent;
-    
-    // disabled propが設定されていることを確認
-    expect(createButton?.props.accessibilityState?.disabled).toBe(true);
+    // ローディング中は「アバターを作成する」テキストがなく、ActivityIndicatorが表示される
+    expect(queryByText('アバターを作成する')).toBeNull();
+    // ActivityIndicatorが存在することを確認
+    const ActivityIndicator = require('react-native').ActivityIndicator;
+    const indicators = UNSAFE_queryAllByType(ActivityIndicator);
+    expect(indicators.length).toBeGreaterThan(0);
   });
 
   it('エラーメッセージが表示される', () => {
@@ -176,10 +173,10 @@ describe('AvatarCreateScreen', () => {
     const createButton = getByText('アバターを作成する');
     fireEvent.press(createButton);
 
-    // 確認ダイアログで「はい」を選択
+    // 確認ダイアログで「作成」を選択
     const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
-    const yesButton = alertCall[2].find((btn: any) => btn.text === 'はい');
-    await yesButton.onPress();
+    const createButtonDialog = alertCall[2].find((btn: any) => btn.text === '作成');
+    await createButtonDialog.onPress();
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(

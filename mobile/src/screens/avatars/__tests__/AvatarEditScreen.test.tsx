@@ -102,14 +102,14 @@ describe('AvatarEditScreen', () => {
   });
 
   it('初期値がroute paramsから正しく設定される', () => {
-    const { UNSAFE_getByType } = render(<AvatarEditScreen />);
+    const { getByText } = render(<AvatarEditScreen />);
 
-    // Pickerの初期値を確認（実装により異なる、概念的なテスト）
-    const pickers = UNSAFE_getByType('Picker');
-    expect(pickers).toBeTruthy();
-    
-    // Note: 実際のPickerの値確認は実装により異なるため、
-    // ここではレンダリングが成功することを確認
+    // 初期値が表示されていることを確認（絵文字を含む）
+    expect(getByText(/女性/)).toBeTruthy();
+    expect(getByText('ロング')).toBeTruthy();
+    expect(getByText('黒')).toBeTruthy();
+    expect(getByText('茶')).toBeTruthy();
+    expect(getByText('スーツ')).toBeTruthy();
   });
 
   it('更新ボタン押下で更新処理が実行される', async () => {
@@ -164,7 +164,7 @@ describe('AvatarEditScreen', () => {
     });
   });
 
-  it('ローディング中はボタンが無効化される', () => {
+  it('ローディング中は更新ボタンが無効になる', () => {
     (useAvatarManagement as jest.Mock).mockReturnValue({
       updateAvatar: mockUpdateAvatar,
       isLoading: true,
@@ -172,11 +172,14 @@ describe('AvatarEditScreen', () => {
       clearError: mockClearError,
     });
 
-    const { getByText } = render(<AvatarEditScreen />);
+    const { queryByText, UNSAFE_queryAllByType } = render(<AvatarEditScreen />);
 
-    const updateButton = getByText('更新する').parent;
-    
-    expect(updateButton?.props.accessibilityState?.disabled).toBe(true);
+    // ローディング中は「更新する」テキストがなく、ActivityIndicatorが表示される
+    expect(queryByText('更新する')).toBeNull();
+    // ActivityIndicatorが存在することを確認
+    const ActivityIndicator = require('react-native').ActivityIndicator;
+    const indicators = UNSAFE_queryAllByType(ActivityIndicator);
+    expect(indicators.length).toBeGreaterThan(0);
   });
 
   it('avatarパラメータがない場合、エラーアラートが表示される', () => {

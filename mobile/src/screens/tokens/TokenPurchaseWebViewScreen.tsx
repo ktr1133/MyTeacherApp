@@ -17,6 +17,7 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -39,7 +40,7 @@ const TokenPackageListScreen: React.FC = () => {
   const { theme } = useTheme();
   const { packages, loadPackages, isLoading, error } = useTokens();
   const { width } = useResponsive();
-  const styles = useMemo(() => createStyles(width), [width]);
+  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
 
   // 画面フォーカス時にパッケージを更新
   useEffect(() => {
@@ -169,16 +170,16 @@ const TokenPackageListScreen: React.FC = () => {
 
             {/* トークン量 */}
             <View style={styles.packageInfoRow}>
-              <Text style={styles.packageInfoLabel}>{labels.tokens}:</Text>
               <Text style={styles.packageTokens}>
                 {formatTokens(pkg.token_amount)}
               </Text>
+              <Text style={styles.packageInfoLabel}>{labels.tokens}</Text>
             </View>
 
             {/* 価格 */}
             <View style={styles.packageInfoRow}>
-              <Text style={styles.packageInfoLabel}>{labels.price}:</Text>
               <Text style={styles.packagePrice}>{formatPrice(pkg.price)}</Text>
+              <Text style={styles.priceLabel}>(税込)</Text>
             </View>
 
             {/* 割引率 */}
@@ -191,12 +192,21 @@ const TokenPackageListScreen: React.FC = () => {
             )}
 
             {/* 購入ボタン */}
-            <TouchableOpacity
-              style={styles.purchaseButton}
-              onPress={() => handlePurchase(pkg.id)}
-            >
-              <Text style={styles.purchaseButtonText}>{labels.purchase}</Text>
-            </TouchableOpacity>
+            <View style={styles.purchaseButtonWrapper}>
+              <LinearGradient
+                colors={['#f59e0b', '#d97706']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.purchaseButtonGradient}
+              >
+                <TouchableOpacity
+                  style={styles.purchaseButton}
+                  onPress={() => handlePurchase(pkg.id)}
+                >
+                  <Text style={styles.purchaseButtonText}>{labels.purchase}</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -204,7 +214,7 @@ const TokenPackageListScreen: React.FC = () => {
   );
 };
 
-const createStyles = (width: number) => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f3f4f6',
@@ -223,12 +233,12 @@ const createStyles = (width: number) => StyleSheet.create({
     paddingRight: getSpacing(16, width),
   },
   backButtonText: {
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, theme),
     color: '#3b82f6',
     fontWeight: '600',
   },
   headerTitle: {
-    fontSize: getFontSize(18, width, {}),
+    fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
     color: '#1f2937',
     flex: 1,
@@ -247,53 +257,64 @@ const createStyles = (width: number) => StyleSheet.create({
   },
   errorText: {
     color: '#991b1b',
-    fontSize: getFontSize(14, width, {}),
+    fontSize: getFontSize(14, width, theme),
   },
   emptyContainer: {
     padding: getSpacing(32, width),
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, theme),
     color: '#6b7280',
   },
   packageCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: getBorderRadius(12, width),
-    padding: getSpacing(20, width),
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderRadius: getBorderRadius(20, width),
+    padding: getSpacing(24, width),
     marginBottom: getSpacing(16, width),
-    ...getShadow(3, width),
+    ...getShadow(4),
   },
   packageName: {
-    fontSize: getFontSize(20, width, {}),
+    fontSize: getFontSize(20, width, theme),
     fontWeight: '700',
     color: '#1f2937',
-    marginBottom: getSpacing(8, width),
+    marginBottom: getSpacing(16, width),
+    textAlign: 'center',
   },
   packageDescription: {
-    fontSize: getFontSize(14, width, {}),
+    fontSize: getFontSize(14, width, theme),
     color: '#6b7280',
-    marginBottom: getSpacing(16, width),
+    marginBottom: getSpacing(24, width),
+    textAlign: 'center',
   },
   packageInfoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: getSpacing(12, width),
+    marginBottom: getSpacing(16, width),
   },
   packageInfoLabel: {
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, theme),
     color: '#6b7280',
+    textAlign: 'center',
   },
   packageTokens: {
-    fontSize: getFontSize(24, width, {}),
-    fontWeight: '700',
-    color: '#3b82f6',
+    fontSize: getFontSize(40, width, theme),
+    fontWeight: '900',
+    color: '#f59e0b',
+    textAlign: 'center',
   },
   packagePrice: {
-    fontSize: getFontSize(20, width, {}),
-    fontWeight: '600',
+    fontSize: getFontSize(32, width, theme),
+    fontWeight: '800',
     color: '#1f2937',
+    textAlign: 'center',
+  },
+  priceLabel: {
+    fontSize: getFontSize(14, width, theme),
+    color: '#9ca3af',
+    textAlign: 'center',
+    marginTop: getSpacing(4, width),
   },
   discountBadge: {
     backgroundColor: '#fef3c7',
@@ -304,20 +325,26 @@ const createStyles = (width: number) => StyleSheet.create({
     marginBottom: getSpacing(16, width),
   },
   discountText: {
-    fontSize: getFontSize(14, width, {}),
+    fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#92400e',
   },
+  purchaseButtonWrapper: {
+    marginTop: getSpacing(16, width),
+    borderRadius: getBorderRadius(12, width),
+    overflow: 'hidden',
+  },
+  purchaseButtonGradient: {
+    borderRadius: getBorderRadius(12, width),
+  },
   purchaseButton: {
-    backgroundColor: '#3b82f6',
-    paddingVertical: getSpacing(14, width),
-    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(16, width),
+    paddingHorizontal: getSpacing(24, width),
     alignItems: 'center',
-    marginTop: getSpacing(8, width),
   },
   purchaseButtonText: {
-    fontSize: getFontSize(16, width, {}),
-    fontWeight: '600',
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: '700',
     color: '#ffffff',
   },
 });

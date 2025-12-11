@@ -27,6 +27,7 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -506,20 +507,27 @@ export const AvatarEditScreen: React.FC = () => {
         {/* 更新ボタン */}
         <TouchableOpacity
           style={[
-            styles.button,
-            isChild && styles.childButton,
+            styles.buttonWrapper,
             isLoading && styles.buttonDisabled,
           ]}
           onPress={handleUpdate}
           disabled={isLoading}
+          activeOpacity={0.8}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={[styles.buttonText, isChild && styles.childButtonText]}>
-              {isChild ? 'こうしんする' : '更新する'}
-            </Text>
-          )}
+          <LinearGradient
+            colors={['#EC4899', '#9333EA']} // pink-500 → purple-600
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.button, isChild && styles.childButton]}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={[styles.buttonText, isChild && styles.childButtonText]}>
+                {isChild ? 'こうしんする' : '更新する'}
+              </Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         <View style={styles.footer} />
@@ -682,18 +690,20 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontSize: getFontSize(14, width, theme),
     textAlign: 'center',
   },
-  button: {
-    backgroundColor: '#8B5CF6',
+  buttonWrapper: {
     borderRadius: getBorderRadius(12, width),
-    padding: getSpacing(16, width),
-    alignItems: 'center',
+    overflow: 'hidden',
     marginBottom: getSpacing(16, width),
   },
+  button: {
+    padding: getSpacing(16, width),
+    alignItems: 'center',
+  },
   childButton: {
-    backgroundColor: '#FF6B35',
+    // Child theme uses same gradient
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    opacity: 0.5,
   },
   buttonText: {
     color: '#fff',

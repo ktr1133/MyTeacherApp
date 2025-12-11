@@ -131,10 +131,10 @@ describe('TaskDetailScreen - Web版スタイル統一', () => {
    * テスト1: タスク情報が正しく表示される
    */
   it('タスク情報が正しく表示される', async () => {
-    const { getByText } = renderWithProviders(<TaskDetailScreen />);
+    const { getAllByText, getByText } = renderWithProviders(<TaskDetailScreen />);
 
     await waitFor(() => {
-      expect(getByText('テストタスク')).toBeTruthy();
+      expect(getAllByText('テストタスク')[0]).toBeTruthy();
       expect(getByText('タスクの説明文')).toBeTruthy();
       expect(getByText(/100/)).toBeTruthy(); // 報酬
       expect(getByText(/2025-12-15/)).toBeTruthy(); // 期限
@@ -244,11 +244,11 @@ describe('TaskDetailScreen - Web版スタイル統一', () => {
    * 注: ThemeContextのモックが複雑なため、アダルトテーマの文言で検証
    */
   it('子供テーマでは文言が変化する', async () => {
-    const { getByText } = renderWithProviders(<TaskDetailScreen />, 'child');
+    const { getAllByText, getByText } = renderWithProviders(<TaskDetailScreen />, 'child');
 
     await waitFor(() => {
       // テーマに関わらず表示される基本要素を確認
-      expect(getByText('テストタスク')).toBeTruthy();
+      expect(getAllByText('テストタスク')[0]).toBeTruthy();
       expect(getByText(/報酬|ほうび/)).toBeTruthy();
     });
   });

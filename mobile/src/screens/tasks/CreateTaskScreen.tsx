@@ -18,6 +18,8 @@ import {
   Switch,
   Platform,
 } from 'react-native';
+import MaskedView from '@react-native-masked-view/masked-view';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTasks } from '../../hooks/useTasks';
@@ -400,6 +402,11 @@ export default function CreateTaskScreen() {
     }
   }, [error, theme, clearError]);
 
+  // ヘッダーグラデーションカラー（グループタスク判定）
+  const headerGradientColors = isGroupTask
+    ? (['#9333ea', '#ec4899'] as const) // purple-600 → pink-600
+    : (['#59B9C6', '#3b82f6'] as const); // プライマリ → blue-600
+
   return (
     <View style={styles.container}>
       {/* ヘッダー */}
@@ -407,9 +414,38 @@ export default function CreateTaskScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {theme === 'child' ? 'やることをつくる' : 'タスク作成'}
-        </Text>
+        
+        {/* ヘッダーアイコン背景 + タイトルグラデーション */}
+        <View style={styles.headerCenter}>
+          <LinearGradient
+            colors={headerGradientColors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.headerIconBackground}
+          >
+            <Text style={styles.headerIcon}>✚</Text>
+          </LinearGradient>
+          
+          <MaskedView
+            maskElement={
+              <Text style={styles.headerTitle}>
+                {theme === 'child' ? 'やることをつくる' : 'タスク作成'}
+              </Text>
+            }
+          >
+            <LinearGradient
+              colors={headerGradientColors}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flex: 1 }}
+            >
+              <Text style={[styles.headerTitle, { opacity: 0 }]}>
+                {theme === 'child' ? 'やることをつくる' : 'タスク作成'}
+              </Text>
+            </LinearGradient>
+          </MaskedView>
+        </View>
+        
         <View style={styles.headerSpacer} />
       </View>
 
@@ -703,42 +739,58 @@ export default function CreateTaskScreen() {
         {/* スイッチ類（グループタスクのみ） */}
         {isGroupTask && (
           <>
+            {/* 承認必須カード（アンバーグラデーション） */}
             <View style={styles.fieldContainer}>
-              <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>
-                  {theme === 'child' ? 'かくにんがひつよう' : '承認が必要'}
+              <LinearGradient
+                colors={['#fef3c7', '#fed7aa']} // from-amber-50 to-orange-50
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.switchCard}
+              >
+                <View style={styles.switchRow}>
+                  <Text style={styles.switchLabel}>
+                    {theme === 'child' ? 'かくにんがひつよう' : '承認が必要'}
+                  </Text>
+                  <Switch
+                    value={requiresApproval}
+                    onValueChange={setRequiresApproval}
+                    trackColor={{ false: '#D1D5DB', true: '#FCD34D' }}
+                    thumbColor={requiresApproval ? '#F59E0B' : '#F3F4F6'}
+                  />
+                </View>
+                <Text style={styles.helpText}>
+                  {theme === 'child'
+                    ? 'できたらおとなにみせてね'
+                    : '完了時に親が承認する必要があります'}
                 </Text>
-                <Switch
-                  value={requiresApproval}
-                  onValueChange={setRequiresApproval}
-                  trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
-                  thumbColor={requiresApproval ? '#4F46E5' : '#F3F4F6'}
-                />
-              </View>
-              <Text style={styles.helpText}>
-                {theme === 'child'
-                  ? 'できたらおとなにみせてね'
-                  : '完了時に親が承認する必要があります'}
-              </Text>
+              </LinearGradient>
             </View>
 
+            {/* 画像必須カード（パープルグラデーション） */}
             <View style={styles.fieldContainer}>
-              <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>
-                  {theme === 'child' ? 'しゃしんがひつよう' : '画像が必要'}
+              <LinearGradient
+                colors={['#fae8ff', '#fce7f3']} // from-purple-50 to-pink-50
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.switchCard}
+              >
+                <View style={styles.switchRow}>
+                  <Text style={styles.switchLabel}>
+                    {theme === 'child' ? 'しゃしんがひつよう' : '画像が必要'}
+                  </Text>
+                  <Switch
+                    value={requiresImage}
+                    onValueChange={setRequiresImage}
+                    trackColor={{ false: '#D1D5DB', true: '#C084FC' }}
+                    thumbColor={requiresImage ? '#9333EA' : '#F3F4F6'}
+                  />
+                </View>
+                <Text style={styles.helpText}>
+                  {theme === 'child'
+                    ? 'できたらしゃしんをとってね'
+                    : '完了時に写真の添付が必要です'}
                 </Text>
-                <Switch
-                  value={requiresImage}
-                  onValueChange={setRequiresImage}
-                  trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
-                  thumbColor={requiresImage ? '#4F46E5' : '#F3F4F6'}
-                />
-              </View>
-              <Text style={styles.helpText}>
-                {theme === 'child'
-                  ? 'できたらしゃしんをとってね'
-                  : '完了時に写真の添付が必要です'}
-              </Text>
+              </LinearGradient>
             </View>
           </>
         )}
@@ -873,30 +925,44 @@ export default function CreateTaskScreen() {
         )}
 
         {/* AIタスク分解ボタン */}
-        <TouchableOpacity
-          style={[styles.decomposeButton]}
-          onPress={handleDecompose}
-          disabled={isLoading}
+        <LinearGradient
+          colors={['#59B9C6', '#3b82f6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.decomposeButton, isLoading && styles.decomposeButtonDisabled]}
         >
-          <Text style={styles.decomposeButtonText}>
-            🤖 {theme === 'child' ? 'AIでこまかくする' : 'AIでタスク分解'}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleDecompose}
+            disabled={isLoading}
+            style={styles.buttonTouchable}
+          >
+            <Text style={styles.decomposeButtonText}>
+              🤖 {theme === 'child' ? 'AIでこまかくする' : 'AIでタスク分解'}
+            </Text>
+          </TouchableOpacity>
+        </LinearGradient>
 
         {/* 作成ボタン */}
-        <TouchableOpacity
+        <LinearGradient
+          colors={['#59B9C6', '#3b82f6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
           style={[styles.createButton, isLoading && styles.createButtonDisabled]}
-          onPress={handleCreate}
-          disabled={isLoading}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.createButtonText}>
-              {theme === 'child' ? 'つくる' : '作成する'}
-            </Text>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleCreate}
+            disabled={isLoading}
+            style={styles.buttonTouchable}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.createButtonText}>
+                {theme === 'child' ? 'つくる' : '作成する'}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </LinearGradient>
       </ScrollView>
 
       {/* アバターウィジェット */}
@@ -933,7 +999,25 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   backButtonText: {
     fontSize: getFontSize(24, width, theme),
-    color: '#4F46E5',
+    color: '#59B9C6',
+  },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: getSpacing(8, width),
+  },
+  headerIconBackground: {
+    width: getSpacing(32, width),
+    height: getSpacing(32, width),
+    borderRadius: getBorderRadius(10, width),
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...getShadow(3),
+  },
+  headerIcon: {
+    fontSize: getFontSize(16, width, theme),
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   headerTitle: {
     fontSize: getFontSize(18, width, theme),
@@ -1051,8 +1135,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderColor: '#E5E7EB',
   },
   tagChipSelected: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
+    backgroundColor: '#59B9C6',
+    borderColor: '#59B9C6',
   },
   tagChipText: {
     fontSize: getFontSize(12, width, theme),
@@ -1149,35 +1233,46 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  switchCard: {
+    padding: getSpacing(12, width),
+    borderRadius: getBorderRadius(12, width),
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
   switchLabel: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     color: '#374151',
   },
-  decomposeButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#4F46E5',
-    borderRadius: getBorderRadius(8, width),
-    paddingVertical: getSpacing(14, width),
+  buttonTouchable: {
+    width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: getSpacing(14, width),
+  },
+  decomposeButton: {
+    borderRadius: getBorderRadius(8, width),
     marginTop: getSpacing(8, width),
+    overflow: 'hidden',
+    ...getShadow(4),
+  },
+  decomposeButtonDisabled: {
+    opacity: 0.5,
   },
   decomposeButtonText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#4F46E5',
+    color: '#FFFFFF',
   },
   createButton: {
-    backgroundColor: '#4F46E5',
     borderRadius: getBorderRadius(8, width),
-    paddingVertical: getSpacing(14, width),
-    alignItems: 'center',
     marginTop: getSpacing(12, width),
     marginBottom: getSpacing(40, width),
+    overflow: 'hidden',
+    ...getShadow(4),
   },
   createButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    opacity: 0.5,
   },
   createButtonText: {
     fontSize: getFontSize(16, width, theme),

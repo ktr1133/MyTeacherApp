@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   TextInput,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNotifications } from '../../hooks/useNotifications';
 import { Notification, getNotificationTypeLabel } from '../../types/notification.types';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -269,22 +270,33 @@ export default function NotificationListScreen() {
             {theme === 'child' ? 'おしらせ' : 'お知らせ'}
           </Text>
           {unreadCount > 0 && (
-            <View style={styles.unreadBadge}>
+            <LinearGradient
+              colors={['#59B9C6', '#3b82f6']} // cyan系 → blue系
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.unreadBadge}
+            >
               <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-            </View>
+            </LinearGradient>
           )}
         </View>
 
         {/* すべて既読ボタン */}
         {unreadCount > 0 && (
           <TouchableOpacity
-            style={styles.markAllReadButton}
             onPress={handleMarkAllAsRead}
             accessibilityLabel="すべて既読にする"
           >
-            <Text style={styles.markAllReadButtonText}>
-              {theme === 'child' ? 'すべてよんだ' : 'すべて既読'}
-            </Text>
+            <LinearGradient
+              colors={['#59B9C6', '#3b82f6']} // cyan系 → blue系
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.markAllReadButton}
+            >
+              <Text style={styles.markAllReadButtonText}>
+                {theme === 'child' ? 'すべてよんだ' : 'すべて既読'}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         )}
       </View>
@@ -389,12 +401,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     color: '#1F2937',
   },
   unreadBadge: {
-    backgroundColor: '#59B9C6',
     borderRadius: getBorderRadius(12, width),
     paddingHorizontal: getSpacing(8, width),
     paddingVertical: getSpacing(2, width),
     minWidth: getSpacing(24, width),
     alignItems: 'center',
+    overflow: 'hidden', // LinearGradient用
   },
   unreadBadgeText: {
     color: '#FFFFFF',
@@ -402,10 +414,10 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontWeight: 'bold',
   },
   markAllReadButton: {
-    backgroundColor: '#59B9C6',
     borderRadius: getBorderRadius(8, width),
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(8, width),
+    overflow: 'hidden', // LinearGradient用
   },
   markAllReadButtonText: {
     color: '#FFFFFF',

@@ -26,6 +26,7 @@ import { PerformanceChart } from '../../components/charts/PerformanceChart';
 import { PeriodType, TaskType } from '../../types/performance.types';
 import { useAvatarContext } from '../../contexts/AvatarContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function PerformanceScreen() {
   const navigation = useNavigation();
@@ -220,9 +221,18 @@ export default function PerformanceScreen() {
         <View style={styles.errorContainer}>
           <MaterialIcons name="error-outline" size={48} color="#ef4444" />
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={refresh}>
-            <Text style={styles.retryButtonText}>再試行</Text>
-          </TouchableOpacity>
+          <View style={styles.retryButtonWrapper}>
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.retryButtonGradient}
+            >
+              <TouchableOpacity style={styles.retryButton} onPress={refresh}>
+                <Text style={styles.retryButtonText}>再試行</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -240,13 +250,22 @@ export default function PerformanceScreen() {
         {/* ヘッダー */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>実績</Text>
-          <TouchableOpacity
-            style={styles.monthlyReportButton}
-            onPress={goToMonthlyReport}
-          >
-            <MaterialIcons name="description" size={20} color="#fff" />
-            <Text style={styles.monthlyReportButtonText}>月次レポート</Text>
-          </TouchableOpacity>
+          <View style={styles.monthlyReportButtonWrapper}>
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.monthlyReportButtonGradient}
+            >
+              <TouchableOpacity
+                style={styles.monthlyReportButton}
+                onPress={goToMonthlyReport}
+              >
+                <MaterialIcons name="description" size={20} color="#fff" />
+                <Text style={styles.monthlyReportButtonText}>月次レポート</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
         </View>
 
         {/* 期間選択タブ */}
@@ -579,17 +598,22 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     color: '#ef4444',
     textAlign: 'center',
   },
-  retryButton: {
+  retryButtonWrapper: {
     marginTop: getSpacing(16, width),
+    alignSelf: 'center',
+  },
+  retryButtonGradient: {
+    borderRadius: getBorderRadius(12, width),
+    overflow: 'hidden',
+  },
+  retryButton: {
     paddingHorizontal: getSpacing(24, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#59B9C6',
-    borderRadius: getBorderRadius(8, width),
   },
   retryButtonText: {
     color: '#fff',
     fontSize: getFontSize(16, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   header: {
     flexDirection: 'row',
@@ -606,19 +630,24 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontWeight: '700',
     color: '#1f2937',
   },
+  monthlyReportButtonWrapper: {
+    // Wrapper for gradient
+  },
+  monthlyReportButtonGradient: {
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
   monthlyReportButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(8, width),
-    backgroundColor: '#59B9C6',
-    borderRadius: getBorderRadius(8, width),
     gap: getSpacing(4, width),
   },
   monthlyReportButtonText: {
     color: '#fff',
     fontSize: getFontSize(14, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   tabContainer: {
     flexDirection: 'row',

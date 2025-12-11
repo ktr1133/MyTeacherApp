@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,8 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { notificationService } from '../../services/notification.service';
@@ -33,7 +34,7 @@ type NotificationDetailRouteProp = RouteProp<RootStackParamList, 'NotificationDe
  */
 export default function NotificationDetailScreen() {
   const route = useRoute<NotificationDetailRouteProp>();
-  const { theme, themeType } = useTheme();
+  const { theme } = useTheme();
   const { width } = useResponsive();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [notification, setNotification] = useState<Notification | null>(null);
@@ -129,10 +130,18 @@ export default function NotificationDetailScreen() {
         <Text style={styles.errorIcon}>⚠️</Text>
         <Text style={styles.errorText}>{error || '通知が見つかりません'}</Text>
         <TouchableOpacity
-          style={styles.retryButton}
+          style={styles.retryButtonWrapper}
           onPress={loadNotification}
+          activeOpacity={0.8}
         >
-          <Text style={styles.retryButtonText}>再読み込み</Text>
+          <LinearGradient
+            colors={['#59B9C6', '#3b82f6']} // cyan → blue
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryButtonText}>再読み込み</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     );
@@ -225,11 +234,13 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     textAlign: 'center',
     marginBottom: getSpacing(24, width),
   },
+  retryButtonWrapper: {
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
   retryButton: {
-    backgroundColor: '#59B9C6',
     paddingHorizontal: getSpacing(24, width),
     paddingVertical: getSpacing(12, width),
-    borderRadius: getBorderRadius(8, width),
   },
   retryButtonText: {
     color: '#FFFFFF',

@@ -16,6 +16,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useScheduledTasks } from '../../hooks/useScheduledTasks';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ScheduledTask } from '../../types/scheduled-task.types';
@@ -347,31 +348,49 @@ export default function ScheduledTaskListScreen() {
 
           {isActive ? (
             <TouchableOpacity
-              style={[styles.actionButton, styles.pauseButton]}
               onPress={() => handlePause(item)}
             >
-              <Text style={styles.actionButtonText}>
-                ⏸️ {theme === 'child' ? 'とめる' : '一時停止'}
-              </Text>
+              <LinearGradient
+                colors={['#fef3c7', '#fde68a']} // yellow-100 → yellow-200
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.actionButton, styles.pauseButton]}
+              >
+                <Text style={styles.actionButtonText}>
+                  ⏸️ {theme === 'child' ? 'とめる' : '一時停止'}
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              style={[styles.actionButton, styles.resumeButton]}
               onPress={() => handleResume(item)}
             >
-              <Text style={styles.actionButtonText}>
-                ▶️ {theme === 'child' ? 'うごかす' : '再開'}
-              </Text>
+              <LinearGradient
+                colors={['#d1fae5', '#a7f3d0']} // green-100 → green-200
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.actionButton, styles.resumeButton]}
+              >
+                <Text style={styles.actionButtonText}>
+                  ▶️ {theme === 'child' ? 'うごかす' : '再開'}
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity
-            style={[styles.actionButton, styles.deleteButton]}
             onPress={() => handleDelete(item)}
           >
-            <Text style={styles.actionButtonText}>
-              🗑️ {theme === 'child' ? 'けす' : '削除'}
-            </Text>
+            <LinearGradient
+              colors={['#fee2e2', '#fecaca']} // red-100 → red-200
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.actionButton, styles.deleteButton]}
+            >
+              <Text style={styles.actionButtonText}>
+                🗑️ {theme === 'child' ? 'けす' : '削除'}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -388,10 +407,17 @@ export default function ScheduledTaskListScreen() {
           {theme === 'child' ? 'エラーがおきたよ' : 'エラーが発生しました'}
         </Text>
         <Text style={styles.errorMessage}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={loadScheduledTasks}>
-          <Text style={styles.retryButtonText}>
-            {theme === 'child' ? 'もういちど' : '再試行'}
-          </Text>
+        <TouchableOpacity onPress={loadScheduledTasks}>
+          <LinearGradient
+            colors={['#4f46e5', '#2563eb']} // indigo-600 → blue-600
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryButtonText}>
+              {theme === 'child' ? 'もういちど' : '再試行'}
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     );
@@ -432,10 +458,17 @@ export default function ScheduledTaskListScreen() {
               ? 'ていきてきにじどうでタスクをつくれるよ'
               : '定期的に自動実行するタスクを設定できます。'}
           </Text>
-          <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
-            <Text style={styles.createButtonText}>
-              ➕ {theme === 'child' ? 'つくる' : 'スケジュールを作成'}
-            </Text>
+          <TouchableOpacity onPress={handleCreate}>
+            <LinearGradient
+              colors={['#4f46e5', '#2563eb']} // indigo-600 → blue-600
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.createButton}
+            >
+              <Text style={styles.createButtonText}>
+                ➥ {theme === 'child' ? 'つくる' : 'スケジュールを作成'}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -466,10 +499,17 @@ export default function ScheduledTaskListScreen() {
           </View>
         }
         ListFooterComponent={
-          <TouchableOpacity style={styles.createButtonBottom} onPress={handleCreate}>
-            <Text style={styles.createButtonText}>
-              ➕ {theme === 'child' ? 'あたらしくつくる' : '新規作成'}
-            </Text>
+          <TouchableOpacity onPress={handleCreate}>
+            <LinearGradient
+              colors={['#4f46e5', '#2563eb']} // indigo-600 → blue-600
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.createButtonBottom}
+            >
+              <Text style={styles.createButtonText}>
+                ➥ {theme === 'child' ? 'あたらしくつくる' : '新規作成'}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         }
       />
@@ -599,17 +639,20 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingVertical: getSpacing(8, width),
     paddingHorizontal: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#F3F4F6',
     marginHorizontal: getSpacing(4, width),
+    overflow: 'hidden', // LinearGradient用
   },
   pauseButton: {
-    backgroundColor: '#FEF3C7',
+    // LinearGradientで背景色設定のためコメントアウト
+    // backgroundColor: '#FEF3C7',
   },
   resumeButton: {
-    backgroundColor: '#D1FAE5',
+    // LinearGradientで背景色設定のためコメントアウト
+    // backgroundColor: '#D1FAE5',
   },
   deleteButton: {
-    backgroundColor: '#FEE2E2',
+    // LinearGradientで背景色設定のためコメントアウト
+    // backgroundColor: '#FEE2E2',
   },
   actionButtonText: {
     fontSize: getFontSize(12, width, theme),
@@ -641,17 +684,17 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     lineHeight: getFontSize(20, width, theme),
   },
   createButton: {
-    backgroundColor: '#3B82F6',
     paddingHorizontal: getSpacing(24, width),
     paddingVertical: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden', // LinearGradient用
   },
   createButtonBottom: {
-    backgroundColor: '#3B82F6',
     paddingVertical: getSpacing(16, width),
     borderRadius: getBorderRadius(8, width),
     marginTop: getSpacing(16, width),
     marginBottom: getSpacing(32, width),
+    overflow: 'hidden', // LinearGradient用
   },
   createButtonText: {
     color: '#FFFFFF',
@@ -673,10 +716,10 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(16, width),
   },
   retryButton: {
-    backgroundColor: '#3B82F6',
     paddingHorizontal: getSpacing(24, width),
     paddingVertical: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden', // LinearGradient用
   },
   retryButtonText: {
     color: '#FFFFFF',

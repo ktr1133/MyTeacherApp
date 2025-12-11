@@ -31,6 +31,7 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -510,31 +511,55 @@ export const AvatarManageScreen: React.FC = () => {
         {/* アクションボタン */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={[styles.button, styles.buttonPrimary, isChild && styles.childButton]}
+            style={styles.buttonWrapper}
             onPress={handleEdit}
+            activeOpacity={0.8}
           >
-            <Text style={[styles.buttonText, isChild && styles.childButtonText]}>
-              {isChild ? 'へんしゅう' : '編集する'}
-            </Text>
+            <LinearGradient
+              colors={['#EC4899', '#9333EA']} // pink-500 → purple-600
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.button, isChild && styles.childButton]}
+            >
+              <Text style={[styles.buttonText, isChild && styles.childButtonText]}>
+                {isChild ? 'へんしゅう' : '編集する'}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.buttonSecondary, isChild && styles.childButton]}
+            style={styles.buttonWrapper}
             onPress={handleRegenerate}
             disabled={avatar.generation_status !== 'completed'}
+            activeOpacity={0.8}
           >
-            <Text style={[styles.buttonText, isChild && styles.childButtonText]}>
-              {isChild ? 'えをつくりなおす' : '画像を再生成'}
-            </Text>
+            <LinearGradient
+              colors={['#4B5563', '#6B7280']} // gray-600 → gray-500
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.button, styles.buttonSecondary, isChild && styles.childButton]}
+            >
+              <Text style={[styles.buttonText, isChild && styles.childButtonText]}>
+                {isChild ? 'えをつくりなおす' : '画像を再生成'}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.buttonDanger]}
+            style={styles.buttonWrapper}
             onPress={handleDelete}
+            activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>
-              {isChild ? 'けす' : '削除する'}
-            </Text>
+            <LinearGradient
+              colors={['#DC2626', '#991B1B']} // red-600 → red-800
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.button, styles.buttonDanger]}
+            >
+              <Text style={styles.buttonText}>
+                {isChild ? 'けす' : '削除する'}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
@@ -791,23 +816,26 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   buttonContainer: {
     marginTop: getSpacing(8, width),
   },
-  button: {
+  buttonWrapper: {
     borderRadius: getBorderRadius(12, width),
-    padding: getSpacing(16, width),
-    alignItems: 'center',
+    overflow: 'hidden',
     marginBottom: getSpacing(12, width),
   },
+  button: {
+    padding: getSpacing(16, width),
+    alignItems: 'center',
+  },
   buttonPrimary: {
-    backgroundColor: '#8B5CF6',
+    // Removed backgroundColor (LinearGradient)
   },
   buttonSecondary: {
-    backgroundColor: '#6B7280',
+    // Removed backgroundColor (LinearGradient)
   },
   buttonDanger: {
-    backgroundColor: '#DC2626',
+    // Removed backgroundColor (LinearGradient)
   },
   childButton: {
-    backgroundColor: '#FF6B35',
+    // Child theme uses same gradient
   },
   buttonText: {
     color: '#fff',

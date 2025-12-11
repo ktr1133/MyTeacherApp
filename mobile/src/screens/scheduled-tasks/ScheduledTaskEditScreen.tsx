@@ -17,6 +17,7 @@ import {
   Switch,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -530,10 +531,17 @@ export default function ScheduledTaskEditScreen() {
 
         {schedules.map((schedule, index) => renderScheduleCard(schedule, index))}
 
-        <TouchableOpacity style={styles.addScheduleButton} onPress={handleAddSchedule}>
-          <Text style={styles.addScheduleButtonText}>
-            ➕ {theme === 'child' ? 'スケジュールをふやす' : 'スケジュールを追加'}
-          </Text>
+        <TouchableOpacity style={styles.addScheduleButtonWrapper} onPress={handleAddSchedule} activeOpacity={0.8}>
+          <LinearGradient
+            colors={['#DBEAFE', '#BFDBFE']} // blue-100 → blue-200
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.addScheduleButton}
+          >
+            <Text style={styles.addScheduleButtonText}>
+              ➕ {theme === 'child' ? 'スケジュールをふやす' : 'スケジュールを追加'}
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
 
@@ -662,10 +670,17 @@ export default function ScheduledTaskEditScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleUpdate}>
-          <Text style={styles.submitButtonText}>
-            {theme === 'child' ? 'こうしん' : '更新'}
-          </Text>
+        <TouchableOpacity style={styles.submitButtonWrapper} onPress={handleUpdate} activeOpacity={0.8}>
+          <LinearGradient
+            colors={['#2563EB', '#4F46E5']} // blue-600 → indigo-600
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.submitButton}
+          >
+            <Text style={styles.submitButtonText}>
+              {theme === 'child' ? 'こうしん' : '更新'}
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -861,11 +876,13 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontSize: getFontSize(12, width, theme),
     color: '#991B1B',
   },
+  addScheduleButtonWrapper: {
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
   addScheduleButton: {
     paddingVertical: getSpacing(12, width),
     paddingHorizontal: getSpacing(16, width),
-    borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#DBEAFE',
     alignItems: 'center',
   },
   addScheduleButtonText: {
@@ -939,12 +956,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     color: '#374151',
     fontWeight: 'bold',
   },
-  submitButton: {
+  submitButtonWrapper: {
     flex: 1,
-    paddingVertical: getSpacing(14, width),
-    borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#3B82F6',
     marginLeft: getSpacing(8, width),
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
+  submitButton: {
+    paddingVertical: getSpacing(14, width),
     alignItems: 'center',
   },
   submitButtonText: {

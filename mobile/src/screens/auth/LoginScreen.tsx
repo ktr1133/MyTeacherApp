@@ -1,7 +1,7 @@
 /**
  * ログイン画面
  */
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAvatar } from '../../hooks/useAvatar';
@@ -106,17 +107,26 @@ export default function LoginScreen({ navigation }: any) {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" testID="loading-indicator" />
-            ) : (
-              <Text style={styles.buttonText}>ログイン</Text>
-            )}
-          </TouchableOpacity>
+          <View style={styles.buttonWrapper}>
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.buttonGradient}
+            >
+              <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" testID="loading-indicator" />
+                ) : (
+                  <Text style={styles.buttonText}>ログイン</Text>
+                )}
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
 
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>アカウントをお持ちでないですか？</Text>
@@ -199,20 +209,25 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontSize: getFontSize(14, width, theme),
     textAlign: 'center',
   },
+  buttonWrapper: {
+    marginTop: getSpacing(8, width),
+    borderRadius: getBorderRadius(12, width),
+    overflow: 'hidden',
+  },
+  buttonGradient: {
+    borderRadius: getBorderRadius(12, width),
+  },
   button: {
-    backgroundColor: '#3b82f6',
-    borderRadius: getBorderRadius(8, width),
     padding: getSpacing(16, width),
     alignItems: 'center',
-    marginTop: getSpacing(8, width),
   },
   buttonDisabled: {
-    backgroundColor: '#9ca3af',
+    opacity: 0.5,
   },
   buttonText: {
     color: '#fff',
     fontSize: getFontSize(16, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   registerContainer: {
     flexDirection: 'row',

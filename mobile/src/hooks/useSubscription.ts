@@ -11,6 +11,7 @@ import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
 import * as SubscriptionService from '../services/subscription.service';
 import { getErrorMessage } from '../utils/errorMessages';
+import { useTheme } from '../contexts/ThemeContext';
 import type {
   SubscriptionPlan,
   CurrentSubscription,
@@ -67,6 +68,8 @@ export interface UseSubscriptionReturn {
  * ```
  */
 export const useSubscription = (): UseSubscriptionReturn => {
+  const { theme } = useTheme();
+  
   // サブスクリプションプラン一覧
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   
@@ -104,7 +107,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
       setAdditionalMemberPrice(data.additionalMemberPrice);
       setCurrentPlan(data.currentPlan);
     } catch (err: any) {
-      const errorMessage = getErrorMessage(err);
+      const errorMessage = getErrorMessage(err, theme);
       setError(errorMessage);
       console.error('[useSubscription] loadPlans error:', err);
       Alert.alert('エラー', errorMessage);
@@ -127,7 +130,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
       const data = await SubscriptionService.getCurrentSubscription();
       setCurrentSubscription(data);
     } catch (err: any) {
-      const errorMessage = getErrorMessage(err);
+      const errorMessage = getErrorMessage(err, theme);
       setError(errorMessage);
       console.error('[useSubscription] loadCurrentSubscription error:', err);
       // 未加入の場合はエラーを表示しない
@@ -153,7 +156,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
       const data = await SubscriptionService.getInvoices();
       setInvoices(data);
     } catch (err: any) {
-      const errorMessage = getErrorMessage(err);
+      const errorMessage = getErrorMessage(err, theme);
       setError(errorMessage);
       console.error('[useSubscription] loadInvoices error:', err);
       // 未加入の場合はエラーを表示しない
@@ -186,7 +189,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
       const data = await SubscriptionService.createCheckoutSession(plan, additionalMembers);
       return data;
     } catch (err: any) {
-      const errorMessage = getErrorMessage(err);
+      const errorMessage = getErrorMessage(err, theme);
       setError(errorMessage);
       console.error('[useSubscription] createCheckout error:', err);
       Alert.alert('エラー', errorMessage);
@@ -220,7 +223,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
       
       Alert.alert('成功', 'プランを変更しました。');
     } catch (err: any) {
-      const errorMessage = getErrorMessage(err);
+      const errorMessage = getErrorMessage(err, theme);
       setError(errorMessage);
       console.error('[useSubscription] updatePlan error:', err);
       Alert.alert('エラー', errorMessage);
@@ -249,7 +252,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
       
       Alert.alert('成功', 'サブスクリプションをキャンセルしました。期間終了時に解約されます。');
     } catch (err: any) {
-      const errorMessage = getErrorMessage(err);
+      const errorMessage = getErrorMessage(err, theme);
       setError(errorMessage);
       console.error('[useSubscription] cancel error:', err);
       Alert.alert('エラー', errorMessage);
@@ -275,7 +278,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
       const data = await SubscriptionService.getBillingPortalUrl();
       return data;
     } catch (err: any) {
-      const errorMessage = getErrorMessage(err);
+      const errorMessage = getErrorMessage(err, theme);
       setError(errorMessage);
       console.error('[useSubscription] getBillingPortal error:', err);
       Alert.alert('エラー', errorMessage);

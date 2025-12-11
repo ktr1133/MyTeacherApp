@@ -31,6 +31,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import useProfile from '../../hooks/useProfile';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 /**
  * パスワード変更画面コンポーネント
@@ -320,23 +321,31 @@ const PasswordChangeScreen: React.FC = () => {
         </View>
 
         {/* 保存ボタン */}
-        <TouchableOpacity
-          style={[
-            styles.submitButton,
-            { backgroundColor: colors.primary },
-            isLoading && styles.submitButtonDisabled,
-          ]}
-          onPress={handleSubmit}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.submitButtonText}>
-              {theme === 'child' ? 'ほぞん' : '保存'}
-            </Text>
-          )}
-        </TouchableOpacity>
+        <View style={styles.submitButtonWrapper}>
+          <LinearGradient
+            colors={['#3B82F6', '#2563EB']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.submitButtonGradient}
+          >
+            <TouchableOpacity
+              style={[
+                styles.submitButton,
+                isLoading && styles.submitButtonDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>
+                  {theme === 'child' ? 'ほぞん' : '保存'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
 
         {/* キャンセルボタン */}
         <TouchableOpacity
@@ -404,20 +413,25 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontSize: getFontSize(12, width, theme),
     marginTop: getSpacing(4, width),
   },
-  submitButton: {
-    height: getSpacing(48, width),
-    borderRadius: getBorderRadius(8, width),
-    justifyContent: 'center',
-    alignItems: 'center',
+  submitButtonWrapper: {
     marginTop: getSpacing(8, width),
   },
+  submitButtonGradient: {
+    borderRadius: getBorderRadius(12, width),
+    overflow: 'hidden',
+  },
+  submitButton: {
+    height: getSpacing(48, width),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   submitButtonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   submitButtonText: {
     color: '#FFFFFF',
     fontSize: getFontSize(16, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   cancelButton: {
     height: getSpacing(48, width),

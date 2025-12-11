@@ -13,6 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAvatarContext } from '../contexts/AvatarContext';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import AvatarWidget from '../components/common/AvatarWidget';
+import { navigationRef } from '../utils/navigationRef';
 
 // 認証画面インポート
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -43,7 +44,7 @@ export default function AppNavigator() {
   // 未認証時のナビゲーション
   if (!isAuthenticated) {
     return (
-      <NavigationContainer key="guest">
+      <NavigationContainer ref={navigationRef} key="guest">
         <Stack.Navigator>
           <Stack.Screen
             name="Login"
@@ -67,7 +68,7 @@ export default function AppNavigator() {
   // 認証済み時のナビゲーション（Development Build: Drawer navigation使用）
   return (
     <>
-      <NavigationContainer key="authenticated">
+      <NavigationContainer ref={navigationRef} key="authenticated">
         <DrawerNavigator />
       </NavigationContainer>
       

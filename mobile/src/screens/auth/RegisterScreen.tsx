@@ -1,7 +1,7 @@
 /**
  * 新規登録画面
  */
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
@@ -97,17 +98,26 @@ export default function RegisterScreen({ navigation }: any) {
             editable={!loading}
           />
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleRegister}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>登録</Text>
-            )}
-          </TouchableOpacity>
+          <View style={styles.buttonWrapper}>
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.buttonGradient}
+            >
+              <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={handleRegister}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>登録</Text>
+                )}
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
 
           <TouchableOpacity
             style={styles.linkButton}
@@ -155,20 +165,25 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     padding: getSpacing(16, width),
     fontSize: getFontSize(16, width, theme),
   },
+  buttonWrapper: {
+    marginTop: getSpacing(8, width),
+    borderRadius: getBorderRadius(12, width),
+    overflow: 'hidden',
+  },
+  buttonGradient: {
+    borderRadius: getBorderRadius(12, width),
+  },
   button: {
-    backgroundColor: '#3b82f6',
-    borderRadius: getBorderRadius(8, width),
     padding: getSpacing(16, width),
     alignItems: 'center',
-    marginTop: getSpacing(8, width),
   },
   buttonDisabled: {
-    backgroundColor: '#9ca3af',
+    opacity: 0.5,
   },
   buttonText: {
     color: '#fff',
     fontSize: getFontSize(16, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   linkButton: {
     padding: getSpacing(8, width),

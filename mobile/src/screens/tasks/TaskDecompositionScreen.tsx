@@ -14,10 +14,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  RefreshControl,
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -478,19 +478,28 @@ export default function TaskDecompositionScreen() {
         </View>
 
         {/* 実行ボタン */}
-        <TouchableOpacity
-          style={[styles.button, styles.primaryButton, isProposing && styles.buttonDisabled]}
-          onPress={() => handlePropose(false)}
-          disabled={isProposing || !title.trim()}
-        >
-          {isProposing ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>
-              {theme === 'child' ? 'わけてもらう' : 'タスクを分解する'}
-            </Text>
-          )}
-        </TouchableOpacity>
+        <View style={[styles.button, styles.primaryButton, isProposing && styles.buttonDisabled]}>
+          <LinearGradient
+            colors={['#59B9C6', '#3b82f6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ width: '100%', height: '100%', borderRadius: 8 }}
+          >
+            <TouchableOpacity
+              style={styles.primaryButtonTouchable}
+              onPress={() => handlePropose(false)}
+              disabled={isProposing || !title.trim()}
+            >
+              {isProposing ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>
+                  {theme === 'child' ? 'わけてもらう' : 'タスクを分解する'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
 
         {/* キャンセルボタン */}
         <TouchableOpacity
@@ -656,21 +665,30 @@ export default function TaskDecompositionScreen() {
         </View>
 
         {/* 採用ボタン */}
-        <TouchableOpacity
-          style={[styles.button, styles.primaryButton, isProposing && styles.buttonDisabled]}
-          onPress={handleAdopt}
-          disabled={isProposing || selectedTaskIndices.size === 0}
-        >
-          {isProposing ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>
-              {theme === 'child' 
-                ? `${selectedTaskIndices.size}このやることをつくる` 
-                : `${selectedTaskIndices.size}件のタスクを作成`}
-            </Text>
-          )}
-        </TouchableOpacity>
+        <View style={[styles.button, styles.primaryButton, isProposing && styles.buttonDisabled]}>
+          <LinearGradient
+            colors={['#59B9C6', '#3b82f6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ width: '100%', height: '100%', borderRadius: 8 }}
+          >
+            <TouchableOpacity
+              style={styles.primaryButtonTouchable}
+              onPress={handleAdopt}
+              disabled={isProposing || selectedTaskIndices.size === 0}
+            >
+              {isProposing ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>
+                  {theme === 'child' 
+                    ? `${selectedTaskIndices.size}このやることをつくる` 
+                    : `${selectedTaskIndices.size}件のタスクを作成`}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
 
         {/* 再提案ボタン */}
         <TouchableOpacity
@@ -739,19 +757,28 @@ export default function TaskDecompositionScreen() {
         </View>
 
         {/* 再提案ボタン */}
-        <TouchableOpacity
-          style={[styles.button, styles.primaryButton, isProposing && styles.buttonDisabled]}
-          onPress={() => handlePropose(true)}
-          disabled={isProposing || !refinementPoints.trim()}
-        >
-          {isProposing ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>
-              {theme === 'child' ? 'もういちどわけてもらう' : '再提案する'}
-            </Text>
-          )}
-        </TouchableOpacity>
+        <View style={[styles.button, styles.primaryButton, isProposing && styles.buttonDisabled]}>
+          <LinearGradient
+            colors={['#59B9C6', '#3b82f6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ width: '100%', height: '100%', borderRadius: 8 }}
+          >
+            <TouchableOpacity
+              style={styles.primaryButtonTouchable}
+              onPress={() => handlePropose(true)}
+              disabled={isProposing || !refinementPoints.trim()}
+            >
+              {isProposing ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>
+                  {theme === 'child' ? 'もういちどわけてもらう' : '再提案する'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
 
         {/* 戻るボタン */}
         <TouchableOpacity
@@ -863,8 +890,8 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderColor: '#ddd',
   },
   taskCardSelected: {
-    borderColor: '#4CAF50',
-    backgroundColor: '#F1F8F4',
+    borderColor: '#59B9C6',
+    backgroundColor: '#E0F2F7',
   },
   taskCardHeader: {
     flexDirection: 'row',
@@ -875,14 +902,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     width: getSpacing(24, width),
     height: getSpacing(24, width),
     borderWidth: 2,
-    borderColor: '#4CAF50',
+    borderColor: '#59B9C6',
     borderRadius: getBorderRadius(4, width),
     marginRight: getSpacing(12, width),
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    color: '#4CAF50',
+    color: '#59B9C6',
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
   },
@@ -939,8 +966,8 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
   },
   spanButtonActive: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#59B9C6',
+    borderColor: '#59B9C6',
   },
   spanButtonText: {
     fontSize: getFontSize(12, width, theme),
@@ -966,17 +993,23 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   button: {
     borderRadius: getBorderRadius(8, width),
-    padding: getSpacing(16, width),
-    alignItems: 'center',
     marginBottom: getSpacing(12, width),
   },
   primaryButton: {
-    backgroundColor: '#4CAF50',
+    overflow: 'hidden',
+    ...getShadow(2),
+  },
+  primaryButtonTouchable: {
+    padding: getSpacing(16, width),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   secondaryButton: {
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd',
+    padding: getSpacing(16, width),
+    alignItems: 'center',
   },
   buttonDisabled: {
     opacity: 0.5,

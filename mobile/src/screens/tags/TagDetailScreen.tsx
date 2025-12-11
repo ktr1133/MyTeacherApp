@@ -11,7 +11,7 @@
  * @see /home/ktr/mtdev/docs/mobile/mobile-rules.md (モバイル開発規則)
  */
 
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTagTasks } from '../../hooks/useTagTasks';
@@ -37,9 +38,9 @@ type Props = NativeStackScreenProps<RootStackParamList, 'TagDetail'>;
 /**
  * タグ詳細画面コンポーネント
  */
-export const TagDetailScreen: React.FC<Props> = ({ route }) => {
+export const TagDetailScreen = ({ route }: Props) => {
   const { tag } = route.params;
-  const { theme, themeType } = useTheme();
+  const { theme } = useTheme();
   const { width } = useResponsive();
   const {
     linkedTasks,
@@ -160,15 +161,24 @@ export const TagDetailScreen: React.FC<Props> = ({ route }) => {
       <View style={styles.taskInfo}>
         <Text style={styles.taskTitle}>{item.title}</Text>
       </View>
-      <TouchableOpacity
-        style={[styles.actionButton, styles.detachButton]}
-        onPress={() => confirmDetachTask(item.id, item.title)}
-        disabled={detaching}
-      >
-        <Text style={styles.buttonText}>
-          {theme === 'child' ? 'はずす' : '解除'}
-        </Text>
-      </TouchableOpacity>
+      <View style={[styles.actionButton, styles.detachButton]}>
+        <LinearGradient
+          colors={['#EF4444', '#DC2626']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ width: '100%', height: '100%', borderRadius: 6 }}
+        >
+          <TouchableOpacity
+            style={styles.actionButtonTouchable}
+            onPress={() => confirmDetachTask(item.id, item.title)}
+            disabled={detaching}
+          >
+            <Text style={styles.buttonText}>
+              {theme === 'child' ? 'はずす' : '解除'}
+            </Text>
+          </TouchableOpacity>
+        </LinearGradient>
+      </View>
     </View>
   );
 
@@ -180,15 +190,24 @@ export const TagDetailScreen: React.FC<Props> = ({ route }) => {
       <View style={styles.taskInfo}>
         <Text style={styles.taskTitle}>{item.title}</Text>
       </View>
-      <TouchableOpacity
-        style={[styles.actionButton, styles.attachButton]}
-        onPress={() => confirmAttachTask(item.id, item.title)}
-        disabled={attaching}
-      >
-        <Text style={styles.buttonText}>
-          {theme === 'child' ? 'つける' : '追加'}
-        </Text>
-      </TouchableOpacity>
+      <View style={[styles.actionButton, styles.attachButton]}>
+        <LinearGradient
+          colors={['#10B981', '#059669']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ width: '100%', height: '100%', borderRadius: 6 }}
+        >
+          <TouchableOpacity
+            style={styles.actionButtonTouchable}
+            onPress={() => confirmAttachTask(item.id, item.title)}
+            disabled={attaching}
+          >
+            <Text style={styles.buttonText}>
+              {theme === 'child' ? 'つける' : '追加'}
+            </Text>
+          </TouchableOpacity>
+        </LinearGradient>
+      </View>
     </View>
   );
 
@@ -234,9 +253,14 @@ export const TagDetailScreen: React.FC<Props> = ({ route }) => {
       {/* ヘッダー情報 */}
       <View style={[styles.header, { borderLeftColor: tag.color }]}>
         <Text style={styles.tagName}>{tag.name}</Text>
-        <View style={[styles.taskCountBadge, { backgroundColor: tag.color }]}>
+        <LinearGradient
+          colors={['#3B82F6', '#9333EA']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.taskCountBadge}
+        >
           <Text style={styles.taskCountText}>{linkedTasks.length}</Text>
-        </View>
+        </LinearGradient>
       </View>
 
       {/* セクション: 紐づいているタスク */}
@@ -302,7 +326,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...getShadow(3, width),
+    ...getShadow(3),
   },
   tagName: {
     fontSize: getFontSize(20, width, theme),
@@ -356,15 +380,21 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     color: '#1F2937',
   },
   actionButton: {
+    borderRadius: getBorderRadius(6, width),
+    overflow: 'hidden',
+    ...getShadow(2),
+  },
+  actionButtonTouchable: {
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(8, width),
-    borderRadius: getBorderRadius(6, width),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   attachButton: {
-    backgroundColor: '#10B981',
+    // LinearGradient適用のためbackgroundColor削除
   },
   detachButton: {
-    backgroundColor: '#EF4444',
+    // LinearGradient適用のためbackgroundColor削除
   },
   buttonText: {
     color: '#FFFFFF',

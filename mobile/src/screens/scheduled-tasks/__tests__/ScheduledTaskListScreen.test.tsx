@@ -110,7 +110,7 @@ describe('ScheduledTaskListScreen', () => {
 
     expect(screen.getByText('スケジュールタスクなし')).toBeTruthy();
     expect(screen.getByText('定期的に自動実行するタスクを設定できます。')).toBeTruthy();
-    expect(screen.getByText('➕ スケジュールを作成')).toBeTruthy();
+    expect(screen.getByText('➥ スケジュールを作成')).toBeTruthy(); // 絵文字変更: ➕ → ➥
   });
 
   /**

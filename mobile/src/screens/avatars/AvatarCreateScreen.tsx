@@ -23,6 +23,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
@@ -432,20 +433,27 @@ export const AvatarCreateScreen: React.FC = () => {
         {/* 作成ボタン */}
         <TouchableOpacity
           style={[
-            styles.button,
-            isChild && styles.childButton,
+            styles.buttonWrapper,
             isLoading && styles.buttonDisabled,
           ]}
           onPress={handleCreate}
           disabled={isLoading}
+          activeOpacity={0.8}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={[styles.buttonText, isChild && styles.childButtonText]}>
-              {isChild ? 'アバターをつくる' : 'アバターを作成する'}
-            </Text>
-          )}
+          <LinearGradient
+            colors={['#EC4899', '#9333EA']} // pink-500 → purple-600
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.button, isChild && styles.childButton]}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={[styles.buttonText, isChild && styles.childButtonText]}>
+                {isChild ? 'アバターをつくる' : 'アバターを作成する'}
+              </Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         <View style={styles.footer} />
@@ -568,18 +576,20 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontSize: getFontSize(14, width, theme),
     textAlign: 'center',
   },
-  button: {
-    backgroundColor: '#8B5CF6',
+  buttonWrapper: {
     borderRadius: getBorderRadius(12, width),
-    padding: getSpacing(16, width),
-    alignItems: 'center',
+    overflow: 'hidden',
     marginBottom: getSpacing(16, width),
   },
+  button: {
+    padding: getSpacing(16, width),
+    alignItems: 'center',
+  },
   childButton: {
-    backgroundColor: '#FF6B35',
+    // Child theme uses same gradient
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    opacity: 0.5,
   },
   buttonText: {
     color: '#fff',

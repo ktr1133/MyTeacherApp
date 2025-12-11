@@ -382,31 +382,59 @@ export default function TaskDetailScreen() {
       >
         {/* タイトル */}
         <View style={styles.section}>
-          <Text style={styles.title}>{task.title}</Text>
-          <View style={[
-            styles.statusBadge,
-            displayStatus === 'pending' ? styles.statusPending :
-            displayStatus === 'completed' ? styles.statusCompleted :
-            displayStatus === 'approved' ? styles.statusApproved :
-            displayStatus === 'rejected' ? styles.statusRejected :
-            styles.statusPending
-          ]}>
+          {/* グラデーションテキスト */}
+          <MaskedView
+            maskElement={<Text style={styles.titleMask}>{task.title}</Text>}
+            style={{ marginBottom: getSpacing(12, width) }}
+          >
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flex: 1 }}
+            >
+              <Text style={[styles.title, { opacity: 0 }]}>{task.title}</Text>
+            </LinearGradient>
+          </MaskedView>
+
+          {/* ステータスバッジ（グラデーション） */}
+          <LinearGradient
+            colors={
+              displayStatus === 'approved' || displayStatus === 'completed'
+                ? ['#10b981', '#059669']
+                : displayStatus === 'rejected'
+                ? ['#ef4444', '#dc2626']
+                : ['#59B9C6', '#3b82f6']
+            }
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.statusBadge, getShadow(4)]}
+          >
             <Text style={styles.statusText}>{getStatusLabel(displayStatus, theme)}</Text>
-          </View>
+          </LinearGradient>
         </View>
 
         {/* 説明 */}
         {task.description && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>
-              {theme === 'child' ? 'せつめい' : '説明'}
-            </Text>
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionIcon}>📝</Text>
+              <Text style={styles.sectionLabel}>
+                {theme === 'child' ? 'せつめい' : '説明'}
+              </Text>
+            </View>
             <Text style={styles.description}>{task.description}</Text>
           </View>
         )}
 
         {/* 詳細情報 */}
-        <View style={styles.section}>
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>ℹ️</Text>
+            <Text style={styles.sectionLabel}>
+              {theme === 'child' ? 'くわしいこと' : '詳細情報'}
+            </Text>
+          </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>
               {theme === 'child' ? 'ほうび' : '報酬'}:
@@ -459,10 +487,13 @@ export default function TaskDetailScreen() {
 
         {/* 画像一覧 */}
         {task.images.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>
-              {theme === 'child' ? 'しゃしん' : '画像'}
-            </Text>
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionIcon}>🖼️</Text>
+              <Text style={styles.sectionLabel}>
+                {theme === 'child' ? 'しゃしん' : '画像'}
+              </Text>
+            </View>
             <View style={styles.imageGrid}>
               {task.images.map((image) => (
                 <View key={image.id} style={styles.imageContainer}>
@@ -479,12 +510,23 @@ export default function TaskDetailScreen() {
           </View>
         )}
 
-        {/* 画像アップロードボタン */}
-        <TouchableOpacity style={styles.uploadButton} onPress={handleImagePick}>
-          <Text style={styles.uploadButtonText}>
-            {theme === 'child' ? 'しゃしんをつける' : '画像をアップロード'}
-          </Text>
-        </TouchableOpacity>
+        {/* 画像アップロードボタン（グラデーション） */}
+        <LinearGradient
+          colors={['#59B9C6', '#3b82f6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.uploadButton, getShadow(6)]}
+        >
+          <TouchableOpacity
+            style={styles.uploadButtonInner}
+            onPress={handleImagePick}
+          >
+            <Text style={styles.uploadButtonIcon}>📷</Text>
+            <Text style={styles.uploadButtonText}>
+              {theme === 'child' ? 'しゃしんをつける' : '画像をアップロード'}
+            </Text>
+          </TouchableOpacity>
+        </LinearGradient>
 
         {/* アクションボタン */}
         {isPending && (
@@ -492,13 +534,14 @@ export default function TaskDetailScreen() {
             colors={['#59B9C6', '#9333EA']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={[styles.completeButton, getShadow(8)]}
+            style={[styles.completeButton, styles.buttonShadowEnhanced]}
           >
             <TouchableOpacity
               onPress={handleToggleComplete}
               disabled={isLoading || isSubmitting}
               style={styles.completeButtonInner}
             >
+              <Text style={styles.buttonIcon}>✓</Text>
               <Text style={styles.completeButtonText}>
                 {theme === 'child' ? 'できた!' : '完了にする'}
               </Text>
@@ -515,12 +558,13 @@ export default function TaskDetailScreen() {
                   colors={['#59B9C6', '#9333EA']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
-                  style={[styles.approveButton, getShadow(8)]}
+                  style={[styles.approveButton, styles.buttonShadowEnhanced]}
                 >
                   <TouchableOpacity
                     onPress={() => setShowApprovalInput(true)}
                     style={styles.approveButtonInner}
                   >
+                    <Text style={styles.buttonIcon}>✓</Text>
                     <Text style={styles.approveButtonText}>
                       {theme === 'child' ? 'OK!' : '承認'}
                     </Text>
@@ -528,9 +572,10 @@ export default function TaskDetailScreen() {
                 </LinearGradient>
                 
                 <TouchableOpacity
-                  style={[styles.rejectButton, getShadow(8)]}
+                  style={[styles.rejectButton, styles.buttonShadowEnhanced]}
                   onPress={() => setShowRejectInput(true)}
                 >
+                  <Text style={styles.buttonIcon}>✕</Text>
                   <Text style={styles.rejectButtonText}>
                     {theme === 'child' ? 'やりなおし' : '却下'}
                   </Text>
@@ -583,13 +628,14 @@ export default function TaskDetailScreen() {
                     colors={['#59B9C6', '#9333EA']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    style={[styles.submitApproveButton, getShadow(8)]}
+                    style={[styles.submitApproveButton, styles.buttonShadowEnhanced]}
                   >
                     <TouchableOpacity
                       onPress={handleApprove}
                       disabled={isLoading}
                       style={styles.submitApproveButtonInner}
                     >
+                      <Text style={styles.buttonIcon}>✓</Text>
                       <Text style={styles.submitApproveButtonText}>
                         {theme === 'child' ? 'OK!' : '承認'}
                       </Text>
@@ -641,10 +687,11 @@ export default function TaskDetailScreen() {
                   </TouchableOpacity>
                   
                   <TouchableOpacity
-                    style={[styles.submitRejectButton, getShadow(8)]}
+                    style={[styles.submitRejectButton, styles.buttonShadowEnhanced]}
                     onPress={handleReject}
                     disabled={isLoading}
                   >
+                    <Text style={styles.buttonIcon}>✕</Text>
                     <Text style={styles.submitRejectButtonText}>
                       {theme === 'child' ? 'やりなおし' : '却下'}
                     </Text>
@@ -664,11 +711,11 @@ export default function TaskDetailScreen() {
         position="center"
       />
 
-      {/* ローディングオーバーレイ（アバター待機中） */}
+      {/* ローディングオーバーレイ（アバター待機中・blur効果） */}
       {isSubmitting && (
         <View style={styles.loadingOverlay}>
-          <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color="#4F46E5" />
+          <View style={[styles.loadingBox, getShadow(12)]}>
+            <ActivityIndicator size="large" color="#59B9C6" />
             <Text style={styles.loadingText}>処理中</Text>
           </View>
         </View>
@@ -717,11 +764,11 @@ const getStatusLabel = (status: string, theme: 'adult' | 'child'): string => {
 const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme === 'child' ? '#FFFBEB' : '#F9FAFB', // bg-amber-50 : bg-gray-50
   },
   content: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
   contentContainer: {
     padding: getSpacing(16, width),
@@ -729,34 +776,44 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   section: {
     marginBottom: getSpacing(24, width),
   },
+  sectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: getBorderRadius(16, width), // rounded-2xl
+    padding: getSpacing(16, width),
+    marginBottom: getSpacing(16, width),
+    ...getShadow(6),
+    borderWidth: 1,
+    borderColor: 'rgba(89, 185, 198, 0.1)',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: getSpacing(12, width),
+  },
+  sectionIcon: {
+    fontSize: getFontSize(20, width, theme),
+    marginRight: getSpacing(8, width),
+  },
   title: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: getSpacing(12, width),
+  },
+  titleMask: {
+    fontSize: getFontSize(24, width, theme),
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
   },
   statusBadge: {
-    paddingHorizontal: getSpacing(12, width),
-    paddingVertical: getSpacing(6, width),
-    borderRadius: getBorderRadius(16, width), // rounded-full
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(8, width),
+    borderRadius: getBorderRadius(12, width), // rounded-xl
     alignSelf: 'flex-start',
-  },
-  statusPending: {
-    backgroundColor: theme === 'child' ? '#FEF3C7' : '#DBEAFE', // bg-yellow-100 : bg-blue-100
-  },
-  statusCompleted: {
-    backgroundColor: '#D1FAE5', // bg-green-100
-  },
-  statusApproved: {
-    backgroundColor: theme === 'child' ? '#D1FAE5' : '#DBEAFE', // bg-green-100 : bg-blue-100
-  },
-  statusRejected: {
-    backgroundColor: '#FEE2E2', // bg-red-100
   },
   statusText: {
     fontSize: getFontSize(14, width, theme),
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: '700', // font-bold
+    color: '#FFFFFF', // text-white
   },
   sectionLabel: {
     fontSize: getFontSize(14, width, theme),
@@ -825,32 +882,52 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontWeight: 'bold',
   },
   uploadButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: theme === 'child' ? '#F59E0B' : '#59B9C6', // border-amber-500 : border-[#59B9C6]
-    borderRadius: getBorderRadius(8, width),
-    paddingVertical: getSpacing(12, width),
-    alignItems: 'center',
+    borderRadius: getBorderRadius(12, width), // rounded-xl
+    overflow: 'hidden',
     marginBottom: getSpacing(12, width),
+  },
+  uploadButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: getSpacing(14, width),
+  },
+  uploadButtonIcon: {
+    fontSize: getFontSize(20, width, theme),
+    marginRight: getSpacing(8, width),
   },
   uploadButtonText: {
     fontSize: getFontSize(16, width, theme),
-    fontWeight: '600',
-    color: theme === 'child' ? '#B45309' : '#59B9C6', // text-amber-700 : text-[#59B9C6]
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   completeButton: {
-    borderRadius: getBorderRadius(8, width),
+    borderRadius: getBorderRadius(12, width), // rounded-xl
     overflow: 'hidden',
     marginBottom: getSpacing(24, width),
   },
   completeButtonInner: {
-    paddingVertical: getSpacing(14, width),
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: getSpacing(14, width),
   },
   completeButtonText: {
     fontSize: getFontSize(16, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
+  },
+  buttonIcon: {
+    fontSize: getFontSize(18, width, theme),
+    color: '#FFFFFF',
+    marginRight: getSpacing(6, width),
+  },
+  buttonShadowEnhanced: {
+    shadowColor: '#59B9C6',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   approvalSection: {
     marginTop: getSpacing(12, width),
@@ -861,28 +938,32 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   approveButton: {
     flex: 1,
-    borderRadius: getBorderRadius(8, width),
+    borderRadius: getBorderRadius(12, width), // rounded-xl
     overflow: 'hidden',
   },
   approveButtonInner: {
-    paddingVertical: getSpacing(14, width),
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: getSpacing(14, width),
   },
   approveButtonText: {
     fontSize: getFontSize(16, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   rejectButton: {
     flex: 1,
+    flexDirection: 'row',
     backgroundColor: '#EF4444', // bg-red-500
-    borderRadius: getBorderRadius(8, width),
+    borderRadius: getBorderRadius(12, width), // rounded-xl
     paddingVertical: getSpacing(14, width),
     alignItems: 'center',
+    justifyContent: 'center',
   },
   rejectButtonText: {
     fontSize: getFontSize(16, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   commentContainer: {
@@ -893,7 +974,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   commentInput: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderRadius: getBorderRadius(8, width),
+    borderRadius: getBorderRadius(12, width), // rounded-xl
     padding: getSpacing(12, width),
     fontSize: getFontSize(14, width, theme),
     color: '#111827',
@@ -909,7 +990,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
-    borderRadius: getBorderRadius(8, width),
+    borderRadius: getBorderRadius(12, width), // rounded-xl
     paddingVertical: getSpacing(12, width),
     alignItems: 'center',
   },
@@ -919,28 +1000,32 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   submitApproveButton: {
     flex: 1,
-    borderRadius: getBorderRadius(8, width),
+    borderRadius: getBorderRadius(12, width), // rounded-xl
     overflow: 'hidden',
   },
   submitApproveButtonInner: {
-    paddingVertical: getSpacing(12, width),
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: getSpacing(12, width),
   },
   submitApproveButtonText: {
     fontSize: getFontSize(14, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   submitRejectButton: {
     flex: 1,
+    flexDirection: 'row',
     backgroundColor: '#EF4444', // bg-red-500
-    borderRadius: getBorderRadius(8, width),
+    borderRadius: getBorderRadius(12, width), // rounded-xl
     paddingVertical: getSpacing(12, width),
     alignItems: 'center',
+    justifyContent: 'center',
   },
   submitRejectButtonText: {
     fontSize: getFontSize(14, width, theme),
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   loadingOverlay: {
@@ -949,21 +1034,22 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: theme === 'child' ? 'rgba(254, 243, 199, 0.95)' : 'rgba(255, 255, 255, 0.95)', // bg-amber-50/95 : bg-white/95
+    backgroundColor: 'rgba(17, 24, 39, 0.75)', // bg-gray-900/75 (Web版統一)
     justifyContent: 'center',
     alignItems: 'center',
   },
   loadingBox: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: getSpacing(24, width),
-    borderRadius: getBorderRadius(12, width),
+    borderRadius: getBorderRadius(16, width), // rounded-2xl
     alignItems: 'center',
     minWidth: 200,
   },
   loadingText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: theme === 'child' ? '#78350F' : '#374151', // text-amber-900 : text-gray-700
+    color: '#374151', // text-gray-700
+    fontWeight: '600',
     textAlign: 'center',
   },
 });

@@ -26,6 +26,7 @@ import { useProfile } from '../../hooks/useProfile';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 /**
  * ProfileScreen コンポーネント
@@ -285,20 +286,29 @@ export const ProfileScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.button, styles.saveButton]}
-              onPress={handleSave}
-              disabled={isLoading}
-              accessibilityLabel="保存"
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text style={[styles.buttonText, styles.saveButtonText]}>
-                  {theme === 'child' ? 'ほぞんする' : '保存'}
-                </Text>
-              )}
-            </TouchableOpacity>
+            <View style={styles.saveButtonWrapper}>
+              <LinearGradient
+                colors={['#10B981', '#059669']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.saveButtonGradient}
+              >
+                <TouchableOpacity
+                  style={[styles.button, styles.saveButton]}
+                  onPress={handleSave}
+                  disabled={isLoading}
+                  accessibilityLabel="保存"
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={[styles.buttonText, styles.saveButtonText]}>
+                      {theme === 'child' ? 'ほぞんする' : '保存'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
           </View>
         )}
 
@@ -442,8 +452,15 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderWidth: 1,
     borderColor: '#cbd5e1',
   },
+  saveButtonWrapper: {
+    flex: 1,
+  },
+  saveButtonGradient: {
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
   saveButton: {
-    backgroundColor: '#3b82f6',
+    // Background handled by LinearGradient
   },
   buttonText: {
     fontSize: getFontSize(16, width, theme),
@@ -452,6 +469,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   saveButtonText: {
     color: '#fff',
+    fontWeight: '700',
   },
   groupButton: {
     paddingVertical: getSpacing(14, width),

@@ -15,6 +15,7 @@ import {
   Alert,
   SafeAreaView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Task } from '../../types/task.types';
@@ -244,14 +245,23 @@ export default function TagTasksScreen() {
           </View>
 
           {isPending && (
-            <TouchableOpacity
-              style={styles.completeButton}
-              onPress={() => handleToggleComplete(item.id)}
-            >
-              <Text style={styles.completeButtonText}>
-                {theme === 'child' ? 'できた!' : '完了にする'}
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.completeButton}>
+              <LinearGradient
+                colors={['#10B981', '#059669']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ width: '100%', height: '100%', borderRadius: 8 }}
+              >
+                <TouchableOpacity
+                  style={styles.completeButtonTouchable}
+                  onPress={() => handleToggleComplete(item.id)}
+                >
+                  <Text style={styles.completeButtonText}>
+                    {theme === 'child' ? 'できた!' : '完了にする'}
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
           )}
         </TouchableOpacity>
       );
@@ -307,9 +317,14 @@ export default function TagTasksScreen() {
           <Text style={styles.headerTitle} numberOfLines={1}>
             {tagName}
           </Text>
-          <View style={styles.badge}>
+          <LinearGradient
+            colors={['#8B5CF6', '#7C3AED']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.badge}
+          >
             <Text style={styles.badgeText}>{filteredTasks.length}</Text>
-          </View>
+          </LinearGradient>
         </View>
       </View>
 
@@ -385,7 +400,6 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginRight: getSpacing(8, width),
   },
   badge: {
-    backgroundColor: '#8B5CF6',
     borderRadius: getBorderRadius(12, width),
     paddingHorizontal: getSpacing(10, width),
     paddingVertical: getSpacing(4, width),
@@ -437,14 +451,14 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(12, width),
   },
   tagBadge: {
-    backgroundColor: '#E0E7FF',
+    backgroundColor: '#59B9C6',
     paddingHorizontal: getSpacing(10, width),
     paddingVertical: getSpacing(4, width),
     borderRadius: getBorderRadius(12, width),
   },
   tagText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#4F46E5',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   taskFooter: {
@@ -463,10 +477,14 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   completeButton: {
     marginTop: getSpacing(12, width),
-    backgroundColor: '#10B981',
     borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+    ...getShadow(2),
+  },
+  completeButtonTouchable: {
     paddingVertical: getSpacing(10, width),
     alignItems: 'center',
+    justifyContent: 'center',
   },
   completeButtonText: {
     fontSize: getFontSize(14, width, theme),

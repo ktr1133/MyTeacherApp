@@ -7,7 +7,7 @@
  * @module screens/subscriptions/SubscriptionManageScreen
  */
 
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -55,9 +56,6 @@ const SubscriptionManageScreen: React.FC = () => {
     cancel,
     isLoading,
   } = useSubscription();
-
-  // 追加メンバー数（エンタープライズプラン用）
-  const [additionalMembers, setAdditionalMembers] = useState(0);
 
   // レスポンシブスタイル生成
   const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
@@ -100,7 +98,7 @@ const SubscriptionManageScreen: React.FC = () => {
    */
   const handlePurchasePlan = async (planType: 'family' | 'enterprise') => {
     try {
-      const session = await createCheckout(planType, additionalMembers);
+      const session = await createCheckout(planType, 0);
       
       // WebView遷移（既存のTokenPurchaseWebViewScreenを参考）
       navigation.navigate('SubscriptionWebView', {
@@ -141,6 +139,7 @@ const SubscriptionManageScreen: React.FC = () => {
    */
   const renderPlanCard = (plan: SubscriptionPlan) => {
     const isCurrent = currentPlan === plan.name;
+    const isFeatured = plan.name === 'family' && !isCurrent;
     
     return (
       <View
@@ -148,46 +147,62 @@ const SubscriptionManageScreen: React.FC = () => {
         style={[
           styles.planCard,
           isCurrent && styles.currentPlanCard,
+          isFeatured && styles.featuredPlanCard,
         ]}
       >
+        {/* バッジ（右上絶対配置） */}
+        {isCurrent ? (
+          <View style={styles.currentBadge}>
+            <Text style={styles.currentBadgeText}>契約中</Text>
+          </View>
+        ) : isFeatured && (
+          <View style={styles.featuredBadge}>
+            <Text style={styles.featuredBadgeText}>おすすめ</Text>
+          </View>
+        )}
+
+        {/* ヘッダー */}
         <View style={styles.planHeader}>
           <Text style={styles.planName}>{plan.displayName}</Text>
-          {isCurrent && (
-            <View style={styles.currentBadge}>
-              <Text style={styles.currentBadgeText}>契約中</Text>
-            </View>
-          )}
+          <View style={styles.planPriceContainer}>
+            <Text style={styles.planPriceAmount}>
+              ¥{plan.price.toLocaleString('ja-JP')}
+            </Text>
+            <Text style={styles.planPricePeriod}>/月</Text>
+          </View>
         </View>
 
-        <Text style={styles.planPrice}>
-          ¥{plan.price.toLocaleString('ja-JP')}/月
-        </Text>
-
-        <Text style={styles.planDescription}>{plan.description}</Text>
-
+        {/* 機能リスト */}
         <View style={styles.featuresContainer}>
           {plan.features.map((feature, index) => (
-            <Text key={index} style={styles.featureText}>
-              ✓ {feature}
-            </Text>
+            <View key={index} style={styles.featureItem}>
+              <Text style={styles.featureIcon}>✓</Text>
+              <Text style={styles.featureText}>{feature}</Text>
+            </View>
           ))}
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.selectButton,
-            isCurrent && styles.selectButtonDisabled,
-          ]}
-          onPress={() => !isCurrent && handlePurchasePlan(plan.name as 'family' | 'enterprise')}
-          disabled={isCurrent}
-        >
-          <Text style={[
-            styles.selectButtonText,
-            isCurrent && styles.selectButtonTextDisabled,
-          ]}>
-            {isCurrent ? '契約中のプラン' : 'このプランを選択'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.selectButtonWrapper}>
+          <LinearGradient
+            colors={isCurrent ? ['#CCCCCC', '#CCCCCC'] : ['#6366F1', '#8B5CF6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.selectButtonGradient}
+          >
+            <TouchableOpacity
+              style={styles.selectButton}
+              onPress={() => !isCurrent && handlePurchasePlan(plan.name as 'family' | 'enterprise')}
+              disabled={isCurrent}
+            >
+              <Text style={[
+                styles.selectButtonText,
+                isCurrent && styles.selectButtonTextDisabled,
+              ]}>
+                {isCurrent ? '契約中のプラン' : 'このプランを選択'}
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
       </View>
     );
   };
@@ -259,24 +274,42 @@ const SubscriptionManageScreen: React.FC = () => {
 
             {/* キャンセルボタン */}
             {currentSubscription.ends_at ? (
-              <TouchableOpacity
-                style={[styles.cancelButton, styles.cancelButtonDisabled]}
-                disabled={true}
-              >
-                <Text style={[styles.cancelButtonText, styles.cancelButtonTextDisabled]}>
-                  {labels.cancelPlan}
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.cancelButtonWrapper}>
+                <LinearGradient
+                  colors={['#CCCCCC', '#CCCCCC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.cancelButtonGradient}
+                >
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    disabled={true}
+                  >
+                    <Text style={[styles.cancelButtonText, styles.cancelButtonTextDisabled]}>
+                      {labels.cancelPlan}
+                    </Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+              </View>
             ) : (
               !currentSubscription.cancel_at_period_end && (
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={handleCancelSubscription}
-                >
-                  <Text style={styles.cancelButtonText}>
-                    {labels.cancelPlan}
-                  </Text>
-                </TouchableOpacity>
+                <View style={styles.cancelButtonWrapper}>
+                  <LinearGradient
+                    colors={['#EF4444', '#DC2626']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.cancelButtonGradient}
+                  >
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={handleCancelSubscription}
+                    >
+                      <Text style={styles.cancelButtonText}>
+                        {labels.cancelPlan}
+                      </Text>
+                    </TouchableOpacity>
+                  </LinearGradient>
+                </View>
               )
             )}
           </View>
@@ -290,14 +323,23 @@ const SubscriptionManageScreen: React.FC = () => {
 
         {/* 請求履歴ボタン */}
         {currentSubscription && (
-          <TouchableOpacity
-            style={styles.invoicesButton}
-            onPress={() => navigation.navigate('SubscriptionInvoices')}
-          >
-            <Text style={styles.invoicesButtonText}>
-              {labels.viewInvoices}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.invoicesButtonWrapper}>
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.invoicesButtonGradient}
+            >
+              <TouchableOpacity
+                style={styles.invoicesButton}
+                onPress={() => navigation.navigate('SubscriptionInvoices')}
+              >
+                <Text style={styles.invoicesButtonText}>
+                  {labels.viewInvoices}
+                </Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -392,21 +434,25 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontSize: getFontSize(12, width, theme),
     color: '#991B1B',
   },
+  cancelButtonWrapper: {
+    marginTop: getSpacing(12, width),
+  },
+  cancelButtonGradient: {
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
   cancelButton: {
-    backgroundColor: '#DC3545',
     paddingVertical: getSpacing(12, width),
     paddingHorizontal: getSpacing(24, width),
-    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
   },
   cancelButtonDisabled: {
-    backgroundColor: '#CCCCCC',
-    opacity: 0.6,
+    // 使用しない（LinearGradientで制御）
   },
   cancelButtonText: {
     color: '#FFFFFF',
     fontSize: getFontSize(16, width, theme),
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   cancelButtonTextDisabled: {
     color: '#888888',
@@ -434,87 +480,143 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   planCard: {
     backgroundColor: '#FFFFFF',
-    padding: getSpacing(16, width),
-    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(28, width),
+    borderRadius: getBorderRadius(16, width),
     marginBottom: getSpacing(16, width),
-    ...getShadow(4),
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    ...getShadow(2),
+    position: 'relative',
   },
   currentPlanCard: {
-    borderWidth: 2,
-    borderColor: '#4A90E2',
+    borderColor: '#10b981',
+    ...getShadow(6),
+  },
+  featuredPlanCard: {
+    borderColor: '#4f46e5',
+    ...getShadow(6),
   },
   planHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: getSpacing(8, width),
+    marginBottom: getSpacing(24, width),
+    paddingBottom: getSpacing(20, width),
+    borderBottomWidth: 2,
+    borderBottomColor: '#f3f4f6',
   },
   planName: {
-    fontSize: getFontSize(20, width, theme),
-    fontWeight: 'bold',
-    color: '#333333',
+    fontSize: getFontSize(24, width, theme),
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: getSpacing(12, width),
+  },
+  planPriceContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+  },
+  planPriceAmount: {
+    fontSize: getFontSize(40, width, theme),
+    fontWeight: '800',
+    color: '#4f46e5',
+    lineHeight: getFontSize(40, width, theme),
+  },
+  planPricePeriod: {
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: '500',
+    color: '#6b7280',
   },
   currentBadge: {
-    backgroundColor: '#4A90E2',
-    paddingHorizontal: getSpacing(8, width),
-    paddingVertical: getSpacing(4, width),
-    borderRadius: getBorderRadius(4, width),
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: '#10b981',
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(16, width),
+    zIndex: 10,
+    ...getShadow(4),
   },
   currentBadgeText: {
     color: '#FFFFFF',
     fontSize: getFontSize(12, width, theme),
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
-  planPrice: {
-    fontSize: getFontSize(24, width, theme),
-    fontWeight: 'bold',
-    color: '#4A90E2',
-    marginBottom: getSpacing(8, width),
+  featuredBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: '#4f46e5',
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(16, width),
+    zIndex: 10,
+    ...getShadow(4),
   },
-  planDescription: {
-    fontSize: getFontSize(14, width, theme),
-    color: '#666666',
-    marginBottom: getSpacing(12, width),
+  featuredBadgeText: {
+    color: '#FFFFFF',
+    fontSize: getFontSize(12, width, theme),
+    fontWeight: '700',
   },
   featuresContainer: {
-    marginBottom: getSpacing(16, width),
+    marginTop: getSpacing(24, width),
+    marginBottom: getSpacing(24, width),
+    gap: getSpacing(12, width),
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: getSpacing(12, width),
+  },
+  featureIcon: {
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: '700',
+    color: '#10b981',
+    width: 20,
   },
   featureText: {
-    fontSize: getFontSize(14, width, theme),
-    color: '#333333',
-    marginBottom: getSpacing(4, width),
+    fontSize: getFontSize(15, width, theme),
+    color: '#374151',
+    flex: 1,
+  },
+  selectButtonWrapper: {
+    marginTop: getSpacing(12, width),
+  },
+  selectButtonGradient: {
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
   },
   selectButton: {
-    backgroundColor: '#4A90E2',
     paddingVertical: getSpacing(12, width),
     paddingHorizontal: getSpacing(24, width),
-    borderRadius: getBorderRadius(8, width),
     alignItems: 'center',
   },
   selectButtonDisabled: {
-    backgroundColor: '#CCCCCC',
+    // 使用しない（LinearGradientで制御）
   },
   selectButtonText: {
     color: '#FFFFFF',
     fontSize: getFontSize(16, width, theme),
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   selectButtonTextDisabled: {
     color: '#999999',
   },
-  invoicesButton: {
-    backgroundColor: '#FFFFFF',
+  invoicesButtonWrapper: {
     margin: getSpacing(16, width),
-    paddingVertical: getSpacing(16, width),
-    paddingHorizontal: getSpacing(24, width),
+  },
+  invoicesButtonGradient: {
     borderRadius: getBorderRadius(8, width),
-    alignItems: 'center',
+    overflow: 'hidden',
     ...getShadow(4),
   },
+  invoicesButton: {
+    paddingVertical: getSpacing(16, width),
+    paddingHorizontal: getSpacing(24, width),
+    alignItems: 'center',
+  },
   invoicesButtonText: {
-    color: '#4A90E2',
+    color: '#FFFFFF',
     fontSize: getFontSize(16, width, theme),
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
 });
 

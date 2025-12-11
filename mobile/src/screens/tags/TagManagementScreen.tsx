@@ -11,7 +11,7 @@
  * @see /home/ktr/mtdev/resources/views/tags-list.blade.php (Web版)
  * @see /home/ktr/mtdev/docs/mobile/mobile-rules.md (モバイル開発規則)
  */
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import {
   TextInput,
   Dimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTags } from '../../hooks/useTags';
@@ -32,8 +33,6 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAvatarContext } from '../../contexts/AvatarContext';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import type { Tag } from '../../types/tag.types';
-
-const { width } = Dimensions.get('window');
 
 type RootStackParamList = {
   TagManagement: undefined;
@@ -46,7 +45,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'TagManagement'>;
  * タグ管理画面コンポーネント
  */
 export default function TagManagementScreen({ navigation }: Props) {
-  const { theme, themeType } = useTheme();
+  const { theme } = useTheme();
   const { width } = useResponsive();
   const {
     tags,
@@ -292,14 +291,22 @@ export default function TagManagementScreen({ navigation }: Props) {
           {!isEditing ? (
             /* 編集ボタン */
             <>
-              <TouchableOpacity
+              <LinearGradient
+                colors={['#59B9C6', '#3b82f6'] as const}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={[styles.actionButton, styles.editButton]}
-                onPress={() => startEditingTag(item)}
               >
-                <Text style={styles.buttonText}>
-                  {theme === 'child' ? 'へんこう' : '編集'}
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButtonTouchable}
+                  onPress={() => startEditingTag(item)}
+                >
+                  <Text style={styles.buttonText}>
+                    {theme === 'child' ? 'へんこう' : '編集'}
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
+
               {/* 削除ボタン */}
               <TouchableOpacity
                 style={[
@@ -318,14 +325,21 @@ export default function TagManagementScreen({ navigation }: Props) {
           ) : (
             /* 編集モード: 保存・キャンセルボタン */
             <>
-              <TouchableOpacity
+              <LinearGradient
+                colors={['#10B981', '#059669'] as const}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={[styles.actionButton, styles.saveButton]}
-                onPress={() => handleUpdateTag(item)}
               >
-                <Text style={styles.buttonText}>
-                  {theme === 'child' ? 'ほぞん' : '保存'}
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButtonTouchable}
+                  onPress={() => handleUpdateTag(item)}
+                >
+                  <Text style={styles.buttonText}>
+                    {theme === 'child' ? 'ほぞん' : '保存'}
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
               <TouchableOpacity
                 style={[styles.actionButton, styles.cancelButton]}
                 onPress={cancelEditingTag}
@@ -350,12 +364,19 @@ export default function TagManagementScreen({ navigation }: Props) {
         <Text style={styles.headerTitle}>
           {theme === 'child' ? 'タグ かんり' : 'タグ管理'}
         </Text>
-        <TouchableOpacity
+        <LinearGradient
+          colors={['#59B9C6', '#3b82f6'] as const}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
           style={styles.createButton}
-          onPress={openCreateModal}
         >
-          <Text style={styles.createButtonText}>＋ {theme === 'child' ? 'あたらしいタグ' : '新規作成'}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.createButtonTouchable}
+            onPress={openCreateModal}
+          >
+            <Text style={styles.createButtonText}>＋ {theme === 'child' ? 'あたらしいタグ' : '新規作成'}</Text>
+          </TouchableOpacity>
+        </LinearGradient>
       </View>
 
       {/* エラー表示 */}
@@ -436,14 +457,21 @@ export default function TagManagementScreen({ navigation }: Props) {
                   {theme === 'child' ? 'やめる' : 'キャンセル'}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
+              <LinearGradient
+                colors={['#59B9C6', '#3b82f6'] as const}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={[styles.modalButton, styles.modalSaveButton]}
-                onPress={handleCreateTag}
               >
-                <Text style={styles.saveButtonText}>
-                  {theme === 'child' ? 'つくる' : '作成'}
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalButtonTouchable}
+                  onPress={handleCreateTag}
+                >
+                  <Text style={styles.saveButtonText}>
+                    {theme === 'child' ? 'つくる' : '作成'}
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
             </View>
           </View>
         </View>
@@ -482,10 +510,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     color: '#111827',
   },
   createButton: {
-    backgroundColor: '#3B82F6',
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+    ...getShadow(4),
+  },
+  createButtonTouchable: {
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(8, width),
-    borderRadius: getBorderRadius(8, width),
+    alignItems: 'center',
   },
   createButtonText: {
     color: '#FFFFFF',
@@ -528,7 +560,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(12, width),
-    ...getShadow(2, width),
+    ...getShadow(2),
   },
   tagInfo: {
     flex: 1,
@@ -572,15 +604,20 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    paddingVertical: getSpacing(8, width),
     borderRadius: getBorderRadius(6, width),
+    overflow: 'hidden',
+    ...getShadow(2),
+  },
+  actionButtonTouchable: {
+    width: '100%',
+    paddingVertical: getSpacing(8, width),
     alignItems: 'center',
   },
   editButton: {
-    backgroundColor: '#3B82F6',
+    // LinearGradient適用のためbackgroundColor削除
   },
   saveButton: {
-    backgroundColor: '#10B981',
+    // LinearGradient適用のためbackgroundColor削除
   },
   cancelButton: {
     backgroundColor: '#F3F4F6',
@@ -655,8 +692,12 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    paddingVertical: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
+  modalButtonTouchable: {
+    width: '100%',
+    paddingVertical: getSpacing(12, width),
     alignItems: 'center',
   },
   modalCancelButton: {
@@ -668,7 +709,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontSize: getFontSize(16, width, theme),
   },
   modalSaveButton: {
-    backgroundColor: '#3B82F6',
+    // LinearGradient適用のためbackgroundColor削除
   },
   saveButtonText: {
     color: '#FFFFFF',

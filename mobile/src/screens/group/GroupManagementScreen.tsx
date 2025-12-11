@@ -20,6 +20,7 @@ import {
   RefreshControl,
   StyleSheet,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -105,9 +106,16 @@ export const GroupManagementScreen: React.FC = () => {
 
         {/* グループ情報カード */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {theme === 'child' ? 'グループじょうほう' : 'グループ情報'}
-          </Text>
+          <LinearGradient
+            colors={['#9333ea', '#db2777']} // purple-600 → pink-600
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.cardHeaderGradient}
+          >
+            <Text style={styles.cardTitle}>
+              {theme === 'child' ? 'グループじょうほう' : 'グループ情報'}
+            </Text>
+          </LinearGradient>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>
               {theme === 'child' ? 'グループめい' : 'グループ名'}
@@ -138,7 +146,6 @@ export const GroupManagementScreen: React.FC = () => {
 
           {/* タスクスケジュール管理 */}
           <TouchableOpacity
-            style={styles.menuItem}
             onPress={navigateToScheduledTasks}
             disabled={!groupId}
             accessibilityLabel={
@@ -147,7 +154,13 @@ export const GroupManagementScreen: React.FC = () => {
                 : 'タスクスケジュール管理'
             }
           >
-            <View style={styles.menuItemContent}>
+            <LinearGradient
+              colors={['#4f46e5', '#2563eb', '#9333ea']} // indigo-600 → blue-600 → purple-600
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.menuItem}
+            >
+              <View style={styles.menuItemContent}>
               <View style={styles.menuItemLeft}>
                 <Text style={styles.menuIcon}>📅</Text>
                 <View>
@@ -165,17 +178,23 @@ export const GroupManagementScreen: React.FC = () => {
               </View>
               <Text style={styles.menuArrow}>›</Text>
             </View>
+            </LinearGradient>
           </TouchableOpacity>
 
           {/* メンバー管理（グループマスターのみ、将来実装） */}
           {isGroupMaster && (
             <TouchableOpacity
-              style={[styles.menuItem, styles.menuItemDisabled]}
               onPress={navigateToMemberManagement}
               disabled={true}
               accessibilityLabel={theme === 'child' ? 'メンバーかんり' : 'メンバー管理'}
             >
-              <View style={styles.menuItemContent}>
+              <LinearGradient
+                colors={['#f3f4f6', '#e5e7eb']} // gray-100 → gray-200（disabled状態）
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.menuItem, styles.menuItemDisabled]}
+              >
+                <View style={styles.menuItemContent}>
                 <View style={styles.menuItemLeft}>
                   <Text style={styles.menuIcon}>👥</Text>
                   <View>
@@ -194,20 +213,26 @@ export const GroupManagementScreen: React.FC = () => {
                 </View>
                 <Text style={styles.menuArrow}>›</Text>
               </View>
+              </LinearGradient>
             </TouchableOpacity>
           )}
 
           {/* グループ設定（グループマスターのみ、将来実装） */}
           {isGroupMaster && (
             <TouchableOpacity
-              style={[styles.menuItem, styles.menuItemDisabled]}
               onPress={navigateToGroupSettings}
               disabled={true}
               accessibilityLabel={
                 theme === 'child' ? 'グループせってい' : 'グループ設定'
               }
             >
-              <View style={styles.menuItemContent}>
+              <LinearGradient
+                colors={['#f3f4f6', '#e5e7eb']} // gray-100 → gray-200（disabled状態）
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.menuItem, styles.menuItemDisabled]}
+              >
+                <View style={styles.menuItemContent}>
                 <View style={styles.menuItemLeft}>
                   <Text style={styles.menuIcon}>⚙️</Text>
                   <View>
@@ -226,12 +251,18 @@ export const GroupManagementScreen: React.FC = () => {
                 </View>
                 <Text style={styles.menuArrow}>›</Text>
               </View>
+              </LinearGradient>
             </TouchableOpacity>
           )}
         </View>
 
         {/* 説明セクション */}
-        <View style={styles.helpSection}>
+        <LinearGradient
+          colors={['#eff6ff', '#dbeafe']} // blue-50 → blue-100（Web版参考）
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.helpSection}
+        >
           <Text style={styles.helpTitle}>
             {theme === 'child' ? 'グループかんりについて' : 'グループ管理について'}
           </Text>
@@ -247,7 +278,7 @@ export const GroupManagementScreen: React.FC = () => {
                 : '現在はメンバー権限のため、タスクスケジュールの閲覧のみ可能です。'}
             </Text>
           )}
-        </View>
+        </LinearGradient>
       </View>
     </ScrollView>
   );
@@ -279,20 +310,26 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   card: {
     backgroundColor: '#fff',
     borderRadius: getBorderRadius(12, width),
-    padding: getSpacing(16, width),
     marginBottom: getSpacing(24, width),
     ...getShadow(2),
+    overflow: 'hidden', // LinearGradient用
+  },
+  cardHeaderGradient: {
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(147, 51, 234, 0.2)', // purple-600/20
   },
   cardTitle: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#475569',
-    marginBottom: getSpacing(16, width),
+    color: '#ffffff', // グラデーション背景上なので白テキスト
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
@@ -315,11 +352,11 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(12, width),
   },
   menuItem: {
-    backgroundColor: '#fff',
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(12, width),
-    ...getShadow(1),
+    ...getShadow(2),
+    overflow: 'hidden', // LinearGradient用
   },
   menuItemDisabled: {
     opacity: 0.6,
@@ -360,21 +397,21 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontWeight: '300',
   },
   helpSection: {
-    backgroundColor: '#f0f9ff',
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     borderWidth: 1,
-    borderColor: '#bae6fd',
+    borderColor: '#bae6fd', // blue-200（Web版参考）
+    overflow: 'hidden', // LinearGradient用
   },
   helpTitle: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#0284c7',
+    color: '#0284c7', // blue-600（Web版参考）
     marginBottom: getSpacing(8, width),
   },
   helpText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#0369a1',
+    color: '#0369a1', // blue-700（Web版参考）
     lineHeight: getFontSize(20, width, theme),
     marginBottom: getSpacing(8, width),
   },

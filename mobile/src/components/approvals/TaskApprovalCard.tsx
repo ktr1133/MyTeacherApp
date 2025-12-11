@@ -16,6 +16,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { TaskApprovalItem } from '../../types/approval.types';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
@@ -163,17 +164,24 @@ export const TaskApprovalCard: React.FC<TaskApprovalCardProps> = ({
 
       {/* ボタンエリア */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
+        <LinearGradient
+          colors={['#59B9C6', '#3b82f6'] as const}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
           style={[styles.button, styles.approveButton, isProcessing && styles.buttonDisabled]}
-          onPress={() => onApprove(item.id)}
-          disabled={isProcessing}
         >
-          {isProcessing ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.approveButtonText}>承認する</Text>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.buttonTouchable}
+            onPress={() => onApprove(item.id)}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.approveButtonText}>承認する</Text>
+            )}
+          </TouchableOpacity>
+        </LinearGradient>
 
         <TouchableOpacity
           style={[styles.button, styles.rejectButton, isProcessing && styles.buttonDisabled]}
@@ -213,7 +221,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     },
     typeBadge: {
       alignSelf: 'flex-start',
-      backgroundColor: '#007bff',
+      backgroundColor: '#59B9C6',
       paddingVertical: spacing * 0.5,
       paddingHorizontal: spacing * 1.5,
       borderRadius: borderRadius,
@@ -247,7 +255,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     valueHighlight: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '600',
-      color: '#28a745',
+      color: '#9333ea',
       flex: 1,
     },
     description: {
@@ -264,13 +272,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     },
     button: {
       flex: 1,
-      paddingVertical: spacing * 1.5,
       borderRadius: borderRadius,
+      overflow: 'hidden',
+      ...getShadow(4),
+    },
+    buttonTouchable: {
+      width: '100%',
+      paddingVertical: spacing * 1.5,
       alignItems: 'center',
       justifyContent: 'center',
     },
     approveButton: {
-      backgroundColor: '#28a745',
+      // LinearGradient適用のためbackgroundColor削除
     },
     approveButtonText: {
       fontSize: getFontSize(14, width, theme),

@@ -139,6 +139,27 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
+// Navigation Reference のモック
+jest.mock('./src/utils/navigationRef', () => {
+  const mockNavigationRef = {
+    isReady: jest.fn(() => true),
+    navigate: jest.fn(),
+    reset: jest.fn(),
+    goBack: jest.fn(),
+    dispatch: jest.fn(),
+    setParams: jest.fn(),
+    addListener: jest.fn(() => jest.fn()),
+    removeListener: jest.fn(),
+    current: null,
+  };
+
+  return {
+    navigationRef: mockNavigationRef,
+    navigate: jest.fn(),
+    resetTo: jest.fn(),
+  };
+});
+
 // console の出力を抑制（テスト実行時のノイズ削減）
 global.console = {
   ...console,
@@ -146,6 +167,17 @@ global.console = {
   warn: jest.fn(),
   error: jest.fn(),
 };
+
+// Alert のモック強化（Jest環境のtear down後のエラー防止）
+const { Alert } = require('react-native');
+const originalAlert = Alert.alert;
+Alert.alert = jest.fn((...args) => {
+  // テスト実行中のみ動作、tear down後は何もしない
+  if (global.window && global.document) {
+    return originalAlert(...args);
+  }
+  return undefined;
+});
 
 // タイムアウト設定（非同期テスト用）
 jest.setTimeout(10000);

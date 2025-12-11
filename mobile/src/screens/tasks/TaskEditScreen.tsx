@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAvatarContext } from '../../contexts/AvatarContext';
@@ -636,19 +637,26 @@ export default function TaskEditScreen() {
       )}
 
       {/* 更新ボタン */}
-      <TouchableOpacity
+      <LinearGradient
+        colors={['#59B9C6', '#3b82f6'] as const}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
         style={[styles.button, styles.updateButton]}
-        onPress={handleUpdate}
-        disabled={isLoading || isSubmitting}
       >
-        {isLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>
-            {theme === 'child' ? 'こうしんする' : '更新する'}
-          </Text>
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.buttonTouchable}
+          onPress={handleUpdate}
+          disabled={isLoading || isSubmitting}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>
+              {theme === 'child' ? 'こうしんする' : '更新する'}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </LinearGradient>
 
       {/* 削除ボタン */}
       <TouchableOpacity
@@ -732,8 +740,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     alignItems: 'center',
   },
   spanButtonActive: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
+    backgroundColor: '#59B9C6',
+    borderColor: '#59B9C6',
   },
   spanButtonText: {
     fontSize: getFontSize(14, width, theme),
@@ -840,8 +848,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderColor: '#D1D5DB',
   },
   tagChipSelected: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
+    backgroundColor: '#59B9C6',
+    borderColor: '#59B9C6',
   },
   tagChipText: {
     fontSize: getFontSize(14, width, theme),
@@ -860,13 +868,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingVertical: getSpacing(16, width),
   },
   button: {
-    padding: getSpacing(16, width),
     borderRadius: getBorderRadius(8, width),
-    alignItems: 'center',
     marginTop: getSpacing(8, width),
+    overflow: 'hidden',
+    ...getShadow(4),
+  },
+  buttonTouchable: {
+    width: '100%',
+    padding: getSpacing(16, width),
+    alignItems: 'center',
   },
   updateButton: {
-    backgroundColor: '#4F46E5',
+    // LinearGradient適用のためbackgroundColor削除
   },
   deleteButton: {
     backgroundColor: '#EF4444',

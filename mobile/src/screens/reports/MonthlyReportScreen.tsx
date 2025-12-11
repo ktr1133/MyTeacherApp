@@ -21,6 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useMonthlyReport } from '../../hooks/usePerformance';
 import { BarChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
@@ -138,9 +139,18 @@ export default function MonthlyReportScreen() {
         <View style={styles.errorContainer}>
           <MaterialIcons name="error-outline" size={48} color="#ef4444" />
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={refresh}>
-            <Text style={styles.retryButtonText}>再試行</Text>
-          </TouchableOpacity>
+          <View style={styles.retryButtonWrapper}>
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.retryButtonGradient}
+            >
+              <TouchableOpacity style={styles.retryButton} onPress={refresh}>
+                <Text style={styles.retryButtonText}>再試行</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -161,9 +171,18 @@ export default function MonthlyReportScreen() {
               無料プランでは{report.accessible_until}までのレポートを閲覧できます
             </Text>
           )}
-          <TouchableOpacity style={styles.subscribeButton}>
-            <Text style={styles.subscribeButtonText}>プランを見る</Text>
-          </TouchableOpacity>
+          <View style={styles.subscribeButtonWrapper}>
+            <LinearGradient
+              colors={['#8B5CF6', '#6D28D9']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.subscribeButtonGradient}
+            >
+              <TouchableOpacity style={styles.subscribeButton}>
+                <Text style={styles.subscribeButtonText}>プランを見る</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -378,17 +397,22 @@ const createStyles = (width: number) => StyleSheet.create({
     color: '#ef4444',
     textAlign: 'center',
   },
-  retryButton: {
+  retryButtonWrapper: {
     marginTop: getSpacing(16, width),
+    alignSelf: 'center',
+  },
+  retryButtonGradient: {
+    borderRadius: getBorderRadius(12, width),
+    overflow: 'hidden',
+  },
+  retryButton: {
     paddingHorizontal: getSpacing(24, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#59B9C6',
-    borderRadius: getBorderRadius(8, width),
   },
   retryButtonText: {
     color: '#fff',
     fontSize: getFontSize(16, width, {}),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   lockContainer: {
     flex: 1,
@@ -414,17 +438,22 @@ const createStyles = (width: number) => StyleSheet.create({
     color: '#9ca3af',
     textAlign: 'center',
   },
-  subscribeButton: {
+  subscribeButtonWrapper: {
     marginTop: getSpacing(24, width),
+    alignSelf: 'center',
+  },
+  subscribeButtonGradient: {
+    borderRadius: getBorderRadius(12, width),
+    overflow: 'hidden',
+  },
+  subscribeButton: {
     paddingHorizontal: getSpacing(32, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#8B5CF6',
-    borderRadius: getBorderRadius(8, width),
   },
   subscribeButtonText: {
     color: '#fff',
     fontSize: getFontSize(16, width, {}),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   header: {
     paddingHorizontal: getSpacing(16, width),

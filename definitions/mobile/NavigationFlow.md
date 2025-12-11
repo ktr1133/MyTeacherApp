@@ -5,6 +5,8 @@
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
 | 2025-12-09 | GitHub Copilot | 初版作成: 画面遷移フロー要件定義 |
+| 2025-12-09 | GitHub Copilot | セクション8更新: エラーハンドリング実装完了を記録 |
+| 2025-12-11 | GitHub Copilot | 完了レポート作成: 画面遷移・エラーハンドリング実装完了レポート（2025-12-11-navigation-error-handling-completion-report.md） |
 
 ---
 
@@ -691,6 +693,71 @@ API呼び出し失敗（Network Error）
   ↓
 タスク一覧画面へ自動遷移（3秒後）
 ```
+
+### 8.4 エラーハンドリング実装状況
+
+**実装完了日**: 2025-12-09
+
+**実装内容**:
+
+1. **Navigation Reference Utility**（`/home/ktr/mtdev/mobile/src/utils/navigationRef.ts`）
+   - `createNavigationContainerRef()`でグローバルナビゲーション参照を作成
+   - `navigate()`: 任意の画面への遷移関数
+   - `resetTo()`: ナビゲーションスタックをリセットして画面遷移
+
+2. **401エラー時の自動ログアウト**（`/home/ktr/mtdev/mobile/src/services/api.ts:40-59`）
+   ```typescript
+   // AsyncStorageからトークン削除
+   await AsyncStorage.removeItem('auth_token');
+   
+   // Alert表示（英語）
+   Alert.alert(
+     'Session Expired',
+     'Your session has expired. Please login again.',
+     [{ text: 'OK', onPress: () => resetTo('Login') }]
+   );
+   ```
+
+3. **404エラー時の自動遷移**（`/home/ktr/mtdev/mobile/src/services/api.ts:60-73`）
+   ```typescript
+   Alert.alert(
+     'Not Found',
+     'The requested resource was not found. You will be redirected to the task list.',
+     [{
+       text: 'OK',
+       onPress: () => {
+         setTimeout(() => resetTo('TaskList'), 3000);
+       }
+     }]
+   );
+   ```
+
+4. **ネットワークエラー時のリトライ機能**（`/home/ktr/mtdev/mobile/src/services/api.ts:74-103`）
+   ```typescript
+   Alert.alert(
+     'Network Error',
+     'Please check your internet connection and try again.',
+     [
+       {
+         text: 'Retry',
+         onPress: () => api.request(error.config!)
+       },
+       { text: 'Cancel', style: 'cancel' }
+     ]
+   );
+   ```
+
+**テスト結果**:
+- ✅ 全テストスイート成功: 54/54
+- ✅ 全テストケース成功: 1036/1041（5件スキップ）
+- ✅ jest.setup.jsへのnavigationRefモック追加完了
+
+**影響ファイル**:
+- `/home/ktr/mtdev/mobile/src/utils/navigationRef.ts`（新規作成）
+- `/home/ktr/mtdev/mobile/src/navigation/AppNavigator.tsx`（navigationRef統合）
+- `/home/ktr/mtdev/mobile/src/services/api.ts`（エラーハンドリング実装）
+- `/home/ktr/mtdev/mobile/src/types/api.types.ts`（User型拡張）
+- `/home/ktr/mtdev/mobile/jest.setup.js`（navigationRefモック追加）
 
 ---
 

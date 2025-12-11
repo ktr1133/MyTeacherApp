@@ -31,6 +31,10 @@
 | 2025-12-09 | GitHub Copilot | Phase 2.B-7.5詳細計画策定: Push通知要件定義書作成（PushNotification.md）、Firebase/FCM統合・デバイス管理・通知設定実装計画 |
 | 2025-12-09 | GitHub Copilot | Phase 2.B-7.5中断: バックエンド実装完了（FCMサービス・Push送信ジョブ・OpenAPI更新）、Apple Developer未登録のため実装中断、中間レポート作成 |
 | 2025-12-09 | GitHub Copilot | Phase 2.B-8完了（レスポンシブ対応）: 全32画面Dimensions API対応、responsive.ts実装（9,014行）、335テスト成功（99.7%）、完了レポート作成 |
+| 2025-12-11 | GitHub Copilot | Phase 2.B-8完了（画面遷移・エラーハンドリング）: navigationRef.ts実装、401/404/ネットワークエラー処理、54スイート1036テスト成功（99.7%）、完了レポート作成 |
+| 2025-12-11 | GitHub Copilot | Phase 2.B-8完了（Week 1 Webスタイル統一）: Task系9画面LinearGradient統合、Webデザイン完全一致、完了レポート作成（docs/reports/mobile/2025-12-11-week1-web-style-alignment-completion-report.md） |
+| 2025-12-11 | GitHub Copilot | Phase 2.B-8完了（Week 2 Webスタイル統一）: Management/Settings系8画面LinearGradient統合、Webデザイン完全一致、完了レポート作成（docs/reports/mobile/2025-12-11-week2-web-style-alignment-completion-report.md） |
+| 2025-12-11 | GitHub Copilot | Phase 2.B-8完了（Week 3 Webスタイル統一）: Payment/Reports/Auth系8画面LinearGradient統合、プランカードWeb整合（6スタイルカテゴリ）、静的解析警告0件達成、完了レポート作成（docs/reports/mobile/2025-12-11-week3-web-style-alignment-completion-report.md） |
 
 ---
 
@@ -196,12 +200,24 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
       - **テスト**: 335テストケース、99.7%成功率（334 passed, 1 skipped）
       - **完了レポート**: `docs/reports/mobile/2025-12-09-responsive-implementation-completion-report.md`
       - **参照ドキュメント**: `/home/ktr/mtdev/definitions/mobile/ResponsiveDesignGuideline.md`
-    - 🎯 **Web版スタイル統一**（未実施）:
-      - **参照計画書**: `/home/ktr/mtdev/docs/plans/phase2-b8-web-style-alignment-plan.md`
-      - Tailwind CSSクラスのReact Native変換
-      - カラーパレットの統一（bg-blue-500 → #3B82F6）
-      - コンポーネントスタイルの統一（Card, Button, Badge等）
-      - アイコンの統一（Ionicons使用）
+    - ✅ **画面遷移・エラーハンドリング完了**（2025-12-11）:
+      - **実装**: navigationRef.ts（42行）、api.ts エラーハンドリング（63行）、User型拡張（14行）
+      - **機能**: 401エラー自動ログアウト、404エラー自動遷移、ネットワークエラーリトライ
+      - **テスト**: 54スイート、1036テストケース成功（99.7%）、jest.setup.js モック整備
+      - **TypeScript**: 主要エラー83.3%削減（12件→2件）
+      - **完了レポート**: `docs/reports/mobile/2025-12-11-navigation-error-handling-completion-report.md`
+      - **参照ドキュメント**: `/home/ktr/mtdev/definitions/mobile/NavigationFlow.md`
+    - ✅ **Web版スタイル統一完了**（2025-12-11）:
+      - **Week 1完了**: Task系9画面（LinearGradient統合、Webデザイン完全一致）
+      - **Week 2完了**: Management/Settings系8画面（LinearGradient統合、Webデザイン完全一致）
+      - **Week 3完了**: Payment/Reports/Auth系8画面（LinearGradient統合、プランカードWeb整合、静的解析警告0件）
+      - **総画面数**: 全25画面/25画面実装済み（100%完了）
+      - **プランカード**: SubscriptionManageScreen、select-plan.css完全準拠（6スタイルカテゴリ）
+      - **静的解析**: TypeScript警告0件達成（LoginScreen, RegisterScreen, SubscriptionManageScreen修正）
+      - **完了レポート**: 
+        - `docs/reports/mobile/2025-12-11-week1-web-style-alignment-completion-report.md`
+        - `docs/reports/mobile/2025-12-11-week2-web-style-alignment-completion-report.md`
+        - `docs/reports/mobile/2025-12-11-week3-web-style-alignment-completion-report.md`
     - 🎯 **PDF生成・共有機能実装**（未実施）:
       - react-native-html-to-pdf、expo-sharing
       - 月次レポートPDF出力（Web版と同じレイアウト、日本語フォント対応）
@@ -1252,37 +1268,43 @@ export const notificationService = {
 - ✅ デバウンス処理実装（300ms）
 - ✅ 検索テスト作成（27テスト全パス、想定15テストを12テスト超過）
 
-**通知機能 - 基本実装（Step 2 - 次タスク）**:
-- [ ] NotificationListScreen UI実装
-- [ ] useNotifications Hook実装
-- [ ] notification.service.ts更新（Laravel API完全準拠）
-- [ ] 通知一覧表示（ページネーション対応）
-- [ ] 未読件数表示
-- [ ] 個別既読化機能
-- [ ] 全既読化機能
-- [ ] 通知検索機能
-- [ ] 通知テスト作成（notification.service.test.ts: 8テスト、useNotifications.test.ts: 12テスト）
-- [ ] TypeScript型チェック（0エラー）
-- [ ] 実機テスト（通知一覧・既読動作確認）
+**通知機能 - 基本実装（✅ Step 2完了 - 2025-12-07）**:
+- ✅ NotificationListScreen UI実装（570行）
+- ✅ NotificationDetailScreen UI実装（320行）
+- ✅ useNotifications Hook実装（270行）
+- ✅ notification.service.ts更新（Laravel API完全準拠、11メソッド）
+- ✅ 通知一覧表示（ページネーション対応、カテゴリフィルター）
+- ✅ 未読件数表示（タブバッジ統合）
+- ✅ 個別既読化機能
+- ✅ 全既読化機能
+- ✅ 通知検索機能
+- ✅ 通知テスト作成（20テスト全パス）
+- ✅ TypeScript型チェック（0エラー）
+- ✅ 実機テスト（通知一覧・既読動作確認）
+- ✅ 完了レポート: `docs/reports/mobile/2025-12-07-phase2-b5-step2-notification-completion-report.md`
 
-**注**: Firebase/FCM（Push通知）は Phase 2.B-7.5で実装
+**注**: Firebase/FCM（Push通知）は Phase 2.B-7.5で中断（Apple Developer未登録のため）
 
-**アバター機能（Step 3）**:
-- [ ] AvatarListScreen UI実装
-- [ ] AvatarDetailScreen UI実装
-- [ ] useAvatars Hook実装
-- [ ] アバターコメント表示実装
-- [ ] ポーズ・表情切り替え実装
-- [ ] アバターテスト作成（15テスト）
+**アバター機能（✅ Step 3完了 - 2025-12-07）**:
+- ✅ AvatarContext実装（55行、Context API使用）
+- ✅ useAvatars Hook実装（160行）
+- ✅ アバターコメント表示実装（TaskListScreen等5イベント対応）
+- ✅ ローディング表示実装（画像取得中の表示）
+- ✅ エラーハンドリング実装（アバター未設定、ネットワークエラー）
+- ✅ アバターテスト作成（8テスト全パス）
+- ✅ TypeScript型チェック（0エラー）
+- ✅ 完了レポート: `docs/reports/mobile/2025-12-07-phase2-b5-step3-avatar-completion-report.md`
 
 **総合**:
-- ✅ TypeScript型チェック（0エラー） - Step 1完了
+- ✅ TypeScript型チェック（0エラー） - 全Step完了
 - ✅ Step 1テスト実行（27/27パス）
-- [ ] Step 2テスト実行（全パス）
-- [ ] Step 3テスト実行（全パス）
-- [ ] 実機テスト（iOS + Android）
+- ✅ Step 2テスト実行（20/20パス）
+- ✅ Step 3テスト実行（8/8パス）
+- ✅ 実機テスト（iOS + Android）
 - ✅ Step 1完了レポート作成
-- [ ] Phase 2.B-5全体完了レポート作成
+- ✅ Step 2完了レポート作成
+- ✅ Step 3完了レポート作成
+- ✅ **Phase 2.B-5全体完了**（2025-12-07）
 
 ---
 
@@ -1376,30 +1398,42 @@ export const PerformanceChart: React.FC<Props> = ({ data }) => {
 
 #### チェックリスト
 
-**タグ機能（最優先 - Web版整合性）**:
-- [ ] タグ選択UI実装（CreateTaskScreen）
-- [ ] タグ表示実装（TaskDetailScreen）
-- [ ] タグ別バケット表示実装（TaskListScreen） ⚠️ **必須**
-- [ ] useTags Hook実装
-- [ ] TagService実装
-- [ ] タグ管理画面実装（グループマスターのみ）
-- [ ] タグテスト作成（20テスト）
+**タグ機能（✅ 完了 - 2025-12-07）**:
+- ✅ タグ選択UI実装（CreateTaskScreen、TaskEditScreen）
+- ✅ タグ表示実装（TaskDetailScreen）
+- ✅ タグ別バケット表示実装（TaskBucketScreen） ⚠️ **完了**
+- ✅ タグ詳細画面実装（TaskTagDetailScreen）
+- ✅ タグ管理画面実装（TaskTagManagementScreen、グループマスター専用）
+- ✅ useTags Hook実装（180行）
+- ✅ tag.service.ts実装（9メソッド）
+- ✅ タグテスト作成（17テスト全パス）
+- ✅ 完了レポート: `docs/reports/mobile/2025-12-07-phase2-b6-tags-completion-report.md`
 
-**トークン機能**:
-- [ ] トークン残高画面UI実装
-- [ ] トークン購入画面UI実装（Stripe）
-- [ ] トークン履歴画面UI実装
-- [ ] トークンテスト作成（15テスト）
+**トークン・サブスクリプション機能（✅ 完了 - 2025-12-08）**:
+- ✅ トークン残高画面UI実装（TokenManagementScreen）
+- ✅ トークン購入画面UI実装（TokenPurchaseWebViewScreen、Stripe WebView統合）
+- ✅ トークン履歴画面UI実装（TokenHistoryScreen）
+- ✅ サブスクリプション管理画面実装（SubscriptionManageScreen）
+- ✅ サブスクリプション請求書画面実装（SubscriptionInvoicesScreen）
+- ✅ トークンテスト作成（15テスト全パス）
+- ✅ 完了レポート: `docs/reports/mobile/2025-12-08-phase2-b6-tokens-subscriptions-completion-report.md`
 
-**グラフ・レポート機能**:
-- [ ] グラフコンポーネント実装
-- [ ] 月次レポート画面UI実装
-- [ ] レポートテスト作成（10テスト）
+**グラフ・レポート機能（✅ 完了 - 2025-12-08）**:
+- ✅ グラフコンポーネント実装（PerformanceChart.tsx、react-native-chart-kit使用）
+- ✅ パフォーマンスレポート画面実装（PerformanceScreen）
+- ✅ 月次レポート画面UI実装（MonthlyReportScreen）
+- ✅ サブスクリプション制限実装（Free会員は7日間のみ）
+- ✅ レポートテスト作成（10テスト全パス）
+- ✅ 完了レポート: `docs/reports/mobile/2025-12-08-phase2-b6-graphs-reports-completion-report.md`
 
 **総合**:
-- [ ] API連携実装
-- [ ] TypeScript型チェック（0エラー）
-- [ ] 全テスト実行（全パス）
+- ✅ API連携実装
+- ✅ TypeScript型チェック（0エラー）
+- ✅ 全テスト実行（282テスト全パス）
+- ✅ **Phase 2.B-6全体完了**（2025-12-08）
+
+**注**: PDF生成機能はPhase 2.B-8に移動（react-native-html-to-pdf導入が必要）
+
 ---
 
 ### 2.B-7: スケジュールタスク + グループ管理 + アバター管理（⚠️ 一部完了 - 2025-12-05～08、4日間）
@@ -1909,55 +1943,85 @@ export const fcmService = {
 #### チェックリスト
 
 **Step 1: Firebase環境構築（0.5日）**:
-- [ ] Firebase プロジェクト作成
-- [ ] iOS設定（GoogleService-Info.plist、APNs証明書）
-- [ ] Android設定（google-services.json、SHA-1登録）
-- [ ] @react-native-firebase/messaging インストール
+- ✅ Firebase プロジェクト作成（MyTeacherApp）
+- ⚠️ iOS設定（GoogleService-Info.plist、APNs証明書） - **Apple Developer未登録のため中断**
+- ✅ Android設定（google-services.json、SHA-1登録）
+- ✅ @react-native-firebase/messaging インストール（パッケージ追加のみ）
 
 **Step 2: バックエンド実装（1.5日）**:
-- [ ] user_device_tokensテーブル作成（マイグレーション）
-- [ ] FCMトークン登録API実装（POST /api/v1/profile/fcm-token）
-- [ ] FCMトークン削除API実装（DELETE /api/v1/profile/fcm-token）
-- [ ] 通知設定取得API実装（GET /api/v1/profile/notification-settings）
-- [ ] 通知設定更新API実装（PUT /api/v1/profile/notification-settings）
-- [ ] SendPushNotificationJob実装
-- [ ] FcmService実装（FCM HTTP v1 API）
-- [ ] DeviceTokenService + Repository実装（Interface付き）
-- [ ] AppServiceProvider DIバインディング追加
+- ✅ user_device_tokensテーブル作成（マイグレーション）
+- ✅ FCMトークン登録API実装（POST /api/v1/profile/fcm-token）
+- ✅ FCMトークン削除API実装（DELETE /api/v1/profile/fcm-token）
+- ✅ 通知設定取得API実装（GET /api/v1/profile/notification-settings）
+- ✅ 通知設定更新API実装（PUT /api/v1/profile/notification-settings）
+- ✅ SendPushNotificationJob実装（65行、通知設定チェック、FCM送信）
+- ✅ FcmService実装（189行、Firebase Admin SDK統合）
+- ✅ FcmDeviceRepository + Interface実装（62行）
+- ✅ AppServiceProvider DIバインディング追加
 
 **Step 3: モバイル実装（2日）**:
-- [ ] fcmToken.service.ts実装（トークン取得・登録）
-- [ ] usePushNotifications.ts実装（Push受信・権限管理）
-- [ ] NotificationSettingsScreen.tsx実装（通知設定画面）
-- [ ] useNotificationSettings.ts実装（設定管理Hook）
-- [ ] notification.types.ts更新（Push関連型追加）
-- [ ] App.tsx初期化処理追加（FCMトークン登録）
-- [ ] ナビゲーション追加（Settings → NotificationSettings）
+- ❌ fcmToken.service.ts実装（トークン取得・登録） - **中断**（Apple Developer未登録）
+- ❌ usePushNotifications.ts実装（Push受信・権限管理） - **中断**（同上）
+- ❌ NotificationSettingsScreen.tsx実装（通知設定画面） - **中断**（同上）
+- ❌ useNotificationSettings.ts実装（設定管理Hook） - **中断**（同上）
+- ❌ notification.types.ts更新（Push関連型追加） - **中断**（同上）
+- ❌ App.tsx初期化処理追加（FCMトークン登録） - **中断**（同上）
+- ❌ ナビゲーション追加（Settings → NotificationSettings） - **中断**（同上）
 
 **Step 4: テスト（1日）**:
-- [ ] Laravel単体テスト作成（15テスト）
-  - [ ] FcmTokenApiTest.php（6テスト）
-  - [ ] NotificationSettingsApiTest.php（5テスト）
-  - [ ] SendPushNotificationJobTest.php（7テスト）
-- [ ] モバイル統合テスト作成（20テスト）
-  - [ ] fcmToken.service.test.ts（4テスト）
-  - [ ] usePushNotifications.test.ts（8テスト）
-  - [ ] NotificationSettingsScreen.test.tsx（6テスト）
-  - [ ] useNotificationSettings.test.ts（4テスト）
-- [ ] TypeScript型チェック（0エラー）
-- [ ] 実機テスト（iOS: TestFlight配信、通知受信確認）
-- [ ] 実機テスト（Android: 内部テスト配信、通知受信確認）
+- ❌ Laravel単体テスト作成（15テスト） - **中断**
+- ❌ モバイル統合テスト作成（20テスト） - **中断**
+- ❌ TypeScript型チェック（0エラー） - **中断**
+- ❌ 実機テスト（iOS: TestFlight配信、通知受信確認） - **中断**
+- ❌ 実機テスト（Android: 内部テスト配信、通知受信確認） - **中断**
 
 **総合**:
-- [ ] 完了レポート作成（docs/reports/mobile/2025-12-XX-phase2-b7-5-push-notification-completion-report.md）
-- [ ] 要件定義書更新（PushNotification.md実装完了記録）
-- [ ] 計画書更新（phase2-mobile-app-implementation-plan.md完了記録）
+- ✅ 中間レポート作成: `docs/reports/mobile/2025-12-09-phase2-b7.5-push-notification-interim-report.md`
+- ⚠️ 要件定義書作成: `definitions/mobile/PushNotification.md`（実装中断記録）
+- ⚠️ 計画書更新: phase2-mobile-app-implementation-plan.md（中断記録）
+
+**中断理由**: Apple Developer Program未登録のため、iOS向けAPNs証明書が取得できず、Step 3以降の実装を中断。バックエンドは完全実装済み（Laravel API、FCMサービス、Push送信ジョブ）、モバイル側は未着手。
+
+**再開条件**: Apple Developer Program登録後、APNs証明書取得が完了次第、Step 3以降を再開
 
 ---
 
 ### 2.B-8: 総合テスト・バグ修正（1週間）
 
-#### テスト項目
+#### 実施内容
+
+**Phase 2.B-8は以下の3つのサブフェーズで完了しました：**
+
+##### 1. レスポンシブ対応（✅ 完了 - 2025-12-09）
+- **完了レポート**: `docs/reports/mobile/2025-12-09-responsive-design-completion-report.md`
+- **成果**: 全32画面にDimensions API対応、9,014行実装、335テスト成功（99.7%）
+
+##### 2. 画面遷移・エラーハンドリング（✅ 完了 - 2025-12-11）
+- **完了レポート**: `docs/reports/mobile/2025-12-11-navigation-error-handling-completion-report.md`
+- **成果**: navigationRef.ts実装、401/404/ネットワークエラー処理、1036テスト成功（99.7%）
+
+##### 3. Webスタイル統一（✅ 完了 - 2025-12-11）
+- **Week 1完了レポート**: `docs/reports/mobile/2025-12-11-week1-web-style-alignment-completion-report.md`
+  - **対象**: Task系9画面（TaskListScreen, TaskDetailScreen, CreateTaskScreen等）
+  - **成果**: LinearGradient統合、Webデザイン完全一致
+  
+- **Week 2完了レポート**: `docs/reports/mobile/2025-12-11-week2-web-style-alignment-completion-report.md`
+  - **対象**: Management/Settings系8画面（GroupManagementScreen, ScheduledTaskList等）
+  - **成果**: LinearGradient統合、Webデザイン完全一致
+  
+- **Week 3完了レポート**: `docs/reports/mobile/2025-12-11-week3-web-style-alignment-completion-report.md`
+  - **対象**: Payment/Reports/Auth系8画面（TokenManagementScreen, SubscriptionManageScreen等）
+  - **成果**: LinearGradient統合、プランカードWeb整合（6スタイルカテゴリ）、静的解析警告0件達成
+  - **追加成果**: select-plan.css完全準拠（ボーダー、パディング、バッジ、価格レイアウト等）
+
+**総合成果**:
+- ✅ **全25画面のWebスタイル統一完了** (100%)
+- ✅ **静的解析警告0件** (TypeScript型安全性確保)
+- ✅ **プランカードWeb完全一致** (6スタイルカテゴリ実装)
+- ✅ **レスポンシブ対応完了** (全32画面)
+- ✅ **画面遷移・エラーハンドリング完了** (401/404/ネットワークエラー)
+
+#### 残タスク（元チェックリスト）
 
 1. **機能テスト**
    - 全機能の動作確認（iOS + Android）
@@ -1981,6 +2045,11 @@ export const fcmService = {
 
 #### チェックリスト
 
+- [x] ✅ レスポンシブ対応完了（全32画面、Dimensions API実装）
+- [x] ✅ 画面遷移・エラーハンドリング完了（navigationRef.ts、401/404/ネットワークエラー）
+- [x] ✅ Webスタイル統一完了（Week 1-3、全25画面LinearGradient統合）
+- [x] ✅ プランカードWeb整合完了（SubscriptionManageScreen、6スタイルカテゴリ）
+- [x] ✅ 静的解析警告解消（Week 3、0件達成）
 - [ ] 全機能動作確認（iOS）
 - [ ] 全機能動作確認（Android）
 - [ ] パフォーマンステスト実施

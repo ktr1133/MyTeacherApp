@@ -36,6 +36,7 @@ describe('TaskListScreen - 検索機能', () => {
 
     mockedUseNavigation.mockReturnValue({
       navigate: mockNavigate,
+      setOptions: jest.fn(), // setOptions\u3092\u30e2\u30c3\u30af\u8ffd\u52a0
     } as any);
 
     mockedUseTheme.mockReturnValue({
