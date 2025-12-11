@@ -13,6 +13,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import LoginScreen from '../LoginScreen';
 import { AuthProvider } from '../../../contexts/AuthContext';
 import { AvatarProvider } from '../../../contexts/AvatarContext';
+import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { authService } from '../../../services/auth.service';
 
 // モック設定
@@ -55,9 +56,11 @@ describe('LoginScreen', () => {
 
   const renderComponent = () => render(
     <AuthProvider>
-      <AvatarProvider>
-        <LoginScreen navigation={mockNavigation} />
-      </AvatarProvider>
+      <ThemeProvider>
+        <AvatarProvider>
+          <LoginScreen navigation={mockNavigation} />
+        </AvatarProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 
@@ -235,7 +238,7 @@ describe('LoginScreen', () => {
       resolveLogin({ success: true, user: { id: 1, username: 'test_user', email: 'test@example.com', theme: 'adult' } });
       await waitFor(() => {
         expect(queryByTestId('loading-indicator')).toBeNull();
-      });
+      }, { timeout: 3000 }); // タイムアウトを3秒に延長（ThemeProvider初期化待ち）
     });
 
     it('ログイン失敗時にエラーメッセージを表示する', async () => {

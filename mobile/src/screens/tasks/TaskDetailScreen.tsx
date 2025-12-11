@@ -506,8 +506,8 @@ export default function TaskDetailScreen() {
           </LinearGradient>
         )}
 
-        {/* 承認/却下ボタン（完了済みタスクのみ） */}
-        {isCompleted && task.requires_approval && (
+        {/* 承認/却下ボタン（承認待ちタスクのみ） */}
+        {isPendingApproval && (
           <View style={styles.approvalSection}>
             {!showApprovalInput && !showRejectInput && (
               <View style={styles.approvalButtons}>

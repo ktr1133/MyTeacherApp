@@ -106,12 +106,38 @@ jest.mock('@react-navigation/native', () => ({
 }));
 
 // React Native Safe Area Context のモック
-jest.mock('react-native-safe-area-context', () => ({
-  SafeAreaProvider: ({ children }) => children,
-  SafeAreaView: require('react-native').View,
-  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
-  useSafeAreaFrame: () => ({ x: 0, y: 0, width: 375, height: 812 }),
-}));
+jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
+  
+  // SafeAreaInsetsContextを作成（@react-navigation/elementsが使用）
+  const SafeAreaInsetsContext = React.createContext({
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  });
+  
+  // SafeAreaFrameContextを作成
+  const SafeAreaFrameContext = React.createContext({
+    x: 0,
+    y: 0,
+    width: 375,
+    height: 812,
+  });
+  
+  return {
+    SafeAreaProvider: ({ children }) => children,
+    SafeAreaView: require('react-native').View,
+    SafeAreaInsetsContext: SafeAreaInsetsContext,
+    SafeAreaFrameContext: SafeAreaFrameContext,
+    useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 375, height: 812 }),
+    initialWindowMetrics: {
+      insets: { top: 0, right: 0, bottom: 0, left: 0 },
+      frame: { x: 0, y: 0, width: 375, height: 812 },
+    },
+  };
+});
 
 // console の出力を抑制（テスト実行時のノイズ削減）
 global.console = {

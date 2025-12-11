@@ -24,7 +24,7 @@ import { usePendingApprovals } from '../../hooks/usePendingApprovals';
 import { ApprovalItem } from '../../types/approval.types';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useResponsive, getFontSize, getSpacing } from '../../utils/responsive';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
 import TaskApprovalCard from '../../components/approvals/TaskApprovalCard';
 import TokenApprovalCard from '../../components/approvals/TokenApprovalCard';

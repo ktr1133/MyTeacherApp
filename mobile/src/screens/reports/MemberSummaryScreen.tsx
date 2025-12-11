@@ -12,7 +12,7 @@
  * {{-- メンバー別概況レポート結果表示モーダル --}} に相当
  */
 
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -28,7 +28,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PieChart, LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import { MemberSummaryData } from '../../types/performance.types';
-import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 
 type RootStackParamList = {
   MemberSummary: { data: MemberSummaryData };
