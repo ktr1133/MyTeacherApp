@@ -152,7 +152,7 @@
                         
                         <div class="avatar-form-group">
                             <label class="avatar-form-label flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="hidden md:block w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                                 </svg>
                                 イラストスタイル
@@ -176,7 +176,7 @@
                         {{-- 背景透過フラグ --}}
                         <div class="mb-8">
                             <label class="avatar-form-label flex items-center gap-2">
-                                <input type="checkbox" name="is_transparent" class="avatar-form-checkbox" checked>
+                                <input type="checkbox" name="is_transparent" class="avatar-form-checkbox">
                                 背景を透過する
                             </label>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -201,7 +201,7 @@
                         {{-- モデル情報ヒント --}}
                         <div class="mt-4 p-4 model-info-card rounded-lg">
                             <div class="flex items-start gap-3">
-                                <div class="model-info-icon w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <div class="hidden md:flex model-info-icon w-10 h-10 rounded-lg items-center justify-center flex-shrink-0">
                                     <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                                     </svg>
@@ -232,15 +232,16 @@
                     </div>
 
                     {{-- 送信ボタン --}}
-                    <div class="flex justify-center gap-4">
-                        <a href="{{ route('dashboard') }}" class="avatar-btn-secondary px-8 py-3 text-lg">
+                    <div class="flex justify-center gap-2 min-[377px]:gap-4">
+                        <a href="{{ route('dashboard') }}" class="avatar-btn-secondary px-4 min-[377px]:px-6 min-[618px]:px-8 py-2.5 min-[377px]:py-3 text-sm min-[377px]:text-base min-[618px]:text-lg">
                             スキップ
                         </a>
-                        <button type="submit" class="avatar-btn-primary px-8 py-3 text-lg">
-                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="submit" class="avatar-btn-primary px-4 min-[377px]:px-6 min-[618px]:px-8 py-2.5 min-[377px]:py-3 text-sm min-[377px]:text-base min-[618px]:text-lg">
+                            <svg class="w-4 h-4 min-[377px]:w-5 min-[377px]:h-5 min-[618px]:w-6 min-[618px]:h-6 mr-1 min-[377px]:mr-1.5 min-[618px]:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                             </svg>
-                            アバターを作成する
+                            <span class="hidden min-[618px]:inline">アバターを作成する</span>
+                            <span class="inline min-[618px]:hidden">作成</span>
                         </button>
                     </div>
                 </form>
