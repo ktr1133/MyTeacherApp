@@ -45,7 +45,15 @@ export default {
         "expo-build-properties",
         {
           ios: {
-            useFrameworks: "static"
+            useFrameworks: "static",
+            forceStaticLinking: [
+              "React-Core",
+              "React-RCTText",
+              "React-RCTImage",
+              "React-RCTNetwork",
+              "React-RCTAnimation",
+              "React-RCTLinking"
+            ]
           }
         }
       ]
