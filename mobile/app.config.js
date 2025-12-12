@@ -19,8 +19,12 @@ export default {
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.myteacher.app",
-      googleServicesFile: process.env.GOOGLE_SERVICES_IOS ?? "./GoogleService-Info.plist"
+      bundleIdentifier: "com.myteacher-famco.app",
+      googleServicesFile: process.env.GOOGLE_SERVICES_IOS ?? "./GoogleService-Info.plist",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false
+      },
+      useFrameworks: "static"
     },
     android: {
       adaptiveIcon: {
@@ -29,7 +33,7 @@ export default {
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
-      package: "com.myteacher.app",
+      package: "com.myteacher-famco.app",
       googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json"
     },
     web: {
