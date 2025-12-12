@@ -39,20 +39,17 @@ export default {
       favicon: "./assets/favicon.png"
     },
     plugins: [
-      [
-        "@react-native-firebase/app",
-        {
-          ios: {
-            useFrameworks: "static"
-          }
-        }
-      ],
+      "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       [
         "expo-build-properties",
         {
           ios: {
-            useFrameworks: "static"
+            useFrameworks: "static",
+            forceStaticLinking: [
+              "RNFBApp",
+              "RNFBMessaging"
+            ]
           }
         }
       ]
