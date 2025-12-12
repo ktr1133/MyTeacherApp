@@ -45,7 +45,7 @@ $sections = [
     [
         'id' => 'basic-screens',
         'title' => '基本画面の説明',
-        'description' => 'ダッシュボードとメニューの使い方',
+        'description' => 'タスク一覧とメニューの使い方',
         'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>',
         'color' => 'text-[#59B9C6]',
         'bgColor' => 'bg-[#59B9C6]/10',
@@ -318,9 +318,9 @@ $sections = [
                                     <div class="border-l-4 border-[#59B9C6] pl-3 sm:pl-4">
                                         <h4 class="font-bold text-gray-900 dark:text-white mb-2 text-sm sm:text-base">基本情報</h4>
                                         <ul class="space-y-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                                            <li>• <strong>ユーザー名:</strong> 一意の識別子（変更可能、重複チェックあり）</li>
-                                            <li>• <strong>メールアドレス:</strong> 通知受信先（変更可能）</li>
-                                            <li>• <strong>プロフィール画像:</strong> アバター画像のアップロード</li>
+                                            <li>• <strong>ユーザー名:</strong> 一意の識別子(変更可能、重複チェックあり)</li>
+                                            <li>• <strong>メールアドレス:</strong> 通知受信先(変更可能)</li>
+                                            <li>• <strong>グループ作成:</strong> 家族や友人とタスクを共有するグループを作成できます</li>
                                         </ul>
                                     </div>
 
@@ -362,7 +362,7 @@ $sections = [
                             <div class="flex-1 min-w-0">
                                 <p class="font-bold text-green-900 dark:text-green-300 mb-1 text-sm sm:text-base">おすすめ設定</p>
                                 <p class="text-xs sm:text-sm text-green-800 dark:text-green-400">
-                                    初回ログイン後は、プロフィール画像の設定とテーマの確認をおすすめします。特に子ども向けテーマは、小学生のお子さんが使いやすいデザインになっています。
+                                    初回ログイン後は、テーマの確認をおすすめします。特に子ども向けテーマは、小学生のお子さんが使いやすいデザインになっています。家族でタスクを共有したい場合は、グループを作成しましょう。
                                 </p>
                             </div>
                         </div>
@@ -403,25 +403,99 @@ $sections = [
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
                             <h3 class="text-2xl font-bold gradient-text mb-4">📊 ダッシュボード</h3>
                             <p class="text-gray-600 dark:text-gray-400 mb-4">
-                                ログイン後に最初に表示される画面。今日やるべきタスクや全体の進捗を一目で確認できます。
+                                ログイン後に最初に表示される画面。左側のサイドバーから各機能へアクセスできます。
                             </p>
-                            <div class="grid sm:grid-cols-2 gap-4">
-                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                            <h4 class="font-bold text-gray-900 dark:text-white mb-2">今日のタスク</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">本日期限のタスク、優先度の高いタスクを表示</p>
-                        </div>
-                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                            <h4 class="font-bold text-gray-900 dark:text-white mb-2">統計情報</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">完了率、タスク数、トークン残高など</p>
-                        </div>
-                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                            <h4 class="font-bold text-gray-900 dark:text-white mb-2">通知</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">未読通知の件数と内容</p>
-                        </div>
-                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                            <h4 class="font-bold text-gray-900 dark:text-white mb-2">アバター応援</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">AI教師キャラクターからのメッセージ</p>
-                        </div>
+                            
+                            <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-3">サイドバーメニュー</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-5 h-5 flex-shrink-0 text-[#59B9C6]">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">タスクリスト / ToDo</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">未完了タスクの一覧と件数を表示。すべてのタスクを確認・管理できます</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-5 h-5 flex-shrink-0 text-yellow-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">承認待ち</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">グループ管理者のみ表示。タスク承認やトークン購入リクエストの件数を表示</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-5 h-5 flex-shrink-0 text-blue-600">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">タグ管理 / タグ</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">タスクのカテゴリ(「勉強」「お手伝い」等)を作成・編集できます</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-5 h-5 flex-shrink-0 text-pink-600">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">教師アバター / サポートアバター</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">AI生成の応援キャラクターを作成・編集できます</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-5 h-5 flex-shrink-0 text-green-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">実績</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">完了率、タスク達成状況、月次レポートを確認できます</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-5 h-5 flex-shrink-0 text-amber-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">トークン / コイン</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">AI機能利用のトークン残高確認・購入。残高少ない場合は警告表示</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-5 h-5 flex-shrink-0 text-indigo-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">サブスクリプション</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">グループ管理者のみ表示。月額プランの管理と支払い設定</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-5 h-5 flex-shrink-0 text-teal-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">はじめに / つかいかた</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">スタートガイド。基本操作や各機能の使い方を確認できます</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -464,14 +538,26 @@ $sections = [
                             </p>
                             <div class="grid gap-3">
                                 <div class="flex items-center gap-4 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                    <div class="w-10 h-10 bg-[#59B9C6]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-5 h-5 text-[#59B9C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                    <div class="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 class="font-bold text-gray-900 dark:text-white">ダッシュボード</h4>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">トップページに戻る</p>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">タスク登録</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">個人タスクを新規作成</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-4 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                    <div class="w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 dark:text-white">グループタスク登録</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">複数人に同時にタスクを割り当て</p>
                                     </div>
                                 </div>
 
@@ -507,7 +593,7 @@ $sections = [
                                     </div>
                                     <div>
                                         <h4 class="font-bold text-gray-900 dark:text-white">ユーザーメニュー</h4>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">プロフィール、設定、ログアウト</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">アカウント管理、ログアウト</p>
                                     </div>
                                 </div>
                             </div>
