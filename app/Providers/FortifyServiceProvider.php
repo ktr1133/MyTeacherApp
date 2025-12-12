@@ -7,8 +7,10 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Http\Responses\PasswordConfirmedResponse;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -40,6 +42,25 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
+
+        // カスタム認証ロジック: ユーザー名またはメールアドレスでログイン
+        Fortify::authenticateUsing(function (Request $request) {
+            $username = $request->input('username');
+            $password = $request->input('password');
+            
+            // メールアドレス形式かどうかを判定
+            $field = filter_var($username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+            
+            // ユーザーを検索
+            $user = User::where($field, $username)->first();
+            
+            // ユーザーが存在し、パスワードが一致する場合のみ認証成功
+            if ($user && Hash::check($password, $user->password)) {
+                return $user;
+            }
+            
+            return null;
+        });
 
         // 二要素認証チャレンジビューの設定
         Fortify::twoFactorChallengeView(function () {

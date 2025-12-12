@@ -36,6 +36,7 @@ export default defineConfig({
                 
                 'resources/js/app.js',
                 'resources/js/admin/common.js',
+                'resources/js/auth/login.js',
                 'resources/js/auth/register-validation.js',
                 'resources/js/avatar/avatar-controller.js',
                 'resources/js/avatar/avatar-edit.js',

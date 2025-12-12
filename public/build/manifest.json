@@ -223,6 +223,12 @@
       "resources/js/dashboard/task-modal.js"
     ]
   },
+  "resources/js/auth/login.js": {
+    "file": "assets/login-BOxYNxF1.js",
+    "name": "login",
+    "src": "resources/js/auth/login.js",
+    "isEntry": true
+  },
   "resources/js/auth/register-validation.js": {
     "file": "assets/register-validation-Co0c8Lbz.js",
     "name": "register-validation",

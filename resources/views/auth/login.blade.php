@@ -43,10 +43,10 @@
                 <form method="POST" action="{{ route('login') }}" class="space-y-6">
                     @csrf
 
-                    <!-- ユーザー名 -->
+                    <!-- ユーザー名またはメールアドレス -->
                     <div>
                         <label for="username" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            ユーザー名
+                            ユーザー名またはメールアドレス
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -63,7 +63,7 @@
                                 autofocus 
                                 autocomplete="username"
                                 class="input-glow block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200"
-                                placeholder="ユーザー名を入力"
+                                placeholder="ユーザー名またはメールアドレスを入力"
                             />
                         </div>
                         @error('username')
@@ -93,9 +93,22 @@
                                 name="password" 
                                 required 
                                 autocomplete="current-password"
-                                class="input-glow block w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200"
+                                class="input-glow block w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200"
                                 placeholder="パスワードを入力"
                             />
+                            <button
+                                type="button"
+                                id="toggle-password"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                            >
+                                <svg class="h-5 w-5 eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                <svg class="h-5 w-5 eye-off-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                                </svg>
+                            </button>
                         </div>
                         @error('password')
                             <p class="auth-error mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
@@ -106,6 +119,24 @@
                             </p>
                         @enderror
                     </div>
+
+                    <script>
+                        function togglePasswordVisibility() {
+                            const passwordInput = document.getElementById('password');
+                            const showIcon = document.getElementById('password-show-icon');
+                            const hideIcon = document.getElementById('password-hide-icon');
+                            
+                            if (passwordInput.type === 'password') {
+                                passwordInput.type = 'text';
+                                showIcon.classList.add('hidden');
+                                hideIcon.classList.remove('hidden');
+                            } else {
+                                passwordInput.type = 'password';
+                                showIcon.classList.remove('hidden');
+                                hideIcon.classList.add('hidden');
+                            }
+                        }
+                    </script>
 
                     <!-- Remember Me & Forgot Password -->
                     <div class="flex items-center justify-between">
@@ -177,3 +208,5 @@
         </div>
     </div>
 </x-guest-layout>
+
+@vite(['resources/js/auth/login.js'])

@@ -42,17 +42,36 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // ★ 認証に使用する資格情報キーを 'email' から 'username' に変更 ★
-        if (! Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) {
+        // 入力値がメールアドレスかユーザー名かを判定
+        $credentials = $this->getCredentials();
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                // ★ エラーメッセージのキーも 'username' に変更 ★
                 'username' => trans('auth.failed'),
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * 入力値に応じた認証用の資格情報を取得
+     *
+     * @return array
+     */
+    protected function getCredentials(): array
+    {
+        $username = $this->input('username');
+        
+        // メールアドレス形式かどうかを判定
+        $field = filter_var($username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        
+        return [
+            $field => $username,
+            'password' => $this->input('password'),
+        ];
     }
 
     /**
