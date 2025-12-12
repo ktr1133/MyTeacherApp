@@ -216,7 +216,7 @@
     @apply bg-gradient-to-br from-[#59B9C6] to-purple-500;
     @apply flex items-center justify-center;
     @apply text-white text-xl font-bold;
-    @apply mb-4;
+    @apply shrink-0;
     position: relative;
     z-index: 1;
     isolation: isolate;

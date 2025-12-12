@@ -102,24 +102,30 @@
 
         <div class="portal-grid-3 max-w-5xl mx-auto">
             <div class="step-card">
-                <div class="step-number">1</div>
-                <h3 class="step-title">タスク作成</h3>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title mb-0">タスク作成</h3>
+                </div>
                 <p class="step-description">
                     タスクを作成し、複数のメンバーを選択して一斉割当
                 </p>
             </div>
 
             <div class="step-card">
-                <div class="step-number">2</div>
-                <h3 class="step-title">子どもが実行</h3>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title mb-0">子どもが実行</h3>
+                </div>
                 <p class="step-description">
                     各自のタスク一覧に表示。早い者勝ちで取り組む
                 </p>
             </div>
 
             <div class="step-card">
-                <div class="step-number">3</div>
-                <h3 class="step-title">完了・承認</h3>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title mb-0">完了・承認</h3>
+                </div>
                 <p class="step-description">
                     完了報告を親が確認。写真添付で質もチェック
                 </p>
