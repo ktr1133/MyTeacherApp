@@ -662,6 +662,25 @@
             </x-nav-link>
             @endif
 
+            {{-- はじめに（スタートガイド） --}}
+            <x-nav-link 
+                :href="route('portal.guide.getting-started')" 
+                :active="request()->routeIs('portal.guide.getting-started')"
+                data-close-on-click
+                class="sidebar-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-teal-500/10 hover:to-cyan-500/5 transition-all duration-200 {{ request()->routeIs('portal.guide.getting-started') ? 'active bg-gradient-to-r from-teal-500/10 to-cyan-500/5 text-teal-600' : '' }}"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-sm font-medium">
+                    @if(!$isChildTheme)
+                        はじめに
+                    @else
+                        つかいかた
+                    @endif
+                </span>
+            </x-nav-link>
+
             </div>{{-- 一般ユーザーメニュー終了（モバイル） --}}
 
             {{-- 管理者メニュー --}}
