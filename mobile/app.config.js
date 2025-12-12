@@ -23,8 +23,7 @@ export default {
       googleServicesFile: process.env.GOOGLE_SERVICES_IOS ?? "./GoogleService-Info.plist",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
-      },
-      useFrameworks: "static"
+      }
     },
     android: {
       adaptiveIcon: {
@@ -41,7 +40,15 @@ export default {
     },
     plugins: [
       "@react-native-firebase/app",
-      "@react-native-firebase/messaging"
+      "@react-native-firebase/messaging",
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            useFrameworks: "static"
+          }
+        }
+      ]
     ]
   }
 };

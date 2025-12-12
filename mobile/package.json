@@ -27,6 +27,7 @@
     "@stripe/stripe-react-native": "^0.57.0",
     "axios": "^1.13.2",
     "expo": "~54.0.27",
+    "expo-build-properties": "^1.0.10",
     "expo-dev-client": "~6.0.20",
     "expo-file-system": "^19.0.20",
     "expo-image-picker": "^17.0.9",
