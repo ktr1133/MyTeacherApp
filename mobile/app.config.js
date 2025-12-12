@@ -39,21 +39,20 @@ export default {
       favicon: "./assets/favicon.png"
     },
     plugins: [
-      "@react-native-firebase/app",
+      [
+        "@react-native-firebase/app",
+        {
+          ios: {
+            useFrameworks: "static"
+          }
+        }
+      ],
       "@react-native-firebase/messaging",
       [
         "expo-build-properties",
         {
           ios: {
-            useFrameworks: "static",
-            forceStaticLinking: [
-              "React-Core",
-              "React-RCTText",
-              "React-RCTImage",
-              "React-RCTNetwork",
-              "React-RCTAnimation",
-              "React-RCTLinking"
-            ]
+            useFrameworks: "static"
           }
         }
       ]
