@@ -1,0 +1,47 @@
+/**
+ * ガイドページ用ナビゲーションスタイル
+ * スクロール連動型サイドバー（PC）とアコーディオン（モバイル）用
+ */
+
+/* ナビゲーションのアクティブ状態 */
+.nav-active {
+    background-color: rgba(89, 185, 198, 0.1);
+    border-left-color: #59B9C6;
+    font-weight: 600;
+    color: #59B9C6;
+}
+
+.dark .nav-active {
+    background-color: rgba(89, 185, 198, 0.15);
+    color: #59B9C6;
+}
+
+/* ナビゲーションの非アクティブ状態 */
+.nav-inactive {
+    color: #6b7280;
+    border-left-color: transparent;
+}
+
+.dark .nav-inactive {
+    color: #9ca3af;
+}
+
+/* PC用サイドバー固定 */
+.sidebar-sticky {
+    position: sticky;
+    top: 100px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+/* モバイル用ナビゲーション固定 */
+.mobile-nav-sticky {
+    position: sticky;
+    top: 64px;
+    z-index: 40;
+}
+
+/* スムーズなトランジション */
+.nav-link-transition {
+    transition: all 0.2s ease-in-out;
+}

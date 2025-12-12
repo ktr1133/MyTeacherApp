@@ -28,6 +28,12 @@ export default defineConfig({
                 'resources/css/tokens/purchase.css',
                 'resources/css/subscriptions/select-plan.css',
                 'resources/css/welcome.css',
+                
+                // Portal site assets
+                'resources/css/portal-common.css',
+                'resources/css/portal-features.css',
+                'resources/css/portal/guide-navigation.css',
+                
                 'resources/js/app.js',
                 'resources/js/admin/common.js',
                 'resources/js/auth/register-validation.js',
@@ -69,6 +75,9 @@ export default defineConfig({
                 'resources/js/tokens/purchase.js',
                 'resources/js/subscriptions/select-plan.js',
                 'resources/js/welcome-chart.js',
+                
+                // Portal site assets (JavaScript)
+                'resources/js/portal/guide-navigation.js',
             ],
             refresh: true,
         }),

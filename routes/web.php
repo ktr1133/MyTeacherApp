@@ -509,6 +509,18 @@ Route::prefix('portal')->name('portal.')->group(function () {
     // 使い方ガイド
     Route::prefix('guide')->name('guide.')->group(function () {
         Route::get('/', \App\Http\Actions\Portal\Guide\ShowGuideIndexAction::class)->name('index');
+        Route::get('/getting-started', \App\Http\Actions\Portal\Guide\ShowGettingStartedAction::class)->name('getting-started');
+    });
+    
+    // 機能紹介
+    Route::prefix('features')->name('features.')->group(function () {
+        Route::get('/', \App\Http\Actions\Portal\Features\ShowFeaturesIndexAction::class)->name('index');
+        Route::get('/ai-decomposition', \App\Http\Actions\Portal\Features\ShowAiDecompositionAction::class)->name('ai-decomposition');
+        Route::get('/avatar', \App\Http\Actions\Portal\Features\ShowAvatarAction::class)->name('avatar');
+        Route::get('/group-tasks', \App\Http\Actions\Portal\Features\ShowGroupTasksAction::class)->name('group-tasks');
+        Route::get('/auto-schedule', \App\Http\Actions\Portal\Features\ShowAutoScheduleAction::class)->name('auto-schedule');
+        Route::get('/monthly-report', \App\Http\Actions\Portal\Features\ShowMonthlyReportAction::class)->name('monthly-report');
+        Route::get('/pricing', \App\Http\Actions\Portal\Features\ShowPricingAction::class)->name('pricing');
     });
 });
 

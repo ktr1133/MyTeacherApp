@@ -63,6 +63,11 @@
                     <!-- Navigation Links -->
                     @if (Route::has('login'))
                         <div class="flex items-center gap-3">
+                            <!-- ポータルサイトリンク -->
+                            <a href="{{ route('portal.home') }}" class="link-underline text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] transition font-medium text-sm px-4 py-2">
+                                Guide
+                            </a>
+                            
                             @auth
                                 <a href="{{ url('/dashboard') }}" class="btn-primary inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] text-white rounded-lg hover:shadow-lg transition font-semibold text-sm">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

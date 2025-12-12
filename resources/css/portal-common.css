@@ -1,0 +1,352 @@
+/**
+ * Portal共通CSS
+ * ポータルサイト全体で使用する共通スタイル
+ * モバイルファースト設計（小学生を持つ親がスマホで閲覧することを想定）
+ */
+
+/* ===== 共通アニメーション ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+@keyframes pulse-subtle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ===== グラデーションテキスト ===== */
+.gradient-text {
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-text-warm {
+    background: linear-gradient(135deg, #ec4899 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== グラスモーフィズム ===== */
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-card {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card-strong {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .glass-card-strong {
+    background: rgba(17, 24, 39, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ===== カード ===== */
+.portal-card {
+    @apply bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700;
+    @apply transition-all duration-300;
+}
+
+.portal-card:hover {
+    @apply border-[#59B9C6] dark:border-[#59B9C6] shadow-xl;
+    transform: translateY(-4px);
+}
+
+.portal-card-subtle {
+    @apply bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700;
+    @apply transition-all duration-300;
+}
+
+.portal-card-subtle:hover {
+    @apply shadow-lg border-gray-300 dark:border-gray-600;
+}
+
+/* ===== ボタン（モバイル最適化: タップ領域48px以上） ===== */
+.portal-btn-primary {
+    @apply inline-flex items-center justify-center gap-2;
+    @apply px-6 py-3 min-h-[48px];
+    @apply bg-gradient-to-r from-[#59B9C6] to-[#3b82f6];
+    @apply text-white font-semibold rounded-lg;
+    @apply transition-all duration-300;
+    @apply hover:shadow-lg active:scale-95;
+    position: relative;
+    overflow: hidden;
+}
+
+.portal-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.portal-btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.portal-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2;
+    @apply px-6 py-3 min-h-[48px];
+    @apply bg-white dark:bg-gray-800;
+    @apply text-gray-700 dark:text-gray-300 font-semibold rounded-lg;
+    @apply border-2 border-gray-300 dark:border-gray-600;
+    @apply transition-all duration-300;
+    @apply hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-lg;
+    @apply active:scale-95;
+}
+
+.portal-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2;
+    @apply px-4 py-2 min-h-[44px];
+    @apply text-gray-700 dark:text-gray-300 font-medium;
+    @apply transition-all duration-300;
+    @apply hover:text-[#59B9C6] dark:hover:text-[#59B9C6];
+    @apply active:scale-95;
+}
+
+/* ===== セクション共通 ===== */
+.portal-section {
+    @apply px-4 sm:px-6 lg:px-8 py-12 sm:py-16;
+}
+
+.portal-container {
+    @apply max-w-7xl mx-auto;
+}
+
+.portal-section-title {
+    @apply text-3xl sm:text-4xl font-bold mb-8 sm:mb-12;
+}
+
+.portal-section-subtitle {
+    @apply text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-6;
+}
+
+/* ===== ヒーローセクション ===== */
+.portal-hero {
+    @apply px-4 sm:px-6 lg:px-8 py-16 sm:py-20 relative overflow-hidden;
+}
+
+.portal-hero-title {
+    @apply text-4xl sm:text-5xl md:text-6xl font-bold mb-6;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.portal-hero-description {
+    @apply text-base sm:text-lg md:text-xl text-gray-700 dark:text-gray-200 leading-relaxed mb-8;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.portal-hero-cta {
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+/* ===== バッジ ===== */
+.portal-badge {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium;
+    @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm;
+    @apply border border-gray-200 dark:border-gray-700;
+}
+
+.portal-badge-primary {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold;
+    @apply bg-[#59B9C6]/10 text-[#59B9C6] border border-[#59B9C6]/20;
+}
+
+.portal-badge-success {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold;
+    @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300;
+}
+
+.portal-badge-warning {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold;
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300;
+}
+
+/* ===== リンク ===== */
+.portal-link {
+    @apply text-[#59B9C6] hover:text-[#3b82f6] transition-colors duration-300;
+    @apply font-medium;
+    position: relative;
+}
+
+.portal-link-underline {
+    @apply portal-link;
+    position: relative;
+}
+
+.portal-link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #59B9C6;
+    transition: width 0.3s ease;
+}
+
+.portal-link-underline:hover::after {
+    width: 100%;
+}
+
+/* ===== アイコン ===== */
+.floating-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+.floating-icon:nth-child(2n) {
+    animation-delay: 0.5s;
+}
+
+.floating-icon:nth-child(3n) {
+    animation-delay: 1s;
+}
+
+/* ===== 背景装飾 ===== */
+.portal-bg-gradient {
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    pointer-events: none;
+}
+
+.portal-bg-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.1;
+    animation: float 4s ease-in-out infinite;
+}
+
+.portal-bg-blob-primary {
+    background: #59B9C6;
+}
+
+.portal-bg-blob-purple {
+    background: #8b5cf6;
+}
+
+.portal-bg-blob-pink {
+    background: #ec4899;
+}
+
+/* ===== グリッド（モバイル最適化） ===== */
+.portal-grid-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.portal-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.portal-grid-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+
+/* ===== ヘッダーブラー ===== */
+.header-blur {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* ===== スムーズスクロール ===== */
+html {
+    scroll-behavior: smooth;
+}
+
+/* ===== モバイル最適化: 横スクロール防止 ===== */
+body {
+    overflow-x: hidden;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+img, video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ===== プレースホルダー画像スタイル ===== */
+.portal-placeholder {
+    @apply bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800;
+    @apply flex items-center justify-center text-gray-400 dark:text-gray-500;
+}
+
+/* ===== アクセシビリティ: reduced motion対応 ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== レスポンシブ: 小画面での調整 ===== */
+@media (max-width: 640px) {
+    .portal-section {
+        @apply py-8;
+    }
+    
+    .portal-section-title {
+        @apply text-2xl mb-6;
+    }
+    
+    .portal-hero-title {
+        @apply text-3xl;
+    }
+    
+    .portal-card {
+        @apply p-4;
+    }
+}
+
+/* ===== ダークモード微調整 ===== */
+.dark .portal-link {
+    @apply text-[#59B9C6] hover:text-[#8DD4DC];
+}

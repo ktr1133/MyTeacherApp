@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-CVWjZGw9.css",
+    "file": "assets/app-jInf8B12.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -85,6 +85,30 @@
     "isEntry": true,
     "names": [
       "notifications.css"
+    ]
+  },
+  "resources/css/portal-common.css": {
+    "file": "assets/portal-common-DScqE5td.css",
+    "src": "resources/css/portal-common.css",
+    "isEntry": true,
+    "names": [
+      "portal-common.css"
+    ]
+  },
+  "resources/css/portal-features.css": {
+    "file": "assets/portal-features-Ep9huMJe.css",
+    "src": "resources/css/portal-features.css",
+    "isEntry": true,
+    "names": [
+      "portal-features.css"
+    ]
+  },
+  "resources/css/portal/guide-navigation.css": {
+    "file": "assets/guide-navigation-DZc24oEe.css",
+    "src": "resources/css/portal/guide-navigation.css",
+    "isEntry": true,
+    "names": [
+      "guide-navigation.css"
     ]
   },
   "resources/css/profile/group-edit.css": {
@@ -365,6 +389,12 @@
     "file": "assets/notifications-BkVOEyNi.js",
     "name": "notifications",
     "src": "resources/js/notifications/notifications.js",
+    "isEntry": true
+  },
+  "resources/js/portal/guide-navigation.js": {
+    "file": "assets/guide-navigation-HTvghDQO.js",
+    "name": "guide-navigation",
+    "src": "resources/js/portal/guide-navigation.js",
     "isEntry": true
   },
   "resources/js/profile/profile-validation.js": {

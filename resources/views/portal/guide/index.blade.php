@@ -43,7 +43,7 @@
         <!-- Guide Categories -->
         <div class="grid md:grid-cols-2 gap-6">
             <!-- Getting Started -->
-            <a href="#getting-started" id="getting-started" class="group bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition">
+            <a href="{{ route('portal.guide.getting-started') }}" class="block bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
                 <div class="flex items-start gap-4">
                     <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
                         <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +90,7 @@
             </div>
 
             <!-- Group Tasks -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
+            <a href="{{ route('portal.features.group-tasks') }}" class="block bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
                 <div class="flex items-start gap-4">
                     <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
                         <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,10 +110,10 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- AI Decomposition -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
+            <a href="{{ route('portal.features.ai-decomposition') }}" class="block bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
                 <div class="flex items-start gap-4">
                     <div class="w-12 h-12 bg-[#59B9C6]/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
                         <svg class="w-6 h-6 text-[#59B9C6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,10 +133,10 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Teacher Avatar -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
+            <a href="{{ route('portal.features.avatar') }}" class="block bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
                 <div class="flex items-start gap-4">
                     <div class="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
                         <svg class="w-6 h-6 text-pink-600 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +156,7 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Token System -->
             <div class="bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
@@ -169,17 +169,63 @@
                     <div class="flex-1">
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">トークンシステム</h3>
                         <p class="text-gray-600 dark:text-gray-400 mb-3">
-                            タスク報酬とAI機能の利用コストを管理
+                            AI機能の利用コストを管理
                         </p>
                         <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                            <li>• トークンの獲得方法</li>
-                            <li>• トークンの購入</li>
+                            <li>• トークンとは</li>
+                            <li>• トークンの購入方法</li>
                             <li>• 消費履歴の確認</li>
-                            <li>• リセットタイミング</li>
+                            <li>• 月次無料枠について</li>
                         </ul>
                     </div>
                 </div>
             </div>
+
+            <!-- Auto Schedule -->
+            <a href="{{ route('portal.features.auto-schedule') }}" class="block bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
+                        <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">自動スケジュール</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-3">
+                            定期タスクを自動生成して習慣化をサポート
+                        </p>
+                        <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                            <li>• スケジュールの設定</li>
+                            <li>• 繰り返しパターン</li>
+                            <li>• 祝日対応機能</li>
+                            <li>• ランダム割当設定</li>
+                        </ul>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Monthly Report -->
+            <a href="{{ route('portal.features.monthly-report') }}" class="block bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:shadow-xl transition group">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition">
+                        <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">月次レポート</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-3">
+                            成長を見える化、実績・統計をグラフで確認
+                        </p>
+                        <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                            <li>• レポートの見方</li>
+                            <li>• PDF出力機能</li>
+                            <li>• 成長グラフの読み方</li>
+                            <li>• プラン別の機能差</li>
+                        </ul>
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
 </section>
