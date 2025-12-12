@@ -57,31 +57,45 @@
                             </svg>
                             <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-600 rounded-full animate-ping"></div>
                         </div>
-                        <span class="text-xl font-bold gradient-text">MyTeacher</span>
+                        <span class="hidden min-[440px]:inline text-xl font-bold gradient-text">MyTeacher</span>
                     </div>
                     
                     <!-- Navigation Links -->
                     @if (Route::has('login'))
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 sm:gap-3">
                             <!-- ポータルサイトリンク -->
-                            <a href="{{ route('portal.home') }}" class="link-underline text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] transition font-medium text-sm px-4 py-2">
-                                Guide
+                            <a href="{{ route('portal.home') }}" 
+                               class="inline-flex items-center justify-center px-3 sm:px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 font-medium text-sm min-w-[48px] min-h-[48px]">
+                                <svg class="w-5 h-5 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                </svg>
+                                <span class="hidden sm:inline">Guide</span>
                             </a>
                             
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="btn-primary inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] text-white rounded-lg hover:shadow-lg transition font-semibold text-sm">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <a href="{{ url('/dashboard') }}" 
+                                   class="btn-primary inline-flex items-center justify-center px-4 sm:px-6 py-2.5 bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold text-sm min-w-[48px] min-h-[48px]">
+                                    <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                     </svg>
-                                    タスクリスト
+                                    <span class="hidden sm:inline">タスクリスト</span>
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="link-underline text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] transition font-medium text-sm px-4 py-2">
-                                    Login
+                                <a href="{{ route('login') }}" 
+                                   class="inline-flex items-center justify-center px-3 sm:px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 font-medium text-sm min-w-[48px] min-h-[48px]">
+                                    <svg class="w-5 h-5 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">Login</span>
                                 </a>
                                 @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="btn-primary inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] text-white rounded-lg hover:shadow-lg transition font-semibold text-sm">
-                                        Free Start
+                                    <a href="{{ route('register') }}" 
+                                       class="btn-primary inline-flex items-center justify-center px-4 sm:px-6 py-2.5 bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold text-sm min-w-[48px] min-h-[48px]">
+                                        <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                                        </svg>
+                                        <span class="hidden min-[440px]:inline">Free Start</span>
+                                        <span class="inline min-[440px]:hidden">Free</span>
                                     </a>
                                 @endif
                             @endauth
