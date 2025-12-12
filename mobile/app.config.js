@@ -22,7 +22,11 @@ export default {
       bundleIdentifier: "com.myteacher-famco.app",
       googleServicesFile: process.env.GOOGLE_SERVICES_IOS ?? "./GoogleService-Info.plist",
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false
+        ITSAppUsesNonExemptEncryption: false,
+        UIBackgroundModes: ["remote-notification"]
+      },
+      entitlements: {
+        "aps-environment": "development"
       }
     },
     android: {

@@ -14,6 +14,7 @@ import { useAvatarContext } from '../contexts/AvatarContext';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import AvatarWidget from '../components/common/AvatarWidget';
 import { navigationRef } from '../utils/navigationRef';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 // 認証画面インポート
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -23,6 +24,16 @@ import RegisterScreen from '../screens/auth/RegisterScreen';
 import DrawerNavigator from './DrawerNavigator';
 
 const Stack = createNativeStackNavigator();
+
+/**
+ * Push通知統合コンポーネント
+ * 
+ * NavigationContainer内で実行する必要があります。
+ */
+function PushNotificationHandler() {
+  usePushNotifications();
+  return null;
+}
 
 export default function AppNavigator() {
   const authData = useAuth();
@@ -70,6 +81,8 @@ export default function AppNavigator() {
     <>
       <NavigationContainer ref={navigationRef} key="authenticated">
         <DrawerNavigator />
+        {/* Push通知ハンドラー: NavigationContainer内に配置 */}
+        <PushNotificationHandler />
       </NavigationContainer>
       
       {/* アバターウィジェット（全画面共通） */}

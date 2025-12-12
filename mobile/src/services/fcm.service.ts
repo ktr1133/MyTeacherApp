@@ -70,6 +70,8 @@ class FcmService implements IFcmService {
    * @returns FCMトークン文字列、取得失敗時はnull
    * 
    * **注意**: パーミッション許可後に呼び出すこと
+   * **iOS**: firebase.jsonでmessaging_ios_auto_register_for_remote_messages=trueの場合、
+   *         自動的にAPNS登録が行われる（手動登録は不要）
    */
   async getFcmToken(): Promise<string | null> {
     try {
