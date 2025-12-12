@@ -9,6 +9,7 @@ use App\Models\TeacherAvatar;
 use App\Models\Group;
 use App\Models\FreeTokenSetting;
 use App\Models\Notification;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -438,5 +439,16 @@ class User extends Authenticatable
         ];
         
         return $timezones[$this->timezone] ?? $this->timezone;
+    }
+
+    /**
+     * パスワードリセット通知を送信（カスタム通知を使用）
+     *
+     * @param string $token パスワードリセットトークン
+     * @return void
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
