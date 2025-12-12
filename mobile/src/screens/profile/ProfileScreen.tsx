@@ -337,6 +337,25 @@ export const ProfileScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
+            {/* はじめに・使い方ボタン */}
+            <TouchableOpacity
+              style={styles.helpButton}
+              onPress={() => {
+                // TODO: スタートガイド画面への遷移を実装
+                Alert.alert(
+                  theme === 'child' ? 'つかいかた' : 'はじめに・使い方',
+                  theme === 'child' 
+                    ? 'つかいかたガイドは、じゅんびちゅうだよ！'
+                    : 'スタートガイドは準備中です。Webアプリからご覧いただけます。'
+                );
+              }}
+              accessibilityLabel="はじめに・使い方"
+            >
+              <Text style={styles.helpButtonText}>
+                {theme === 'child' ? 'つかいかた' : 'はじめに・使い方'}
+              </Text>
+            </TouchableOpacity>
+
             {/* アカウント削除ボタン */}
             <TouchableOpacity
               style={styles.deleteButton}
@@ -498,6 +517,20 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: '#0284c7',
+  },
+  helpButton: {
+    paddingVertical: getSpacing(14, width),
+    backgroundColor: '#f0fdfa',
+    borderRadius: getBorderRadius(8, width),
+    borderWidth: 1,
+    borderColor: '#99f6e4',
+    alignItems: 'center',
+    marginBottom: getSpacing(12, width),
+  },
+  helpButtonText: {
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: '600',
+    color: '#0d9488',
   },
   deleteButton: {
     paddingVertical: getSpacing(14, width),
