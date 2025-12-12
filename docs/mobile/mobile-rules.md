@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-12 | GitHub Copilot | ポータル実装レポート保管先を追加: `/home/ktr/mtdev/docs/reports/portal/` |
 | 2025-12-09 | GitHub Copilot | レスポンシブ設計方針を全面刷新: Dimensions API積極使用、Android/iOS/タブレット対応 |
 | 2025-12-09 | GitHub Copilot | 画面デザイン方針の詳細化、Tailwind CSS変換規則追加 |
 | 2025-12-08 | GitHub Copilot | テストコード規約に型安全性に関する禁止事項を追加 |
@@ -1375,8 +1376,9 @@ feat: Phase 2.B-2 認証機能実装完了
 ### Phase完了時の報告
 
 1. **完了報告書作成**
-   - 保管先: `/home/ktr/mtdev/docs/reports/mobile/`
-   - ファイル名: `YYYY-MM-DD-phase2-{phase名}-completion-report.md`
+   - **モバイルアプリ**: `/home/ktr/mtdev/docs/reports/mobile/`
+   - **ポータルサイト**: `/home/ktr/mtdev/docs/reports/portal/`
+   - ファイル名: `YYYY-MM-DD-{タスク名}-report.md`
    - 形式: copilot-instructions.mdの「レポート作成規則」に従う
 
 2. **必須セクション**

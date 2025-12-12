@@ -213,6 +213,7 @@ definitions/environment-variables.md
 # Documentation files (maintained separately)
 docs/**/*.md
 !docs/README.md
+!docs/reports/**/*.md
 
 # Build artifacts
 public/build/assets/*.css
