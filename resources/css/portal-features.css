@@ -1,0 +1,403 @@
+/**
+ * 機能紹介ページ専用CSS
+ * /portal/features で使用
+ */
+
+/* ===== Before/After比較セクション ===== */
+.comparison-container {
+    @apply relative;
+}
+
+.comparison-card {
+    @apply p-6 rounded-2xl transition-all duration-300;
+}
+
+.comparison-card-before {
+    @apply bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900;
+    @apply border-2 border-gray-300 dark:border-gray-700;
+}
+
+.comparison-card-after {
+    @apply bg-gradient-to-br from-[#59B9C6]/10 to-purple-500/10;
+    @apply border-2 border-[#59B9C6] dark:border-[#59B9C6];
+}
+
+.comparison-arrow {
+    @apply text-[#59B9C6] text-4xl font-bold;
+    animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* ===== 機能カード ===== */
+.feature-showcase-card {
+    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 sm:p-8;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-showcase-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(89, 185, 198, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.feature-showcase-card:hover::before {
+    left: 100%;
+}
+
+.feature-icon-wrapper {
+    @apply w-16 h-16 sm:w-20 sm:h-20 rounded-2xl;
+    @apply flex items-center justify-center;
+    @apply bg-gradient-to-br from-[#59B9C6] to-[#3b82f6];
+    @apply text-white text-2xl sm:text-3xl;
+    @apply mb-4;
+    animation: float 3s ease-in-out infinite;
+}
+
+.feature-title {
+    @apply text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3;
+}
+
+.feature-description {
+    @apply text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-4;
+}
+
+.feature-benefit {
+    @apply text-sm text-gray-500 dark:text-gray-500 italic;
+}
+
+/* ===== 問題提起セクション ===== */
+.problem-card {
+    @apply p-5 rounded-xl;
+    @apply bg-red-50 dark:bg-red-900/20;
+    @apply border-l-4 border-red-500;
+    @apply transition-all duration-300;
+}
+
+.problem-card:hover {
+    @apply shadow-md translate-x-2;
+}
+
+.problem-icon {
+    @apply w-6 h-6 text-red-500 flex-shrink-0;
+}
+
+.problem-text {
+    @apply text-gray-700 dark:text-gray-300 font-medium;
+}
+
+/* ===== 解決策セクション ===== */
+.solution-card {
+    @apply p-5 rounded-xl;
+    @apply bg-green-50 dark:bg-green-900/20;
+    @apply border-l-4 border-green-500;
+    @apply transition-all duration-300;
+}
+
+.solution-card:hover {
+    @apply shadow-md translate-x-2;
+}
+
+.solution-icon {
+    @apply w-6 h-6 text-green-500 flex-shrink-0;
+}
+
+/* ===== プラン比較テーブル ===== */
+.pricing-table {
+    @apply w-full overflow-x-auto;
+    /* モバイルで横スクロール可能にするが、なるべく避ける */
+}
+
+.pricing-card {
+    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 sm:p-8;
+    @apply relative;
+}
+
+.pricing-card-popular {
+    @apply ring-4 ring-[#59B9C6] ring-opacity-50;
+    position: relative;
+}
+
+.pricing-card-popular::before {
+    content: '人気No.1';
+    @apply absolute -top-4 left-1/2 transform -translate-x-1/2;
+    @apply px-4 py-1 rounded-full text-xs font-bold;
+    @apply bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] text-white;
+}
+
+.pricing-plan-name {
+    @apply text-2xl sm:text-3xl font-bold mb-4;
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pricing-amount {
+    @apply text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-2;
+}
+
+.pricing-period {
+    @apply text-gray-500 dark:text-gray-400 text-sm;
+}
+
+.pricing-feature-list {
+    @apply space-y-3 mb-8;
+}
+
+.pricing-feature-item {
+    @apply flex items-start gap-3;
+}
+
+.pricing-feature-icon {
+    @apply w-5 h-5 text-[#59B9C6] flex-shrink-0 mt-0.5;
+}
+
+.pricing-feature-text {
+    @apply text-gray-700 dark:text-gray-300 text-sm;
+}
+
+/* ===== お客様の声セクション ===== */
+.testimonial-card {
+    @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-6 rounded-2xl;
+    @apply transition-all duration-300;
+}
+
+.testimonial-card:hover {
+    @apply shadow-xl transform scale-105;
+}
+
+.testimonial-quote {
+    @apply text-gray-700 dark:text-gray-300 mb-4 italic leading-relaxed;
+}
+
+.testimonial-author {
+    @apply flex items-center gap-3;
+}
+
+.testimonial-avatar {
+    @apply w-12 h-12 rounded-full;
+    @apply bg-gradient-to-br from-[#59B9C6] to-purple-500;
+    @apply flex items-center justify-center text-white font-bold;
+}
+
+.testimonial-info {
+    @apply text-sm;
+}
+
+.testimonial-name {
+    @apply font-semibold text-gray-900 dark:text-white;
+}
+
+.testimonial-meta {
+    @apply text-gray-500 dark:text-gray-400;
+}
+
+/* ===== ステップカード ===== */
+.step-container {
+    @apply relative;
+}
+
+.step-card {
+    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6;
+    @apply transition-all duration-300;
+}
+
+.step-card:hover {
+    @apply transform scale-105;
+}
+
+.step-number {
+    @apply w-12 h-12 rounded-full;
+    @apply bg-gradient-to-br from-[#59B9C6] to-purple-500;
+    @apply flex items-center justify-center;
+    @apply text-white text-xl font-bold;
+    @apply mb-4;
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
+}
+
+.step-number::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.step-card:hover .step-number::after {
+    opacity: 0.3;
+}
+
+.step-title {
+    @apply text-lg font-bold text-gray-900 dark:text-white mb-2;
+}
+
+.step-description {
+    @apply text-gray-600 dark:text-gray-400 text-sm;
+}
+
+/* ===== スクリーンショット・画像エリア ===== */
+.screenshot-wrapper {
+    @apply relative rounded-2xl overflow-hidden;
+    @apply border-2 border-gray-200 dark:border-gray-700;
+    @apply shadow-xl;
+}
+
+.screenshot-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    background: linear-gradient(135deg, #59B9C6, #8b5cf6);
+    border-radius: 1.5rem;
+    opacity: 0.1;
+    filter: blur(50px);
+    z-index: -1;
+    animation: pulse-subtle 4s ease-in-out infinite;
+}
+
+.screenshot-img {
+    @apply w-full h-auto;
+}
+
+/* ===== FAQセクション ===== */
+.faq-item {
+    @apply bg-white/50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm p-5 cursor-pointer;
+}
+
+.faq-question {
+    @apply flex items-center justify-between gap-3;
+    @apply text-gray-900 dark:text-white font-semibold;
+}
+
+.faq-icon {
+    @apply w-5 h-5 text-[#59B9C6] transition-transform duration-300;
+}
+
+.faq-item.active .faq-icon {
+    @apply rotate-180;
+}
+
+.faq-answer {
+    @apply mt-3 text-gray-600 dark:text-gray-400 text-sm leading-relaxed;
+    @apply hidden;
+}
+
+.faq-item.active .faq-answer {
+    @apply block;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ===== CTAセクション ===== */
+.cta-section {
+    @apply relative overflow-hidden rounded-3xl;
+    @apply bg-gradient-to-br from-[#59B9C6] via-purple-500 to-pink-500;
+    @apply p-8 sm:p-12 text-center;
+}
+
+.cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #59B9C6 0%, #8b5cf6 50%, #ec4899 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+    z-index: 0;
+}
+
+.cta-content {
+    @apply relative z-10;
+}
+
+.cta-title {
+    @apply text-3xl sm:text-4xl font-bold text-white mb-4;
+}
+
+.cta-description {
+    @apply text-white/90 text-lg mb-8;
+}
+
+.cta-btn {
+    @apply inline-flex items-center justify-center gap-2;
+    @apply px-8 py-4 min-h-[56px];
+    @apply bg-white text-[#59B9C6] font-bold rounded-xl;
+    @apply hover:shadow-2xl hover:scale-105;
+    @apply transition-all duration-300;
+}
+
+/* ===== 競合比較テーブル（モバイル最適化） ===== */
+.comparison-table-wrapper {
+    @apply overflow-x-auto -mx-4 px-4;
+    /* モバイルで左右の余白を消してスワイプ可能に */
+}
+
+.comparison-table {
+    @apply min-w-full;
+}
+
+.comparison-table th,
+.comparison-table td {
+    @apply px-4 py-3 text-sm;
+    @apply border-b border-gray-200 dark:border-gray-700;
+}
+
+.comparison-table th {
+    @apply bg-gray-50 dark:bg-gray-800 font-semibold text-gray-900 dark:text-white;
+    @apply sticky top-0 z-10;
+}
+
+.comparison-table td {
+    @apply text-gray-700 dark:text-gray-300;
+}
+
+.comparison-check {
+    @apply text-green-500 text-xl;
+}
+
+.comparison-cross {
+    @apply text-gray-400 text-xl;
+}
+
+/* ===== レスポンシブ調整（モバイル最適化） ===== */
+@media (max-width: 640px) {
+    .feature-showcase-card {
+        @apply p-5;
+    }
+    
+    .feature-icon-wrapper {
+        @apply w-14 h-14 text-xl;
+    }
+    
+    .pricing-card {
+        @apply p-5;
+    }
+    
+    .pricing-plan-name {
+        @apply text-xl;
+    }
+    
+    .pricing-amount {
+        @apply text-3xl;
+    }
+    
+    .cta-section {
+        @apply p-6;
+    }
+    
+    .cta-title {
+        @apply text-2xl;
+    }
+    
+    /* モバイルでは横並びを縦並びに */
+    .comparison-container {
+        @apply space-y-4;
+    }
+}
