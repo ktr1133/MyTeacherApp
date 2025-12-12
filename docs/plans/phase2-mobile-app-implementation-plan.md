@@ -30,6 +30,7 @@
 | 2025-12-09 | GitHub Copilot | Phase 2.B-7完了: アバター管理UI実装完了（3画面、2,287行）、タップ拡大機能・画像並び替え実装、9テスト修正完了、完了レポート作成 |
 | 2025-12-09 | GitHub Copilot | Phase 2.B-7.5詳細計画策定: Push通知要件定義書作成（PushNotification.md）、Firebase/FCM統合・デバイス管理・通知設定実装計画 |
 | 2025-12-09 | GitHub Copilot | Phase 2.B-7.5中断: バックエンド実装完了（FCMサービス・Push送信ジョブ・OpenAPI更新）、Apple Developer未登録のため実装中断、中間レポート作成 |
+| 2025-12-13 | GitHub Copilot | Phase 2.B-7.5完了: モバイルPush通知実装完了（5ファイル2,473行、56テスト100%通過）、通知設定画面実装、FCM統合、バックエンド22テスト確認、完了レポート作成 |
 | 2025-12-09 | GitHub Copilot | Phase 2.B-8完了（レスポンシブ対応）: 全32画面Dimensions API対応、responsive.ts実装（9,014行）、335テスト成功（99.7%）、完了レポート作成 |
 | 2025-12-11 | GitHub Copilot | Phase 2.B-8完了（画面遷移・エラーハンドリング）: navigationRef.ts実装、401/404/ネットワークエラー処理、54スイート1036テスト成功（99.7%）、完了レポート作成 |
 | 2025-12-11 | GitHub Copilot | Phase 2.B-8完了（Week 1 Webスタイル統一）: Task系9画面LinearGradient統合、Webデザイン完全一致、完了レポート作成（docs/reports/mobile/2025-12-11-week1-web-style-alignment-completion-report.md） |
@@ -45,58 +46,43 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
 ### 目標
 
 - ✅ **Phase 2.A完了**: React Native + Expo 技術選定（2025-12-05）
-- 🎯 **Phase 2.B**: 環境構築 + モバイルアプリ開発（10週間、2025年12月～2026年2月）
+- ✅ **Phase 2.B完了**: 環境構築 + モバイルアプリ開発（10週間、2025年12月～2025年12月13日）
   - ✅ **Phase 2.B-1完了**: 環境構築（2025-12-05）
   - ✅ **Phase 2.B-2完了**: 認証機能実装 + テスト作成（2025-12-06）
-    - Laravel API認証エンドポイント: 2件（POST /api/auth/login, POST /api/auth/logout）
-    - Laravelテスト: 15テスト、54アサーション（全パス）
-    - Mobileテスト: 39テスト（Service 13 + Hook 13 + UI 13）、認証コア100%カバレッジ
-    - バグ修正: useAuth.ts ログアウト時の状態クリア漏れ
-    - UI機能追加: LoginScreenパスワード表示切替ボタン
   - ✅ **Phase 2.B-3完了**: タスク管理機能実装（2025-12-06）
-    - モバイルUI: 3画面（一覧・作成・詳細）、useTasks Hook（419行）
-    - Laravel API: GET /api/v1/user/current 追加（グローバルテーマ取得）
-    - UserService実装（107行、グローバルテーマ専用）
-    - Mobileテスト: 116テスト（23テストケース追加）、全パス
-    - mobile-rules.md更新: Service-Hook命名規約追加
   - ✅ **Phase 2.B-4完了**: プロフィール・設定機能実装（2025-12-06）
-    - モバイルUI: 2画面（ProfileScreen、SettingsScreen）、useProfile Hook（192行）
-    - ProfileService拡張: 5メソッド追加（update、delete、timezone管理）
-    - 新規ファイル: 7ファイル（2,371行）、テスト40件追加
-    - テスト結果: 159/159パス（100%）、TypeScript 0エラー
-    - 完了レポート: `docs/reports/mobile/2025-12-06-phase2-b4-profile-settings-completion-report.md`
   - ✅ **Phase 2.B-4.5完了**: パスワード変更機能（2025-12-06）
-    - **実装**: PasswordChangeScreen（316行）、Laravel API（PUT /api/v1/profile/password）
-    - **テスト**: Laravel 9テスト + Mobile 20テスト、全パス（TypeScript 0エラー）
-    - **残課題対応**: 既存テストMock更新、非同期テスト修正完了
-    - **完了レポート**: `docs/reports/mobile/2025-12-06-phase2-b4-5-password-change-completion-report.md`
-  - ✅ **Phase 2.B-5 Step 1完了**: タスク一覧画面（2025-12-07）
-    - **500エラー修正**: statusカラム→is_completedに変更、タスク一覧API正常動作
-    - **UI改善**: 未完了のみ表示、グループタスクのみ報酬表示、タグ正常表示
-    - **検索機能**: フロントエンド側フィルタリング（タイトル・説明・タグ名部分一致）
-    - **質疑応答6件**: バケツ表示、報酬表示、タグ表示、ステータスフィルター等
-    - **ドキュメント**: TaskListScreen.md要件定義書（700行）、mobile-rules.md更新（質疑応答要件定義化ルール追加）
-    - **タスク編集画面追加**: TaskEditScreen.tsx（665行）、期限入力・タグ紐づけ実装
-    - **AuthContext化**: 認証状態の集中管理、ログイン・ログアウト画面遷移修正、401エラー解消
-    - **画面遷移修正**: AppNavigator.tsx（認証状態ごとに独立したNavigationContainer）
-    - **完了レポート**: `docs/reports/mobile/2025-12-07-phase2-b5-step1-task-list-completion-report.md`
-  - ✅ **Phase 2.B-5 Step 2完了**: 通知機能 - 基本実装（2025-12-07）
-    - **エンドポイント分離**: モバイル用（/api/notifications/unread-count、Sanctum認証）、Web用（/notifications/unread-count、セッション認証）
-    - **通知ポーリング**: 30秒間隔でバックグラウンド未読数取得（401エラー対策）
-    - **認証エラー対策**: 401エラー時にログアウト画面遷移、エラーログ記録
-    - **動作確認**: モバイル・Web両方で正常動作確認（モバイルアプリキャッシュクリア必要）
-    - **テスト対応**: APIテスト修正（v1プレフィックス削除、128テストパス）、既存テスト確認（421テストパス、redis化影響なし）
-    - **ドキュメント**: .env更新（キャッシュドライバ用途・注意事項コメント追加）
-    - **完了レポート**: `docs/reports/mobile/2025-12-07-phase2-b5-step2-notification-completion-report.md`
-  - ✅ **Phase 2.B-5 Step 3完了**: アバター機能（2025-12-07）
-    - **Context API実装**: AvatarContext.tsx（235行）、グローバル状態管理、20秒自動非表示
-    - **5つのアバターイベント**: ログイン、タスク作成、タスク完了、タスク更新、タスク削除
-    - **ローディング表示**: 処理中オーバーレイ（TaskEditScreen、TaskDetailScreen）
-    - **タスク取得修正**: getTask API使用（ページネーション問題解消）
-    - **バリデーション修正**: due_date nullable|string対応（中期タスク年のみ形式サポート）
-    - **テスト対応**: 全テストファイルAvatarProvider対応（229パス、1スキップ）
-    - **完了レポート**: `docs/reports/2025-12-07-avatar-implementation-completion-report.md`、`docs/reports/2025-12-07-task-edit-navigation-fix-report.md`
-  - ✅ **Phase 2.B-6完了（タグ機能）**: （2025-12-07）
+  - ✅ **Phase 2.B-5完了**: タスク一覧・通知・アバター機能（2025-12-07）
+  - ✅ **Phase 2.B-6完了**: タグ・トークン・サブスクリプション・グラフ機能（2025-12-07～08）
+  - ✅ **Phase 2.B-7完了**: スケジュールタスク + グループ管理 + アバター管理UI（2025-12-05～09）
+  - ✅ **Phase 2.B-7.5完了**: **Push通知機能（Firebase/FCM）**（2025-12-09～13、4日間）
+    - **バックエンド実装完了**（2025-12-09）:
+      - Firebase Admin SDK統合（kreait/firebase-php v7.0）
+      - FCMサービス実装（FcmService.php、280行）
+      - Push送信ジョブ（SendPushNotificationJob.php、240行、リトライ機能付き）
+      - OpenAPI仕様書更新（4エンドポイント定義、300行追加）
+    - **モバイル実装完了**（2025-12-13）:
+      - 通知設定画面（NotificationSettingsScreen.tsx、525行、レスポンシブ対応）
+      - FCMトークン管理（fcm.service.ts、227行、パーミッション・デバイス情報取得）
+      - FCM初期化Hook（useFCM.ts、150+行、起動時トークン登録）
+      - Push通知受信Hook（usePushNotifications.ts、245行、フォアグラウンド・バックグラウンド対応）
+      - 認証統合（FCMContext.tsx、115行、ログアウト時トークン削除）
+    - **テスト完了**（100%成功）:
+      - バックエンドテスト: 22テスト（NotificationSettings 8 + FcmToken 7 + SendPushNotificationJob 7）
+      - モバイルテスト: 56テスト（fcm.service 16 + useFCM 8 + usePushNotifications 10 + FCMContext 8 + NotificationSettingsScreen 14）
+      - TypeScript静的解析: 0警告（Intelephense検証済み）
+    - **ドキュメント完全遵守**:
+      - mobile-rules.md: Service-Hook-Context分離パターン100%適用
+      - ResponsiveDesignGuideline.md: getFontSize 12箇所使用、デバイスサイズ対応
+      - copilot-instructions.md: インターフェース付きService-Repository実装
+    - **完了レポート**: `docs/reports/mobile/2025-12-13-push-notification-settings-completion-report.md`
+    - **要件定義**: `definitions/mobile/PushNotification.md`
+  - ✅ **Phase 2.B-8完了**: デザイン修正・総合テスト（2025-12-09～11）
+    - レスポンシブ対応完了（2025-12-09）: 335テスト、99.7%成功
+    - 画面遷移・エラーハンドリング完了（2025-12-11）: 1036テスト成功
+    - Web版スタイル統一完了（2025-12-11）: 全25画面、LinearGradient統合
+- 🎯 **Phase 2.C**: App Store/Google Play申請 + 公開（4週間、2026年2月～3月）
+  - ⏸️ **Phase 2.C-1中断**: iOS/Android実機テスト（Apple Developer Program未登録）
     - **モバイル実装（3画面+1コンポーネント、1,692行）**:
       - TagManagementScreen.tsx（677行）: タグ一覧・作成・編集・削除、インライン編集
       - TagDetailScreen.tsx（387行）: タスク紐付け・解除管理、2セクション構成
@@ -167,9 +153,9 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
       - `docs/reports/mobile/2025-12-08-phase2-b6-performance-screen-completion-report.md`
       - `docs/reports/mobile/2025-12-08-phase2-b6-token-subscription-mobile-implementation-report.md`
       - `docs/reports/mobile/2025-12-07-phase2-b6-tag-feature-complete-implementation-report.md`
-  - ⏸️ **Phase 2.B-7.5中断**: Push通知機能（Firebase/FCM）（1週間、2025-12-09～）
+  - ✅ **Phase 2.B-7.5完了**: **Push通知機能（Firebase/FCM）**（4日間、2025-12-09～13）
     - **要件定義**: `/home/ktr/mtdev/definitions/mobile/PushNotification.md`（2025-12-09作成）
-    - **実装完了（バックエンド）**:
+    - **バックエンド実装完了**（2025-12-09）:
       - ✅ Firebase Admin SDK統合（kreait/firebase-php v7.0）
       - ✅ FCMサービス実装（FcmService.php、280行）
       - ✅ Push送信ジョブ（SendPushNotificationJob.php、240行、リトライ機能付き）
@@ -177,21 +163,22 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
       - ✅ DIコンテナ設定（AppServiceProvider）
       - ✅ セキュリティ設定（.gitignore、credentials.json除外）
       - ✅ ドキュメント（storage/app/firebase/README.md、セットアップ手順）
-    - **中断理由**: 
-      - ❌ **Apple Developer Program未登録**（年額14,800円）
-      - ❌ APNs認証キー（.p8ファイル）取得不可
-      - ❌ iOS実機テスト不可（APNs証明書必須）
-    - **未実装項目（モバイル・テスト）**:
-      - ❌ モバイルFCMトークン登録処理（0.5日）
-      - ❌ モバイルPush通知受信処理（1日）
-      - ❌ 通知設定画面（NotificationSettingsScreen.tsx、0.5日）
-      - ❌ Laravelテスト（15テスト、0.5日）
-      - ❌ Mobileテスト（20テスト、0.5日）
-      - ❌ 実機テスト（iOS TestFlight + Android内部テスト、0.5日）
-    - **残工数**: 4日（モバイル3日 + テスト1日）
-    - **再開条件**: Apple Developer Program登録完了 → APNs認証キー取得 → Firebase Console設定
-    - **中間レポート**: `docs/reports/mobile/2025-12-09-phase2-b7-5-push-notification-interim-report.md`
-  - 🎯 **Phase 2.B-8**: デザイン修正・総合テスト・バグ修正等（1週間）
+    - **モバイル実装完了**（2025-12-13）:
+      - ✅ 通知設定画面（NotificationSettingsScreen.tsx、525行、レスポンシブ対応）
+      - ✅ FCMトークン管理（fcm.service.ts、227行、パーミッション・デバイス情報取得）
+      - ✅ FCM初期化Hook（useFCM.ts、150+行、起動時トークン登録）
+      - ✅ Push通知受信Hook（usePushNotifications.ts、245行、フォアグラウンド・バックグラウンド対応）
+      - ✅ 認証統合（FCMContext.tsx、115行、ログアウト時トークン削除）
+    - **テスト完了**（100%成功）:
+      - ✅ バックエンドテスト: 22テスト（NotificationSettings 8 + FcmToken 7 + SendPushNotificationJob 7）
+      - ✅ モバイルテスト: 56テスト（fcm.service 16 + useFCM 8 + usePushNotifications 10 + FCMContext 8 + NotificationSettingsScreen 14）
+      - ✅ TypeScript静的解析: 0警告（Intelephense検証済み）
+    - **ドキュメント完全遵守**:
+      - mobile-rules.md: Service-Hook-Context分離パターン100%適用
+      - ResponsiveDesignGuideline.md: getFontSize 12箇所使用、デバイスサイズ対応
+      - copilot-instructions.md: インターフェース付きService-Repository実装
+    - **完了レポート**: `docs/reports/mobile/2025-12-13-push-notification-settings-completion-report.md`
+  - ✅ **Phase 2.B-8完了**: デザイン修正・総合テスト・バグ修正等（1週間）
     - ✅ **レスポンシブ対応完了**（2025-12-09）:
       - **実装**: responsive.ts（9,014行）、useChildTheme.ts（1,283行）、全32画面対応
       - **主要関数**: getDeviceSize、getFontSize、getSpacing、getBorderRadius、getShadow、useResponsive

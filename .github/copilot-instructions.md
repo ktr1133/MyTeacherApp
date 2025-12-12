@@ -99,6 +99,69 @@ Laravel 12 + Docker構成。**Action-Service-Repositoryパターン**（従来�
 
 この方針により、確実で持続可能な問題解決を実現し、同様の問題の再発を防止する。
 
+## 外部サービス・SDK統合時のルール（重要）
+
+**原則**: 外部サービス（Firebase、Stripe、OpenAI、AWS等）のSDKやAPIを利用する機能を実装した場合、実装完了後に必ず公式ドキュメントを参照し、実装内容が正しいか確認する。
+
+### 外部サービス統合の確認手順
+
+1. **公式ドキュメントの参照（必須）**
+   - 実装したAPI/メソッドの公式ドキュメントページを確認
+   - サンプルコードと実装内容を比較
+   - 推奨されるベストプラクティスに従っているか検証
+   - 非推奨（deprecated）のAPIを使用していないか確認
+
+2. **エラーハンドリングの検証**
+   - 公式ドキュメントに記載されているエラーケースを網羅しているか確認
+   - タイムアウト、リトライ、フォールバック処理が適切か検証
+   - SDK固有の例外クラスを正しくキャッチしているか確認
+
+3. **バージョン互換性の確認**
+   - 使用しているSDKバージョンと公式ドキュメントのバージョンが一致しているか確認
+   - Breaking changesや移行ガイドを確認
+   - 最新の安定版を使用しているか検証
+
+4. **セキュリティ設定の検証**
+   - API認証情報が環境変数で管理されているか確認
+   - 本番環境用とテスト環境用の設定が分離されているか検証
+   - 認証情報がGitにコミットされていないか確認（.gitignore設定）
+
+### 確認ツール・方法
+
+```bash
+# 公式ドキュメントの確認（例: Firebase）
+# - React Native Firebase: https://rnfirebase.io/
+# - Firebase公式: https://firebase.google.com/docs
+
+# SDKバージョン確認
+npm list @react-native-firebase/messaging  # モバイル
+composer show kreait/firebase-php          # Laravel
+
+# 環境変数の確認
+grep -r "API_KEY" .env.example
+grep -r "SECRET" .env.example
+```
+
+### 禁止事項
+
+- ❌ Stack Overflowやブログ記事のコードをそのまま実装（公式ドキュメント未確認）
+- ❌ ChatGPT/GitHub Copilotの提案を無検証で採用
+- ❌ 「動いたから大丈夫」で公式ドキュメントを読まない
+- ❌ 古いバージョンのドキュメントを参照（最新版を確認すべき）
+- ❌ エラーハンドリングを省略（本番環境でのクラッシュリスク）
+
+### 主要外部サービスのドキュメント
+
+| サービス | 公式ドキュメント | SDK |
+|---------|-----------------|-----|
+| Firebase (React Native) | https://rnfirebase.io/ | @react-native-firebase/* |
+| Firebase (Laravel) | https://firebase-php.readthedocs.io/ | kreait/firebase-php |
+| OpenAI API | https://platform.openai.com/docs | openai-php/client |
+| Stripe | https://stripe.com/docs/api | stripe/stripe-php |
+| AWS SDK | https://docs.aws.amazon.com/sdk-for-php/ | aws/aws-sdk-php |
+
+この方針により、外部サービス統合の信頼性を確保し、ドキュメント化されていない不具合や非推奨APIの使用を防止する。
+
 ## コード修正時の遵守事項（重要）
 
 **原則**: ソースコードの修正作業が完了した後は、必ず全体を通した観点でチェックを実施する。

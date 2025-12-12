@@ -23,6 +23,7 @@ import NotificationDetailScreen from '../screens/notifications/NotificationDetai
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import PasswordChangeScreen from '../screens/profile/PasswordChangeScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { NotificationSettingsScreen } from '../screens/settings/NotificationSettingsScreen';
 import GroupManagementScreen from '../screens/group/GroupManagementScreen';
 import ScheduledTaskListScreen from '../screens/scheduled-tasks/ScheduledTaskListScreen';
 import ScheduledTaskHistoryScreen from '../screens/scheduled-tasks/ScheduledTaskHistoryScreen';
@@ -272,6 +273,13 @@ export default function DrawerNavigator() {
         component={SettingsScreen}
         options={{
           title: '設定',
+        }}
+      />
+      <Drawer.Screen
+        name="NotificationSettings"
+        component={NotificationSettingsScreen}
+        options={{
+          title: '通知設定',
         }}
       />
 

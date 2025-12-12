@@ -34,6 +34,10 @@ use App\Http\Actions\Api\Profile\DeleteProfileApiAction;
 use App\Http\Actions\Api\Profile\ShowTimezoneSettingApiAction;
 use App\Http\Actions\Api\Profile\UpdateTimezoneApiAction;
 use App\Http\Actions\Api\Profile\UpdatePasswordApiAction;
+use App\Http\Actions\Api\Profile\GetNotificationSettingsAction;
+use App\Http\Actions\Api\Profile\UpdateNotificationSettingsAction;
+use App\Http\Actions\Api\Profile\RegisterFcmTokenAction;
+use App\Http\Actions\Api\Profile\DeleteFcmTokenAction;
 use App\Http\Actions\Api\Tags\TagsListApiAction;
 use App\Http\Actions\Api\Tags\StoreTagApiAction;
 use App\Http\Actions\Api\Tags\UpdateTagApiAction;
@@ -195,6 +199,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/timezone', ShowTimezoneSettingApiAction::class)->name('api.profile.timezone');
         Route::put('/timezone', UpdateTimezoneApiAction::class)->name('api.profile.timezone.update');
         Route::put('/password', UpdatePasswordApiAction::class)->name('api.profile.password');
+        
+        // 通知設定API（Phase 2.B-7.5）
+        Route::get('/notification-settings', GetNotificationSettingsAction::class)->name('api.profile.notification-settings');
+        Route::put('/notification-settings', UpdateNotificationSettingsAction::class)->name('api.profile.notification-settings.update');
+        
+        // FCMトークン管理API（Phase 2.B-7.5）
+        Route::post('/fcm-token', RegisterFcmTokenAction::class)->name('api.profile.fcm-token.register');
+        Route::delete('/fcm-token', DeleteFcmTokenAction::class)->name('api.profile.fcm-token.delete');
     });
 
     // タグ管理API

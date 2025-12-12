@@ -30,6 +30,7 @@ class DeviceTokenManagementService implements DeviceTokenManagementServiceInterf
      * @param string|null $appVersion
      * @return UserDeviceToken
      * @throws ValidationException
+     * @throws \RuntimeException
      */
     public function registerToken(
         int $userId,
@@ -43,6 +44,14 @@ class DeviceTokenManagementService implements DeviceTokenManagementServiceInterf
             throw ValidationException::withMessages([
                 'device_type' => 'デバイス種別はiosまたはandroidのいずれかを指定してください。',
             ]);
+        }
+
+        // トークン重複チェック（異なるユーザーが同じトークンを登録しようとした場合）
+        $existingToken = UserDeviceToken::where('device_token', $deviceToken)->first();
+        
+        if ($existingToken && $existingToken->user_id !== $userId) {
+            // 異なるユーザーが既に登録している場合は409エラー
+            throw new \RuntimeException('このデバイストークンは既に別のユーザーに登録されています。');
         }
 
         try {

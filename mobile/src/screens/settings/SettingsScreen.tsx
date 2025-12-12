@@ -30,7 +30,7 @@ import { useChildTheme } from '../../hooks/useChildTheme';
 /**
  * SettingsScreen コンポーネント
  */
-export const SettingsScreen: React.FC = () => {
+export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { theme, setTheme } = useTheme();
   const {
     isLoading,
@@ -235,24 +235,18 @@ export const SettingsScreen: React.FC = () => {
 
         {/* 通知設定 */}
         <View style={styles.section}>
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>
-                {theme === 'child' ? 'つうち' : 'プッシュ通知'}
-              </Text>
-              <Text style={styles.settingDescription}>
-                {theme === 'child'
-                  ? 'おしらせをうけとるかどうか'
-                  : 'アプリからの通知を受け取ります'}
-              </Text>
-            </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={handleNotificationToggle}
-              trackColor={{ false: '#cbd5e1', true: '#93c5fd' }}
-              thumbColor={notificationsEnabled ? '#3b82f6' : '#f1f5f9'}
-            />
-          </View>
+          <Text style={styles.sectionTitle}>
+            {theme === 'child' ? 'つうちのせってい' : '通知設定'}
+          </Text>
+          
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => navigation.navigate('NotificationSettings')}
+          >
+            <Text style={styles.linkButtonText}>
+              {theme === 'child' ? 'つうちのせっていをひらく' : '通知設定を開く'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* アプリ情報 */}

@@ -42,3 +42,55 @@ export interface AuthResponse {
   token: string;
   user: User;
 }
+
+// ============================================================
+// FCM関連の型定義（Phase 2.B-7.5）
+// ============================================================
+
+/**
+ * デバイス種別
+ */
+export type DeviceType = 'ios' | 'android';
+
+/**
+ * FCMトークン登録リクエスト
+ */
+export interface FcmTokenRequest {
+  device_token: string;
+  device_type: DeviceType;
+  device_name?: string;
+  app_version?: string;
+}
+
+/**
+ * FCMトークン削除リクエスト
+ */
+export interface FcmTokenDeleteRequest {
+  device_token: string;
+}
+
+/**
+ * 通知設定
+ */
+export interface NotificationSettings {
+  /** Push通知全体のON/OFF */
+  push_enabled: boolean;
+  /** タスク通知のON/OFF */
+  push_task_enabled: boolean;
+  /** グループ通知のON/OFF */
+  push_group_enabled: boolean;
+  /** トークン通知のON/OFF */
+  push_token_enabled: boolean;
+  /** システム通知のON/OFF */
+  push_system_enabled: boolean;
+  /** 通知音のON/OFF */
+  push_sound_enabled: boolean;
+  /** バイブレーションのON/OFF（Android） */
+  push_vibration_enabled: boolean;
+}
+
+/**
+ * 通知設定更新リクエスト（部分更新可能）
+ */
+export type NotificationSettingsUpdateRequest = Partial<NotificationSettings>;
+

@@ -160,13 +160,42 @@ jest.mock('./src/utils/navigationRef', () => {
   };
 });
 
-// console の出力を抑制（テスト実行時のノイズ削減）
+// console の出力を抑制(テスト実行時のノイズ削減)
 global.console = {
   ...console,
   // log: jest.fn(), // デバッグ時はコメントアウト解除
   warn: jest.fn(),
   error: jest.fn(),
 };
+
+// Firebase Messaging のモック（Phase 2.B-7.5: Push通知機能）
+jest.mock('@react-native-firebase/messaging', () => {
+  const mockMessaging = jest.fn(() => ({
+    requestPermission: jest.fn(),
+    getToken: jest.fn(),
+    onMessage: jest.fn(() => jest.fn()),
+    onNotificationOpenedApp: jest.fn(() => jest.fn()),
+    getInitialNotification: jest.fn(),
+    setBackgroundMessageHandler: jest.fn(),
+    deleteToken: jest.fn(),
+  }));
+
+  // AuthorizationStatus 定数
+  mockMessaging.AuthorizationStatus = {
+    NOT_DETERMINED: -1,
+    DENIED: 0,
+    AUTHORIZED: 1,
+    PROVISIONAL: 2,
+  };
+
+  return {
+    __esModule: true,
+    default: mockMessaging,
+    FirebaseMessagingTypes: {
+      AuthorizationStatus: mockMessaging.AuthorizationStatus,
+    },
+  };
+});
 
 // Alert のモック強化（Jest環境のtear down後のエラー防止）
 const { Alert } = require('react-native');

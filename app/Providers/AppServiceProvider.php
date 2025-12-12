@@ -25,6 +25,8 @@ use App\Repositories\Profile\GroupRepositoryInterface;
 use App\Repositories\Profile\GroupRepository;
 use App\Repositories\Profile\GroupUserRepositoryInterface;
 use App\Repositories\Profile\GroupUserRepository;
+use App\Repositories\Profile\NotificationSettingsRepositoryInterface as ProfileNotificationSettingsRepositoryInterface;
+use App\Repositories\Profile\NotificationSettingsEloquentRepository as ProfileNotificationSettingsEloquentRepository;
 use App\Repositories\Report\ReportRepositoryInterface;
 use App\Repositories\Report\ReportEloquentRepository;
 use App\Repositories\Report\MonthlyReportRepositoryInterface;
@@ -78,6 +80,8 @@ use App\Services\Profile\ProfileManagementService;
 use App\Services\Profile\ProfileManagementServiceInterface;
 use App\Services\Profile\GroupServiceInterface;
 use App\Services\Profile\GroupService;
+use App\Services\Profile\NotificationSettingsServiceInterface as ProfileNotificationSettingsServiceInterface;
+use App\Services\Profile\NotificationSettingsService as ProfileNotificationSettingsService;
 use App\Services\Group\GroupTaskLimitServiceInterface;
 use App\Services\Group\GroupTaskLimitService;
 use App\Services\Report\PerformanceServiceInterface;
@@ -179,6 +183,7 @@ class AppServiceProvider extends ServiceProvider
 
         // --- Profile ---
         $this->app->bind(ProfileUserRepositoryInterface::class, ProfileUserEloquentRepository::class);
+        $this->app->bind(ProfileNotificationSettingsRepositoryInterface::class, ProfileNotificationSettingsEloquentRepository::class);
 
         // --- Report ---
         $this->app->bind(ReportRepositoryInterface::class, ReportEloquentRepository::class);
@@ -241,6 +246,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(GroupTaskLimitServiceInterface::class, GroupTaskLimitService::class);
         $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);
         $this->app->bind(GroupUserRepositoryInterface::class, GroupUserRepository::class);
+        $this->app->bind(ProfileNotificationSettingsServiceInterface::class, ProfileNotificationSettingsService::class);
 
         // --- Report ---
         $this->app->bind(PerformanceServiceInterface::class, PerformanceService::class);
