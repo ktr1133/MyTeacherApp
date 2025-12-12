@@ -42,11 +42,27 @@
                 </svg>
             </div>
             <h1 class="text-4xl sm:text-5xl font-bold gradient-text mb-6">
-                グループタスク管理
+                グループタスク
             </h1>
-            <p class="text-2xl sm:text-3xl font-bold gradient-text-warm max-w-3xl mx-auto">
-                兄弟姉妹で楽しく競争、<br class="sm:hidden">家族みんなで成長
-            </p>
+            <div class="max-w-3xl mx-auto space-y-3">
+                <p class="text-lg text-gray-700 dark:text-gray-300">
+                    子どもの画面では<span class="font-bold text-[#59B9C6]">「クエスト」</span>として表示されます。
+                </p>
+                <div class="text-base text-gray-600 dark:text-gray-400 space-y-2">
+                    <p class="flex items-start gap-2">
+                        <span class="text-purple-600 dark:text-purple-400 shrink-0">✓</span>
+                        <span>親はクエストを発行して、子どもたちに割り当てることができます</span>
+                    </p>
+                    <p class="flex items-start gap-2">
+                        <span class="text-purple-600 dark:text-purple-400 shrink-0">✓</span>
+                        <span>クエストの報酬を設定できます</span>
+                    </p>
+                    <p class="flex items-start gap-2">
+                        <span class="text-purple-600 dark:text-purple-400 shrink-0">✓</span>
+                        <span>クエストの見た目をカスタマイズできます</span>
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- メインビジュアル -->

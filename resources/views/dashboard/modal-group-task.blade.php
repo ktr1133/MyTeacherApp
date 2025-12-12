@@ -6,7 +6,8 @@
     {{-- モーダルメインパネル --}}
     <div 
          id="group-task-modal-content"
-         class="modal-content bg-white dark:bg-gray-900 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300 translate-y-4 scale-95 shadow-2xl rounded-2xl">
+         class="modal-content bg-white dark:bg-gray-900 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300 translate-y-4 scale-95 shadow-2xl rounded-2xl"
+    >
 
         {{-- ヘッダー - パープルテーマ --}}
         <div class="px-6 py-4 border-b border-purple-200/50 dark:border-purple-700/50 flex justify-between items-center shrink-0 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
@@ -18,20 +19,35 @@
                 </div>
                 <div>
                     <h3 class="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                        グループタスク登録
+                        グループタスク
                     </h3>
-                    <p class="text-xs text-purple-600 dark:text-purple-400">メンバーに割り当てるタスクを作成</p>
+                    <p class="text-xs text-purple-600 dark:text-purple-400">メンバーにタスクを作成</p>
                 </div>
             </div>
-            <button 
-                type="button"
-                id="close-group-modal-btn" 
-                class="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition" 
-                aria-label="Close modal">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+            <div class="flex items-center gap-2">
+                {{-- ヘルプリンク --}}
+                <a 
+                    href="{{ route('portal.features.group-tasks') }}"
+                    target="_blank"
+                    class="p-2 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition group"
+                    aria-label="グループタスクの使い方を見る"
+                    title="グループタスクの使い方を見る">
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                </a>
+                {{-- 閉じるボタン --}}
+                <button 
+                    type="button"
+                    id="close-group-modal-btn" 
+                    class="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition" 
+                    aria-label="Close modal"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         {{-- スクロール可能なコンテンツエリア --}}
