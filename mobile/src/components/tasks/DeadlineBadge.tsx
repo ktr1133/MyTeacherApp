@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { DeadlineInfo } from '../../utils/taskDeadline';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 interface DeadlineBadgeProps {
   /** 期限情報 */
@@ -28,6 +29,7 @@ export default function DeadlineBadge({ deadlineInfo, variant = 'absolute' }: De
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors } = useThemedColors();
   
   // アニメーション用
   const pulseAnim = useRef(new Animated.Value(1)).current;

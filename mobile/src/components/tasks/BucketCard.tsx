@@ -16,6 +16,7 @@ import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } fr
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { getMostUrgentDeadline } from '../../utils/taskDeadline';
 import DeadlineBadge from './DeadlineBadge';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 interface BucketCardProps {
   tagId: number;
@@ -32,6 +33,7 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, isDark } = useThemedColors();
   
   const previewTasks = tasks.slice(0, 6); // Web版と同じ6件表示
   const remainingCount = Math.max(0, tasks.length - 6);
@@ -43,7 +45,7 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
   /**
    * レスポンシブスタイル生成
    */
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors), [width, themeType, colors]);
 
   /**
    * タップ時のアニメーション（Web版のtranslateY効果を再現）
@@ -72,9 +74,9 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
         onPressOut={handlePressOut}
         activeOpacity={1} // アニメーションで制御するため1に設定
       >
-        {/* グラデーション背景（Web版: bg-gradient-to-br from-blue-50 to-purple-50） */}
+        {/* グラデーション背景（Web版: bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700） */}
         <LinearGradient
-          colors={['#EFF6FF', '#FAF5FF']} // Web版: blue-50 (#EFF6FF) → purple-50 (#FAF5FF)
+          colors={isDark ? ['#1F2937', '#374151'] : ['#EFF6FF', '#FAF5FF']} // ダーク: gray-800 → gray-700, ライト: blue-50 → purple-50
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }} // 右下方向のグラデーション
           style={styles.card}
@@ -155,7 +157,7 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
  * @param theme - テーマタイプ
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any) => StyleSheet.create({
   cardContainer: {
     marginBottom: getSpacing(16, width), // Web版: gap-4 (lg:gap-6)
   },
@@ -201,7 +203,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   tagName: {
     fontSize: getFontSize(18, width, theme), // Web版: text-base (lg:text-lg)
     fontWeight: 'bold', // Web版: font-bold
-    color: '#111827', // Web版: text-gray-900
+    color: colors.text.primary, // ダークモード対応
     flex: 1,
   },
   badge: {
@@ -226,18 +228,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     gap: getSpacing(6, width), // Web版: gap-1.5 (lg:gap-2)
   },
   previewItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Web版: bg-white/50
+    backgroundColor: colors.isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(255, 255, 255, 0.5)', // ダークモード対応
     borderRadius: getBorderRadius(20, width), // Web版: rounded-full
     paddingHorizontal: getSpacing(12, width), // Web版: px-2 (lg:px-3)
     paddingVertical: getSpacing(4, width), // Web版: py-1 (lg:py-1.5)
     maxWidth: '60%', // Web版: max-w-[60%]
     // Web版: backdrop-blur-sm border border-gray-200/50
     borderWidth: 1,
-    borderColor: 'rgba(229, 231, 235, 0.5)', // Web版: border-gray-200/50
+    borderColor: colors.border.light, // ダークモード対応
   },
   previewChip: {
     fontSize: getFontSize(12, width, theme), // Web版: text-xs
-    color: '#374151', // Web版: text-gray-700
+    color: colors.text.secondary, // ダークモード対応
   },
   remainingContainer: {
     paddingHorizontal: getSpacing(12, width), // Web版: px-2 (lg:px-3)
@@ -245,7 +247,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   remainingText: {
     fontSize: getFontSize(12, width, theme), // Web版: text-xs
-    color: '#9CA3AF', // Web版: text-gray-400
+    color: colors.text.tertiary, // ダークモード対応
   },
   bottomBar: {
     position: 'absolute',

@@ -15,6 +15,7 @@ import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import AvatarWidget from '../components/common/AvatarWidget';
 import { navigationRef } from '../utils/navigationRef';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useThemedColors } from '../hooks/useThemedColors';
 
 // 認証画面インポート
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -39,6 +40,7 @@ function PushNotificationHandler() {
 export default function AppNavigator() {
   const authData = useAuth();
   const { isVisible, currentData, hideAvatar } = useAvatarContext();
+  const { colors, accent } = useThemedColors();
   const loading = authData.loading;
   const isAuthenticated = authData.isAuthenticated;
 
@@ -47,8 +49,8 @@ export default function AppNavigator() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={accent.primary} />
       </View>
     );
   }

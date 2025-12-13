@@ -27,6 +27,7 @@ import { useChildTheme } from '../../hooks/useChildTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { tokenService } from '../../services/token.service';
 import type { TokenBalance as TokenBalanceAPI } from '../../types/token.types';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 /**
  * ドロワーメニュー項目の定義
@@ -60,7 +61,8 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   // 状態管理
   const [taskTotal, setTaskTotal] = useState<number>(0);
@@ -221,7 +223,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
         <Ionicons
           name={item.icon}
           size={getFontSize(20, width, themeType)}
-          color={isActive ? '#59B9C6' : '#4B5563'}
+          color={isActive ? accent.primary : colors.text.secondary}
           style={styles.menuIcon}
         />
         <Text style={[styles.menuLabel, isActive && styles.menuLabelActive]}>
@@ -286,7 +288,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
           <Ionicons
             name="cash-outline"
             size={getFontSize(20, width, themeType)}
-            color="#59B9C6"
+            color={accent.primary}
           />
           <Text style={styles.tokenBalanceTitle}>{tokenLabel}残高</Text>
         </View>
@@ -412,27 +414,27 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
  * @param theme - テーマタイプ（'adult' | 'child'）
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') =>
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) =>
   StyleSheet.create({
     scrollViewContent: {
       flexGrow: 1,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: colors.background,
     },
     header: {
       paddingHorizontal: getSpacing(16, width),
       paddingVertical: getSpacing(20, width),
       borderBottomWidth: 1,
-      borderBottomColor: '#E5E7EB',
+      borderBottomColor: colors.border.default,
     },
     logo: {
       fontSize: getFontSize(24, width, theme),
       fontWeight: 'bold',
-      color: '#59B9C6',
+      color: accent.primary,
       marginBottom: getSpacing(8, width),
     },
     userName: {
       fontSize: getFontSize(14, width, theme),
-      color: '#6B7280',
+      color: colors.text.secondary,
     },
     adminToggleContainer: {
       flexDirection: 'row',
@@ -493,13 +495,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       minWidth: getSpacing(24, width),
       height: getSpacing(24, width),
       borderRadius: getBorderRadius(12, width),
-      backgroundColor: '#59B9C6',
+      backgroundColor: accent.primary,
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: getSpacing(6, width),
     },
     badgePulse: {
-      backgroundColor: '#F59E0B',
+      backgroundColor: colors.status.warning,
       // TODO: アニメーション実装
     },
     badgeText: {
@@ -511,15 +513,15 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       width: getSpacing(8, width),
       height: getSpacing(8, width),
       borderRadius: getBorderRadius(4, width),
-      backgroundColor: '#EF4444',
+      backgroundColor: colors.status.error,
     },
     tokenBalanceContainer: {
       marginTop: 'auto', // 下部固定
       paddingHorizontal: getSpacing(16, width),
       paddingVertical: getSpacing(16, width),
-      backgroundColor: '#F9FAFB',
+      backgroundColor: colors.surface,
       borderTopWidth: 1,
-      borderTopColor: '#E5E7EB',
+      borderTopColor: colors.border.default,
     },
     tokenBalanceHeader: {
       flexDirection: 'row',
@@ -529,13 +531,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     tokenBalanceTitle: {
       fontSize: getFontSize(12, width, theme),
       fontWeight: '600',
-      color: '#6B7280',
+      color: colors.text.secondary,
       marginLeft: getSpacing(8, width),
     },
     tokenBalanceTotal: {
       fontSize: getFontSize(24, width, theme),
       fontWeight: 'bold',
-      color: '#111827',
+      color: colors.text.primary,
       marginBottom: getSpacing(4, width),
     },
     tokenBalanceDetail: {
@@ -543,10 +545,10 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     },
     tokenBalanceDetailText: {
       fontSize: getFontSize(12, width, theme),
-      color: '#6B7280',
+      color: colors.text.secondary,
     },
     tokenPurchaseButton: {
-      backgroundColor: '#59B9C6',
+      backgroundColor: accent.primary,
       paddingVertical: getSpacing(8, width),
       paddingHorizontal: getSpacing(16, width),
       borderRadius: getBorderRadius(8, width),
@@ -566,18 +568,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       marginVertical: getSpacing(16, width),
       borderRadius: getBorderRadius(8, width),
       borderWidth: 1,
-      borderColor: '#FEE2E2',
-      backgroundColor: '#FEF2F2',
+      borderColor: colors.status.error + '40',
+      backgroundColor: colors.status.error + '10',
     },
     logoutButtonText: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '600',
-      color: '#EF4444',
+      color: colors.status.error,
       marginLeft: getSpacing(8, width),
     },
     comingSoonText: {
       fontSize: getFontSize(12, width, theme),
-      color: '#9CA3AF',
+      color: colors.text.tertiary,
       fontStyle: 'italic',
       paddingHorizontal: getSpacing(16, width),
     },

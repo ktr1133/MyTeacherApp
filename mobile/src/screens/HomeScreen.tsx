@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../utils/responsive';
 import { useChildTheme } from '../hooks/useChildTheme';
+import { useThemedColors } from '../hooks/useThemedColors';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -20,7 +21,8 @@ export default function HomeScreen() {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   return (
     <View style={styles.container}>
@@ -109,10 +111,10 @@ export default function HomeScreen() {
   );
 }
 
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -122,32 +124,32 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   title: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   userName: {
     fontSize: getFontSize(32, width, theme),
     fontWeight: 'bold',
-    color: '#3b82f6',
+    color: accent.primary,
     marginBottom: getSpacing(32, width),
   },
   infoBox: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     padding: getSpacing(16, width),
     borderRadius: getBorderRadius(8, width),
     marginBottom: getSpacing(24, width),
   },
   infoLabel: {
     fontSize: getFontSize(12, width, theme),
-    color: '#6b7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(4, width),
   },
   infoValue: {
     fontSize: getFontSize(16, width, theme),
-    color: '#1f2937',
+    color: colors.text.primary,
   },
   statusBox: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: colors.status.success + '20',
     padding: getSpacing(16, width),
     borderRadius: getBorderRadius(8, width),
     marginBottom: getSpacing(32, width),
@@ -156,12 +158,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   statusText: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
-    color: '#059669',
+    color: colors.status.success,
     marginBottom: getSpacing(4, width),
   },
   statusSubtext: {
     fontSize: getFontSize(14, width, theme),
-    color: '#059669',
+    color: colors.status.success,
   },
   taskButton: {
     backgroundColor: '#10b981',
