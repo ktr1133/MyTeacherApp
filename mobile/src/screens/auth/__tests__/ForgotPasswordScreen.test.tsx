@@ -381,7 +381,6 @@ describe('ForgotPasswordScreen', () => {
       const { getByPlaceholderText, getByText } = renderComponent();
       const emailInput = getByPlaceholderText('メールアドレスを入力');
       const submitButton = getByText('リセットリンクを送信');
-      const backButton = getByText('ログインページへ戻る');
 
       // Act
       fireEvent.changeText(emailInput, 'test@example.com');
