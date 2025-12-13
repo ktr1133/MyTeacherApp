@@ -26,18 +26,37 @@ Phase 4では、Phase 1-3で構築したダークモードインフラを活用�
 ### Low Priority (1)
 - ✅ **NotificationSettingsScreen** - 通知設定 (commit: 9e96115)
 
-## 残作業 (3画面) - Critical Priority
+## 追加完了 (3画面) - Critical Priority ✅
 
-Phase 4最終バッチとして、以下のタスク関連画面が未対応であることを確認：
+Phase 4最終バッチとして、タスク関連画面を完了：
 
-1. **TaskDecompositionScreen** - タスク分解画面
-   - ハードコードカラー: 10箇所 (#f5f5f5, #fff, #E3F2FD, #E0F2F7, #59B9C6)
-   
-2. **TaskListScreen** - タスク一覧画面  
-   - ハードコードカラー: 20箇所 (#F9FAFB, #FFFFFF, #F3F4F6, #4F46E5, #10B981等)
-   
-3. **CreateTaskScreen** - タスク作成画面
-   - ハードコードカラー: 10箇所 (#F9FAFB, #FFFFFF, #F3F4F6, #4F46E5)
+1. ✅ **TaskDecompositionScreen** - タスク分解画面 (commit: 94d6bbb)
+2. ✅ **TaskListScreen** - タスク一覧画面 (commit: 94d6bbb)
+3. ✅ **CreateTaskScreen** - タスク作成画面 (commit: 94d6bbb)
+
+**合計 12画面** でダークモード対応完了。
+
+## 残作業（追加発見）
+
+最終検証で以下の画面にハードコードカラーが残存することを確認：
+
+### 通知・承認関連
+- **NotificationDetailScreen** (7箇所)
+- **PendingApprovalsScreen** (1箇所)
+
+### トークン・決済関連
+- **TokenPurchaseWebViewScreen** (4箇所)
+- **TokenHistoryScreen** (7箇所)
+
+### 認証関連
+- **RegisterScreen** (2箇所)
+- **LoginScreen** (3箇所)
+
+### レポート関連
+- **PerformanceScreen** (7箇所)
+- **MemberSummaryScreen** (9箇所 - 一部対応済み)
+
+**優先度**: これらは補助的な画面であり、Phase 5以降で対応可能。タスク管理のコア機能は全てダークモード対応済み。
 
 ## 実装パターン
 
@@ -113,4 +132,13 @@ const createStyles = (width, theme, colors, accent) => StyleSheet.create({
 | 45e9355 | Group/Avatar | Medium priority残り3画面 |
 | 9e96115 | NotificationSettings | Low priority完了 |
 | ea82b36 | useThemedColors | TypeScript警告修正 |
+| 94d6bbb | Task screens | **Final batch: TaskList, CreateTask, TaskDecomposition** |
+
+## Phase 4 完了宣言 ✅
+
+**対応完了画面**: 12画面  
+**タスク管理コア機能**: 100%ダークモード対応完了  
+**残存ハードコードカラー**: 補助的な画面のみ（Phase 5以降で対応）
+
+ユーザーがタスク作成・編集・完了・分解を行う全ての主要画面でダークモードが正常に動作します。
 
