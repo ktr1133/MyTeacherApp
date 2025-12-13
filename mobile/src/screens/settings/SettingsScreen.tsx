@@ -26,6 +26,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useColorScheme } from '../../contexts/ColorSchemeContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { userService } from '../../services/user.service';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
@@ -43,11 +45,13 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
     getTimezoneSettings,
     updateTimezone,
   } = useProfile(theme);
+  const { colorSchemeMode, setColorSchemeMode } = useColorScheme();
+  const { colors, accent } = useThemedColors();
 
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   const [currentTheme, setCurrentTheme] = useState<'adult' | 'child'>(theme);
   const [timezone, setTimezone] = useState('');
@@ -146,6 +150,20 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
     );
   };
 
+  /**
+   * カラースキーマ変更
+   */
+  const handleColorSchemeChange = async (mode: 'light' | 'dark' | 'auto') => {
+    await setColorSchemeMode(mode);
+    const modeLabel = mode === 'light' ? 'ライト' : mode === 'dark' ? 'ダーク' : '自動';
+    Alert.alert(
+      theme === 'child' ? 'きりかえたよ' : 'カラーモード変更',
+      theme === 'child'
+        ? `${modeLabel}モードにきりかえたよ`
+        : `${modeLabel}モードに切り替えました`,
+    );
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
@@ -219,6 +237,111 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
                   ]}
                 >
                   {theme === 'child' ? 'こどもモード' : '子供モード'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* カラースキーマ設定 */}
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(59, 130, 246, 0.05)', 'rgba(147, 51, 234, 0.05)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.cardHeader}
+          >
+            <View style={styles.cardHeaderIcon}>
+              <LinearGradient
+                colors={['#3b82f6', '#9333ea']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconGradient}
+              >
+                <Ionicons name="moon-outline" size={16} color="#fff" />
+              </LinearGradient>
+            </View>
+            <Text style={styles.cardTitle}>
+              {theme === 'child' ? 'がめんのあかるさ' : 'カラーモード'}
+            </Text>
+          </LinearGradient>
+          <View style={styles.cardContent}>
+            <Text style={styles.sectionDescription}>
+              {theme === 'child'
+                ? 'ライトモード、ダークモード、じどうをえらべるよ'
+                : 'ライトモード、ダークモード、または自動を選択します'}
+            </Text>
+
+            <View style={styles.colorSchemeButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.colorSchemeButton,
+                  colorSchemeMode === 'light' && styles.colorSchemeButtonActive,
+                ]}
+                onPress={() => handleColorSchemeChange('light')}
+                accessibilityLabel="ライトモード"
+              >
+                <Ionicons 
+                  name="sunny" 
+                  size={20} 
+                  color={colorSchemeMode === 'light' ? '#FFFFFF' : colors.text.secondary}
+                  style={styles.colorSchemeIcon}
+                />
+                <Text
+                  style={[
+                    styles.colorSchemeButtonText,
+                    colorSchemeMode === 'light' && styles.colorSchemeButtonTextActive,
+                  ]}
+                >
+                  {theme === 'child' ? 'ライト' : 'ライト'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.colorSchemeButton,
+                  colorSchemeMode === 'dark' && styles.colorSchemeButtonActive,
+                ]}
+                onPress={() => handleColorSchemeChange('dark')}
+                accessibilityLabel="ダークモード"
+              >
+                <Ionicons 
+                  name="moon" 
+                  size={20} 
+                  color={colorSchemeMode === 'dark' ? '#FFFFFF' : colors.text.secondary}
+                  style={styles.colorSchemeIcon}
+                />
+                <Text
+                  style={[
+                    styles.colorSchemeButtonText,
+                    colorSchemeMode === 'dark' && styles.colorSchemeButtonTextActive,
+                  ]}
+                >
+                  {theme === 'child' ? 'ダーク' : 'ダーク'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.colorSchemeButton,
+                  colorSchemeMode === 'auto' && styles.colorSchemeButtonActive,
+                ]}
+                onPress={() => handleColorSchemeChange('auto')}
+                accessibilityLabel="自動"
+              >
+                <Ionicons 
+                  name="phone-portrait-outline" 
+                  size={20} 
+                  color={colorSchemeMode === 'auto' ? '#FFFFFF' : colors.text.secondary}
+                  style={styles.colorSchemeIcon}
+                />
+                <Text
+                  style={[
+                    styles.colorSchemeButtonText,
+                    colorSchemeMode === 'auto' && styles.colorSchemeButtonTextActive,
+                  ]}
+                >
+                  {theme === 'child' ? 'じどう' : '自動'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -468,28 +591,28 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
   );
 };
 
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.background,
   },
   content: {
     padding: getSpacing(16, width),
   },
   errorContainer: {
     padding: getSpacing(12, width),
-    backgroundColor: '#fef2f2',
+    backgroundColor: colors.status.error + '15',
     borderRadius: getBorderRadius(8, width),
     borderLeftWidth: 4,
-    borderLeftColor: '#ef4444',
+    borderLeftColor: colors.status.error,
     marginBottom: getSpacing(16, width),
   },
   errorText: {
-    color: '#dc2626',
+    color: colors.status.error,
     fontSize: getFontSize(14, width, theme),
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(16, width),
     marginBottom: getSpacing(16, width),
     ...getShadow(2),
@@ -519,14 +642,14 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   cardTitle: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '700',
-    color: '#1e293b',
+    color: colors.text.primary,
   },
   cardContent: {
     padding: getSpacing(16, width),
   },
   sectionDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#64748b',
+    color: colors.text.secondary,
     marginBottom: getSpacing(16, width),
   },
   themeButtons: {
@@ -536,29 +659,59 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   themeButton: {
     flex: 1,
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#f1f5f9',
+    backgroundColor: colors.surface,
     borderRadius: getBorderRadius(8, width),
     borderWidth: 2,
-    borderColor: '#cbd5e1',
+    borderColor: colors.border.default,
     alignItems: 'center',
   },
   themeButtonActive: {
-    backgroundColor: '#dbeafe',
-    borderColor: '#3b82f6',
+    backgroundColor: accent.primary + '20',
+    borderColor: accent.primary,
   },
   themeButtonText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#475569',
+    color: colors.text.secondary,
   },
   themeButtonTextActive: {
-    color: '#3b82f6',
+    color: accent.primary,
+  },
+  // カラースキーマボタンスタイル
+  colorSchemeButtons: {
+    flexDirection: 'row',
+    gap: getSpacing(12, width),
+  },
+  colorSchemeButton: {
+    flex: 1,
+    paddingVertical: getSpacing(12, width),
+    backgroundColor: colors.surface,
+    borderRadius: getBorderRadius(8, width),
+    borderWidth: 2,
+    borderColor: colors.border.default,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  colorSchemeButtonActive: {
+    backgroundColor: accent.primary,
+    borderColor: accent.primary,
+  },
+  colorSchemeIcon: {
+    marginBottom: getSpacing(4, width),
+  },
+  colorSchemeButtonText: {
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '600',
+    color: colors.text.secondary,
+  },
+  colorSchemeButtonTextActive: {
+    color: '#FFFFFF',
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     overflow: 'hidden',
   },
   picker: {
@@ -576,37 +729,37 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   settingTitle: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#1e293b',
+    color: colors.text.primary,
     marginBottom: getSpacing(4, width),
   },
   settingDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#64748b',
+    color: colors.text.secondary,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: getSpacing(12, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: colors.border.subtle,
   },
   infoLabel: {
     fontSize: getFontSize(16, width, theme),
-    color: '#475569',
+    color: colors.text.secondary,
   },
   infoValue: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#1e293b',
+    color: colors.text.primary,
   },
   linkButton: {
     paddingVertical: getSpacing(12, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: colors.border.subtle,
   },
   linkButtonText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#3b82f6',
+    color: accent.primary,
     fontWeight: '500',
   },
   // タイムゾーン選択ボタン
@@ -616,24 +769,24 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     alignItems: 'center',
     paddingVertical: getSpacing(12, width),
     paddingHorizontal: getSpacing(16, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
   },
   timezoneButtonText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#1e293b',
+    color: colors.text.primary,
     flex: 1,
   },
   // モーダルスタイル
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderTopLeftRadius: getBorderRadius(20, width),
     borderTopRightRadius: getBorderRadius(20, width),
     paddingBottom: getSpacing(20, width),
@@ -646,16 +799,16 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingVertical: getSpacing(16, width),
     paddingHorizontal: getSpacing(20, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: colors.border.default,
   },
   modalTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: colors.text.primary,
   },
   modalClose: {
     fontSize: getFontSize(24, width, theme),
-    color: '#64748b',
+    color: colors.text.secondary,
     fontWeight: 'bold',
   },
   modalOption: {
@@ -665,18 +818,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingVertical: getSpacing(16, width),
     paddingHorizontal: getSpacing(20, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: colors.border.subtle,
   },
   modalOptionSelected: {
-    backgroundColor: '#eff6ff',
+    backgroundColor: accent.primary + '15',
   },
   modalOptionText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#1e293b',
+    color: colors.text.primary,
     flex: 1,
   },
   modalOptionTextSelected: {
-    color: '#3b82f6',
+    color: accent.primary,
     fontWeight: '600',
   },
 });
