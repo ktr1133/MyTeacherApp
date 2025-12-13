@@ -26,6 +26,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import TaskApprovalCard from '../../components/approvals/TaskApprovalCard';
 import TokenApprovalCard from '../../components/approvals/TokenApprovalCard';
 import RejectReasonModal from '../../components/approvals/RejectReasonModal';
@@ -48,6 +49,7 @@ export default function PendingApprovalsScreen() {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
 
   const {
     approvals,
@@ -75,7 +77,7 @@ export default function PendingApprovalsScreen() {
   } | null>(null);
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   /**
    * 初回データ取得
@@ -280,7 +282,7 @@ export default function PendingApprovalsScreen() {
 
     return (
       <View style={styles.loadingFooter}>
-        <ActivityIndicator size="small" color="#007bff" />
+        <ActivityIndicator size="small" color={accent.primary} />
       </View>
     );
   }, [isLoadingMore, styles]);
@@ -304,7 +306,7 @@ export default function PendingApprovalsScreen() {
       {/* ローディング表示 */}
       {isLoading && approvals.length === 0 && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007bff" />
+          <ActivityIndicator size="large" color={accent.primary} />
           <Text style={styles.loadingText}>読み込み中...</Text>
         </View>
       )}
@@ -323,8 +325,8 @@ export default function PendingApprovalsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#007bff']}
-              tintColor="#007bff"
+              colors={[accent.primary]}
+              tintColor={accent.primary}
             />
           }
           onEndReached={handleLoadMore}
@@ -357,13 +359,13 @@ export default function PendingApprovalsScreen() {
  * @param theme - テーマ種別
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') => {
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => {
   const spacing = getSpacing(8, width);
 
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#f5f5f5',
+      backgroundColor: colors.background,
     },
     loadingContainer: {
       flex: 1,
@@ -373,7 +375,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     loadingText: {
       marginTop: spacing * 2,
       fontSize: getFontSize(14, width, theme),
-      color: '#666',
+      color: colors.text.secondary,
     },
     listContent: {
       padding: spacing * 2,
@@ -389,18 +391,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     },
     emptyIcon: {
       fontSize: getFontSize(48, width, theme),
-      color: '#28a745',
+      color: colors.status.success,
       marginBottom: spacing * 2,
     },
     emptyTitle: {
       fontSize: getFontSize(16, width, theme),
       fontWeight: '600',
-      color: '#333',
+      color: colors.text.primary,
       marginBottom: spacing,
     },
     emptySubtitle: {
       fontSize: getFontSize(14, width, theme),
-      color: '#666',
+      color: colors.text.secondary,
     },
     loadingFooter: {
       paddingVertical: spacing * 2,
