@@ -15,7 +15,7 @@ class NotificationSettingsService {
   /**
    * 通知設定を取得
    * 
-   * **エンドポイント**: GET /api/v1/profile/notification-settings
+   * **エンドポイント**: GET /profile/notification-settings
    * 
    * **レスポンス例**:
    * ```json
@@ -37,10 +37,11 @@ class NotificationSettingsService {
     try {
       console.log('[NotificationSettingsService] Fetching notification settings');
 
-      const response = await api.get<NotificationSettings>('/api/v1/profile/notification-settings');
+      const response = await api.get<{ success: boolean; data: NotificationSettings }>('/profile/notification-settings');
 
-      console.log('[NotificationSettingsService] Notification settings fetched successfully:', response.data);
-      return response.data;
+      console.log('[NotificationSettingsService] Raw response:', response.data);
+      console.log('[NotificationSettingsService] Notification settings fetched successfully:', response.data.data);
+      return response.data.data;
     } catch (error: any) {
       console.error('[NotificationSettingsService] Failed to fetch notification settings:', error);
       
@@ -59,7 +60,7 @@ class NotificationSettingsService {
   /**
    * 通知設定を更新（部分更新可能）
    * 
-   * **エンドポイント**: PUT /api/v1/profile/notification-settings
+   * **エンドポイント**: PUT /profile/notification-settings
    * 
    * **リクエスト例**:
    * ```json
@@ -92,13 +93,14 @@ class NotificationSettingsService {
     try {
       console.log('[NotificationSettingsService] Updating notification settings:', settings);
 
-      const response = await api.put<NotificationSettings>(
-        '/api/v1/profile/notification-settings',
+      const response = await api.put<{ success: boolean; message: string; data: NotificationSettings }>(
+        '/profile/notification-settings',
         settings
       );
 
-      console.log('[NotificationSettingsService] Notification settings updated successfully:', response.data);
-      return response.data;
+      console.log('[NotificationSettingsService] Raw response:', response.data);
+      console.log('[NotificationSettingsService] Notification settings updated successfully:', response.data.data);
+      return response.data.data;
     } catch (error: any) {
       console.error('[NotificationSettingsService] Failed to update notification settings:', error);
       

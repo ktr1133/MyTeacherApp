@@ -302,9 +302,17 @@ export default function DrawerNavigator() {
       <Drawer.Screen
         name="NotificationSettings"
         component={NotificationSettingsScreen}
-        options={{
+        options={({ navigation }) => ({
           title: '通知設定',
-        }}
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Settings')}
+              style={{ marginLeft: 15 }}
+            >
+              <Text style={{ fontSize: 18, color: '#4F46E5' }}>←</Text>
+            </TouchableOpacity>
+          ),
+        })}
       />
 
       {/* グループ管理 */}

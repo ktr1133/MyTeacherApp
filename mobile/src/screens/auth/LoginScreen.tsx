@@ -64,7 +64,7 @@ export default function LoginScreen({ navigation }: any) {
     setError('');
     
     if (!username || !password) {
-      setError('ユーザー名とパスワードを入力してください');
+      setError('ユーザー名またはメールアドレスとパスワードを入力してください');
       return;
     }
 
@@ -141,12 +141,13 @@ export default function LoginScreen({ navigation }: any) {
         <View style={styles.form}>
           <TextInput
             style={styles.input}
-            placeholder="ユーザー名"
+            placeholder="ユーザー名またはメールアドレス"
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
+            keyboardType="email-address"
             editable={!loading}
-            accessibilityLabel="ユーザー名入力"
+            accessibilityLabel="ユーザー名またはメールアドレス入力"
           />
 
           <View style={styles.passwordContainer}>

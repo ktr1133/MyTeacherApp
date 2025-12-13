@@ -188,11 +188,6 @@ export const NotificationSettingsScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        {/* ヘッダー */}
-        <Text style={styles.title}>
-          {theme === 'child' ? 'つうちのせってい' : '通知設定'}
-        </Text>
-
         {/* エラー表示 */}
         {error && (
           <View style={styles.errorBanner}>
