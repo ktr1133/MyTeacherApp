@@ -50,7 +50,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             group_edit_flg: currentUser.group_edit_flg,
             group: currentUser.group,
           }, null, 2));
-          setUser(currentUser);
+          // User型として扱う（CurrentUserResponse['data']とUser型は互換性がある）
+          setUser(currentUser as User);
         } catch (error) {
           console.error('[AuthContext] Failed to get current user:', error);
           console.error('[AuthContext] Error details:', JSON.stringify(error, null, 2));
@@ -73,8 +74,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (username: string, password: string) => {
     try {
-      const { user: loggedInUser } = await authService.login(username, password);
-      setUser(loggedInUser);
+      // ログイン実行（トークン取得）
+      await authService.login(username, password);
+      
+      // ログイン成功後、APIから最新のユーザー情報（グループ情報含む）を取得
+      console.log('[AuthContext] LOGIN - fetching current user data from API...');
+      const currentUser = await userService.getCurrentUser();
+      console.log('[AuthContext] LOGIN - user data loaded:', JSON.stringify({
+        id: currentUser.id,
+        username: currentUser.username,
+        group_id: currentUser.group_id,
+        group_edit_flg: currentUser.group_edit_flg,
+        group: currentUser.group,
+      }, null, 2));
+      
+      // User型として扱う（CurrentUserResponse['data']とUser型は互換性がある）
+      setUser(currentUser as User);
       console.log('[AuthContext] LOGIN - setting isAuthenticated to TRUE');
       setIsAuthenticated(true);
       return { success: true };
@@ -89,12 +104,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const register = async (email: string, password: string, name: string) => {
     try {
-      const { user: registeredUser } = await authService.register(
-        email,
-        password,
-        name
-      );
-      setUser(registeredUser);
+      // 登録実行（トークン取得）
+      await authService.register(email, password, name);
+      
+      // 登録成功後、APIから最新のユーザー情報（グループ情報含む）を取得
+      console.log('[AuthContext] REGISTER - fetching current user data from API...');
+      const currentUser = await userService.getCurrentUser();
+      console.log('[AuthContext] REGISTER - user data loaded:', JSON.stringify({
+        id: currentUser.id,
+        username: currentUser.username,
+        group_id: currentUser.group_id,
+        group_edit_flg: currentUser.group_edit_flg,
+        group: currentUser.group,
+      }, null, 2));
+      
+      // User型として扱う（CurrentUserResponse['data']とUser型は互換性がある）
+      setUser(currentUser as User);
       console.log('[AuthContext] REGISTER - setting isAuthenticated to TRUE');
       setIsAuthenticated(true);
       return { success: true };

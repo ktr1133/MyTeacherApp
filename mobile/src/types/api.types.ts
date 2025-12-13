@@ -24,14 +24,15 @@ export interface PaginatedResponse<T> {
 export interface User {
   id: number;
   name: string;
-  email: string;
+  username?: string; // ログイン時・GET /api/v1/user/current で使用
+  email?: string;    // 登録時・一部APIで使用
   avatar_url?: string;
-  created_at: string;
+  created_at?: string;
   group_id?: number;
   group?: {
     id: number;
     name: string;
-    owner_user_id: number;
+    owner_user_id?: number; // 一部APIで欠落の可能性
     master_user_id: number;
   };
   group_edit_flg?: boolean;
