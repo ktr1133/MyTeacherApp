@@ -81,9 +81,15 @@ export const GroupManagementScreen: React.FC = () => {
     isDangerous: false,
   });
 
-  // 権限判定
-  const isGroupMaster = user?.group?.master_user_id === user?.id;
-  const canEditGroup = isGroupMaster || (user?.group_edit_flg ?? false);
+  // 権限判定 - groupステートオブジェクトを使用（user.groupにはmaster_user_idが含まれていない）
+  const isGroupMaster = React.useMemo(
+    () => group?.master_user_id === user?.id,
+    [group?.master_user_id, user?.id]
+  );
+  const canEditGroup = React.useMemo(
+    () => isGroupMaster || (user?.group_edit_flg ?? false),
+    [isGroupMaster, user?.group_edit_flg]
+  );
 
   // スタイル生成
   const styles = React.useMemo(() => createStyles(width, themeType), [width, themeType]);
@@ -374,13 +380,6 @@ export const GroupManagementScreen: React.FC = () => {
         }
       >
         <View style={styles.content}>
-          {/* ヘッダー */}
-          <View style={styles.header}>
-            <Text style={styles.title}>
-              {theme === 'child' ? 'グループかんり' : 'グループ管理'}
-            </Text>
-          </View>
-
           {/* グループ基本情報編集 - Web版同様に全員表示 */}
           {group && (
             <View style={styles.card}>
@@ -703,14 +702,6 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     },
     content: {
       padding: getSpacing(16, width),
-    },
-    header: {
-      marginBottom: getSpacing(24, width),
-    },
-    title: {
-      fontSize: getFontSize(24, width, theme),
-      fontWeight: 'bold',
-      color: '#1e293b',
     },
     card: {
       backgroundColor: '#ffffff',
