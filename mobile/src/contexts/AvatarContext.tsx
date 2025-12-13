@@ -12,6 +12,7 @@ import {
   AvatarState,
 } from '../types/avatar.types';
 import avatarService from '../services/avatar.service';
+import { API_CONFIG } from '../utils/constants';
 
 /**
  * デフォルト設定
@@ -135,6 +136,14 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children, config
 
         const response = await avatarService.getCommentForEvent(eventType);
 
+        // localhost URLをngrok URLに置換（モバイルからはlocalhostにアクセス不可）
+        let imageUrl = response.imageUrl;
+        if (imageUrl && imageUrl.includes('localhost')) {
+          // API_CONFIG.BASE_URL: https://fizzy-formless-sandi.ngrok-free.dev/api
+          // 例: http://localhost:9100/mtdev-app-bucket/... → https://...ngrok.../api/mtdev-app-bucket/...
+          imageUrl = imageUrl.replace('http://localhost:9100/mtdev-app-bucket', `${API_CONFIG.BASE_URL}/mtdev-app-bucket`);
+        }
+
         // アバター画像未生成または非表示の場合、APIは空のコメントを返す
         // 空のコメントの場合は表示しない
         if (!response.comment || response.comment.trim() === '') {
@@ -145,7 +154,7 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children, config
 
         const displayData: AvatarDisplayData = {
           comment: response.comment,
-          imageUrl: response.imageUrl,
+          imageUrl: imageUrl,
           animation: response.animation,
           eventType,
           timestamp: Date.now(),
@@ -175,9 +184,15 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children, config
       animation: string,
       eventType: AvatarEventType = 'task_created'
     ) => {
+      // localhost URLをngrok URLに置換
+      let finalImageUrl = imageUrl;
+      if (finalImageUrl && finalImageUrl.includes('localhost')) {
+        finalImageUrl = finalImageUrl.replace('http://localhost:9100/mtdev-app-bucket', `${API_CONFIG.BASE_URL}/mtdev-app-bucket`);
+      }
+      
       const displayData: AvatarDisplayData = {
         comment,
-        imageUrl,
+        imageUrl: finalImageUrl,
         animation: animation as any,
         eventType,
         timestamp: Date.now(),

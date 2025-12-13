@@ -125,12 +125,6 @@ class TeacherAvatarApiResponder
      */
     public function comment(string $comment, ?string $imageUrl, string $animation = 'avatar-idle'): JsonResponse
     {
-        \Illuminate\Support\Facades\Log::info('🎭 [TeacherAvatarApiResponder] Creating comment response', [
-            'comment' => $comment,
-            'imageUrl' => $imageUrl,
-            'animation' => $animation,
-        ]);
-        
         return response()->json([
             'success' => true,
             'data' => [
@@ -164,6 +158,24 @@ class TeacherAvatarApiResponder
      */
     private function formatAvatarData(TeacherAvatar $avatar): array
     {
+        $images = $avatar->images->map(function ($image) {
+            $imageUrl = $image->s3_url;
+            
+            return [
+                'id' => $image->id,
+                'image_type' => $image->image_type,
+                'emotion' => $image->expression_type,
+                'image_url' => $imageUrl,  // ✅ s3_urlカラムを使用
+                'created_at' => $image->created_at->toIso8601String(),
+            ];
+        })->toArray();
+        
+        \Log::info('[TeacherAvatarApiResponder] Avatar data formatted', [
+            'avatar_id' => $avatar->id,
+            'user_id' => $avatar->user_id,
+            'image_count' => count($images),
+        ]);
+        
         return [
             'id' => $avatar->id,
             'user_id' => $avatar->user_id,
@@ -188,15 +200,7 @@ class TeacherAvatarApiResponder
             'is_visible' => $avatar->is_visible,
             'created_at' => $avatar->created_at->toIso8601String(),
             'updated_at' => $avatar->updated_at->toIso8601String(),
-            'images' => $avatar->images->map(function ($image) {
-                return [
-                    'id' => $image->id,
-                    'image_type' => $image->image_type,
-                    'emotion' => $image->expression_type,
-                    'image_url' => $image->s3_url,  // ✅ s3_urlカラムを使用
-                    'created_at' => $image->created_at->toIso8601String(),
-                ];
-            })->toArray(),
+            'images' => $images,
         ];
     }
 }

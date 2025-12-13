@@ -74,10 +74,13 @@ use App\Http\Actions\Api\Token\GetPurchaseRequestsApiAction;
 use App\Http\Actions\Api\Token\ApprovePurchaseRequestApiAction;
 use App\Http\Actions\Api\Token\RejectPurchaseRequestApiAction;
 
-// Phase 1.E-1.5.3: Report API
+// Phase 1.E-1.5.2: Report API
 use App\Http\Actions\Api\Report\IndexPerformanceApiAction;
 use App\Http\Actions\Api\Report\ShowMonthlyReportApiAction;
 use App\Http\Actions\Api\Report\GenerateMemberSummaryApiAction;
+
+// Storage Proxy
+use App\Http\Actions\Storage\ProxyS3ImageAction;
 use App\Http\Actions\Api\Report\DownloadMemberSummaryPdfApiAction;
 use App\Http\Actions\Api\Report\GetAvailableMonthsApiAction;
 
@@ -96,15 +99,26 @@ use App\Http\Actions\Api\ScheduledTask\GetScheduledTaskHistoryApiAction;
 use App\Http\Actions\Api\Subscription\GetSubscriptionPlansAction;
 use App\Http\Actions\Api\Subscription\GetCurrentSubscriptionAction;
 use App\Http\Actions\Api\Subscription\CreateCheckoutSessionApiAction as CreateSubscriptionCheckoutSessionApiAction;
+use App\Http\Actions\Api\Subscription\HandleCheckoutSuccessApiAction;
+use App\Http\Actions\Api\Subscription\HandleCheckoutCancelApiAction;
 use App\Http\Actions\Api\Subscription\GetInvoicesAction;
 use App\Http\Actions\Api\Subscription\UpdateSubscriptionPlanAction;
 use App\Http\Actions\Api\Subscription\CancelSubscriptionApiAction;
 use App\Http\Actions\Api\Subscription\GetBillingPortalUrlAction;
 
 // ============================================================
+// 画像プロキシ（認証不要 - 公開画像）
+// モバイルアプリからngrok経由でMinIO画像にアクセスするためのプロキシ
+// ============================================================
+Route::get('/mtdev-app-bucket/{path}', ProxyS3ImageAction::class)
+    ->where('path', '.*')
+    ->name('api.storage.proxy');
+
+// ============================================================
 // 認証API（モバイルアプリ用 - Sanctum）
 // ============================================================
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
 
 Route::prefix('auth')->group(function () {
     // ログイン（username + password → Sanctum token）
@@ -114,6 +128,11 @@ Route::prefix('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'apiLogout'])
         ->middleware('auth:sanctum')
         ->name('api.auth.logout');
+    
+    // パスワードリセット（認証不要）
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('guest')
+        ->name('api.auth.forgot-password');
     
     // 登録は現在停止中（RegisterAction::store で abort(404)）
     // Route::post('/register', [RegisterAction::class, 'apiStore'])->name('api.auth.register');
@@ -297,4 +316,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cancel', CancelSubscriptionApiAction::class)->name('api.subscriptions.cancel');
         Route::post('/billing-portal', GetBillingPortalUrlAction::class)->name('api.subscriptions.billing-portal');
     });
+});
+
+// Stripe Checkoutからのリダイレクト（認証不要）
+Route::prefix('api/subscriptions')->group(function () {
+    Route::get('/success', HandleCheckoutSuccessApiAction::class)->name('api.subscriptions.success.public');
+    Route::get('/cancel', HandleCheckoutCancelApiAction::class)->name('api.subscriptions.cancel.public');
 });

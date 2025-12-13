@@ -39,21 +39,12 @@ class GetAvatarCommentApiAction
     {
         try {
             $user = $request->user();
-            
-            Log::info('🎭 [GetAvatarCommentApiAction] Request received', [
-                'user_id' => $user->id,
-                'event' => $event,
-            ]);
 
             // イベント検証
             $validEvents = array_keys(config('const.avatar_events'));
-            Log::info('🎭 [GetAvatarCommentApiAction] Valid events', [
-                'validEvents' => $validEvents,
-                'isValid' => in_array($event, $validEvents),
-            ]);
             
             if (!in_array($event, $validEvents)) {
-                Log::warning('🎭 [GetAvatarCommentApiAction] Invalid event type', [
+                Log::warning('[GetAvatarCommentApiAction] Invalid event type', [
                     'event' => $event,
                 ]);
                 return $this->responder->error('無効なイベントタイプです。', 400);
@@ -61,42 +52,22 @@ class GetAvatarCommentApiAction
 
             // アバター取得
             $avatar = $this->avatarService->getUserAvatar($user);
-            Log::info('🎭 [GetAvatarCommentApiAction] Avatar retrieved', [
-                'hasAvatar' => !!$avatar,
-                'isVisible' => $avatar?->is_visible ?? false,
-                'generationStatus' => $avatar?->generation_status ?? null,
-            ]);
 
             // アバター未作成、非表示、または画像生成未完了の場合は空のレスポンス
             if (!$avatar || !$avatar->is_visible || $avatar->generation_status !== 'completed') {
-                Log::warning('🎭 [GetAvatarCommentApiAction] Avatar not available', [
-                    'reason' => !$avatar ? 'avatar_not_found' : (!$avatar->is_visible ? 'not_visible' : 'generation_incomplete'),
-                    'generationStatus' => $avatar?->generation_status ?? null,
-                ]);
                 return $this->responder->comment('', null, 'avatar-idle');
             }
 
             // コメント・画像取得（Userを渡す）
             $result = $this->avatarService->getCommentForEvent($user, $event);
-            Log::info('🎭 [GetAvatarCommentApiAction] Comment result', [
-                'hasResult' => !!$result,
-                'comment' => $result['comment'] ?? null,
-                'imageUrl' => $result['image_url'] ?? null,
-                'animation' => $result['animation'] ?? 'avatar-idle',
-            ]);
 
             if (!$result) {
                 // コメント未設定の場合は空のレスポンス
-                Log::warning('🎭 [GetAvatarCommentApiAction] No comment found for event');
                 return $this->responder->comment('', null, 'avatar-idle');
             }
 
             // アニメーション種別を決定（イベントに応じた適切なアニメーション）
             $animation = $this->getAnimationForEvent($event);
-            Log::info('🎭 [GetAvatarCommentApiAction] Animation determined', [
-                'event' => $event,
-                'animation' => $animation,
-            ]);
 
             return $this->responder->comment(
                 $result['comment'],

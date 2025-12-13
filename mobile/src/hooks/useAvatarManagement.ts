@@ -13,6 +13,7 @@ import {
   CreateAvatarRequest, 
   UpdateAvatarRequest 
 } from '../types/avatar.types';
+import { API_CONFIG } from '../utils/constants';
 
 /**
  * アバター管理Hook
@@ -35,6 +36,18 @@ export const useAvatarManagement = () => {
 
     try {
       const data = await avatarService.getAvatar();
+      
+      // localhost URLをngrok URLに置換（モバイルからはlocalhostにアクセス不可）
+      if (data.images && data.images.length > 0) {
+        data.images = data.images.map(image => {
+          if (image.image_url && image.image_url.includes('localhost')) {
+            const replacedUrl = image.image_url.replace('http://localhost:9100/mtdev-app-bucket', `${API_CONFIG.BASE_URL}/mtdev-app-bucket`);
+            return { ...image, image_url: replacedUrl };
+          }
+          return image;
+        });
+      }
+      
       setAvatar(data);
       return data;
     } catch (err: any) {

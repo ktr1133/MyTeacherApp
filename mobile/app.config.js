@@ -23,7 +23,24 @@ export default {
       googleServicesFile: process.env.GOOGLE_SERVICES_IOS ?? "./GoogleService-Info.plist",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
-        UIBackgroundModes: ["remote-notification"]
+        UIBackgroundModes: ["remote-notification"],
+        // App Transport Security (ATS)設定
+        // ngrokドメインからの画像読み込みを許可
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: false, // デフォルトで全て許可しない
+          NSExceptionDomains: {
+            "ngrok-free.dev": {
+              NSIncludesSubdomains: true,
+              NSTemporaryExceptionAllowsInsecureHTTPLoads: false,
+              NSTemporaryExceptionRequiresForwardSecrecy: false,
+            },
+            "ngrok.io": {
+              NSIncludesSubdomains: true,
+              NSTemporaryExceptionAllowsInsecureHTTPLoads: false,
+              NSTemporaryExceptionRequiresForwardSecrecy: false,
+            },
+          },
+        },
       },
       entitlements: {
         "aps-environment": "development"

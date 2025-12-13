@@ -43,6 +43,9 @@ class ShowTeacherAvatarApiAction
             $avatar = $this->avatarService->getUserAvatar($user);
 
             if (!$avatar) {
+                Log::warning('[ShowTeacherAvatarApiAction] Avatar not found', [
+                    'user_id' => $user->id,
+                ]);
                 return $this->responder->error('アバターが見つかりません。', 404);
             }
 

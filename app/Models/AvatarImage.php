@@ -39,7 +39,9 @@ class AvatarImage extends Model
         // なければ動的に生成
         if ($this->s3_path) {
             $baseUrl = rtrim(config('filesystems.disks.s3.url'), '/');
-            return $baseUrl . '/' . $this->s3_path;
+            $generatedUrl = $baseUrl . '/' . $this->s3_path;
+            
+            return $generatedUrl;
         }
 
         return null;
