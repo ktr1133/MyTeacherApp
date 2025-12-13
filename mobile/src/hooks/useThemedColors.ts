@@ -17,9 +17,8 @@
  * });
  */
 
-import { useContext } from 'react';
 import { useColorScheme } from '../contexts/ColorSchemeContext';
-import { ThemeContext } from '../contexts/ThemeContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { ColorPalette, ThemeColors } from '../utils/colors';
 
 /**
@@ -85,13 +84,7 @@ export const useThemedColors = (): ThemedColors => {
   const { colors, isDark } = useColorScheme();
   
   // ThemeContext からテーマ（adult/child）を取得
-  const themeContext = useContext(ThemeContext);
-  
-  if (!themeContext) {
-    throw new Error('useThemedColors must be used within ThemeProvider');
-  }
-  
-  const { theme } = themeContext;
+  const { theme } = useTheme();
   
   // テーマ別アクセントカラーを取得
   const accent = ThemeColors[theme];
