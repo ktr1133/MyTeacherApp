@@ -64,9 +64,9 @@ type AvatarEditScreenRouteProp = RouteProp<RootStackParamList, 'AvatarEdit'>;
 export const AvatarEditScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<AvatarEditScreenRouteProp>();
-  const { theme, themeType } = useTheme();
+  const { theme } = useTheme();
   const { width } = useResponsive();
-  const { colors, accent } = useThemedColors();
+  const { colors } = useThemedColors();
   const { updateAvatar, isLoading, error } = useAvatarManagement();
 
   const avatar = route.params?.avatar;
@@ -100,7 +100,7 @@ export const AvatarEditScreen: React.FC = () => {
   const [modalOnSelect, setModalOnSelect] = useState<(value: string) => void>(() => () => {});
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
+  const styles = useMemo(() => createStyles(width, theme, colors), [width, theme, colors]);
 
   useEffect(() => {
     if (!avatar) {
@@ -140,13 +140,6 @@ export const AvatarEditScreen: React.FC = () => {
   const handleSelectOption = (value: string) => {
     modalOnSelect(value);
     setShowModal(false);
-  };
-
-  // 推定トークン消費量を取得（将来の機能拡張用）
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getEstimatedTokenUsage = (): number => {
-    const model = AVATAR_OPTIONS.draw_model_version.find(m => m.value === drawModelVersion);
-    return model?.estimatedTokenUsage || 5000;
   };
 
   /**
@@ -226,7 +219,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 isChild ? 'せいべつ' : '性別',
-                AVATAR_OPTIONS.sex,
+                [...AVATAR_OPTIONS.sex],
                 (value) => setSex(value as AvatarSex)
               )}
               disabled={isLoading}
@@ -247,7 +240,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 isChild ? 'かみがた' : '髪型',
-                AVATAR_OPTIONS.hair_style,
+                [...AVATAR_OPTIONS.hair_style],
                 (value) => setHairStyle(value as AvatarHairStyle)
               )}
               disabled={isLoading}
@@ -268,7 +261,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 isChild ? 'かみのいろ' : '髪の色',
-                AVATAR_OPTIONS.hair_color,
+                [...AVATAR_OPTIONS.hair_color],
                 (value) => setHairColor(value as AvatarHairColor)
               )}
               disabled={isLoading}
@@ -289,7 +282,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 isChild ? 'めのいろ' : '目の色',
-                AVATAR_OPTIONS.eye_color,
+                [...AVATAR_OPTIONS.eye_color],
                 (value) => setEyeColor(value as AvatarEyeColor)
               )}
               disabled={isLoading}
@@ -310,7 +303,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 isChild ? 'ふくそう' : '服装',
-                AVATAR_OPTIONS.clothing,
+                [...AVATAR_OPTIONS.clothing],
                 (value) => setClothing(value as AvatarClothing)
               )}
               disabled={isLoading}
@@ -331,7 +324,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 'アクセサリー',
-                AVATAR_OPTIONS.accessory,
+                [...AVATAR_OPTIONS.accessory],
                 (value) => setAccessory(value as AvatarAccessory)
               )}
               disabled={isLoading}
@@ -352,7 +345,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 isChild ? 'たいけい' : '体型',
-                AVATAR_OPTIONS.body_type,
+                [...AVATAR_OPTIONS.body_type],
                 (value) => setBodyType(value as AvatarBodyType)
               )}
               disabled={isLoading}
@@ -388,7 +381,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 isChild ? 'くちょう' : '口調',
-                AVATAR_OPTIONS.tone,
+                [...AVATAR_OPTIONS.tone],
                 (value) => setTone(value as AvatarTone)
               )}
               disabled={isLoading}
@@ -409,7 +402,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 isChild ? 'ねつい' : '熱意',
-                AVATAR_OPTIONS.enthusiasm,
+                [...AVATAR_OPTIONS.enthusiasm],
                 (value) => setEnthusiasm(value as AvatarEnthusiasm)
               )}
               disabled={isLoading}
@@ -430,7 +423,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 isChild ? 'ていねいさ' : '丁寧さ',
-                AVATAR_OPTIONS.formality,
+                [...AVATAR_OPTIONS.formality],
                 (value) => setFormality(value as AvatarFormality)
               )}
               disabled={isLoading}
@@ -451,7 +444,7 @@ export const AvatarEditScreen: React.FC = () => {
               style={[styles.selectButton, isChild && styles.childSelectButton]}
               onPress={() => openSelectModal(
                 'ユーモア',
-                AVATAR_OPTIONS.humor,
+                [...AVATAR_OPTIONS.humor],
                 (value) => setHumor(value as AvatarHumor)
               )}
               disabled={isLoading}
@@ -619,8 +612,7 @@ export const AvatarEditScreen: React.FC = () => {
 const createStyles = (
   width: number,
   theme: any,
-  colors: ReturnType<typeof useThemedColors>['colors'],
-  accent: ReturnType<typeof useThemedColors>['accent']
+  colors: ReturnType<typeof useThemedColors>['colors']
 ) => StyleSheet.create({
   container: {
     flex: 1,
@@ -658,7 +650,7 @@ const createStyles = (
     borderRadius: getBorderRadius(12, width),
     overflow: 'hidden',
     marginBottom: getSpacing(16, width),
-    ...getShadow(3, width),
+    ...getShadow(3),
   },
   sectionHeader: {
     flexDirection: 'row',
