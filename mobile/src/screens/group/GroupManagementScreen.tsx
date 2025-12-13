@@ -32,6 +32,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
@@ -47,6 +48,7 @@ export const GroupManagementScreen: React.FC = () => {
   const { theme } = useTheme();
   const { user } = useAuth();
   const { width } = useResponsive();
+  const { colors, accent } = useThemedColors();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
 
@@ -95,7 +97,7 @@ export const GroupManagementScreen: React.FC = () => {
   );
 
   // スタイル生成
-  const styles = React.useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = React.useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   /**
    * グループ情報取得
@@ -399,7 +401,7 @@ export const GroupManagementScreen: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={accent.primary} />
       </View>
     );
   }
@@ -412,8 +414,8 @@ export const GroupManagementScreen: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#6366f1']}
-            tintColor="#6366f1"
+            colors={[accent.primary]}
+            tintColor={accent.primary}
           />
         }
       >
@@ -422,7 +424,7 @@ export const GroupManagementScreen: React.FC = () => {
           {group && (
             <View style={styles.card}>
               <LinearGradient
-                colors={['#9333ea', '#db2777']}
+                colors={[accent.primary, accent.primary] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.cardHeader}
@@ -442,7 +444,7 @@ export const GroupManagementScreen: React.FC = () => {
                       value={groupName}
                       onChangeText={setGroupName}
                       placeholder={theme === 'child' ? 'グループめい' : 'グループ名'}
-                      placeholderTextColor="#94a3b8"
+                      placeholderTextColor={colors.text.disabled}
                       editable={!isEditingName}
                     />
                     <TouchableOpacity
@@ -454,7 +456,7 @@ export const GroupManagementScreen: React.FC = () => {
                       disabled={groupName === group.name || !groupName.trim() || isEditingName}
                     >
                       {isEditingName ? (
-                        <ActivityIndicator size="small" color="#ffffff" />
+                        <ActivityIndicator size="small" color={colors.background} />
                       ) : (
                         <Text style={styles.saveButtonText}>
                           {theme === 'child' ? 'ほぞん' : '保存'}
@@ -481,7 +483,7 @@ export const GroupManagementScreen: React.FC = () => {
               disabled={!group?.id}
             >
               <LinearGradient
-                colors={['#4f46e5', '#2563eb', '#9333ea']}
+                colors={[accent.primary, accent.primary] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.scheduleCard}
@@ -512,7 +514,7 @@ export const GroupManagementScreen: React.FC = () => {
           {members.length > 0 && (
             <View style={styles.card}>
               <LinearGradient
-                colors={['#2563eb', '#9333ea']}
+                colors={[accent.primary, accent.primary] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.cardHeader}
@@ -652,7 +654,7 @@ export const GroupManagementScreen: React.FC = () => {
           {canEditGroup && (
             <View style={styles.card}>
               <LinearGradient
-                colors={['#10b981', '#059669']}
+                colors={[colors.status.success, colors.status.success] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.cardHeader}
@@ -671,7 +673,7 @@ export const GroupManagementScreen: React.FC = () => {
                   value={newMemberUsername}
                   onChangeText={setNewMemberUsername}
                   placeholder={theme === 'child' ? 'ユーザーめい' : 'ユーザー名'}
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor={colors.text.disabled}
                   autoCapitalize="none"
                   editable={!isAddingMember}
                 />
@@ -685,7 +687,7 @@ export const GroupManagementScreen: React.FC = () => {
                   value={newMemberEmail}
                   onChangeText={setNewMemberEmail}
                   placeholder={theme === 'child' ? 'メールアドレス' : 'メールアドレス'}
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor={colors.text.disabled}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   editable={!isAddingMember}
@@ -700,7 +702,7 @@ export const GroupManagementScreen: React.FC = () => {
                   value={newMemberName}
                   onChangeText={setNewMemberName}
                   placeholder={theme === 'child' ? 'ひょうじめい' : '表示名'}
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor={colors.text.disabled}
                   editable={!isAddingMember}
                 />
 
@@ -713,7 +715,7 @@ export const GroupManagementScreen: React.FC = () => {
                   value={newMemberPassword}
                   onChangeText={setNewMemberPassword}
                   placeholder={theme === 'child' ? 'パスワード' : 'パスワード'}
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor={colors.text.disabled}
                   secureTextEntry
                   autoCapitalize="none"
                   editable={!isAddingMember}
@@ -744,7 +746,7 @@ export const GroupManagementScreen: React.FC = () => {
                   disabled={!newMemberUsername.trim() || !newMemberEmail.trim() || !newMemberPassword.trim() || isAddingMember}
                 >
                   {isAddingMember ? (
-                    <ActivityIndicator size="small" color="#ffffff" />
+                    <ActivityIndicator size="small" color={colors.background} />
                   ) : (
                     <Text style={styles.addButtonText}>
                       {theme === 'child' ? 'ついか' : '追加'}
@@ -774,23 +776,23 @@ export const GroupManagementScreen: React.FC = () => {
 /**
  * レスポンシブスタイル生成関数
  */
-const createStyles = (width: number, theme: 'adult' | 'child') =>
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) =>
   StyleSheet.create({
     loadingContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: '#f8fafc',
+      backgroundColor: colors.background,
     },
     container: {
       flex: 1,
-      backgroundColor: '#f8fafc',
+      backgroundColor: colors.background,
     },
     content: {
       padding: getSpacing(16, width),
     },
     card: {
-      backgroundColor: '#ffffff',
+      backgroundColor: colors.card,
       borderRadius: getBorderRadius(16, width),
       marginBottom: getSpacing(16, width),
       ...getShadow(2),
@@ -803,7 +805,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     cardTitle: {
       fontSize: getFontSize(16, width, theme),
       fontWeight: '600',
-      color: '#ffffff',
+      color: colors.background,
     },
     cardContent: {
       padding: getSpacing(16, width),
@@ -811,32 +813,32 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     label: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '500',
-      color: '#475569',
+      color: colors.text.secondary,
       marginBottom: getSpacing(8, width),
     },
     input: {
-      backgroundColor: '#f8fafc',
+      backgroundColor: colors.background,
       borderWidth: 1,
-      borderColor: '#e2e8f0',
+      borderColor: colors.border,
       borderRadius: getBorderRadius(8, width),
       paddingVertical: getSpacing(12, width),
       paddingHorizontal: getSpacing(16, width),
       fontSize: getFontSize(16, width, theme),
-      color: '#1e293b',
+      color: colors.text.primary,
       marginBottom: getSpacing(12, width),
     },
     readOnlyText: {
-      backgroundColor: '#f8fafc',
+      backgroundColor: colors.background,
       borderWidth: 1,
-      borderColor: '#e2e8f0',
+      borderColor: colors.border,
       borderRadius: getBorderRadius(8, width),
       paddingVertical: getSpacing(12, width),
       paddingHorizontal: getSpacing(16, width),
       fontSize: getFontSize(16, width, theme),
-      color: '#64748b',
+      color: colors.text.secondary,
     },
     saveButton: {
-      backgroundColor: '#6366f1',
+      backgroundColor: accent.primary,
       borderRadius: getBorderRadius(8, width),
       paddingVertical: getSpacing(12, width),
       alignItems: 'center',
@@ -844,13 +846,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       minHeight: 48,
     },
     saveButtonDisabled: {
-      backgroundColor: '#cbd5e1',
+      backgroundColor: colors.border,
       opacity: 0.6,
     },
     saveButtonText: {
       fontSize: getFontSize(16, width, theme),
       fontWeight: '600',
-      color: '#ffffff',
+      color: colors.background,
     },
     scheduleCard: {
       borderRadius: getBorderRadius(16, width),
@@ -876,7 +878,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     scheduleTitle: {
       fontSize: getFontSize(16, width, theme),
       fontWeight: '600',
-      color: '#ffffff',
+      color: colors.background,
       marginBottom: getSpacing(4, width),
     },
     scheduleDescription: {
@@ -890,7 +892,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     },
     memberCard: {
       borderBottomWidth: 1,
-      borderBottomColor: '#f1f5f9',
+      borderBottomColor: colors.border,
       paddingVertical: getSpacing(12, width),
     },
     memberHeader: {
@@ -906,12 +908,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     memberName: {
       fontSize: getFontSize(16, width, theme),
       fontWeight: '600',
-      color: '#1e293b',
+      color: colors.text.primary,
       marginBottom: getSpacing(2, width),
     },
     memberUsername: {
       fontSize: getFontSize(13, width, theme),
-      color: '#64748b',
+      color: colors.text.secondary,
     },
     memberBadges: {
       flexDirection: 'row',
@@ -931,7 +933,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       borderRadius: getBorderRadius(12, width),
     },
     badgeNormal: {
-      backgroundColor: '#f1f5f9',
+      backgroundColor: colors.border,
       paddingVertical: getSpacing(4, width),
       paddingHorizontal: getSpacing(8, width),
       borderRadius: getBorderRadius(12, width),
@@ -945,12 +947,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     badgeText: {
       fontSize: getFontSize(11, width, theme),
       fontWeight: 'bold',
-      color: '#1e293b',
+      color: colors.text.primary,
     },
     badgeTextNormal: {
       fontSize: getFontSize(11, width, theme),
       fontWeight: '500',
-      color: '#475569',
+      color: colors.text.secondary,
     },
     memberActions: {
       flexDirection: 'row',
@@ -966,8 +968,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       justifyContent: 'center',
     },
     actionButtonTheme: {
-      backgroundColor: '#f1f5f9',
-      borderColor: '#e2e8f0',
+      backgroundColor: colors.background,
+      borderColor: colors.border,
     },
     actionButtonChild: {
       backgroundColor: '#fed7aa',
@@ -978,8 +980,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       borderColor: '#bbf7d0',
     },
     actionButtonNormal: {
-      backgroundColor: '#f1f5f9',
-      borderColor: '#e2e8f0',
+      backgroundColor: colors.background,
+      borderColor: colors.border,
     },
     actionButtonTransfer: {
       backgroundColor: '#fef3c7',
@@ -992,7 +994,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     actionButtonText: {
       fontSize: getFontSize(13, width, theme),
       fontWeight: '600',
-      color: '#1e293b',
+      color: colors.text.primary,
     },
     actionButtonTextChild: {
       color: '#9a3412',
@@ -1006,28 +1008,28 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       width: 20,
       height: 20,
       borderWidth: 2,
-      borderColor: '#cbd5e1',
+      borderColor: colors.border,
       borderRadius: getBorderRadius(4, width),
       marginRight: getSpacing(8, width),
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: '#ffffff',
+      backgroundColor: colors.card,
     },
     checkboxChecked: {
-      backgroundColor: '#6366f1',
-      borderColor: '#6366f1',
+      backgroundColor: accent.primary,
+      borderColor: accent.primary,
     },
     checkmark: {
-      color: '#ffffff',
+      color: colors.background,
       fontSize: getFontSize(12, width, theme),
       fontWeight: 'bold',
     },
     checkboxLabel: {
       fontSize: getFontSize(14, width, theme),
-      color: '#475569',
+      color: colors.text.secondary,
     },
     addButton: {
-      backgroundColor: '#10b981',
+      backgroundColor: colors.status.success,
       borderRadius: getBorderRadius(8, width),
       paddingVertical: getSpacing(12, width),
       alignItems: 'center',
@@ -1035,13 +1037,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       minHeight: 48,
     },
     addButtonDisabled: {
-      backgroundColor: '#cbd5e1',
+      backgroundColor: colors.border,
       opacity: 0.6,
     },
     addButtonText: {
       fontSize: getFontSize(16, width, theme),
       fontWeight: '600',
-      color: '#ffffff',
+      color: colors.background,
     },
   });
 
