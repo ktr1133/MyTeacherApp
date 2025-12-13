@@ -32,6 +32,7 @@ export interface User {
     id: number;
     name: string;
     owner_user_id: number;
+    master_user_id: number;
   };
   group_edit_flg?: boolean;
   teacher_avatar_id?: number;
