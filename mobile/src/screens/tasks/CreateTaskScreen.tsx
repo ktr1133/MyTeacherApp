@@ -18,7 +18,6 @@ import {
   Switch,
   Platform,
 } from 'react-native';
-import MaskedView from '@react-native-masked-view/masked-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -410,44 +409,25 @@ export default function CreateTaskScreen() {
   return (
     <View style={styles.container}>
       {/* ヘッダー */}
-      <View style={styles.header}>
+      <LinearGradient
+        colors={headerGradientColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         
-        {/* ヘッダーアイコン背景 + タイトルグラデーション */}
         <View style={styles.headerCenter}>
-          <LinearGradient
-            colors={headerGradientColors}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.headerIconBackground}
-          >
-            <Text style={styles.headerIcon}>✚</Text>
-          </LinearGradient>
-          
-          <MaskedView
-            maskElement={
-              <Text style={styles.headerTitle}>
-                {theme === 'child' ? 'やることをつくる' : 'タスク作成'}
-              </Text>
-            }
-          >
-            <LinearGradient
-              colors={headerGradientColors}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{ flex: 1 }}
-            >
-              <Text style={[styles.headerTitle, { opacity: 0 }]}>
-                {theme === 'child' ? 'やることをつくる' : 'タスク作成'}
-              </Text>
-            </LinearGradient>
-          </MaskedView>
+          <Text style={styles.headerIcon}>✚</Text>
+          <Text style={styles.headerTitle}>
+            {theme === 'child' ? 'やることをつくる' : 'タスク作成'}
+          </Text>
         </View>
         
         <View style={styles.headerSpacer} />
-      </View>
+      </LinearGradient>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         {/* タイトル */}
@@ -987,9 +967,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     alignItems: 'center',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(16, width),
-    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
   },
   backButton: {
     width: getSpacing(40, width),
@@ -999,30 +978,23 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   backButtonText: {
     fontSize: getFontSize(24, width, theme),
-    color: '#59B9C6',
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   headerCenter: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: getSpacing(8, width),
   },
-  headerIconBackground: {
-    width: getSpacing(32, width),
-    height: getSpacing(32, width),
-    borderRadius: getBorderRadius(10, width),
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...getShadow(3),
-  },
   headerIcon: {
-    fontSize: getFontSize(16, width, theme),
+    fontSize: getFontSize(20, width, theme),
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
   headerTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#FFFFFF',
   },
   headerSpacer: {
     width: getSpacing(40, width),
