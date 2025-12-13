@@ -5,7 +5,7 @@
  * Web版Performance.mdの要件定義に基づく
  */
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -23,7 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { usePerformance } from '../../hooks/usePerformance';
 import { PerformanceChart } from '../../components/charts/PerformanceChart';
-import { PeriodType, TaskType } from '../../types/performance.types';
+import { PeriodType } from '../../types/performance.types';
 import { useAvatarContext } from '../../contexts/AvatarContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useThemedColors } from '../../hooks/useThemedColors';
@@ -31,7 +31,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export default function PerformanceScreen() {
   const navigation = useNavigation();
-  const { theme, themeType } = useTheme();
+  const { theme } = useTheme();
   const { width } = useResponsive();
   const { colors, accent } = useThemedColors();
   const { dispatchAvatarEvent } = useAvatarContext();
@@ -41,7 +41,6 @@ export default function PerformanceScreen() {
     error,
     period,
     taskType,
-    offset,
     selectedUserId,
     changePeriod,
     changeTaskType,
@@ -477,9 +476,9 @@ export default function PerformanceScreen() {
               name="chevron-left"
               size={24}
               color={
-                !data?.can_navigate_prev || data?.restrictions?.navigation_restricted
+                (!data?.can_navigate_prev || data?.restrictions?.navigation_restricted
                   ? colors.border
-                  : accent.primary
+                  : accent.primary) as string
               }
             />
             {data?.restrictions?.navigation_restricted && (
@@ -504,7 +503,7 @@ export default function PerformanceScreen() {
             <MaterialIcons
               name="chevron-right"
               size={24}
-              color={!data?.can_navigate_next ? colors.border : accent.primary}
+              color={(!data?.can_navigate_next ? colors.border : accent.primary) as string}
             />
           </TouchableOpacity>
         </View>
@@ -749,7 +748,7 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
-    ...getShadow(2, width),
+    ...getShadow(2),
   },
   summaryLabel: {
     marginTop: getSpacing(8, width),
@@ -805,7 +804,7 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
-    ...getShadow(3, width),
+    ...getShadow(3),
   },
   memberSelectHeader: {
     flexDirection: 'row',
