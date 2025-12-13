@@ -21,6 +21,7 @@ import {
   Switch,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useAuth } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
 import { useTheme } from '../../contexts/ThemeContext';
 import { userService } from '../../services/user.service';
@@ -31,6 +32,7 @@ import { useChildTheme } from '../../hooks/useChildTheme';
  * SettingsScreen コンポーネント
  */
 export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const {
     isLoading,
@@ -235,6 +237,29 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
             </View>
           )}
         </View>
+
+        {/* グループ管理 (子どもユーザー以外) */}
+        {user && user.theme !== 'child' && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {theme === 'child' ? 'グループ' : 'グループ管理'}
+            </Text>
+            <Text style={styles.sectionDescription}>
+              {theme === 'child'
+                ? 'グループをせっていできるよ'
+                : 'グループを作成・編集できます'}
+            </Text>
+            
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => navigation.navigate('GroupManagement')}
+            >
+              <Text style={styles.linkButtonText}>
+                {theme === 'child' ? 'グループのせってい' : 'グループ管理画面へ'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* 通知設定 */}
         <View style={styles.section}>
