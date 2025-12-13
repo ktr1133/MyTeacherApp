@@ -22,6 +22,7 @@ import { useTokens } from '../../hooks/useTokens';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 /**
  * トークン残高画面コンポーネント
@@ -43,7 +44,8 @@ const TokenBalanceScreen: React.FC = () => {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   // 画面フォーカス時に残高を更新
   useEffect(() => {
@@ -173,10 +175,15 @@ const TokenBalanceScreen: React.FC = () => {
   );
 };
 
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (
+  width: number,
+  theme: 'adult' | 'child',
+  colors: ReturnType<typeof useThemedColors>['colors'],
+  accent: ReturnType<typeof useThemedColors>['accent']
+) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -185,14 +192,14 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingTop: getSpacing(12, width),
     paddingBottom: getSpacing(16, width),
     paddingHorizontal: getSpacing(16, width),
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border.default,
   },
   headerTitle: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    color: '#333333',
+    color: colors.text.primary,
   },
   warningBanner: {
     backgroundColor: '#fff3cd',
@@ -210,7 +217,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontWeight: '600',
   },
   balanceCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.card,
     marginHorizontal: getSpacing(16, width),
     marginTop: getSpacing(16, width),
     padding: getSpacing(24, width),
@@ -220,21 +227,21 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   balanceLabel: {
     fontSize: getFontSize(16, width, theme),
-    color: '#666666',
+    color: colors.text.secondary,
     marginBottom: getSpacing(8, width),
   },
   balanceAmount: {
     fontSize: getFontSize(48, width, theme),
     fontWeight: 'bold',
-    color: '#3b82f6',
+    color: accent.primary,
     marginBottom: getSpacing(4, width),
   },
   balanceUnit: {
     fontSize: getFontSize(18, width, theme),
-    color: '#999999',
+    color: colors.text.disabled,
   },
   freeMonthlyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.card,
     marginHorizontal: getSpacing(16, width),
     marginTop: getSpacing(16, width),
     padding: getSpacing(20, width),
@@ -250,7 +257,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   freeMonthlyLabel: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#333333',
+    color: colors.text.primary,
   },
   freeMonthlyAmount: {
     fontSize: getFontSize(16, width, theme),
@@ -259,7 +266,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   progressBarContainer: {
     height: getSpacing(8, width),
-    backgroundColor: '#e0e0e0',
+    backgroundColor: colors.border.default,
     borderRadius: getBorderRadius(4, width),
     overflow: 'hidden',
     marginBottom: getSpacing(12, width),
@@ -276,20 +283,20 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   usageLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#666666',
+    color: colors.text.secondary,
   },
   usageAmount: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#333333',
+    color: colors.text.primary,
   },
   resetDate: {
     fontSize: getFontSize(12, width, theme),
-    color: '#999999',
+    color: colors.text.disabled,
     marginTop: getSpacing(4, width),
   },
   purchaseButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: accent.primary,
     marginHorizontal: getSpacing(16, width),
     marginTop: getSpacing(24, width),
     paddingVertical: getSpacing(16, width),
@@ -303,7 +310,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     color: '#ffffff',
   },
   historyButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.card,
     marginHorizontal: getSpacing(16, width),
     marginTop: getSpacing(12, width),
     marginBottom: getSpacing(24, width),
@@ -311,12 +318,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#3b82f6',
+    borderColor: accent.primary,
   },
   historyButtonText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#3b82f6',
+    color: accent.primary,
   },
 });
 

@@ -25,6 +25,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow, getHeaderTitleProps } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import type { SubscriptionPlan } from '../../types/subscription.types';
 
 /**
@@ -46,6 +47,7 @@ const SubscriptionManageScreen: React.FC = () => {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
   const {
     plans,
     currentSubscription,
@@ -58,7 +60,7 @@ const SubscriptionManageScreen: React.FC = () => {
   } = useSubscription();
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   // 画面フォーカス時にデータ更新
   useEffect(() => {
@@ -346,16 +348,21 @@ const SubscriptionManageScreen: React.FC = () => {
  * @param theme - テーマ (adult | child)
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (
+  width: number,
+  theme: 'adult' | 'child',
+  colors: ReturnType<typeof useThemedColors>['colors'],
+  accent: ReturnType<typeof useThemedColors>['accent']
+) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: accent.primary,
     paddingVertical: getSpacing(20, width),
     paddingHorizontal: getSpacing(16, width),
   },
@@ -365,7 +372,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     color: '#FFFFFF',
   },
   currentSubscriptionCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     margin: getSpacing(16, width),
     padding: getSpacing(16, width),
     borderRadius: getBorderRadius(8, width),
@@ -373,23 +380,23 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   currentSubscriptionLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#666666',
+    color: colors.text.secondary,
     marginBottom: getSpacing(8, width),
   },
   currentSubscriptionPlan: {
     fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
-    color: '#333333',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   currentSubscriptionStatus: {
     fontSize: getFontSize(14, width, theme),
-    color: '#666666',
+    color: colors.text.secondary,
     marginBottom: getSpacing(4, width),
   },
   currentSubscriptionEnd: {
     fontSize: getFontSize(14, width, theme),
-    color: '#666666',
+    color: colors.text.secondary,
     marginBottom: getSpacing(12, width),
   },
   cancelWarning: {
@@ -451,7 +458,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     color: '#888888',
   },
   noSubscriptionCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     margin: getSpacing(16, width),
     padding: getSpacing(24, width),
     borderRadius: getBorderRadius(8, width),
@@ -460,7 +467,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   noSubscriptionText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#666666',
+    color: colors.text.secondary,
   },
   plansContainer: {
     paddingHorizontal: getSpacing(16, width),
@@ -468,16 +475,16 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   sectionTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#333333',
+    color: colors.text.primary,
     marginBottom: getSpacing(16, width),
   },
   planCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     padding: getSpacing(28, width),
     borderRadius: getBorderRadius(16, width),
     marginBottom: getSpacing(16, width),
     borderWidth: 2,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border.default,
     ...getShadow(2),
     position: 'relative',
   },
@@ -486,19 +493,19 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     ...getShadow(6),
   },
   featuredPlanCard: {
-    borderColor: '#4f46e5',
+    borderColor: accent.primary,
     ...getShadow(6),
   },
   planHeader: {
     marginBottom: getSpacing(24, width),
     paddingBottom: getSpacing(20, width),
     borderBottomWidth: 2,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: colors.border.light,
   },
   planName: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text.primary,
     marginBottom: getSpacing(12, width),
   },
   planPriceContainer: {
@@ -509,13 +516,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   planPriceAmount: {
     fontSize: getFontSize(40, width, theme),
     fontWeight: '800',
-    color: '#4f46e5',
+    color: accent.primary,
     lineHeight: getFontSize(40, width, theme),
   },
   planPricePeriod: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '500',
-    color: '#6b7280',
+    color: colors.text.secondary,
   },
   currentBadge: {
     position: 'absolute',
@@ -537,7 +544,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: '#4f46e5',
+    backgroundColor: accent.primary,
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(6, width),
     borderRadius: getBorderRadius(16, width),
@@ -567,7 +574,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   featureText: {
     fontSize: getFontSize(15, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
     flex: 1,
   },
   selectButtonWrapper: {

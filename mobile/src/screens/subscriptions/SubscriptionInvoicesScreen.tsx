@@ -22,6 +22,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import type { Invoice } from '../../types/subscription.types';
 
 /**
@@ -44,7 +45,8 @@ const SubscriptionInvoicesScreen: React.FC = () => {
     isLoading,
   } = useSubscription();
   const { width } = useResponsive();
-  const styles = useMemo(() => createStyles(width), [width]);
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, colors, accent), [width, colors, accent]);
 
   // 画面フォーカス時にデータ更新
   useEffect(() => {
@@ -222,16 +224,20 @@ const SubscriptionInvoicesScreen: React.FC = () => {
   );
 };
 
-const createStyles = (width: number) => StyleSheet.create({
+const createStyles = (
+  width: number,
+  colors: ReturnType<typeof useThemedColors>['colors'],
+  accent: ReturnType<typeof useThemedColors>['accent']
+) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: accent.primary,
     paddingVertical: getSpacing(20, width),
     paddingHorizontal: getSpacing(16, width),
   },
@@ -246,13 +252,13 @@ const createStyles = (width: number) => StyleSheet.create({
   },
   emptyText: {
     fontSize: getFontSize(16, width, {}),
-    color: '#999999',
+    color: colors.text.secondary,
   },
   invoicesList: {
     padding: getSpacing(16, width),
   },
   invoiceCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(8, width),
     marginBottom: getSpacing(16, width),
     ...getShadow(3, width),
@@ -263,12 +269,12 @@ const createStyles = (width: number) => StyleSheet.create({
     alignItems: 'center',
     padding: getSpacing(16, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: colors.border.default,
   },
   invoiceDate: {
     fontSize: getFontSize(16, width, {}),
     fontWeight: 'bold',
-    color: '#333333',
+    color: colors.text.primary,
   },
   statusBadge: {
     paddingHorizontal: getSpacing(12, width),
@@ -290,15 +296,15 @@ const createStyles = (width: number) => StyleSheet.create({
   },
   amountLabel: {
     fontSize: getFontSize(14, width, {}),
-    color: '#666666',
+    color: colors.text.secondary,
   },
   amountValue: {
     fontSize: getFontSize(20, width, {}),
     fontWeight: 'bold',
-    color: '#333333',
+    color: colors.text.primary,
   },
   pdfButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: accent.primary,
     paddingVertical: getSpacing(10, width),
     paddingHorizontal: getSpacing(16, width),
     borderRadius: getBorderRadius(6, width),
