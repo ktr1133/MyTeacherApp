@@ -122,7 +122,7 @@ export default function TaskListScreen() {
             padding: 4,
           }}
         >
-          <Ionicons name="menu" size={28} color="#333333" />
+          <Ionicons name="menu" size={28} color={colors.text.primary as string} />
         </TouchableOpacity>
       ),
       headerBackVisible: false, // iOS: 戻るボタンを非表示
@@ -149,7 +149,7 @@ export default function TaskListScreen() {
             }
           >
             <LinearGradient
-              colors={['#59B9C6', '#9333EA']} // タグアイコンと同じグラデーション
+              colors={[accent.primary, accent.primary] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{
@@ -161,15 +161,16 @@ export default function TaskListScreen() {
         </Pressable>
       ),
       headerStyle: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.card as string,
       },
-      headerTintColor: '#59B9C6',
+      headerTintColor: accent.primary as string,
       headerTitleStyle: {
         fontSize: getFontSize(20, width, themeType),
         fontWeight: '600',
+        color: colors.text.primary as string,
       },
     });
-  }, [navigation, theme, width, themeType, navigateToCreate]);
+  }, [navigation, theme, width, themeType, navigateToCreate, colors, accent]);
 
   /**
    * タスクをタグ別にグループ化してバケットを生成
