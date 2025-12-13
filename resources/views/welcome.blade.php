@@ -530,7 +530,7 @@
                     今日からアバターと一緒に成長しましょう。
                 </p>
                 @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="btn-primary group inline-flex items-center px-10 py-5 bg-white text-[#59B9C6] rounded-xl hover:bg-gray-50 transition font-bold text-lg shadow-2xl">
+                    <a href="{{ route('register') }}" class="btn-primary group inline-flex items-center px-10 py-5 bg-white dark:bg-gray-800 text-[#59B9C6] rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition font-bold text-lg shadow-2xl">
                         <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                         </svg>

@@ -6,8 +6,8 @@
             {{-- ヘッダー --}}
             <div class="px-6 py-4 border-b flex justify-between items-center bg-purple-600/10 shrink-0">
                 <div>
-                    <h3 class="text-xl font-semibold text-gray-800">グループタスク詳細</h3>
-                    <p class="text-sm text-gray-600 mt-1">編集はできません</p>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">グループタスク詳細</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">編集はできません</p>
                 </div>
                 <button 
                     class="modal-close-btn p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
@@ -22,10 +22,10 @@
             <div class="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
                 {{-- タスク情報 --}}
                 <div class="mb-6">
-                    <h4 class="text-lg font-semibold text-gray-800 mb-3">{{ $task->title }}</h4>
+                    <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">{{ $task->title }}</h4>
                     
                     @if($task->description)
-                        <p class="text-sm text-gray-700 mb-4">{{ $task->description }}</p>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">{{ $task->description }}</p>
                     @endif
                     
                     <div class="grid grid-cols-2 gap-4 text-sm">
@@ -154,7 +154,7 @@
             </div>
 
             {{-- 完了申請ボタン --}}
-            <div class="px-6 py-3 border-t bg-white shrink-0">
+            <div class="px-6 py-3 border-t dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
                 @if(!$task->isPendingApproval() && !$task->isApproved() && !$task->completed_at)
                     <form method="POST" 
                           id="approval-form-{{ $task->id }}"

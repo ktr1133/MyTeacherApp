@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8 text-center">
         <div>
-            <h2 class="mt-6 text-center text-6xl font-extrabold text-gray-900">
+            <h2 class="mt-6 text-center text-6xl font-extrabold text-gray-900 dark:text-white">
                 403
             </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
                 アクセスが拒否されました
             </p>
         </div>
         <div class="mt-4">
-            <p class="text-gray-700">
+            <p class="text-gray-700 dark:text-gray-300">
                 このページへのアクセス権限がありません。<br>
                 @if(isset($exception) && $exception->getMessage())
                     {{ $exception->getMessage() }}

@@ -219,6 +219,10 @@
     color: #6b7280;
 }
 
+.dark .token-label {
+    color: #d1d5db;  /* gray-300 */
+}
+
 .package-price {
     text-align: center;
     margin-bottom: 1rem;
@@ -234,11 +238,19 @@
     color: #9ca3af;
 }
 
+.dark .price-label {
+    color: #d1d5db;  /* gray-300 */
+}
+
 .package-description {
     font-size: 0.875rem;
     color: #6b7280;
     margin-bottom: 1.5rem;
     text-align: center;
+}
+
+.dark .package-description {
+    color: #d1d5db;  /* gray-300 */
 }
 
 .btn-purchase {

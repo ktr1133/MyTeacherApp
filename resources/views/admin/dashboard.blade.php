@@ -21,11 +21,11 @@
         {{-- メインコンテンツ --}}
         <div class="flex-1 flex flex-col overflow-hidden">
             {{-- ヘッダー --}}
-            <header class="bg-white/80 backdrop-blur-md border-b border-gray-200">
+            <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
                 <div class="px-4 lg:px-6 py-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-900">
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
                                 🛡️ 管理者ダッシュボード
                             </h1>
                             <p class="text-sm text-gray-600 mt-1">
@@ -48,9 +48,9 @@
                     {{-- セキュリティステータス --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                         {{-- アカウントセキュリティ --}}
-                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-semibold text-gray-900">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                                     🔒 セキュリティステータス
                                 </h3>
                             </div>
@@ -77,9 +77,9 @@
                         </div>
 
                         {{-- アカウント情報 --}}
-                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-semibold text-gray-900">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                                     📊 アカウント情報
                                 </h3>
                             </div>
@@ -102,9 +102,9 @@
                         </div>
 
                         {{-- ログイン試行状況 --}}
-                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-semibold text-gray-900">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                                     🔍 ログイン試行状況
                                 </h3>
                             </div>
@@ -132,8 +132,8 @@
                     </div>
 
                     {{-- 管理メニュー --}}
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-6">📋 管理メニュー</h3>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">📋 管理メニュー</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <a href="#" class="group block p-6 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl transition-all duration-200 border border-purple-200">
                                 <div class="text-2xl mb-2">👥</div>

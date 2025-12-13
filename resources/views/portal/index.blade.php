@@ -144,11 +144,11 @@
                     <!-- Status Badge -->
                     @php
                         $statusConfig = [
-                            'scheduled' => ['label' => '予定', 'class' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'],
-                            'in_progress' => ['label' => '実施中', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'],
-                            'completed' => ['label' => '完了', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'],
+                            'scheduled' => ['label' => '予定', 'class' => 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'],
+                            'in_progress' => ['label' => '実施中', 'class' => 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'],
+                            'completed' => ['label' => '完了', 'class' => 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'],
                         ];
-                        $status = $statusConfig[$maintenance->status] ?? ['label' => '不明', 'class' => 'bg-gray-100 text-gray-800'];
+                        $status = $statusConfig[$maintenance->status] ?? ['label' => '不明', 'class' => 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'];
                     @endphp
                     <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $status['class'] }}">
                         {{ $status['label'] }}
@@ -197,7 +197,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition">
                 <div class="flex items-start gap-4">
                     <!-- Version Badge -->
-                    <span class="px-3 py-1 rounded-lg text-sm font-semibold {{ $update->is_major ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }}">
+                    <span class="px-3 py-1 rounded-lg text-sm font-semibold {{ $update->is_major ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300' }}">
                         v{{ $update->version }}
                     </span>
 
@@ -265,7 +265,7 @@
     <div class="max-w-4xl mx-auto text-center bg-gradient-to-r from-[#59B9C6] to-[#3b82f6] rounded-2xl p-12 text-white">
         <h2 class="text-3xl font-bold mb-4">お困りのことはありませんか?</h2>
         <p class="text-lg mb-8 opacity-90">お問い合わせフォームからお気軽にご連絡ください。運営チームが迅速に対応いたします。</p>
-        <a href="{{ route('portal.contact') }}" class="inline-flex items-center px-8 py-4 bg-white text-[#59B9C6] rounded-lg hover:shadow-xl transition font-bold text-lg">
+        <a href="{{ route('portal.contact') }}" class="inline-flex items-center px-8 py-4 bg-white dark:bg-gray-800 text-[#59B9C6] hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg hover:shadow-xl transition font-bold text-lg">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>

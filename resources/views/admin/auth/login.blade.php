@@ -19,7 +19,7 @@
     <div class="max-w-md w-full space-y-8">
         <!-- ロゴ・タイトル -->
         <div>
-            <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-white shadow-lg">
+            <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 shadow-lg">
                 <svg class="h-10 w-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
@@ -33,7 +33,7 @@
         </div>
 
         <!-- ログインフォーム -->
-        <div class="bg-white rounded-lg shadow-2xl p-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8">
             <form method="POST" action="{{ route('admin.login') }}" class="space-y-6">
                 @csrf
 
@@ -64,7 +64,7 @@
 
                 <!-- メールアドレス -->
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         メールアドレス
                     </label>
                     <div class="mt-1 relative">
@@ -83,7 +83,7 @@
 
                 <!-- パスワード -->
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">
+                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         パスワード
                     </label>
                     <div class="mt-1 relative">
@@ -107,7 +107,7 @@
                         type="checkbox" 
                         class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     >
-                    <label for="remember" class="ml-2 block text-sm text-gray-900">
+                    <label for="remember" class="ml-2 block text-sm text-gray-900 dark:text-white">
                         ログイン状態を保持する
                     </label>
                 </div>
