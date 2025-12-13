@@ -221,13 +221,6 @@ const SubscriptionManageScreen: React.FC = () => {
           />
         }
       >
-        {/* ヘッダー */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle} {...getHeaderTitleProps()}>
-            {labels.title}
-          </Text>
-        </View>
-
         {/* 現在のサブスク情報（加入中のみ表示） */}
         {currentSubscription && (
           <View style={styles.currentSubscriptionCard}>

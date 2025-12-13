@@ -4,6 +4,7 @@
  */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../services/auth.service';
+import { userService } from '../services/user.service';
 import { User } from '../types/api.types';
 
 interface AuthContextType {
@@ -39,10 +40,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // トークンがある場合のみユーザー情報を取得
       if (boolValue) {
         try {
-          const currentUser = await authService.getCurrentUser();
+          console.log('[AuthContext] Fetching user data from API...');
+          // APIから最新のユーザー情報（グループ情報含む）を取得
+          const currentUser = await userService.getCurrentUser();
+          console.log('[AuthContext] User data loaded:', JSON.stringify({
+            id: currentUser.id,
+            username: currentUser.username,
+            group_id: currentUser.group_id,
+            group_edit_flg: currentUser.group_edit_flg,
+            group: currentUser.group,
+          }, null, 2));
           setUser(currentUser);
         } catch (error) {
           console.error('[AuthContext] Failed to get current user:', error);
+          console.error('[AuthContext] Error details:', JSON.stringify(error, null, 2));
           // ユーザー情報取得失敗時は認証状態をfalseに戻す
           setIsAuthenticated(false);
           setUser(null);

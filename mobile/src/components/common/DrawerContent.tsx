@@ -162,10 +162,30 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       icon: 'card-outline',
       route: 'SubscriptionManage',
       condition: (user) => {
-        if (!user?.group_id) return false;
+        console.log('[DrawerContent] Subscription condition check:', {
+          user_id: user?.id,
+          group_id: user?.group_id,
+          group: user?.group,
+          master_user_id: user?.group?.master_user_id,
+          group_edit_flg: user?.group_edit_flg,
+        });
+        
+        if (!user?.group_id) {
+          console.log('[DrawerContent] No group_id, hiding subscription menu');
+          return false;
+        }
+        
         // マスター権限またはグループ編集権限を持つユーザーのみ表示
         const isGroupMaster = user?.group?.master_user_id === user?.id;
-        return isGroupMaster || user?.group_edit_flg === true;
+        const hasEditPermission = user?.group_edit_flg === true;
+        
+        console.log('[DrawerContent] Permission check:', {
+          isGroupMaster,
+          hasEditPermission,
+          result: isGroupMaster || hasEditPermission,
+        });
+        
+        return isGroupMaster || hasEditPermission;
       },
     },
     {

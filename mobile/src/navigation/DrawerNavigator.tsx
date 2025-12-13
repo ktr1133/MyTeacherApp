@@ -37,6 +37,7 @@ import TokenPackageListScreen from '../screens/tokens/TokenPurchaseWebViewScreen
 import TokenHistoryScreen from '../screens/tokens/TokenHistoryScreen';
 import SubscriptionManageScreen from '../screens/subscriptions/SubscriptionManageScreen';
 import SubscriptionInvoicesScreen from '../screens/subscriptions/SubscriptionInvoicesScreen';
+import SubscriptionWebViewScreen from '../screens/subscriptions/SubscriptionWebViewScreen';
 import PerformanceScreen from '../screens/reports/PerformanceScreen';
 import MonthlyReportScreen from '../screens/reports/MonthlyReportScreen';
 import MemberSummaryScreen from '../screens/reports/MemberSummaryScreen';
@@ -233,6 +234,13 @@ export default function DrawerNavigator() {
         component={SubscriptionInvoicesScreen}
         options={{
           title: '請求履歴',
+        }}
+      />
+      <Drawer.Screen
+        name="SubscriptionWebView"
+        component={SubscriptionWebViewScreen}
+        options={{
+          title: 'サブスクリプション購入',
         }}
       />
 

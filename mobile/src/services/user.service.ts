@@ -24,6 +24,11 @@ export interface CurrentUserResponse {
     theme: 'adult' | 'child';
     group_id: number | null;
     group_edit_flg: boolean;
+    group?: {
+      id: number;
+      name: string;
+      master_user_id: number;
+    } | null;
   };
 }
 
