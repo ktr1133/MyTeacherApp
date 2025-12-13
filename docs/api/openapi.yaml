@@ -1101,8 +1101,12 @@ paths:
         Web版のShareThemeMiddlewareに相当する役割です。
         
         **プロフィール編集API（/profile/edit）との違い**:
-        - /user/current: 全画面で使用（最小限の情報: id, username, name, theme, group_id, group_edit_flg）
+        - /user/current: 全画面で使用（最小限の情報: id, username, name, theme, group_id, group_edit_flg, group）
         - /profile/edit: プロフィール編集画面専用（詳細情報: email, bio, avatar, timezone等を含む）
+        
+        **グループ情報の追加（2025-12-13）**:
+        - ドロワーメニューの権限判定に使用（サブスクリプション管理、承認待ち）
+        - group.master_user_idでマスター権限を判定可能
       tags: [User]
       security:
         - SanctumAuth: []
@@ -1143,6 +1147,21 @@ paths:
                         type: boolean
                         example: false
                         description: "グループ編集権限"
+                      group:
+                        type: object
+                        nullable: true
+                        description: "所属グループ情報（グループに所属している場合のみ）"
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          name:
+                            type: string
+                            example: "ファミリーグループ"
+                          master_user_id:
+                            type: integer
+                            example: 1
+                            description: "グループマスターのユーザーID"
         '401':
           description: 認証エラー
           content:
