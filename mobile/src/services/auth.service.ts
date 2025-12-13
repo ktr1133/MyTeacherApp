@@ -57,6 +57,19 @@ export const authService = {
    */
   async logout(): Promise<void> {
     try {
+      // FCMトークンを削除（バックエンドで非アクティブ化）
+      const fcmToken = await storage.getItem(STORAGE_KEYS.FCM_TOKEN);
+      if (fcmToken) {
+        try {
+          await api.delete('/profile/fcm-token', {
+            data: { device_token: fcmToken },
+          });
+          console.log('[authService] FCM token deleted successfully');
+        } catch (error) {
+          console.warn('[authService] FCM token deletion failed, continuing logout', error);
+        }
+      }
+
       // Laravel側でトークン削除（エラーでも続行）
       await api.post('/auth/logout');
     } catch (error) {
@@ -65,6 +78,7 @@ export const authService = {
       // ローカルストレージからトークン・ユーザー情報削除
       await storage.removeItem(STORAGE_KEYS.JWT_TOKEN);
       await storage.removeItem(STORAGE_KEYS.USER_DATA);
+      await storage.removeItem(STORAGE_KEYS.FCM_TOKEN);
     }
   },
 
@@ -85,5 +99,18 @@ export const authService = {
     const result = token !== null && token !== undefined && token !== '';
     console.log('[authService] isAuthenticated result:', result, 'type:', typeof result);
     return result;
+  },
+
+  /**
+   * パスワードリセットリクエスト
+   * 
+   * メールアドレスを送信し、パスワードリセット用のリンクをメールで送信
+   * API: POST /api/auth/forgot-password
+   */
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>('/auth/forgot-password', {
+      email,
+    });
+    return response.data;
   },
 };

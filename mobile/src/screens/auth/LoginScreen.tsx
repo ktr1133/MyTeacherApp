@@ -1,7 +1,7 @@
 /**
  * ログイン画面
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAvatar } from '../../hooks/useAvatar';
@@ -36,6 +38,27 @@ export default function LoginScreen({ navigation }: any) {
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
   const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+
+  // ロゴのアニメーション
+  const pingAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    // pingアニメーション（Web版のanimate-pingに相当）
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pingAnim, {
+          toValue: 1.4,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pingAnim, {
+          toValue: 1,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   const handleLogin = async () => {
     setError('');
@@ -65,11 +88,55 @@ export default function LoginScreen({ navigation }: any) {
     }
   };
 
+  const handleForgotPassword = () => {
+    navigation.navigate('ForgotPassword');
+  };
+
   return (
     <View style={styles.container}>
+      {/* グラデーション背景 */}
+      <LinearGradient
+        colors={['#F3F3F2', '#ffffff', '#e5e7eb']}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+
       <View style={styles.content}>
-        <Text style={styles.title}>MyTeacher</Text>
-        <Text style={styles.subtitle}>モバイルアプリ</Text>
+        {/* ロゴとタイトル */}
+        <View style={styles.logoSection}>
+          <View style={styles.logoWrapper}>
+            <MaterialIcons name="school" size={64} color="#59B9C6" />
+            {/* pingアニメーション（Web版のanimate-ping） */}
+            <Animated.View
+              style={[
+                styles.pingDot,
+                {
+                  transform: [{ scale: pingAnim }],
+                  opacity: pingAnim.interpolate({
+                    inputRange: [1, 1.4],
+                    outputRange: [0.75, 0],
+                  }),
+                },
+              ]}
+            />
+          </View>
+          {/* グラデーションテキスト（Web版のbg-clip-text） */}
+          <MaskedView
+            maskElement={
+              <Text style={styles.titleText}>MyTeacher</Text>
+            }
+          >
+            <LinearGradient
+              colors={['#59B9C6', '#9333EA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Text style={[styles.titleText, { opacity: 0 }]}>MyTeacher</Text>
+            </LinearGradient>
+          </MaskedView>
+          <Text style={styles.subtitle}>アカウントにログイン</Text>
+        </View>
 
         <View style={styles.form}>
           <TextInput
@@ -106,6 +173,16 @@ export default function LoginScreen({ navigation }: any) {
           </View>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          {/* パスワードを忘れた場合 */}
+          <View style={styles.forgotPasswordContainer}>
+            <TouchableOpacity
+              onPress={handleForgotPassword}
+              disabled={loading}
+            >
+              <Text style={styles.forgotPasswordText}>パスワードを忘れた?</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.buttonWrapper}>
             <LinearGradient
@@ -154,25 +231,40 @@ export default function LoginScreen({ navigation }: any) {
 const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     padding: getSpacing(24, width),
   },
-  title: {
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: getSpacing(48, width),
+  },
+  logoWrapper: {
+    position: 'relative',
+    marginBottom: getSpacing(24, width),
+  },
+  pingDot: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#9333EA',
+  },
+  titleText: {
     fontSize: getFontSize(32, width, theme),
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
     textAlign: 'center',
-    marginBottom: getSpacing(8, width),
   },
   subtitle: {
-    fontSize: getFontSize(16, width, theme),
+    fontSize: getFontSize(14, width, theme),
     color: '#6b7280',
     textAlign: 'center',
-    marginBottom: getSpacing(48, width),
+    marginTop: getSpacing(8, width),
   },
   form: {
     rowGap: getSpacing(16, width),
@@ -208,6 +300,15 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     color: '#ef4444',
     fontSize: getFontSize(14, width, theme),
     textAlign: 'center',
+  },
+  forgotPasswordContainer: {
+    alignItems: 'flex-end',
+    marginTop: getSpacing(8, width),
+  },
+  forgotPasswordText: {
+    color: '#6b7280',
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '600',
   },
   buttonWrapper: {
     marginTop: getSpacing(8, width),
