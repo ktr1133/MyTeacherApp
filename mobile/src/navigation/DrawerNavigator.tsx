@@ -65,6 +65,7 @@ export default function DrawerNavigator() {
       screenOptions={{
         headerShown: true,
         drawerType: 'front', // ドロワーをオーバーレイ表示
+        swipeEnabled: false, // ドロワーメニューのスワイプジェスチャーを無効化
         drawerStyle: {
           width: '80%', // 画面幅の80%
         },
@@ -289,6 +290,7 @@ export default function DrawerNavigator() {
         component={GroupManagementScreen}
         options={{
           title: 'グループ管理',
+          gestureEnabled: true, // スワイプバックを有効化
         }}
       />
 
@@ -311,7 +313,7 @@ export default function DrawerNavigator() {
         name="ScheduledTaskCreate"
         component={ScheduledTaskCreateScreen}
         options={{
-          title: 'スケジュール作成',
+          title: 'クエスト自動作成設定',
         }}
       />
       <Drawer.Screen

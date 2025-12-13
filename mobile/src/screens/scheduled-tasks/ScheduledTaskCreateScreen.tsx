@@ -17,6 +17,8 @@ import {
   Switch,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Iconify } from 'react-native-iconify';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -412,9 +414,17 @@ export default function ScheduledTaskCreateScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* 基本情報 */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          📋 {theme === 'child' ? 'きほんじょうほう' : '基本情報'}
-        </Text>
+        <LinearGradient
+          colors={['#3B82F6', '#6366F1']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sectionHeader}
+        >
+          <Iconify icon="mdi:information-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.sectionHeaderText}>
+            {theme === 'child' ? 'きほんじょうほう' : '基本情報'}
+          </Text>
+        </LinearGradient>
 
         <Text style={styles.label}>
           {theme === 'child' ? 'タイトル' : 'タイトル'} <Text style={styles.required}>*</Text>
@@ -466,9 +476,17 @@ export default function ScheduledTaskCreateScreen() {
 
       {/* スケジュール設定 */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          📅 {theme === 'child' ? 'スケジュール' : 'スケジュール設定'} <Text style={styles.required}>*</Text>
-        </Text>
+        <LinearGradient
+          colors={['#8B5CF6', '#EC4899']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sectionHeader}
+        >
+          <Iconify icon="mdi:clock-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.sectionHeaderText}>
+            {theme === 'child' ? 'スケジュール' : 'スケジュール設定'} <Text style={styles.required}>*</Text>
+          </Text>
+        </LinearGradient>
 
         {schedules.map((schedule, index) => renderScheduleCard(schedule, index))}
 
@@ -481,9 +499,17 @@ export default function ScheduledTaskCreateScreen() {
 
       {/* 期限設定 */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          ⏱️ {theme === 'child' ? 'きげん' : '期限設定'}
-        </Text>
+        <LinearGradient
+          colors={['#F59E0B', '#EF4444']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sectionHeader}
+        >
+          <Iconify icon="mdi:timer-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.sectionHeaderText}>
+            {theme === 'child' ? 'きげん' : '期限設定'}
+          </Text>
+        </LinearGradient>
 
         <View style={styles.durationRow}>
           <View style={styles.durationInput}>
@@ -514,9 +540,17 @@ export default function ScheduledTaskCreateScreen() {
 
       {/* 実行期間 */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          📆 {theme === 'child' ? 'いつからいつまで' : '実行期間'}
-        </Text>
+        <LinearGradient
+          colors={['#10B981', '#14B8A6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sectionHeader}
+        >
+          <Iconify icon="mdi:calendar-range" size={20} color="#FFFFFF" />
+          <Text style={styles.sectionHeaderText}>
+            {theme === 'child' ? 'いつからいつまで' : '実行期間'}
+          </Text>
+        </LinearGradient>
 
         <Text style={styles.label}>
           {theme === 'child' ? 'はじまるひ' : '開始日'} <Text style={styles.required}>*</Text>
@@ -553,9 +587,17 @@ export default function ScheduledTaskCreateScreen() {
 
       {/* その他設定 */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          ⚙️ {theme === 'child' ? 'そのほか' : 'その他設定'}
-        </Text>
+        <LinearGradient
+          colors={['#6B7280', '#374151']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sectionHeader}
+        >
+          <Iconify icon="mdi:cog-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.sectionHeaderText}>
+            {theme === 'child' ? 'そのほか' : 'その他設定'}
+          </Text>
+        </LinearGradient>
 
         <View style={styles.switchRow}>
           <Text style={styles.switchLabel}>
@@ -574,9 +616,17 @@ export default function ScheduledTaskCreateScreen() {
 
       {/* タグ */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          🏷️ {theme === 'child' ? 'タグ' : 'タグ'}
-        </Text>
+        <LinearGradient
+          colors={['#8B5CF6', '#6366F1']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sectionHeader}
+        >
+          <Iconify icon="mdi:tag-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.sectionHeaderText}>
+            {theme === 'child' ? 'タグ' : 'タグ'}
+          </Text>
+        </LinearGradient>
 
         <Text style={styles.label}>
           {theme === 'child' ? 'カンマでくぎってね' : 'カンマ区切りで入力'}
@@ -604,11 +654,18 @@ export default function ScheduledTaskCreateScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleCreate}>
-          <Text style={styles.submitButtonText}>
-            {theme === 'child' ? 'つくる' : '作成'}
-          </Text>
-        </TouchableOpacity>
+        <LinearGradient
+          colors={['#8B5CF6', '#EC4899']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.submitButton}
+        >
+          <TouchableOpacity style={styles.submitButtonInner} onPress={handleCreate}>
+            <Text style={styles.submitButtonText}>
+              {theme === 'child' ? 'つくる' : '作成'}
+            </Text>
+          </TouchableOpacity>
+        </LinearGradient>
       </View>
     </ScrollView>
   );
@@ -639,21 +696,28 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   section: {
     backgroundColor: '#FFFFFF',
     borderRadius: getBorderRadius(12, width),
-    padding: getSpacing(16, width),
+    overflow: 'hidden',
     marginBottom: getSpacing(16, width),
     ...getShadow(3, width),
   },
-  sectionTitle: {
-    fontSize: getFontSize(18, width, theme),
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    gap: getSpacing(8, width),
+  },
+  sectionHeaderText: {
+    fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: getSpacing(16, width),
+    color: '#FFFFFF',
   },
   label: {
     fontSize: getFontSize(14, width, theme),
     color: '#374151',
     marginBottom: getSpacing(8, width),
-    marginTop: getSpacing(12, width),
+    marginTop: getSpacing(16, width),
+    paddingHorizontal: getSpacing(16, width),
   },
   required: {
     color: '#EF4444',
@@ -664,6 +728,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderColor: '#D1D5DB',
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
+    marginHorizontal: getSpacing(16, width),
     fontSize: getFontSize(16, width, theme),
     color: '#1F2937',
   },
@@ -677,6 +742,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
     marginTop: getSpacing(12, width),
     paddingVertical: getSpacing(8, width),
+    paddingHorizontal: getSpacing(16, width),
   },
   switchLabel: {
     fontSize: getFontSize(14, width, theme),
@@ -687,6 +753,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     marginBottom: getSpacing(12, width),
+    marginHorizontal: getSpacing(16, width),
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -806,6 +873,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   addScheduleButton: {
     paddingVertical: getSpacing(12, width),
     paddingHorizontal: getSpacing(16, width),
+    marginHorizontal: getSpacing(16, width),
     borderRadius: getBorderRadius(8, width),
     backgroundColor: '#DBEAFE',
     alignItems: 'center',
@@ -818,6 +886,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   durationRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingHorizontal: getSpacing(16, width),
   },
   durationInput: {
     flex: 1,
@@ -847,6 +916,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderColor: '#D1D5DB',
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
+    marginHorizontal: getSpacing(16, width),
   },
   dateButtonText: {
     fontSize: getFontSize(16, width, theme),
@@ -883,10 +953,11 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   submitButton: {
     flex: 1,
-    paddingVertical: getSpacing(14, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#3B82F6',
     marginLeft: getSpacing(8, width),
+  },
+  submitButtonInner: {
+    paddingVertical: getSpacing(14, width),
     alignItems: 'center',
   },
   submitButtonText: {
