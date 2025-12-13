@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { notificationService } from '../../services/notification.service';
@@ -37,6 +38,7 @@ export default function NotificationDetailScreen() {
   const { theme } = useTheme();
   const { width } = useResponsive();
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const { colors, accent } = useThemedColors();
   const [notification, setNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export default function NotificationDetailScreen() {
   const { notificationId } = route.params;
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
 
   const loadNotification = useCallback(async () => {
     // 認証チェック中は待機
@@ -119,7 +121,7 @@ export default function NotificationDetailScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#59B9C6" />
+        <ActivityIndicator size="large" color={accent.primary as string} />
       </View>
     );
   }
@@ -135,7 +137,7 @@ export default function NotificationDetailScreen() {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={['#59B9C6', '#3b82f6']} // cyan → blue
+            colors={[accent.primary, accent.primary] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.retryButton}
@@ -206,23 +208,23 @@ export default function NotificationDetailScreen() {
   );
 }
 
-const createStyles = (width: number, theme: any) => StyleSheet.create({
+const createStyles = (width: number, theme: any, colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: getSpacing(24, width),
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
   },
   errorIcon: {
     fontSize: getFontSize(48, width, theme),
@@ -230,7 +232,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   errorText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     textAlign: 'center',
     marginBottom: getSpacing(24, width),
   },
@@ -257,22 +259,22 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     marginBottom: getSpacing(16, width),
   },
   statusBadge: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.surface,
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(4, width),
     borderRadius: getBorderRadius(12, width),
   },
   statusText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     fontWeight: '600',
   },
   dateText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.tertiary,
   },
   priorityBadge: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.status.error + '20',
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(6, width),
     borderRadius: getBorderRadius(6, width),
@@ -280,14 +282,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     marginBottom: getSpacing(16, width),
   },
   priorityText: {
-    color: '#DC2626',
+    color: colors.status.error,
     fontSize: getFontSize(12, width, theme),
     fontWeight: '700',
   },
   title: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: '700',
-    color: '#1F2937',
+    color: colors.text.primary,
     marginBottom: getSpacing(16, width),
   },
   categoryContainer: {
@@ -298,43 +300,43 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   categoryLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     fontWeight: '600',
   },
   categoryValue: {
     fontSize: getFontSize(14, width, theme),
-    color: '#59B9C6',
+    color: accent.primary,
     fontWeight: '600',
   },
   contentBox: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(16, width),
   },
   contentLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     fontWeight: '600',
     marginBottom: getSpacing(8, width),
   },
   contentText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
     lineHeight: getFontSize(24, width, theme),
   },
   readInfo: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.surface,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
   },
   readInfoLabel: {
     fontSize: getFontSize(12, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(4, width),
   },
   readInfoValue: {
     fontSize: getFontSize(14, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
   },
 });

@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNotifications } from '../../hooks/useNotifications';
 import { Notification, getNotificationTypeLabel } from '../../types/notification.types';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
@@ -47,6 +48,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export default function NotificationListScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
+  const { colors, accent } = useThemedColors();
   const {
     notifications,
     unreadCount,
@@ -64,7 +66,7 @@ export default function NotificationListScreen() {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -226,7 +228,7 @@ export default function NotificationListScreen() {
     if (loading && notifications.length === 0) {
       return (
         <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color="#59B9C6" />
+          <ActivityIndicator size="large" color={accent.primary as string} />
         </View>
       );
     }
@@ -256,7 +258,7 @@ export default function NotificationListScreen() {
 
     return (
       <View style={styles.loadingFooter}>
-        <ActivityIndicator size="small" color="#59B9C6" />
+        <ActivityIndicator size="small" color={accent.primary as string} />
       </View>
     );
   }, [loading, notifications.length]);
@@ -271,7 +273,7 @@ export default function NotificationListScreen() {
           </Text>
           {unreadCount > 0 && (
             <LinearGradient
-              colors={['#59B9C6', '#3b82f6']} // cyan系 → blue系
+              colors={[accent.primary, accent.primary] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.unreadBadge}
@@ -288,7 +290,7 @@ export default function NotificationListScreen() {
             accessibilityLabel="すべて既読にする"
           >
             <LinearGradient
-              colors={['#59B9C6', '#3b82f6']} // cyan系 → blue系
+              colors={[accent.primary, accent.primary] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.markAllReadButton}
@@ -308,7 +310,7 @@ export default function NotificationListScreen() {
           placeholder={
             theme === 'child' ? 'おしらせをさがす...' : '通知を検索...'
           }
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.text.disabled as string}
           value={searchQuery}
           onChangeText={handleSearchChange}
           autoCapitalize="none"
@@ -334,7 +336,7 @@ export default function NotificationListScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            tintColor="#59B9C6"
+            tintColor={accent.primary as string}
           />
         }
         onEndReached={handleEndReached}
@@ -375,10 +377,10 @@ const formatDate = (dateString: string, theme: 'adult' | 'child'): string => {
   return `${year}/${month}/${day}`;
 };
 
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -386,9 +388,9 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     alignItems: 'center',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border.default,
   },
   headerTitle: {
     flexDirection: 'row',
@@ -398,7 +400,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   headerTitleText: {
     fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   unreadBadge: {
     borderRadius: getBorderRadius(12, width),
@@ -427,20 +429,20 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   searchContainer: {
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border.default,
   },
   searchInput: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.surface,
     borderRadius: getBorderRadius(8, width),
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(10, width),
     fontSize: getFontSize(14, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   errorContainer: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.status.error + '20', // 透明度20%
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
     marginHorizontal: getSpacing(16, width),
@@ -448,12 +450,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderRadius: getBorderRadius(8, width),
   },
   errorText: {
-    color: '#DC2626',
+    color: colors.status.error,
     fontSize: getFontSize(14, width, theme),
   },
   notificationItem: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     padding: getSpacing(16, width),
     marginHorizontal: getSpacing(16, width),
     marginVertical: getSpacing(6, width),
@@ -461,9 +463,9 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     ...getShadow(2),
   },
   notificationItemUnread: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: colors.card,
     borderLeftWidth: 4,
-    borderLeftColor: '#59B9C6',
+    borderLeftColor: accent.primary,
   },
   notificationIndicator: {
     width: getSpacing(12, width),
@@ -475,14 +477,14 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     width: getSpacing(8, width),
     height: getSpacing(8, width),
     borderRadius: getBorderRadius(4, width),
-    backgroundColor: '#59B9C6',
+    backgroundColor: accent.primary,
   },
   notificationContent: {
     flex: 1,
     marginLeft: getSpacing(12, width),
   },
   priorityBadge: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.status.error + '20', // 透明度20%
     paddingHorizontal: getSpacing(8, width),
     paddingVertical: getSpacing(2, width),
     borderRadius: getBorderRadius(4, width),
@@ -490,19 +492,19 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(6, width),
   },
   priorityText: {
-    color: '#DC2626',
+    color: colors.status.error,
     fontSize: getFontSize(11, width, theme),
     fontWeight: '700',
   },
   notificationTitle: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary,
     marginBottom: getSpacing(4, width),
   },
   notificationMessage: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(8, width),
   },
   notificationMeta: {
@@ -512,12 +514,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   notificationCategory: {
     fontSize: getFontSize(12, width, theme),
-    color: '#59B9C6',
+    color: accent.primary,
     fontWeight: '600',
   },
   notificationDate: {
     fontSize: getFontSize(12, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.tertiary,
   },
   emptyListContent: {
     flexGrow: 1,
@@ -535,12 +537,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   emptyTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   emptyDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     textAlign: 'center',
   },
   loadingFooter: {
