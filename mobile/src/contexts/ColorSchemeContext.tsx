@@ -63,6 +63,16 @@ export const ColorSchemeProvider: React.FC<{ children: ReactNode }> = ({ childre
       ? detectedSystemScheme // OSの設定に従う
       : mode; // 手動設定値を使用
   
+  // デバッグ用：カラースキーマ決定のログ
+  useEffect(() => {
+    console.log('[ColorScheme] カラースキーマ決定:', {
+      mode,
+      detectedSystemScheme,
+      systemColorScheme,
+      finalColorScheme: colorScheme
+    });
+  }, [mode, detectedSystemScheme, systemColorScheme, colorScheme]);
+  
   /**
    * 初期化: AsyncStorageから前回の設定を読み込み
    */
@@ -97,14 +107,20 @@ export const ColorSchemeProvider: React.FC<{ children: ReactNode }> = ({ childre
    * OSの設定変更を監視（バックアップ: Appearance API直接監視）
    */
   useEffect(() => {
+    console.log('[ColorScheme] Appearance listener setup, mode:', mode);
+    
     const subscription = Appearance.addChangeListener(({ colorScheme: newScheme }) => {
+      console.log('[ColorScheme] Appearance変更検知 - mode:', mode, 'newScheme:', newScheme);
       if (newScheme && mode === 'auto') {
         setDetectedSystemScheme(newScheme);
-        console.log('[ColorScheme] Appearance変更検知:', newScheme);
+        console.log('[ColorScheme] detectedSystemScheme更新:', newScheme);
       }
     });
     
-    return () => subscription.remove();
+    return () => {
+      console.log('[ColorScheme] Appearance listener cleanup');
+      subscription.remove();
+    };
   }, [mode]);
   
   /**
