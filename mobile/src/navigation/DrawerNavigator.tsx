@@ -12,6 +12,7 @@ import { Text, TouchableOpacity } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import DrawerContent from '../components/common/DrawerContent';
 import HeaderNotificationIcon from '../components/common/HeaderNotificationIcon';
+import { useThemedColors } from '../hooks/useThemedColors';
 
 // 画面インポート
 import TaskListScreen from '../screens/tasks/TaskListScreen';
@@ -60,6 +61,8 @@ const Drawer = createDrawerNavigator();
  * @returns JSX.Element
  */
 export default function DrawerNavigator() {
+  const { colors } = useThemedColors();
+
   return (
     <Drawer.Navigator
       initialRouteName="TaskList"
@@ -72,14 +75,16 @@ export default function DrawerNavigator() {
           width: '80%', // 画面幅の80%
         },
         headerStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: colors.card,
           elevation: 2, // Android
           shadowOpacity: 0.1, // iOS
         },
         headerTitleStyle: {
           fontWeight: '600',
           fontSize: 18,
+          color: colors.text.primary,
         },
+        headerTintColor: colors.text.primary, // ハンバーガーメニューアイコンの色
         // Section 3.3: 全画面共通でヘッダー右側に通知アイコンを表示
         headerRight: () => <HeaderNotificationIcon />,
       }}
