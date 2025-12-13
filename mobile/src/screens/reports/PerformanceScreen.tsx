@@ -26,12 +26,14 @@ import { PerformanceChart } from '../../components/charts/PerformanceChart';
 import { PeriodType, TaskType } from '../../types/performance.types';
 import { useAvatarContext } from '../../contexts/AvatarContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function PerformanceScreen() {
   const navigation = useNavigation();
   const { theme, themeType } = useTheme();
   const { width } = useResponsive();
+  const { colors, accent } = useThemedColors();
   const { dispatchAvatarEvent } = useAvatarContext();
   const {
     data,
@@ -54,7 +56,7 @@ export default function PerformanceScreen() {
   const hasShownAvatar = useRef(false);
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
 
   /**
    * 初回マウント時のアバター表示
@@ -208,7 +210,7 @@ export default function PerformanceScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#59B9C6" testID="loading-indicator" />
+          <ActivityIndicator size="large" color={accent.primary} testID="loading-indicator" />
           <Text style={styles.loadingText}>読み込み中...</Text>
         </View>
       </SafeAreaView>
@@ -219,11 +221,11 @@ export default function PerformanceScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <MaterialIcons name="error-outline" size={48} color="#ef4444" />
+          <MaterialIcons name="error-outline" size={48} color={colors.status.error} />
           <Text style={styles.errorText}>{error}</Text>
           <View style={styles.retryButtonWrapper}>
             <LinearGradient
-              colors={['#59B9C6', '#9333EA']}
+              colors={[accent.primary, accent.primary] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.retryButtonGradient}
@@ -252,7 +254,7 @@ export default function PerformanceScreen() {
           <Text style={styles.headerTitle}>実績</Text>
           <View style={styles.monthlyReportButtonWrapper}>
             <LinearGradient
-              colors={['#59B9C6', '#9333EA']}
+              colors={[accent.primary, accent.primary] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.monthlyReportButtonGradient}
@@ -261,7 +263,7 @@ export default function PerformanceScreen() {
                 style={styles.monthlyReportButton}
                 onPress={goToMonthlyReport}
               >
-                <MaterialIcons name="description" size={20} color="#fff" />
+                <MaterialIcons name="description" size={20} color={colors.background} />
                 <Text style={styles.monthlyReportButtonText}>月次レポート</Text>
               </TouchableOpacity>
             </LinearGradient>
@@ -300,7 +302,7 @@ export default function PerformanceScreen() {
               月間
             </Text>
             {data?.restrictions?.period_restricted && (
-              <MaterialIcons name="lock" size={12} color="#8B5CF6" />
+              <MaterialIcons name="lock" size={12} color={accent.primary} />
             )}
           </TouchableOpacity>
           <TouchableOpacity
@@ -320,7 +322,7 @@ export default function PerformanceScreen() {
               年間
             </Text>
             {data?.restrictions?.period_restricted && (
-              <MaterialIcons name="lock" size={12} color="#8B5CF6" />
+              <MaterialIcons name="lock" size={12} color={accent.primary} />
             )}
           </TouchableOpacity>
         </View>
@@ -365,11 +367,11 @@ export default function PerformanceScreen() {
         {taskType === 'group' && data?.members && data.members.length > 0 && (
           <View style={styles.memberSelectContainer}>
             <View style={styles.memberSelectHeader}>
-              <MaterialIcons name="people" size={18} color="#8B5CF6" />
+              <MaterialIcons name="people" size={18} color={accent.primary} />
               <Text style={styles.memberSelectLabel}>メンバー選択</Text>
               {data?.restrictions?.member_restricted && (
                 <View style={styles.lockBadge}>
-                  <MaterialIcons name="lock" size={12} color="#8B5CF6" />
+                  <MaterialIcons name="lock" size={12} color={accent.primary} />
                   <Text style={styles.lockBadgeText}>サブスク限定</Text>
                 </View>
               )}
@@ -403,7 +405,7 @@ export default function PerformanceScreen() {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>メンバーを選択</Text>
                 <TouchableOpacity onPress={() => setShowMemberModal(false)}>
-                  <MaterialIcons name="close" size={24} color="#6b7280" />
+                  <MaterialIcons name="close" size={24} color={colors.text.secondary} />
                 </TouchableOpacity>
               </View>
               
@@ -416,7 +418,7 @@ export default function PerformanceScreen() {
                   ]}
                   onPress={() => handleMemberChange(0)}
                 >
-                  <MaterialIcons name="people" size={20} color="#8B5CF6" />
+                  <MaterialIcons name="people" size={20} color={accent.primary} />
                   <Text
                     style={[
                       styles.memberItemText,
@@ -426,7 +428,7 @@ export default function PerformanceScreen() {
                     グループ全体
                   </Text>
                   {selectedUserId === 0 && (
-                    <MaterialIcons name="check" size={20} color="#8B5CF6" />
+                    <MaterialIcons name="check" size={20} color={accent.primary} />
                   )}
                 </TouchableOpacity>
 
@@ -440,17 +442,17 @@ export default function PerformanceScreen() {
                     ]}
                     onPress={() => handleMemberChange(member.id)}
                   >
-                    <MaterialIcons name="person" size={20} color="#59B9C6" />
+                    <MaterialIcons name="person" size={20} color={accent.primary} />
                     <Text
                       style={[
                         styles.memberItemText,
                         selectedUserId === member.id && styles.memberItemTextSelected,
                       ]}
                     >
-                      {member.username}
+                      {member.name}
                     </Text>
                     {selectedUserId === member.id && (
-                      <MaterialIcons name="check" size={20} color="#8B5CF6" />
+                      <MaterialIcons name="check" size={20} color={accent.primary} />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -476,15 +478,15 @@ export default function PerformanceScreen() {
               size={24}
               color={
                 !data?.can_navigate_prev || data?.restrictions?.navigation_restricted
-                  ? '#d1d5db'
-                  : '#59B9C6'
+                  ? colors.border
+                  : accent.primary
               }
             />
             {data?.restrictions?.navigation_restricted && (
               <MaterialIcons
                 name="lock"
                 size={12}
-                color="#8B5CF6"
+                color={accent.primary}
                 style={styles.navLockIcon}
               />
             )}
@@ -502,7 +504,7 @@ export default function PerformanceScreen() {
             <MaterialIcons
               name="chevron-right"
               size={24}
-              color={!data?.can_navigate_next ? '#d1d5db' : '#59B9C6'}
+              color={!data?.can_navigate_next ? colors.border : accent.primary}
             />
           </TouchableOpacity>
         </View>
@@ -520,21 +522,21 @@ export default function PerformanceScreen() {
         {data && data.summary && (
           <View style={styles.summaryContainer}>
             <View style={styles.summaryCard}>
-              <MaterialIcons name="check-circle" size={24} color="#10b981" />
+              <MaterialIcons name="check-circle" size={24} color={colors.status.success} />
               <Text style={styles.summaryLabel}>完了</Text>
               <Text style={styles.summaryValue}>
                 {data.summary.total_completed}件
               </Text>
             </View>
             <View style={styles.summaryCard}>
-              <MaterialIcons name="pending" size={24} color="#f59e0b" />
+              <MaterialIcons name="pending" size={24} color={colors.status.warning} />
               <Text style={styles.summaryLabel}>未完了</Text>
               <Text style={styles.summaryValue}>
                 {data.summary.total_incomplete}件
               </Text>
             </View>
             <View style={styles.summaryCard}>
-              <MaterialIcons name="stars" size={24} color="#8B5CF6" />
+              <MaterialIcons name="stars" size={24} color={accent.primary} />
               <Text style={styles.summaryLabel}>報酬合計</Text>
               <Text style={styles.summaryValue}>
                 {data.summary.total_reward.toLocaleString()}
@@ -546,7 +548,7 @@ export default function PerformanceScreen() {
         {/* サブスク促進バナー */}
         {!data?.has_subscription && (
           <View style={styles.subscriptionBanner}>
-            <MaterialIcons name="star" size={24} color="#8B5CF6" />
+            <MaterialIcons name="star" size={24} color={accent.primary} />
             <View style={styles.subscriptionBannerContent}>
               <Text style={styles.subscriptionBannerTitle}>
                 プレミアムプランで全機能を利用
@@ -568,10 +570,10 @@ export default function PerformanceScreen() {
   );
 }
 
-const createStyles = (width: number, theme: any) => StyleSheet.create({
+const createStyles = (width: number, theme: any, colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     paddingBottom: getSpacing(24, width),
@@ -584,7 +586,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   loadingText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#6b7280',
+    color: colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
@@ -595,7 +597,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   errorText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#ef4444',
+    color: colors.status.error,
     textAlign: 'center',
   },
   retryButtonWrapper: {
@@ -611,7 +613,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     paddingVertical: getSpacing(12, width),
   },
   retryButtonText: {
-    color: '#fff',
+    color: colors.background,
     fontSize: getFontSize(16, width, theme),
     fontWeight: '700',
   },
@@ -621,14 +623,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(16, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: '700',
-    color: '#1f2937',
+    color: colors.text.primary,
   },
   monthlyReportButtonWrapper: {
     // Wrapper for gradient
@@ -645,7 +647,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     gap: getSpacing(4, width),
   },
   monthlyReportButtonText: {
-    color: '#fff',
+    color: colors.background,
     fontSize: getFontSize(14, width, theme),
     fontWeight: '700',
   },
@@ -653,7 +655,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     gap: getSpacing(8, width),
   },
   tab: {
@@ -663,11 +665,11 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
     paddingVertical: getSpacing(8, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.background,
     gap: getSpacing(4, width),
   },
   tabActive: {
-    backgroundColor: '#59B9C6',
+    backgroundColor: accent.primary,
   },
   tabLocked: {
     opacity: 0.6,
@@ -675,37 +677,37 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   tabText: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#6b7280',
+    color: colors.text.secondary,
   },
   tabTextActive: {
-    color: '#fff',
+    color: colors.background,
   },
   taskTypeContainer: {
     flexDirection: 'row',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     gap: getSpacing(8, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border,
   },
   taskTypeTab: {
     flex: 1,
     paddingVertical: getSpacing(8, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.background,
     alignItems: 'center',
   },
   taskTypeTabActive: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: accent.primary,
   },
   taskTypeTabText: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#6b7280',
+    color: colors.text.secondary,
   },
   taskTypeTabTextActive: {
-    color: '#fff',
+    color: colors.background,
   },
   navigationContainer: {
     flexDirection: 'row',
@@ -713,13 +715,13 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(16, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     marginBottom: getSpacing(8, width),
   },
   navButton: {
     padding: getSpacing(8, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.background,
     position: 'relative',
   },
   navButtonDisabled: {
@@ -733,7 +735,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   periodLabel: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text.primary,
   },
   summaryContainer: {
     flexDirection: 'row',
@@ -744,7 +746,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   summaryCard: {
     flex: 1,
     padding: getSpacing(16, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
     ...getShadow(2, width),
@@ -752,13 +754,13 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   summaryLabel: {
     marginTop: getSpacing(8, width),
     fontSize: getFontSize(12, width, theme),
-    color: '#6b7280',
+    color: colors.text.secondary,
   },
   summaryValue: {
     marginTop: getSpacing(4, width),
     fontSize: getFontSize(18, width, theme),
     fontWeight: '700',
-    color: '#1f2937',
+    color: colors.text.primary,
   },
   subscriptionBanner: {
     flexDirection: 'row',
@@ -766,10 +768,10 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     marginHorizontal: getSpacing(16, width),
     marginTop: getSpacing(16, width),
     padding: getSpacing(16, width),
-    backgroundColor: '#f3e8ff',
+    backgroundColor: accent.primary + '20',
     borderRadius: getBorderRadius(12, width),
     borderWidth: 1,
-    borderColor: '#8B5CF6',
+    borderColor: accent.primary,
   },
   subscriptionBannerContent: {
     flex: 1,
@@ -778,21 +780,21 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   subscriptionBannerTitle: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#6b21a8',
+    color: colors.text.primary,
   },
   subscriptionBannerText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#7c3aed',
+    color: colors.text.secondary,
     marginTop: getSpacing(2, width),
   },
   subscriptionBannerButton: {
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(8, width),
-    backgroundColor: '#8B5CF6',
+    backgroundColor: accent.primary,
     borderRadius: getBorderRadius(8, width),
   },
   subscriptionBannerButtonText: {
-    color: '#fff',
+    color: colors.background,
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
   },
@@ -800,7 +802,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   memberSelectContainer: {
     marginHorizontal: getSpacing(16, width),
     marginBottom: getSpacing(16, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     ...getShadow(3, width),
@@ -814,7 +816,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     marginLeft: getSpacing(8, width),
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text.primary,
   },
   lockBadge: {
     flexDirection: 'row',
@@ -822,14 +824,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     marginLeft: getSpacing(8, width),
     paddingHorizontal: getSpacing(8, width),
     paddingVertical: getSpacing(4, width),
-    backgroundColor: '#f3e8ff',
+    backgroundColor: accent.primary + '20',
     borderRadius: getBorderRadius(12, width),
   },
   lockBadgeText: {
     marginLeft: getSpacing(4, width),
     fontSize: getFontSize(10, width, theme),
     fontWeight: '600',
-    color: '#8B5CF6',
+    color: accent.primary,
   },
   memberSelectButton: {
     flexDirection: 'row',
@@ -837,14 +839,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: getSpacing(12, width),
     paddingHorizontal: getSpacing(16, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: colors.border,
     borderRadius: getBorderRadius(8, width),
   },
   memberSelectButtonText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
     fontWeight: '500',
   },
   // モーダル
@@ -882,27 +884,27 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
     paddingVertical: getSpacing(16, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: colors.border,
   },
   memberItemSelected: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: accent.primary + '10',
   },
   memberItemText: {
     flex: 1,
     marginLeft: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
   },
   memberItemTextSelected: {
     fontWeight: '600',
-    color: '#8B5CF6',
+    color: accent.primary,
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: colors.border,
     borderRadius: getBorderRadius(8, width),
     overflow: 'hidden',
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   picker: {
     height: 50,
@@ -916,13 +918,13 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: getSpacing(12, width),
     paddingHorizontal: getSpacing(16, width),
-    backgroundColor: '#f9fafb',
+    backgroundColor: accent.primary + '10',
     borderWidth: 2,
-    borderColor: '#d8b4fe',
+    borderColor: accent.primary,
     borderRadius: getBorderRadius(8, width),
   },
   lockedMemberSelectText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6b7280',
+    color: colors.text.secondary,
   },
 });
