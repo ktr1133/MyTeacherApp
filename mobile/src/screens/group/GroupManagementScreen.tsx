@@ -527,35 +527,37 @@ export const GroupManagementScreen: React.FC = () => {
                       </View>
                     </View>
 
-                    {/* アクションボタン（編集権限ありのみ） */}
-                    {canEditGroup && (
-                      <View style={styles.memberActions}>
-                        {/* テーマ切り替え */}
-                        <TouchableOpacity
-                          style={[
-                            styles.actionButton,
-                            member.theme === 'child'
-                              ? styles.actionButtonChild
-                              : styles.actionButtonTheme,
-                          ]}
-                          onPress={() => handleToggleTheme(member)}
-                        >
-                          <Text style={[
-                            styles.actionButtonText,
-                            member.theme === 'child' && styles.actionButtonTextChild
-                          ]}>
-                            {member.theme === 'child'
-                              ? theme === 'child'
-                                ? 'おとな'
-                                : '大人用'
-                              : theme === 'child'
-                              ? 'こども'
-                              : '子ども用'}
-                          </Text>
-                        </TouchableOpacity>
+                    {/* アクションボタン */}
+                    <View style={styles.memberActions}>
+                      {/* テーマ切り替え - 編集権限に関係なく常に表示（Web版と同じ） */}
+                      <TouchableOpacity
+                        style={[
+                          styles.actionButton,
+                          member.theme === 'child'
+                            ? styles.actionButtonChild
+                            : styles.actionButtonTheme,
+                        ]}
+                        onPress={() => handleToggleTheme(member)}
+                      >
+                        <Text style={[
+                          styles.actionButtonText,
+                          member.theme === 'child' && styles.actionButtonTextChild
+                        ]}>
+                          {member.theme === 'child'
+                            ? theme === 'child'
+                              ? 'おとな'
+                              : '大人用'
+                            : theme === 'child'
+                            ? 'こども'
+                            : '子ども用'}
+                        </Text>
+                      </TouchableOpacity>
 
-                        {/* 権限変更（マスター以外） */}
-                        {!member.is_master && (
+                      {/* 以下は編集権限者のみ表示 */}
+                      {canEditGroup && (
+                        <>
+                          {/* 権限変更（マスター以外） */}
+                          {!member.is_master && (
                           <TouchableOpacity
                             style={[
                               styles.actionButton,
@@ -600,8 +602,9 @@ export const GroupManagementScreen: React.FC = () => {
                             </Text>
                           </TouchableOpacity>
                         )}
-                      </View>
-                    )}
+                      </>
+                      )}
+                    </View>
                   </View>
                 ))}
               </View>
