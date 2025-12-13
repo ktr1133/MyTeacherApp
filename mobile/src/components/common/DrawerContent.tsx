@@ -361,7 +361,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
             <Ionicons
               name={showGeneralMenu ? 'eye-outline' : 'eye-off-outline'}
               size={getFontSize(18, width, themeType)}
-              color="#4B5563"
+              color={colors.text.secondary}
             />
           </TouchableOpacity>
         </View>
@@ -394,7 +394,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
         <Ionicons
           name="log-out-outline"
           size={getFontSize(20, width, themeType)}
-          color="#EF4444"
+          color={colors.status.error}
         />
         <Text style={styles.logoutButtonText}>ログアウト</Text>
       </TouchableOpacity>
@@ -476,7 +476,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
       borderRadius: getBorderRadius(12, width),
     },
     menuItemActive: {
-      backgroundColor: colors.isDark ? 'rgba(89, 185, 198, 0.2)' : '#EFF6FF',
+      backgroundColor: accent.primary + '20',
     },
     menuIcon: {
       marginRight: getSpacing(12, width),
@@ -507,7 +507,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     badgeText: {
       fontSize: getFontSize(11, width, theme),
       fontWeight: 'bold',
-      color: '#FFFFFF',
+      color: colors.background,
     },
     badgeDot: {
       width: getSpacing(8, width),
@@ -557,7 +557,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     tokenPurchaseButtonText: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '600',
-      color: '#FFFFFF',
+      color: colors.background,
     },
     logoutButton: {
       flexDirection: 'row',
