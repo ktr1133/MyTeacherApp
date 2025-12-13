@@ -25,6 +25,8 @@ import { useAvatar } from '../../hooks/useAvatar';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { getDeadlineStatus } from '../../utils/taskDeadline';
+import DeadlineBadge from '../../components/tasks/DeadlineBadge';
 
 /**
  * ナビゲーションスタック型定義
@@ -212,6 +214,12 @@ export default function TagTasksScreen() {
           }}
           activeOpacity={0.7}
         >
+          {/* 期限バッジ */}
+          <DeadlineBadge 
+            deadlineInfo={getDeadlineStatus(item, isChildTheme)} 
+            variant="absolute" 
+          />
+
           {/* グループタスクバッジ */}
           {isGroupTask && (
             <View style={styles.groupTaskBadge}>

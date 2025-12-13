@@ -14,6 +14,8 @@ import { useRef, useMemo } from 'react';
 import { Task } from '../../types/task.types';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { getMostUrgentDeadline } from '../../utils/taskDeadline';
+import DeadlineBadge from './DeadlineBadge';
 
 interface BucketCardProps {
   tagId: number;
@@ -34,6 +36,9 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
   const previewTasks = tasks.slice(0, 6); // Web版と同じ6件表示
   const remainingCount = Math.max(0, tasks.length - 6);
   const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  // 最も緊急度の高い期限を取得
+  const mostUrgentDeadline = useMemo(() => getMostUrgentDeadline(tasks, isChildTheme), [tasks, isChildTheme]);
 
   /**
    * レスポンシブスタイル生成
@@ -90,15 +95,24 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
                 {tagName}
               </Text>
             </View>
-            {/* バッジ（Web版: tag-badge-gradient） */}
-            <LinearGradient
-              colors={['#59B9C6', '#9333EA']} // Web版グラデーション
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.badge}
-            >
-              <Text style={styles.badgeText}>{tasks.length}</Text>
-            </LinearGradient>
+            <View style={styles.badgeContainer}>
+              {/* 期限バッジ */}
+              {mostUrgentDeadline && (
+                <DeadlineBadge 
+                  deadlineInfo={mostUrgentDeadline} 
+                  variant="inline" 
+                />
+              )}
+              {/* タスク数バッジ（Web版: tag-badge-gradient） */}
+              <LinearGradient
+                colors={['#59B9C6', '#9333EA']} // Web版グラデーション
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.badge}
+              >
+                <Text style={styles.badgeText}>{tasks.length}</Text>
+              </LinearGradient>
+            </View>
           </View>
 
           {/* タスクプレビュー */}
@@ -164,6 +178,11 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     flex: 1,
     marginRight: getSpacing(8, width), // Web版: gap-2 (lg:gap-3)
     overflow: 'hidden',
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: getSpacing(8, width),
   },
   iconGradient: {
     width: getSpacing(40, width), // Web版: w-8 (lg:w-10)

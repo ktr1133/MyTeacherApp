@@ -18,6 +18,10 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
   useFocusEffect: jest.fn((callback) => callback()),
 }));
+jest.mock('../../src/components/tasks/DeadlineBadge', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 
 const mockedUseTasks = useTasks as jest.MockedFunction<typeof useTasks>;
 const mockedUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;

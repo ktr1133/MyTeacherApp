@@ -29,6 +29,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import api from '../../services/api';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { getDeadlineStatus } from '../../utils/taskDeadline';
+import DeadlineBadge from '../../components/tasks/DeadlineBadge';
 
 /**
  * ナビゲーションスタック型定義
@@ -404,6 +406,16 @@ export default function TaskEditScreen() {
         />
       </View>
 
+      {/* 期限バッジ */}
+      {task && (
+        <View style={styles.deadlineBadgeContainer}>
+          <DeadlineBadge 
+            deadlineInfo={getDeadlineStatus(task, isChildTheme)} 
+            variant="inline" 
+          />
+        </View>
+      )}
+
       {/* 説明 */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>
@@ -433,9 +445,6 @@ export default function TaskEditScreen() {
             <Text style={[styles.spanButtonText, span === 1 && styles.spanButtonTextActive]}>
               {theme === 'child' ? 'みじかい' : '短期'}
             </Text>
-            <Text style={[styles.spanButtonSubText, span === 1 && styles.spanButtonTextActive]}>
-              {theme === 'child' ? '1しゅうかん' : '1週間'}
-            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.spanButton, span === 2 && styles.spanButtonActive]}
@@ -444,9 +453,6 @@ export default function TaskEditScreen() {
             <Text style={[styles.spanButtonText, span === 2 && styles.spanButtonTextActive]}>
               {theme === 'child' ? 'ちゅうくらい' : '中期'}
             </Text>
-            <Text style={[styles.spanButtonSubText, span === 2 && styles.spanButtonTextActive]}>
-              {theme === 'child' ? '1ねん' : '1年'}
-            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.spanButton, span === 3 && styles.spanButtonActive]}
@@ -454,9 +460,6 @@ export default function TaskEditScreen() {
           >
             <Text style={[styles.spanButtonText, span === 3 && styles.spanButtonTextActive]}>
               {theme === 'child' ? 'ながい' : '長期'}
-            </Text>
-            <Text style={[styles.spanButtonSubText, span === 3 && styles.spanButtonTextActive]}>
-              {theme === 'child' ? '5ねんいじょう' : '5年以上'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -709,6 +712,10 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   formGroup: {
     marginBottom: getSpacing(16, width),
+  },
+  deadlineBadgeContainer: {
+    marginBottom: getSpacing(16, width),
+    alignItems: 'flex-start',
   },
   label: {
     fontSize: getFontSize(14, width, theme),

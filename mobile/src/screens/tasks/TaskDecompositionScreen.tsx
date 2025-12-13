@@ -389,9 +389,6 @@ export default function TaskDecompositionScreen() {
               <Text style={[styles.spanButtonText, span === 1 && styles.spanButtonTextActive]}>
                 {theme === 'child' ? 'みじかい' : '短期'}
               </Text>
-              <Text style={[styles.spanButtonSubText, span === 1 && styles.spanButtonTextActive]}>
-                {theme === 'child' ? '1しゅうかん' : '1週間'}
-              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.spanButton, span === 2 && styles.spanButtonActive]}
@@ -400,9 +397,6 @@ export default function TaskDecompositionScreen() {
               <Text style={[styles.spanButtonText, span === 2 && styles.spanButtonTextActive]}>
                 {theme === 'child' ? 'ふつう' : '中期'}
               </Text>
-              <Text style={[styles.spanButtonSubText, span === 2 && styles.spanButtonTextActive]}>
-                {theme === 'child' ? '1かげつ' : '1ヶ月'}
-              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.spanButton, span === 3 && styles.spanButtonActive]}
@@ -410,9 +404,6 @@ export default function TaskDecompositionScreen() {
             >
               <Text style={[styles.spanButtonText, span === 3 && styles.spanButtonTextActive]}>
                 {theme === 'child' ? 'ながい' : '長期'}
-              </Text>
-              <Text style={[styles.spanButtonSubText, span === 3 && styles.spanButtonTextActive]}>
-                {theme === 'child' ? 'それいじょう' : '1ヶ月以上'}
               </Text>
             </TouchableOpacity>
           </View>

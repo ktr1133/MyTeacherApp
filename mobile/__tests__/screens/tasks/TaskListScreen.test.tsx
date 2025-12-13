@@ -20,6 +20,10 @@ jest.mock('@react-navigation/native', () => ({
   useFocusEffect: jest.fn((callback) => callback()),
 }));
 jest.mock('../../../src/hooks/useAvatar');
+jest.mock('../../../src/components/tasks/DeadlineBadge', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 
 describe('TaskListScreen - バケット表示機能', () => {
   const mockUseTasks = useTasks as jest.MockedFunction<typeof useTasks>;
