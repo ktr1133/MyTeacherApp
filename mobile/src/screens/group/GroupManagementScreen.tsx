@@ -381,8 +381,8 @@ export const GroupManagementScreen: React.FC = () => {
             </Text>
           </View>
 
-          {/* グループ基本情報編集 */}
-          {canEditGroup && group && (
+          {/* グループ基本情報編集 - Web版同様に全員表示 */}
+          {group && (
             <View style={styles.card}>
               <LinearGradient
                 colors={['#9333ea', '#db2777']}
@@ -398,36 +398,42 @@ export const GroupManagementScreen: React.FC = () => {
                 <Text style={styles.label}>
                   {theme === 'child' ? 'グループめい' : 'グループ名'}
                 </Text>
-                <TextInput
-                  style={styles.input}
-                  value={groupName}
-                  onChangeText={setGroupName}
-                  placeholder={theme === 'child' ? 'グループめい' : 'グループ名'}
-                  placeholderTextColor="#94a3b8"
-                  editable={!isEditingName}
-                />
-                <TouchableOpacity
-                  style={[
-                    styles.saveButton,
-                    (groupName === group.name || !groupName.trim()) && styles.saveButtonDisabled,
-                  ]}
-                  onPress={handleUpdateGroupName}
-                  disabled={groupName === group.name || !groupName.trim() || isEditingName}
-                >
-                  {isEditingName ? (
-                    <ActivityIndicator size="small" color="#ffffff" />
-                  ) : (
-                    <Text style={styles.saveButtonText}>
-                      {theme === 'child' ? 'ほぞん' : '保存'}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                {canEditGroup ? (
+                  <>
+                    <TextInput
+                      style={styles.input}
+                      value={groupName}
+                      onChangeText={setGroupName}
+                      placeholder={theme === 'child' ? 'グループめい' : 'グループ名'}
+                      placeholderTextColor="#94a3b8"
+                      editable={!isEditingName}
+                    />
+                    <TouchableOpacity
+                      style={[
+                        styles.saveButton,
+                        (groupName === group.name || !groupName.trim()) && styles.saveButtonDisabled,
+                      ]}
+                      onPress={handleUpdateGroupName}
+                      disabled={groupName === group.name || !groupName.trim() || isEditingName}
+                    >
+                      {isEditingName ? (
+                        <ActivityIndicator size="small" color="#ffffff" />
+                      ) : (
+                        <Text style={styles.saveButtonText}>
+                          {theme === 'child' ? 'ほぞん' : '保存'}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <Text style={styles.readOnlyText}>{group.name}</Text>
+                )}
               </View>
             </View>
           )}
 
-          {/* グループタスク作成状況 */}
-          {canEditGroup && group && taskUsage && (
+          {/* グループタスク作成状況 - Web版同様に全員表示 */}
+          {group && taskUsage && (
             <GroupTaskUsageComponent group={group} taskUsage={taskUsage} />
           )}
 
@@ -738,6 +744,16 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       fontSize: getFontSize(16, width, theme),
       color: '#1e293b',
       marginBottom: getSpacing(12, width),
+    },
+    readOnlyText: {
+      backgroundColor: '#f8fafc',
+      borderWidth: 1,
+      borderColor: '#e2e8f0',
+      borderRadius: getBorderRadius(8, width),
+      paddingVertical: getSpacing(12, width),
+      paddingHorizontal: getSpacing(16, width),
+      fontSize: getFontSize(16, width, theme),
+      color: '#64748b',
     },
     saveButton: {
       backgroundColor: '#6366f1',
