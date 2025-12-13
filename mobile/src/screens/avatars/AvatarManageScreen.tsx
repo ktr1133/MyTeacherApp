@@ -36,6 +36,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { useAvatarManagement } from '../../hooks/useAvatarManagement';
 import { AVATAR_OPTIONS, AVATAR_TOKEN_COST } from '../../utils/constants';
 import { AvatarImage } from '../../types/avatar.types';
@@ -49,6 +50,7 @@ export const AvatarManageScreen: React.FC = () => {
   const navigation = useNavigation();
   const { theme, themeType } = useTheme();
   const { width } = useResponsive();
+  const { colors, accent } = useThemedColors();
   const {
     avatar,
     isLoading,
@@ -65,7 +67,7 @@ export const AvatarManageScreen: React.FC = () => {
   const scrollViewRef = useRef<ScrollView>(null);
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
 
   /**
    * Pull-to-Refresh処理
@@ -276,7 +278,7 @@ export const AvatarManageScreen: React.FC = () => {
   if (isLoading && !avatar) {
     return (
       <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color="#8B5CF6" />
+        <ActivityIndicator size="large" color={accent.primary} />
         <Text style={styles.loadingText}>
           {isChild ? 'よみこみちゅう...' : '読み込み中...'}
         </Text>
@@ -302,8 +304,8 @@ export const AvatarManageScreen: React.FC = () => {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#4F46E5']}
-          tintColor="#4F46E5"
+          colors={[accent.primary]}
+          tintColor={accent.primary}
         />
       }
     >
@@ -311,12 +313,12 @@ export const AvatarManageScreen: React.FC = () => {
         {/* アバター画像プレビュー */}
         <View style={styles.section}>
           <LinearGradient
-            colors={['#EC4899', '#8B5CF6']}
+            colors={[accent.primary, accent.primary] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.sectionHeader}
           >
-            <MaterialIcons name="image" size={20} color="#FFFFFF" />
+            <MaterialIcons name="image" size={20} color={colors.background} />
             <Text style={styles.sectionHeaderText}>
               {isChild ? 'アバターのえ' : 'アバター画像'}
             </Text>
@@ -405,7 +407,7 @@ export const AvatarManageScreen: React.FC = () => {
             </View>
           ) : avatar.generation_status === 'processing' || avatar.generation_status === 'pending' ? (
             <View style={styles.statusContainer}>
-              <ActivityIndicator size="large" color="#8B5CF6" />
+              <ActivityIndicator size="large" color={accent.primary} />
               <Text style={styles.statusText}>
                 {isChild ? 'えをつくっているよ...' : '画像生成中...'}
               </Text>
@@ -417,7 +419,7 @@ export const AvatarManageScreen: React.FC = () => {
             </View>
           ) : avatar.images.length > 0 && avatar.images.every(img => img.image_url === null) ? (
             <View style={styles.statusContainer}>
-              <ActivityIndicator size="large" color="#8B5CF6" />
+              <ActivityIndicator size="large" color={accent.primary} />
               <Text style={styles.statusText}>
                 {isChild ? 'えをつくっているよ...' : '画像生成処理中...'}
               </Text>
@@ -443,8 +445,8 @@ export const AvatarManageScreen: React.FC = () => {
             <Switch
               value={avatar.is_visible}
               onValueChange={handleToggleVisibility}
-              trackColor={{ false: '#ccc', true: '#8B5CF6' }}
-              thumbColor="#fff"
+              trackColor={{ false: colors.border, true: accent.primary }}
+              thumbColor={colors.background}
             />
           </View>
         </View>
@@ -452,12 +454,12 @@ export const AvatarManageScreen: React.FC = () => {
         {/* 設定情報 */}
         <View style={styles.section}>
           <LinearGradient
-            colors={['#3B82F6', '#6366F1']}
+            colors={[accent.primary, accent.primary] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.sectionHeader}
           >
-            <MaterialIcons name="info-outline" size={20} color="#FFFFFF" />
+            <MaterialIcons name="info-outline" size={20} color={colors.background} />
             <Text style={styles.sectionHeaderText}>
               {isChild ? 'みため' : '外見の設定'}
             </Text>
@@ -534,10 +536,10 @@ export const AvatarManageScreen: React.FC = () => {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#EC4899', '#9333EA']} // pink-500 → purple-600
+              colors={[accent.primary, accent.primary] as const}
               start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.button, isChild && styles.childButton]}
+              end={{ x: 1, y: 0 }}
+              style={[styles.button, styles.buttonPrimary, isChild && styles.childButton]}
             >
               <Text style={[styles.buttonText, isChild && styles.childButtonText]}>
                 {isChild ? 'へんしゅう' : '編集する'}
@@ -552,7 +554,7 @@ export const AvatarManageScreen: React.FC = () => {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#4B5563', '#6B7280']} // gray-600 → gray-500
+              colors={[colors.text.secondary, colors.text.secondary] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={[styles.button, styles.buttonSecondary, isChild && styles.childButton]}
@@ -569,7 +571,7 @@ export const AvatarManageScreen: React.FC = () => {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#DC2626', '#991B1B']} // red-600 → red-800
+              colors={[colors.status.error, colors.status.error] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={[styles.button, styles.buttonDanger]}
@@ -653,13 +655,13 @@ export const AvatarManageScreen: React.FC = () => {
   );
 };
 
-const createStyles = (width: number, theme: any) => StyleSheet.create({
+const createStyles = (width: number, theme: any, colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   childContainer: {
-    backgroundColor: '#FFF8DC',
+    backgroundColor: colors.background,
   },
   centerContent: {
     justifyContent: 'center',
@@ -674,14 +676,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   title: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text.primary,
   },
   childTitle: {
     fontSize: getFontSize(26, width, theme),
-    color: '#FF6B35',
+    color: accent.primary,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     overflow: 'hidden',
     marginBottom: getSpacing(16, width),
@@ -697,18 +699,18 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   sectionHeaderText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.background,
   },
   sectionTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text.primary,
     marginBottom: getSpacing(16, width),
     paddingHorizontal: getSpacing(16, width),
   },
   childSectionTitle: {
     fontSize: getFontSize(20, width, theme),
-    color: '#FF6B35',
+    color: accent.primary,
   },
   carousel: {
     width,
@@ -719,7 +721,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     height: width,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   imageWrapper: {
     position: 'relative',
@@ -731,20 +733,20 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
   },
   placeholderContainer: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.border,
     borderRadius: getBorderRadius(12, width),
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.disabled,
   },
   imageLabel: {
     position: 'absolute',
@@ -757,7 +759,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   imageLabelText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#FFFFFF',
+    color: colors.background,
     fontWeight: '600',
   },
   thumbnailWrapper: {
@@ -779,7 +781,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderColor: 'transparent',
   },
   thumbnailSelected: {
-    borderColor: '#8B5CF6',
+    borderColor: accent.primary,
   },
   thumbnailImage: {
     width: '100%',
@@ -787,13 +789,13 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderRadius: getBorderRadius(6, width),
   },
   placeholderThumbnail: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderThumbText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.disabled,
   },
   statusContainer: {
     paddingVertical: getSpacing(32, width),
@@ -802,11 +804,11 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   statusText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#666',
+    color: colors.text.secondary,
   },
   statusTextError: {
     fontSize: getFontSize(16, width, theme),
-    color: '#DC2626',
+    color: colors.status.error,
   },
   visibilityContainer: {
     flexDirection: 'row',
@@ -816,16 +818,16 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     paddingTop: getSpacing(16, width),
     paddingHorizontal: getSpacing(16, width),
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: colors.border,
   },
   label: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#333',
+    color: colors.text.primary,
   },
   childLabel: {
     fontSize: getFontSize(16, width, theme),
-    color: '#FF8C42',
+    color: accent.primary,
   },
   infoGrid: {
     flexDirection: 'row',
@@ -838,12 +840,12 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   infoLabel: {
     fontSize: getFontSize(12, width, theme),
-    color: '#666',
+    color: colors.text.secondary,
     marginBottom: getSpacing(4, width),
   },
   infoValue: {
     fontSize: getFontSize(14, width, theme),
-    color: '#333',
+    color: colors.text.primary,
     fontWeight: '600',
   },
   buttonContainer: {
@@ -873,7 +875,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     // Child theme uses same gradient
   },
   buttonText: {
-    color: '#fff',
+    color: colors.background,
     fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
   },
@@ -883,11 +885,11 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   loadingText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#666',
+    color: colors.text.secondary,
   },
   emptyText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#666',
+    color: colors.text.secondary,
     textAlign: 'center',
   },
   footer: {
@@ -897,14 +899,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     position: 'absolute',
     bottom: getSpacing(8, width),
     right: getSpacing(8, width),
-    backgroundColor: 'rgba(139, 92, 246, 0.9)',
+    backgroundColor: accent.primary + 'E6',
     paddingHorizontal: getSpacing(8, width),
     paddingVertical: getSpacing(4, width),
     borderRadius: getBorderRadius(4, width),
   },
   tapHintText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#FFFFFF',
+    color: colors.background,
     fontWeight: '600',
   },
   modalOverlay: {
@@ -933,7 +935,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   modalTitle: {
     fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.background,
   },
   closeButton: {
     width: getSpacing(40, width),
@@ -945,7 +947,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   closeButtonText: {
     fontSize: getFontSize(24, width, theme),
-    color: '#FFFFFF',
+    color: colors.background,
     fontWeight: 'bold',
   },
   modalImageWrapper: {
@@ -968,18 +970,18 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     paddingHorizontal: getSpacing(20, width),
   },
   navButton: {
-    backgroundColor: 'rgba(139, 92, 246, 0.9)',
+    backgroundColor: accent.primary + 'E6',
     paddingHorizontal: getSpacing(20, width),
     paddingVertical: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
   },
   navButtonText: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
   pageIndicator: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },
