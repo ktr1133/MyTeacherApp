@@ -274,15 +274,22 @@ components:
         id:
           type: integer
           example: 5
-        user_id:
-          type: integer
-          example: 1
         name:
           type: string
           example: "田中家"
-        invite_code:
+        master_user_id:
+          type: integer
+          example: 1
+          description: グループマスターのUser ID
+        subscription_active:
+          type: boolean
+          example: false
+          description: サブスクリプション有効状態
+        subscription_plan:
           type: string
-          example: "ABC123XYZ"
+          nullable: true
+          example: "basic"
+          description: サブスクリプションプラン名
         created_at:
           type: string
           format: date-time
@@ -290,32 +297,57 @@ components:
           type: string
           format: date-time
 
+    GroupTaskUsage:
+      type: object
+      description: グループタスク作成状況
+      properties:
+        current:
+          type: integer
+          example: 15
+          description: 今月の作成数
+        limit:
+          type: integer
+          example: 50
+          description: 今月の作成上限
+        remaining:
+          type: integer
+          example: 35
+          description: 今月の残り作成可能数
+        reset_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+          description: 次回リセット日時
+
     GroupMember:
       type: object
       properties:
         id:
           type: integer
           example: 20
-        group_id:
-          type: integer
-          example: 5
-        user_id:
-          type: integer
-          example: 2
-        can_assign_tasks:
-          type: boolean
-          example: true
+        username:
+          type: string
+          example: "tanaka"
+        name:
+          type: string
+          nullable: true
+          example: "田中太郎"
+        email:
+          type: string
+          example: "tanaka@example.com"
         theme:
           type: string
-          example: "blue"
-        user:
-          $ref: '#/components/schemas/User'
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
+          enum: [adult, child]
+          example: "adult"
+          description: ユーザーテーマ
+        group_edit_flg:
+          type: boolean
+          example: true
+          description: グループ編集権限フラグ
+        is_master:
+          type: boolean
+          example: false
+          description: グループマスターかどうか
 
     # ============================================================
     # User関連スキーマ
@@ -1863,7 +1895,7 @@ paths:
   /groups/edit:
     get:
       summary: グループ情報取得
-      description: ユーザーのグループ情報を取得します。
+      description: ユーザーのグループ情報、メンバー一覧、タスク作成状況を取得します。
       tags: [Groups]
       responses:
         '200':
@@ -1876,7 +1908,16 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/Group'
+                        type: object
+                        properties:
+                          group:
+                            $ref: '#/components/schemas/Group'
+                          task_usage:
+                            $ref: '#/components/schemas/GroupTaskUsage'
+                          members:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/GroupMember'
 
   /groups:
     patch:
@@ -1901,7 +1942,7 @@ paths:
   /groups/members:
     post:
       summary: メンバー追加
-      description: 招待コードでグループにメンバーを追加します。
+      description: ユーザー名でグループにメンバーを追加します。
       tags: [Groups]
       requestBody:
         required: true
@@ -1909,12 +1950,16 @@ paths:
           application/json:
             schema:
               type: object
-              required: [email]
+              required: [username]
               properties:
-                email:
+                username:
                   type: string
-                  format: email
-                  example: "member@example.com"
+                  example: "tanaka"
+                  description: 追加するユーザーのユーザー名
+                group_edit_flg:
+                  type: boolean
+                  example: false
+                  description: グループ編集権限を付与するか
       responses:
         '201':
           description: 追加成功
@@ -1922,7 +1967,7 @@ paths:
   /groups/members/{member}/permission:
     patch:
       summary: メンバー権限更新
-      description: メンバーのタスク割り当て権限を更新します。
+      description: メンバーのグループ編集権限を更新します。
       tags: [Groups]
       parameters:
         - name: member
@@ -1936,11 +1981,12 @@ paths:
           application/json:
             schema:
               type: object
-              required: [can_assign_tasks]
+              required: [group_edit_flg]
               properties:
-                can_assign_tasks:
+                group_edit_flg:
                   type: boolean
                   example: true
+                  description: グループ編集権限フラグ
       responses:
         '200':
           description: 更新成功
@@ -1948,7 +1994,7 @@ paths:
   /groups/members/{member}/theme:
     patch:
       summary: メンバーテーマ切り替え
-      description: メンバーのテーマを変更します。
+      description: メンバーのテーマ（adult/child）を変更します。
       tags: [Groups]
       parameters:
         - name: member
@@ -1956,6 +2002,19 @@ paths:
           required: true
           schema:
             type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [theme]
+              properties:
+                theme:
+                  type: string
+                  enum: [adult, child]
+                  example: "child"
+                  description: テーマ（adult=大人用、child=子ども用）
       responses:
         '200':
           description: 変更成功
