@@ -51,8 +51,8 @@ const SubscriptionWebViewScreen: React.FC = () => {
   const handleNavigationStateChange = (navState: any) => {
     const { url: currentUrl } = navState;
 
-    // Stripe Checkoutの成功URL（successパラメータ含む）
-    if (currentUrl.includes('/subscription/success') || currentUrl.includes('success=true')) {
+    // モバイルAPI経由の成功URL（/api/subscriptions/success）
+    if (currentUrl.includes('/api/subscriptions/success')) {
       Alert.alert(
         '購入完了',
         'サブスクリプションの購入が完了しました。',
@@ -66,9 +66,44 @@ const SubscriptionWebViewScreen: React.FC = () => {
           },
         ]
       );
+      return;
     }
 
-    // Stripe CheckoutのキャンセルURL
+    // モバイルAPI経由のキャンセルURL（/api/subscriptions/cancel）
+    if (currentUrl.includes('/api/subscriptions/cancel')) {
+      Alert.alert(
+        'キャンセル',
+        'サブスクリプションの購入をキャンセルしました。',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.goBack();
+            },
+          },
+        ]
+      );
+      return;
+    }
+
+    // Web版の成功URL（後方互換）
+    if (currentUrl.includes('/subscription/success') || currentUrl.includes('success=true')) {
+      Alert.alert(
+        '購入完了',
+        'サブスクリプションの購入が完了しました。',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.navigate('SubscriptionManage');
+            },
+          },
+        ]
+      );
+      return;
+    }
+
+    // Web版のキャンセルURL（後方互換）
     if (currentUrl.includes('/subscription/cancel') || currentUrl.includes('canceled=true')) {
       Alert.alert(
         'キャンセル',

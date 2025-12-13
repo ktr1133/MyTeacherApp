@@ -58,11 +58,12 @@ class CreateCheckoutSessionApiAction
             $plan = $request->input('plan');
             $additionalMembers = $request->input('additional_members', 0);
 
-            // Checkout Session作成
+            // Checkout Session作成（モバイルAPI用URL）
             $checkout = $this->subscriptionService->createCheckoutSession(
                 $group,
                 $plan,
-                $additionalMembers
+                $additionalMembers,
+                true  // isMobile = true
             );
 
             return $this->responder->checkoutSessionResponse($checkout->url);

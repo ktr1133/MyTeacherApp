@@ -22,10 +22,10 @@ class SubscriptionService implements SubscriptionServiceInterface
     /**
      * @inheritDoc
      */
-    public function createCheckoutSession(Group $group, string $plan, int $additionalMembers = 0): Checkout
+    public function createCheckoutSession(Group $group, string $plan, int $additionalMembers = 0, bool $isMobile = false): Checkout
     {
         // Repository経由でCheckout Session作成（DB操作とStripe API呼び出し）
-        return $this->repository->createCheckoutSession($group, $plan, $additionalMembers);
+        return $this->repository->createCheckoutSession($group, $plan, $additionalMembers, $isMobile);
     }
 
     /**

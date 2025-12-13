@@ -318,14 +318,17 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
 
   /**
    * ログアウトボタンをレンダリング
+   * 
+   * 注意: navigation.reset()は不要。
+   * AuthContextのisAuthenticatedがfalseに変更されることで
+   * AppNavigatorが自動的に未認証画面スタックに切り替わる。
    */
   const handleLogout = async () => {
     try {
+      console.log('[DrawerContent] Starting logout...');
       await logout();
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' as never }],
-      });
+      console.log('[DrawerContent] Logout completed, AppNavigator will handle navigation');
+      // navigation.reset()は不要 - AuthContext状態変更でAppNavigatorが自動切替
     } catch (error) {
       console.error('[DrawerContent] Logout failed:', error);
     }

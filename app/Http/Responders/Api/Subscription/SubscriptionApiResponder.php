@@ -118,6 +118,18 @@ class SubscriptionApiResponder
     }
 
     /**
+     * 成功レスポンス（汎用）
+     * 
+     * @param array $data レスポンスデータ
+     * @param int $statusCode HTTPステータスコード
+     * @return JsonResponse
+     */
+    public function successResponse(array $data, int $statusCode = Response::HTTP_OK): JsonResponse
+    {
+        return response()->json($data, $statusCode);
+    }
+
+    /**
      * 権限不足エラーレスポンス
      * 
      * @return JsonResponse

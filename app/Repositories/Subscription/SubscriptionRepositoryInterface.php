@@ -17,10 +17,11 @@ interface SubscriptionRepositoryInterface
      * @param Group $group グループ
      * @param string $plan プラン種別（'family' or 'enterprise'）
      * @param int $additionalMembers 追加メンバー数（エンタープライズのみ）
+     * @param bool $isMobile モバイルアプリからのリクエストかどうか
      * @return Checkout Laravel Cashier Checkoutオブジェクト
      * @throws \RuntimeException Checkout Session作成失敗時
      */
-    public function createCheckoutSession(Group $group, string $plan, int $additionalMembers = 0): Checkout;
+    public function createCheckoutSession(Group $group, string $plan, int $additionalMembers = 0, bool $isMobile = false): Checkout;
 
     /**
      * グループの現在のサブスクリプション情報をDBから取得

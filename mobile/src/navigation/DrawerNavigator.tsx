@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { Text, TouchableOpacity } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import DrawerContent from '../components/common/DrawerContent';
 import HeaderNotificationIcon from '../components/common/HeaderNotificationIcon';
@@ -101,9 +102,17 @@ export default function DrawerNavigator() {
       <Drawer.Screen
         name="TaskEdit"
         component={TaskEditScreen}
-        options={{
+        options={({ navigation }) => ({
           title: 'タスク編集',
-        }}
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('TaskList')}
+              style={{ marginLeft: 15 }}
+            >
+              <Text style={{ fontSize: 18, color: '#4F46E5' }}>←</Text>
+            </TouchableOpacity>
+          ),
+        })}
       />
       <Drawer.Screen
         name="CreateTask"
@@ -147,9 +156,17 @@ export default function DrawerNavigator() {
       <Drawer.Screen
         name="TagDetail"
         component={TagDetailScreen as React.ComponentType<any>}
-        options={{
+        options={({ navigation }) => ({
           title: 'タグ詳細',
-        }}
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('TagManagement')}
+              style={{ marginLeft: 15 }}
+            >
+              <Text style={{ fontSize: 18, color: '#4F46E5' }}>←</Text>
+            </TouchableOpacity>
+          ),
+        })}
       />
 
       {/* アバター管理 */}

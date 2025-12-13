@@ -16,7 +16,7 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function createCheckoutSession(Group $group, string $plan, int $additionalMembers = 0): Checkout
+    public function createCheckoutSession(Group $group, string $plan, int $additionalMembers = 0, bool $isMobile = false): Checkout
     {
         try {
             $planConfig = config("const.stripe.subscription_plans.{$plan}");
@@ -44,13 +44,22 @@ class SubscriptionEloquentRepository implements SubscriptionRepositoryInterface
                 }
             }
 
+            // success_url/cancel_urlを設定（モバイル/Web判定）
+            $successUrl = $isMobile
+                ? config('app.url') . '/api/subscriptions/success?session_id={CHECKOUT_SESSION_ID}'
+                : route('subscriptions.success') . '?session_id={CHECKOUT_SESSION_ID}';
+            
+            $cancelUrl = $isMobile
+                ? config('app.url') . '/api/subscriptions/cancel'
+                : route('subscriptions.cancel');
+
             // チェックアウトセッションを作成
             // メタデータをSubscriptionに設定（Cashierの内部でsubscription_dataに変換される）
             $checkoutSession = $subscription
                 ->withMetadata($metadata)  // これがsubscription_data.metadataとして送信される
                 ->checkout([
-                    'success_url' => route('subscriptions.success') . '?session_id={CHECKOUT_SESSION_ID}',
-                    'cancel_url' => route('subscriptions.cancel'),
+                    'success_url' => $successUrl,
+                    'cancel_url' => $cancelUrl,
                     'client_reference_id' => (string) $group->id,
                 ]);
 
