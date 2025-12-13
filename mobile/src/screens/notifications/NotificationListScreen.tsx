@@ -411,7 +411,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     overflow: 'hidden', // LinearGradient用
   },
   unreadBadgeText: {
-    color: '#FFFFFF',
+    color: '#FFFFFF', // LinearGradient上のテキストは常に白
     fontSize: getFontSize(12, width, theme),
     fontWeight: 'bold',
   },
@@ -422,7 +422,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     overflow: 'hidden', // LinearGradient用
   },
   markAllReadButtonText: {
-    color: '#FFFFFF',
+    color: '#FFFFFF', // LinearGradient上のテキストは常に白
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
   },
