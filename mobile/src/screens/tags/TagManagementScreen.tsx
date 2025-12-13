@@ -272,7 +272,7 @@ export default function TagManagementScreen({ navigation }: Props) {
             activeOpacity={0.7}
           >
             <Text style={styles.tagName}>{item.name}</Text>
-            <View style={[styles.taskCountBadge, { backgroundColor: item.color }]}>
+            <View style={styles.taskCountBadge}>
               <Text style={styles.taskCountText}>{item.tasks_count}</Text>
             </View>
           </TouchableOpacity>
@@ -310,19 +310,29 @@ export default function TagManagementScreen({ navigation }: Props) {
               </LinearGradient>
 
               {/* 削除ボタン */}
-              <TouchableOpacity
+              <LinearGradient
+                colors={
+                  canDelete
+                    ? [colors.status.error, colors.status.error] as const
+                    : [colors.border, colors.border] as const
+                }
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={[
                   styles.actionButton,
                   styles.deleteButton,
-                  !canDelete && styles.deleteButtonDisabled,
                 ]}
-                onPress={() => confirmDeleteTag(item)}
-                disabled={!canDelete}
               >
-                <Text style={[styles.buttonText, !canDelete && styles.buttonTextDisabled]}>
-                  {theme === 'child' ? 'けす' : '削除'}
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButtonTouchable}
+                  onPress={() => confirmDeleteTag(item)}
+                  disabled={!canDelete}
+                >
+                  <Text style={[styles.buttonText, !canDelete && styles.buttonTextDisabled]}>
+                    {theme === 'child' ? 'けす' : '削除'}
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
             </>
           ) : (
             /* 編集モード: 保存・キャンセルボタン */
@@ -592,6 +602,7 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     flex: 1,
   },
   taskCountBadge: {
+    backgroundColor: accent.primary,
     borderRadius: getBorderRadius(12, width),
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(4, width),
@@ -628,11 +639,7 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     borderColor: colors.border,
   },
   deleteButton: {
-    backgroundColor: colors.status.error,
-  },
-  deleteButtonDisabled: {
-    backgroundColor: colors.border,
-    opacity: 0.6,
+    // LinearGradient適用のためbackgroundColor削除
   },
   buttonText: {
     color: colors.background,
