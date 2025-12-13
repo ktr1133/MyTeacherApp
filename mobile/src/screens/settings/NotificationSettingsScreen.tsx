@@ -26,6 +26,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 /**
  * NotificationSettingsScreen コンポーネント
@@ -48,7 +49,8 @@ export const NotificationSettingsScreen: React.FC = () => {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   /**
    * Push通知全体のON/OFF切り替え
@@ -403,10 +405,15 @@ export const NotificationSettingsScreen: React.FC = () => {
   );
 };
 
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (
+  width: number,
+  theme: 'adult' | 'child',
+  colors: ReturnType<typeof useThemedColors>['colors'],
+  accent: ReturnType<typeof useThemedColors>['accent']
+) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.background,
   },
   content: {
     padding: getSpacing(16, width),
@@ -415,18 +422,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.background,
   },
   loadingText: {
     marginTop: getSpacing(16, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#64748b',
+    color: colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.background,
     padding: getSpacing(24, width),
   },
   errorText: {
@@ -437,7 +444,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   title: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: colors.text.primary,
     marginBottom: getSpacing(24, width),
   },
   errorBanner: {
@@ -455,19 +462,19 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   section: {
     marginBottom: getSpacing(24, width),
     padding: getSpacing(16, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     ...getShadow(2),
   },
   sectionTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
-    color: '#1e293b',
+    color: colors.text.primary,
     marginBottom: getSpacing(4, width),
   },
   sectionDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#64748b',
+    color: colors.text.secondary,
     marginBottom: getSpacing(16, width),
   },
   settingRow: {
@@ -479,7 +486,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingBottom: getSpacing(12, width),
     marginBottom: getSpacing(12, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: colors.border.light,
   },
   settingInfo: {
     flex: 1,
@@ -488,12 +495,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   settingTitle: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#1e293b',
+    color: colors.text.primary,
     marginBottom: getSpacing(4, width),
   },
   settingDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#64748b',
+    color: colors.text.secondary,
   },
   notice: {
     padding: getSpacing(16, width),
