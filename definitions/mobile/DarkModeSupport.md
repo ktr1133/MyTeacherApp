@@ -7,6 +7,7 @@
 | 2025-12-13 | GitHub Copilot | 初版作成: iOS/AndroidのOSレベルダークモード自動追従 + 手動切り替え対応 |
 | 2025-12-13 | GitHub Copilot | Phase 1実装完了: カラーパレット、ColorSchemeContext、useThemedColors、App.tsx修正 |
 | 2025-12-13 | GitHub Copilot | Phase 2実装完了: DeadlineBadge, BucketCard, HomeScreen, DrawerContent, AppNavigator対応 |
+| 2025-12-13 | GitHub Copilot | Phase 2 priority:medium完了: ConfirmDialog, ProfileScreen対応（commit d343132） |
 
 ---
 
@@ -543,10 +544,11 @@ const MyComponent = () => {
    - [x] `AppNavigator.tsx` - ローディング画面
 
 5. **優先度: 中 のコンポーネント修正**
+   - [x] `ConfirmDialog.tsx` ✅ d343132
+   - [x] `ProfileScreen.tsx` ✅ d343132
    - [ ] `Modal.tsx`
    - [ ] `Input.tsx`
    - [ ] `Card.tsx`
-   - [ ] `ProfileScreen.tsx`
 
 ### Phase 3: 手動切り替え機能（4日目）
 
