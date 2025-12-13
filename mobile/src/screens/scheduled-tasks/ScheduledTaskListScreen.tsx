@@ -17,6 +17,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { useScheduledTasks } from '../../hooks/useScheduledTasks';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ScheduledTask } from '../../types/scheduled-task.types';
@@ -47,6 +48,7 @@ export default function ScheduledTaskListScreen() {
   const route = useRoute<ScreenRouteProp>();
   const { theme } = useTheme();
   const { width } = useResponsive();
+  const { colors, accent } = useThemedColors();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
   const {
@@ -63,7 +65,7 @@ export default function ScheduledTaskListScreen() {
   const groupId = route.params?.groupId || 1; // デフォルトはグループID=1
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   /**
    * 初回データ取得
@@ -268,7 +270,7 @@ export default function ScheduledTaskListScreen() {
    */
   const renderScheduledTaskCard = ({ item }: { item: ScheduledTask }) => {
     const isActive = item.is_active;
-    const statusColor = isActive ? '#10B981' : '#6B7280';
+    const statusColor = isActive ? colors.status.success : colors.text.secondary;
     const statusText = isActive
       ? (theme === 'child' ? 'うごいてる' : '有効')
       : (theme === 'child' ? 'とまってる' : '一時停止');
@@ -351,7 +353,7 @@ export default function ScheduledTaskListScreen() {
               onPress={() => handlePause(item)}
             >
               <LinearGradient
-                colors={['#fef3c7', '#fde68a']} // yellow-100 → yellow-200
+                colors={['#fef3c7', '#fde68a'] as const} // yellow-100 → yellow-200
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={[styles.actionButton, styles.pauseButton]}
@@ -366,7 +368,7 @@ export default function ScheduledTaskListScreen() {
               onPress={() => handleResume(item)}
             >
               <LinearGradient
-                colors={['#d1fae5', '#a7f3d0']} // green-100 → green-200
+                colors={[colors.status.success, colors.status.success] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={[styles.actionButton, styles.resumeButton]}
@@ -382,7 +384,7 @@ export default function ScheduledTaskListScreen() {
             onPress={() => handleDelete(item)}
           >
             <LinearGradient
-              colors={['#fee2e2', '#fecaca']} // red-100 → red-200
+              colors={[colors.status.error, colors.status.error] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={[styles.actionButton, styles.deleteButton]}
@@ -409,7 +411,7 @@ export default function ScheduledTaskListScreen() {
         <Text style={styles.errorMessage}>{error}</Text>
         <TouchableOpacity onPress={loadScheduledTasks}>
           <LinearGradient
-            colors={['#4f46e5', '#2563eb']} // indigo-600 → blue-600
+            colors={[accent.primary, accent.primary] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.retryButton}
@@ -429,7 +431,7 @@ export default function ScheduledTaskListScreen() {
   if (isLoading && scheduledTasks.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ActivityIndicator size="large" color={accent.primary} />
         <Text style={styles.loadingText}>
           {theme === 'child' ? 'よみこみちゅう...' : '読み込み中...'}
         </Text>
@@ -460,7 +462,7 @@ export default function ScheduledTaskListScreen() {
           </Text>
           <TouchableOpacity onPress={handleCreate}>
             <LinearGradient
-              colors={['#4f46e5', '#2563eb']} // indigo-600 → blue-600
+              colors={[accent.primary, accent.primary] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.createButton}
@@ -501,7 +503,7 @@ export default function ScheduledTaskListScreen() {
         ListFooterComponent={
           <TouchableOpacity onPress={handleCreate}>
             <LinearGradient
-              colors={['#4f46e5', '#2563eb']} // indigo-600 → blue-600
+              colors={[accent.primary, accent.primary] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.createButtonBottom}
@@ -520,16 +522,16 @@ export default function ScheduledTaskListScreen() {
 /**
  * レスポンシブスタイル生成関数
  */
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
     padding: getSpacing(20, width),
   },
   listContainer: {
@@ -541,15 +543,15 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   headerTitle: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.primary,
     marginBottom: getSpacing(4, width),
   },
   headerSubtitle: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(12, width),
@@ -564,20 +566,20 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderRadius: getBorderRadius(12, width),
   },
   statusText: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontSize: getFontSize(12, width, theme),
     fontWeight: 'bold',
   },
   cardTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
     marginRight: 80, // ステータスバッジ分のスペース
   },
   cardDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(12, width),
     lineHeight: getFontSize(20, width, theme),
   },
@@ -588,18 +590,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   infoLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     width: 100,
     flexShrink: 0,
   },
   infoValue: {
     fontSize: getFontSize(14, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
     flex: 1,
   },
   rewardValue: {
     fontSize: getFontSize(14, width, theme),
-    color: '#F59E0B',
+    color: colors.status.warning,
     fontWeight: 'bold',
     flex: 1,
   },
@@ -610,7 +612,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(12, width),
   },
   tag: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: accent.primary + '20',
     paddingHorizontal: getSpacing(8, width),
     paddingVertical: getSpacing(4, width),
     borderRadius: getBorderRadius(12, width),
@@ -619,11 +621,11 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   tagText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#1E40AF',
+    color: accent.primary,
   },
   moreTagsText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     alignSelf: 'center',
   },
   actionButtons: {
@@ -632,7 +634,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginTop: getSpacing(12, width),
     paddingTop: getSpacing(12, width),
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: colors.border,
   },
   actionButton: {
     flex: 1,
@@ -657,7 +659,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   actionButtonText: {
     fontSize: getFontSize(12, width, theme),
     textAlign: 'center',
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   emptyContainer: {
     flex: 1,
@@ -672,13 +674,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   emptyTitle: {
     fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
     textAlign: 'center',
   },
   emptyDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     textAlign: 'center',
     marginBottom: getSpacing(24, width),
     lineHeight: getFontSize(20, width, theme),
@@ -697,7 +699,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     overflow: 'hidden', // LinearGradient用
   },
   createButtonText: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
     textAlign: 'center',
@@ -705,13 +707,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   errorText: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#EF4444',
+    color: colors.status.error,
     marginBottom: getSpacing(8, width),
     textAlign: 'center',
   },
   errorMessage: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     textAlign: 'center',
     marginBottom: getSpacing(16, width),
   },
@@ -722,13 +724,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     overflow: 'hidden', // LinearGradient用
   },
   retryButtonText: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontSize: getFontSize(16, width, theme),
     fontWeight: 'bold',
   },
   loadingText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
 });
