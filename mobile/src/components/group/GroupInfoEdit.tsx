@@ -171,16 +171,6 @@ export const GroupInfoEdit: React.FC<GroupInfoEditProps> = ({
         {hasChanges && validationMessage && (
           <Text style={styles.validationError}>{validationMessage}</Text>
         )}
-
-        {/* バリデーション中スピナー */}
-        {isValidating && (
-          <View style={styles.validatingContainer}>
-            <ActivityIndicator size="small" color="#6366f1" />
-            <Text style={styles.validatingText}>
-              {theme === 'child' ? 'かくにんちゅう...' : '確認中...'}
-            </Text>
-          </View>
-        )}
       </View>
 
       {/* 保存ボタン */}
@@ -247,7 +237,7 @@ const createStyles = (
       marginBottom: getSpacing(8, width),
     },
     input: {
-      backgroundColor: colors.input.background,
+      backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.border.default,
       borderRadius: getBorderRadius(8, width),
