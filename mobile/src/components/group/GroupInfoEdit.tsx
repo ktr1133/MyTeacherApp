@@ -21,6 +21,7 @@ import {
 import { useTheme } from '../../contexts/ThemeContext';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 interface GroupInfoEditProps {
   groupId: number;
@@ -42,6 +43,7 @@ export const GroupInfoEdit: React.FC<GroupInfoEditProps> = ({
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
 
   const [groupName, setGroupName] = useState(initialName);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +51,7 @@ export const GroupInfoEdit: React.FC<GroupInfoEditProps> = ({
   const [hasChanges, setHasChanges] = useState(false);
 
   // スタイル生成
-  const styles = React.useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = React.useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   /**
    * グループ名変更時のバリデーション
@@ -203,10 +205,15 @@ export const GroupInfoEdit: React.FC<GroupInfoEditProps> = ({
 /**
  * レスポンシブスタイル生成関数
  */
-const createStyles = (width: number, theme: 'adult' | 'child') =>
+const createStyles = (
+  width: number,
+  theme: 'adult' | 'child',
+  colors: ReturnType<typeof useThemedColors>['colors'],
+  accent: ReturnType<typeof useThemedColors>['accent']
+) =>
   StyleSheet.create({
     container: {
-      backgroundColor: '#ffffff',
+      backgroundColor: colors.card,
       borderRadius: getBorderRadius(12, width),
       padding: getSpacing(16, width),
       marginBottom: getSpacing(16, width),
@@ -222,12 +229,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     title: {
       fontSize: getFontSize(18, width, theme),
       fontWeight: '600',
-      color: '#1e293b',
+      color: colors.text.primary,
       marginBottom: getSpacing(4, width),
     },
     description: {
       fontSize: getFontSize(14, width, theme),
-      color: '#64748b',
+      color: colors.text.secondary,
       lineHeight: getFontSize(20, width, theme),
     },
     inputContainer: {
@@ -236,18 +243,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     label: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '500',
-      color: '#475569',
+      color: colors.text.secondary,
       marginBottom: getSpacing(8, width),
     },
     input: {
-      backgroundColor: '#f8fafc',
+      backgroundColor: colors.input.background,
       borderWidth: 1,
-      borderColor: '#e2e8f0',
+      borderColor: colors.border.default,
       borderRadius: getBorderRadius(8, width),
       paddingVertical: getSpacing(12, width),
       paddingHorizontal: getSpacing(16, width),
       fontSize: getFontSize(16, width, theme),
-      color: '#1e293b',
+      color: colors.text.primary,
     },
     inputError: {
       borderColor: '#ef4444',
@@ -265,11 +272,11 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     },
     validatingText: {
       fontSize: getFontSize(12, width, theme),
-      color: '#6366f1',
+      color: accent.primary,
       marginLeft: getSpacing(8, width),
     },
     saveButton: {
-      backgroundColor: '#6366f1',
+      backgroundColor: accent.primary,
       borderRadius: getBorderRadius(8, width),
       paddingVertical: getSpacing(12, width),
       paddingHorizontal: getSpacing(24, width),
@@ -278,7 +285,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       minHeight: 48,
     },
     saveButtonDisabled: {
-      backgroundColor: '#cbd5e1',
+      backgroundColor: colors.border.default,
       opacity: 0.6,
     },
     saveButtonText: {
