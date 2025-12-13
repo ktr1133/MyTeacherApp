@@ -4,10 +4,11 @@
  * react-native-chart-kitを使用したグラフ表示
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { BarChart, LineChart } from 'react-native-chart-kit';
 import { ChartData } from '../../types/performance.types';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 interface PerformanceChartProps {
   data: ChartData;
@@ -21,12 +22,14 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   period,
 }) => {
   const screenWidth = Dimensions.get('window').width;
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   
   // グラフ設定（Web版と同じ色設定）
   const chartConfig = {
-    backgroundGradientFrom: '#ffffff',
+    backgroundGradientFrom: colors.card,
     backgroundGradientFromOpacity: 0,
-    backgroundGradientTo: '#ffffff',
+    backgroundGradientTo: colors.card,
     backgroundGradientToOpacity: 0,
     color: (opacity = 1) => {
       // 通常タスク: #59B9C6, グループタスク: #8B5CF6
@@ -39,11 +42,12 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
     decimalPlaces: 0,
     propsForBackgroundLines: {
       strokeDasharray: '', // 実線
-      stroke: '#e0e0e0',
+      stroke: colors.border,
       strokeWidth: 1,
     },
     propsForLabels: {
       fontSize: 10,
+      fill: colors.text.secondary,
     },
   };
 
@@ -144,9 +148,9 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
     marginVertical: 8,
@@ -162,7 +166,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text.primary,
   },
   chart: {
     marginVertical: 8,
@@ -174,7 +178,7 @@ const styles = StyleSheet.create({
   lineChartTitle: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6b7280',
+    color: colors.text.secondary,
     marginBottom: 8,
   },
   legendContainer: {
@@ -195,6 +199,6 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: colors.text.secondary,
   },
 });

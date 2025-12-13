@@ -42,7 +42,10 @@ const SubscriptionWebViewScreen: React.FC = () => {
   const { url } = route.params;
 
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const webViewRef = useRef<WebView>(null);
+
+  console.log('[SubscriptionWebView] Initializing with URL:', url);
 
   /**
    * URL変更時のハンドラー
@@ -125,44 +128,90 @@ const SubscriptionWebViewScreen: React.FC = () => {
    */
   const handleError = (syntheticEvent: any) => {
     const { nativeEvent } = syntheticEvent;
-    console.error('[SubscriptionWebView] WebView error:', nativeEvent);
+    console.error('[SubscriptionWebView] WebView error:', {
+      code: nativeEvent.code,
+      description: nativeEvent.description,
+      domain: nativeEvent.domain,
+      url: nativeEvent.url,
+    });
+    
+    setLoadError(true);
+    setIsLoading(false);
+    
+    // ネットワークエラーの場合は再試行オプションを提供
+    const isNetworkError = nativeEvent.code === -1004 || nativeEvent.code === -1009;
     
     Alert.alert(
       'エラー',
-      'ページの読み込みに失敗しました。',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
-        },
-      ]
+      isNetworkError 
+        ? 'ネットワーク接続に失敗しました。インターネット接続を確認してください。'
+        : 'ページの読み込みに失敗しました。',
+      isNetworkError 
+        ? [
+            {
+              text: '再試行',
+              onPress: () => {
+                setLoadError(false);
+                setIsLoading(true);
+                webViewRef.current?.reload();
+              },
+            },
+            {
+              text: 'キャンセル',
+              style: 'cancel',
+              onPress: () => navigation.goBack(),
+            },
+          ]
+        : [
+            {
+              text: 'OK',
+              onPress: () => navigation.goBack(),
+            },
+          ]
     );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <WebView
-        ref={webViewRef}
-        source={{ uri: url }}
-        onLoadStart={() => setIsLoading(true)}
-        onLoadEnd={() => setIsLoading(false)}
-        onNavigationStateChange={handleNavigationStateChange}
-        onError={handleError}
-        style={styles.webView}
-        startInLoadingState={true}
-        renderLoading={() => (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4F46E5" />
-          </View>
-        )}
-        // iOS設定
-        allowsBackForwardNavigationGestures={true}
-        // Android設定
-        domStorageEnabled={true}
-        javaScriptEnabled={true}
-        // セキュリティ設定
-        mixedContentMode="always"
-      />
+      {!loadError && (
+        <WebView
+          ref={webViewRef}
+          source={{ uri: url }}
+          onLoadStart={() => {
+            console.log('[SubscriptionWebView] Load started');
+            setIsLoading(true);
+          }}
+          onLoadEnd={() => {
+            console.log('[SubscriptionWebView] Load ended');
+            setIsLoading(false);
+          }}
+          onNavigationStateChange={handleNavigationStateChange}
+          onError={handleError}
+          onHttpError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.error('[SubscriptionWebView] HTTP error:', {
+              statusCode: nativeEvent.statusCode,
+              url: nativeEvent.url,
+            });
+          }}
+          style={styles.webView}
+          startInLoadingState={true}
+          renderLoading={() => (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#4F46E5" />
+            </View>
+          )}
+          // iOS設定
+          allowsBackForwardNavigationGestures={true}
+          // Android設定
+          domStorageEnabled={true}
+          javaScriptEnabled={true}
+          // セキュリティ設定
+          mixedContentMode="always"
+          // タイムアウト設定
+          cacheEnabled={false}
+        />
+      )}
       
       {isLoading && (
         <View style={styles.loadingOverlay}>
