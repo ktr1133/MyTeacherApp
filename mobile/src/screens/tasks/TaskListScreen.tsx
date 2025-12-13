@@ -17,6 +17,8 @@ import {
   TextInput,
   Pressable,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { DrawerActions } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { useTasks } from '../../hooks/useTasks';
@@ -110,7 +112,17 @@ export default function TaskListScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       title: theme === 'child' ? 'やること' : 'タスク一覧',
-      headerLeft: () => null, // 戻るボタンを完全に非表示（スワイプで戻れる）
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+          style={{
+            marginLeft: 16,
+            padding: 4,
+          }}
+        >
+          <Ionicons name="menu" size={28} color="#333333" />
+        </TouchableOpacity>
+      ),
       headerBackVisible: false, // iOS: 戻るボタンを非表示
       headerRight: () => (
         <Pressable
