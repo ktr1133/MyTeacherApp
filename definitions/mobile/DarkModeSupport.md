@@ -6,6 +6,7 @@
 |------|--------|---------|
 | 2025-12-13 | GitHub Copilot | 初版作成: iOS/AndroidのOSレベルダークモード自動追従 + 手動切り替え対応 |
 | 2025-12-13 | GitHub Copilot | Phase 1実装完了: カラーパレット、ColorSchemeContext、useThemedColors、App.tsx修正 |
+| 2025-12-13 | GitHub Copilot | Phase 2実装完了: DeadlineBadge, BucketCard, HomeScreen, DrawerContent, AppNavigator対応 |
 
 ---
 
@@ -535,11 +536,11 @@ const MyComponent = () => {
 ### Phase 2: コンポーネント対応（2-3日目）
 
 4. **優先度: 高 のコンポーネント修正**
-   - [ ] `TaskCard.tsx`
-   - [ ] `DeadlineBadge.tsx`
-   - [ ] `TaskListScreen.tsx`
-   - [ ] `AppNavigator.tsx`
-   - [ ] `Button.tsx`
+   - [x] `DeadlineBadge.tsx` - バッジ背景とテキスト
+   - [x] `BucketCard.tsx` - グラデーション背景、タグ名、プレビューチップ
+   - [x] `HomeScreen.tsx` - 全ボタンと背景、テキスト色
+   - [x] `DrawerContent.tsx` - メニュー項目、トークン残高セクション
+   - [x] `AppNavigator.tsx` - ローディング画面
 
 5. **優先度: 中 のコンポーネント修正**
    - [ ] `Modal.tsx`
