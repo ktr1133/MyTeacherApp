@@ -488,7 +488,7 @@
             月額500円、1日約17円で家族の時間が増える。<br>
             14日間無料でお試しいただけます。
         </p>
-        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#59B9C6] rounded-lg hover:shadow-2xl transition font-bold text-lg">
+        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 text-[#59B9C6] rounded-lg hover:shadow-2xl transition font-bold text-lg">
             無料で14日間試してみる
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>

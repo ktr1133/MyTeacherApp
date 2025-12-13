@@ -513,7 +513,11 @@ document.documentElement.classList.remove('dark');
 
 - [x] `welcome.blade.php` 修正完了
 - [ ] `profile/edit.blade.php` 修正完了（要件定義の該当箇所が現在のコードに存在せず）
-- [ ] その他ポータルページ修正完了
+- [x] その他ポータルページ修正完了
+  - [x] `portal/features/pricing.blade.php` - CTAボタン2箇所
+  - [x] `portal/features/auto-schedule.blade.php` - CTAボタン
+  - [x] `portal/features/monthly-report.blade.php` - CTAボタン
+  - [x] `portal/guide/*.blade.php` - 既に対応済み
 - [x] `resources/css/tokens/purchase.css` 修正完了（3箇所）
 - [ ] トークン購入画面のパッケージカード視認性確認
 - [ ] Phase 3動作確認完了

@@ -308,10 +308,10 @@
             期間中の解約で料金は一切かかりません
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="{{ route('register') }}" class="px-8 py-4 bg-white text-[#59B9C6] rounded-lg font-bold hover:bg-gray-100 transition shadow-lg">
+            <a href="{{ route('register') }}" class="px-8 py-4 bg-white dark:bg-gray-800 text-[#59B9C6] rounded-lg font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition shadow-lg">
                 無料トライアルを始める
             </a>
-            <a href="{{ route('portal.features.index') }}" class="px-8 py-4 bg-white/20 backdrop-blur-sm text-white rounded-lg font-bold hover:bg-white/30 transition border-2 border-white">
+            <a href="{{ route('portal.features.index') }}" class="px-8 py-4 bg-white/20 dark:bg-white/10 backdrop-blur-sm text-white rounded-lg font-bold hover:bg-white/30 dark:hover:bg-white/20 transition border-2 border-white dark:border-gray-300">
                 機能詳細を見る
             </a>
         </div>
