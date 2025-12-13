@@ -22,6 +22,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { useAvatarContext } from '../../contexts/AvatarContext';
 import { TaskSpan, Task } from '../../types/task.types';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -53,6 +54,7 @@ export default function TaskEditScreen() {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
   const { dispatchAvatarEvent } = useAvatarContext();
   const { tasks, updateTask, deleteTask, getTask, isLoading } = useTasks();
 
@@ -62,7 +64,7 @@ export default function TaskEditScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -369,7 +371,7 @@ export default function TaskEditScreen() {
   if (loadingTask) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <ActivityIndicator size="large" color={accent.primary as string} />
       </View>
     );
   }
@@ -387,8 +389,8 @@ export default function TaskEditScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#4F46E5']}
-            tintColor="#4F46E5"
+            colors={[accent.primary as string]}
+            tintColor={accent.primary as string}
           />
         }
       >
@@ -402,7 +404,7 @@ export default function TaskEditScreen() {
           value={title}
           onChangeText={setTitle}
           placeholder={theme === 'child' ? 'やることのなまえ' : 'タスク名を入力'}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.text.disabled as string}
         />
       </View>
 
@@ -426,7 +428,7 @@ export default function TaskEditScreen() {
           value={description}
           onChangeText={setDescription}
           placeholder={theme === 'child' ? 'くわしくかいてね' : 'タスクの説明を入力'}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.text.disabled as string}
           multiline
           numberOfLines={4}
         />
@@ -537,7 +539,7 @@ export default function TaskEditScreen() {
             value={dueDate}
             onChangeText={setDueDate}
             placeholder={theme === 'child' ? '「5ねんご」など' : '例：5年後'}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.text.disabled as string}
           />
         )}
       </View>
@@ -553,7 +555,7 @@ export default function TaskEditScreen() {
           </Text>
 
           {isLoadingTags ? (
-            <ActivityIndicator size="small" color="#4F46E5" />
+            <ActivityIndicator size="small" color={accent.primary as string} />
           ) : (
             <View>
               {/* 検索ボックス */}
@@ -562,7 +564,7 @@ export default function TaskEditScreen() {
                 value={tagSearchQuery}
                 onChangeText={setTagSearchQuery}
                 placeholder={theme === 'child' ? '🔍 タグをさがす...' : '🔍 タグを検索...'}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.text.disabled as string}
               />
 
               {/* 選択済みタグ */}
@@ -641,7 +643,7 @@ export default function TaskEditScreen() {
 
       {/* 更新ボタン */}
       <LinearGradient
-        colors={['#59B9C6', '#3b82f6'] as const}
+        colors={[accent.primary, accent.primary] as const}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.button, styles.updateButton]}
@@ -663,7 +665,7 @@ export default function TaskEditScreen() {
 
       {/* 削除ボタン */}
       <LinearGradient
-        colors={['#EF4444', '#DC2626']}
+        colors={[colors.status.error, colors.status.error] as const}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.button, styles.deleteButton]}
@@ -684,7 +686,7 @@ export default function TaskEditScreen() {
     {isSubmitting && (
       <View style={styles.loadingOverlay}>
         <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color="#4F46E5" />
+          <ActivityIndicator size="large" color={accent.primary as string} />
           <Text style={styles.loadingText}>処理中</Text>
         </View>
       </View>
@@ -696,10 +698,10 @@ export default function TaskEditScreen() {
 /**
  * レスポンシブスタイル生成関数
  */
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   contentContainer: {
     padding: getSpacing(16, width),
@@ -708,7 +710,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   formGroup: {
     marginBottom: getSpacing(16, width),
@@ -720,20 +722,20 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   label: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   required: {
-    color: '#EF4444',
+    color: colors.status.error,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    backgroundColor: '#fff',
-    color: '#111827',
+    backgroundColor: colors.card,
+    color: colors.text.primary,
   },
   textArea: {
     height: 100,
@@ -749,22 +751,22 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingHorizontal: getSpacing(8, width),
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#fff',
+    borderColor: colors.border,
+    backgroundColor: colors.card,
     alignItems: 'center',
   },
   spanButtonActive: {
-    backgroundColor: '#59B9C6',
-    borderColor: '#59B9C6',
+    backgroundColor: accent.primary,
+    borderColor: accent.primary,
   },
   spanButtonText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
     fontWeight: '600',
   },
   spanButtonSubText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginTop: getSpacing(2, width),
   },
   spanButtonTextActive: {
@@ -772,9 +774,9 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     overflow: 'hidden',
   },
   picker: {
@@ -786,65 +788,65 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   dateButton: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
   },
   dateButtonText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#111827',
+    color: colors.text.primary,
   },
   tagCount: {
     fontSize: getFontSize(14, width, theme),
-    color: '#4F46E5',
+    color: accent.primary,
     fontWeight: '600',
   },
   tagSearchInput: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     fontSize: getFontSize(14, width, theme),
-    backgroundColor: '#fff',
-    color: '#111827',
+    backgroundColor: colors.card,
+    color: colors.text.primary,
     marginBottom: getSpacing(12, width),
   },
   selectedTagsContainer: {
     marginBottom: getSpacing(12, width),
     padding: getSpacing(12, width),
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
   },
   selectedTagsLabel: {
     fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(8, width),
   },
   tagExpandButton: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     alignItems: 'center',
     marginBottom: getSpacing(8, width),
   },
   tagExpandButtonText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#4F46E5',
+    color: accent.primary,
     fontWeight: '600',
   },
   tagScrollView: {
     maxHeight: 200,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
-    backgroundColor: '#FAFAFA',
+    backgroundColor: colors.background,
   },
   tagContainer: {
     flexDirection: 'row',
@@ -857,17 +859,17 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(6, width),
     borderRadius: getBorderRadius(16, width),
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.border,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
   },
   tagChipSelected: {
-    backgroundColor: '#59B9C6',
-    borderColor: '#59B9C6',
+    backgroundColor: accent.primary,
+    borderColor: accent.primary,
   },
   tagChipText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
   },
   tagRemoveIcon: {
     fontSize: getFontSize(16, width, theme),
@@ -877,7 +879,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   noResultsText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.disabled,
     textAlign: 'center',
     paddingVertical: getSpacing(16, width),
   },
@@ -914,7 +916,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     alignItems: 'center',
   },
   loadingBox: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     padding: getSpacing(24, width),
     borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
@@ -923,7 +925,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   loadingText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
     textAlign: 'center',
   },
 });
