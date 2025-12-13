@@ -48,8 +48,8 @@ class FcmService implements IFcmService {
       // iOS: AUTHORIZED (1) または PROVISIONAL (2)
       // Android: AUTHORIZED (1)
       const enabled = 
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        authStatus === FirebaseMessagingTypes.AuthorizationStatus.AUTHORIZED ||
+        authStatus === FirebaseMessagingTypes.AuthorizationStatus.PROVISIONAL;
 
       if (enabled) {
         console.log('[FCM] Permission granted');
