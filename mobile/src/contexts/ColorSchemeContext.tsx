@@ -8,7 +8,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useColorScheme as useRNColorScheme, Appearance } from 'react-native';
+import { useColorScheme as useRNColorScheme, Appearance, AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, ColorPalette } from '../utils/colors';
 
@@ -125,6 +125,31 @@ export const ColorSchemeProvider: React.FC<{ children: ReactNode }> = ({ childre
       subscription.remove();
     };
   }, [mode]);
+  
+  /**
+   * AppStateの変更を監視（バックグラウンド→フォアグラウンド時に手動チェック）
+   * useColorScheme/Appearanceが反応しない場合のフォールバック
+   */
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      console.log('[ColorScheme] AppState変更:', nextAppState);
+      
+      if (nextAppState === 'active' && mode === 'auto') {
+        // フォアグラウンドに戻った時、OSの設定を手動で再チェック
+        const currentScheme = Appearance.getColorScheme();
+        console.log('[ColorScheme] フォアグラウンド復帰 - 現在のOS設定:', currentScheme);
+        
+        if (currentScheme && currentScheme !== detectedSystemScheme) {
+          setDetectedSystemScheme(currentScheme);
+          console.log('[ColorScheme] OS設定変更を検知、更新:', currentScheme);
+        }
+      }
+    });
+    
+    return () => {
+      subscription.remove();
+    };
+  }, [mode, detectedSystemScheme]);
   
   /**
    * 手動切り替え
