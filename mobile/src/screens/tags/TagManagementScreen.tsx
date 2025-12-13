@@ -31,6 +31,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTags } from '../../hooks/useTags';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAvatarContext } from '../../contexts/AvatarContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import type { Tag } from '../../types/tag.types';
 
@@ -47,6 +48,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'TagManagement'>;
 export default function TagManagementScreen({ navigation }: Props) {
   const { theme } = useTheme();
   const { width } = useResponsive();
+  const { colors, accent } = useThemedColors();
   const {
     tags,
     isLoading,
@@ -69,10 +71,10 @@ export default function TagManagementScreen({ navigation }: Props) {
   const [newTagName, setNewTagName] = useState('');
   const [editingTagId, setEditingTagId] = useState<number | null>(null);
   const [editingTagName, setEditingTagName] = useState('');
-  const DEFAULT_TAG_COLOR = '#3B82F6'; // Web版準拠: 色選択機能なし、デフォルト色固定
+  const DEFAULT_TAG_COLOR = accent.primary; // テーマのアクセントカラーを使用
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
 
   /**
    * 初回データ取得
@@ -292,7 +294,7 @@ export default function TagManagementScreen({ navigation }: Props) {
             /* 編集ボタン */
             <>
               <LinearGradient
-                colors={['#59B9C6', '#3b82f6'] as const}
+                colors={[accent.primary, accent.primary] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={[styles.actionButton, styles.editButton]}
@@ -326,7 +328,7 @@ export default function TagManagementScreen({ navigation }: Props) {
             /* 編集モード: 保存・キャンセルボタン */
             <>
               <LinearGradient
-                colors={['#10B981', '#059669'] as const}
+                colors={[colors.status.success, colors.status.success] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={[styles.actionButton, styles.saveButton]}
@@ -344,7 +346,7 @@ export default function TagManagementScreen({ navigation }: Props) {
                 style={[styles.actionButton, styles.cancelButton]}
                 onPress={cancelEditingTag}
               >
-                <Text style={[styles.buttonText, { color: '#6B7280' }]}>
+                <Text style={[styles.buttonText, { color: colors.text.secondary }]}>
                   {theme === 'child' ? 'やめる' : 'キャンセル'}
                 </Text>
               </TouchableOpacity>
@@ -365,7 +367,7 @@ export default function TagManagementScreen({ navigation }: Props) {
           {theme === 'child' ? 'タグ かんり' : 'タグ管理'}
         </Text>
         <LinearGradient
-          colors={['#59B9C6', '#3b82f6'] as const}
+          colors={[accent.primary, accent.primary] as const}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.createButton}
@@ -392,7 +394,7 @@ export default function TagManagementScreen({ navigation }: Props) {
       {/* ローディング */}
       {isLoading && !refreshing && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color={accent.primary} />
         </View>
       )}
 
@@ -458,7 +460,7 @@ export default function TagManagementScreen({ navigation }: Props) {
                 </Text>
               </TouchableOpacity>
               <LinearGradient
-                colors={['#59B9C6', '#3b82f6'] as const}
+                colors={[accent.primary, accent.primary] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={[styles.modalButton, styles.modalSaveButton]}
@@ -489,10 +491,10 @@ export default function TagManagementScreen({ navigation }: Props) {
   );
 }
 
-const createStyles = (width: number, theme: any) => StyleSheet.create({
+const createStyles = (width: number, theme: any, colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -500,14 +502,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(16, width),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.text.primary,
   },
   createButton: {
     borderRadius: getBorderRadius(8, width),
@@ -520,7 +522,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
   },
   createButtonText: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontWeight: '600',
     fontSize: getFontSize(14, width, theme),
   },
@@ -528,7 +530,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.status.error + '20',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
     marginHorizontal: getSpacing(16, width),
@@ -537,11 +539,11 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   errorText: {
     flex: 1,
-    color: '#991B1B',
+    color: colors.status.error,
     fontSize: getFontSize(14, width, theme),
   },
   errorDismiss: {
-    color: '#991B1B',
+    color: colors.status.error,
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     marginLeft: getSpacing(8, width),
@@ -556,7 +558,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     paddingVertical: getSpacing(16, width),
   },
   tagCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(12, width),
@@ -575,17 +577,18 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   editInput: {
     borderWidth: 1,
-    borderColor: '#3B82F6',
+    borderColor: accent.primary,
     borderRadius: getBorderRadius(6, width),
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(8, width),
     fontSize: getFontSize(16, width, theme),
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
+    color: colors.text.primary,
   },
   tagName: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text.primary,
     flex: 1,
   },
   taskCountBadge: {
@@ -594,7 +597,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     paddingVertical: getSpacing(4, width),
   },
   taskCountText: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontWeight: 'bold',
     fontSize: getFontSize(14, width, theme),
   },
@@ -620,24 +623,24 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     // LinearGradient適用のためbackgroundColor削除
   },
   cancelButton: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
   },
   deleteButton: {
-    backgroundColor: '#EF4444',
+    backgroundColor: colors.status.error,
   },
   deleteButtonDisabled: {
-    backgroundColor: '#D1D5DB',
+    backgroundColor: colors.border,
     opacity: 0.6,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontWeight: '600',
     fontSize: getFontSize(14, width, theme),
   },
   buttonTextDisabled: {
-    color: '#9CA3AF',
+    color: colors.text.disabled,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -646,7 +649,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   emptyText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     textAlign: 'center',
     lineHeight: getFontSize(24, width, theme),
   },
@@ -657,7 +660,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(16, width),
     padding: getSpacing(24, width),
     width: width - getSpacing(48, width),
@@ -666,23 +669,24 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   modalTitle: {
     fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.text.primary,
     marginBottom: getSpacing(20, width),
     textAlign: 'center',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
     borderRadius: getBorderRadius(8, width),
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
     marginBottom: getSpacing(12, width),
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
+    color: colors.text.primary,
   },
   colorNote: {
     fontSize: getFontSize(12, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(20, width),
     textAlign: 'center',
   },
@@ -701,10 +705,12 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
   },
   modalCancelButton: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   cancelButtonText: {
-    color: '#111827',
+    color: colors.text.primary,
     fontWeight: '600',
     fontSize: getFontSize(16, width, theme),
   },
@@ -712,7 +718,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     // LinearGradient適用のためbackgroundColor削除
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: colors.background,
     fontWeight: '600',
     fontSize: getFontSize(16, width, theme),
   },
