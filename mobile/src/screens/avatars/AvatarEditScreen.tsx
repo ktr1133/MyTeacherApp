@@ -66,6 +66,7 @@ export const AvatarEditScreen: React.FC = () => {
   const route = useRoute<AvatarEditScreenRouteProp>();
   const { theme, themeType } = useTheme();
   const { width } = useResponsive();
+  const { colors, accent } = useThemedColors();
   const { updateAvatar, isLoading, error } = useAvatarManagement();
 
   const avatar = route.params?.avatar;
