@@ -20,6 +20,7 @@ import {
   ActivityIndicator,
   Switch,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
@@ -27,6 +28,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { userService } from '../../services/user.service';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { Ionicons } from '@expo/vector-icons';
 
 /**
  * SettingsScreen コンポーネント
@@ -143,11 +145,6 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        {/* ヘッダー */}
-        <Text style={styles.title}>
-          {theme === 'child' ? 'せってい' : '設定'}
-        </Text>
-
         {/* エラー表示 */}
         {error && (
           <View style={styles.errorContainer}>
@@ -156,171 +153,264 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
         )}
 
         {/* テーマ設定 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {theme === 'child' ? 'がめんのモード' : 'テーマ設定'}
-          </Text>
-          <Text style={styles.sectionDescription}>
-            {theme === 'child'
-              ? 'おとなモードとこどもモードをきりかえられるよ'
-              : '大人モードと子供モードを切り替えます'}
-          </Text>
-
-          <View style={styles.themeButtons}>
-            <TouchableOpacity
-              style={[
-                styles.themeButton,
-                currentTheme === 'adult' && styles.themeButtonActive,
-              ]}
-              onPress={() => handleThemeChange('adult')}
-              accessibilityLabel="大人モード"
-            >
-              <Text
-                style={[
-                  styles.themeButtonText,
-                  currentTheme === 'adult' && styles.themeButtonTextActive,
-                ]}
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(59, 130, 246, 0.05)', 'rgba(147, 51, 234, 0.05)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.cardHeader}
+          >
+            <View style={styles.cardHeaderIcon}>
+              <LinearGradient
+                colors={['#3b82f6', '#9333ea']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconGradient}
               >
-                {theme === 'child' ? 'おとなモード' : '大人モード'}
-              </Text>
-            </TouchableOpacity>
+                <Ionicons name="color-palette-outline" size={16} color="#fff" />
+              </LinearGradient>
+            </View>
+            <Text style={styles.cardTitle}>
+              {theme === 'child' ? 'がめんのモード' : 'テーマ設定'}
+            </Text>
+          </LinearGradient>
+          <View style={styles.cardContent}>
+            <Text style={styles.sectionDescription}>
+              {theme === 'child'
+                ? 'おとなモードとこどもモードをきりかえられるよ'
+                : '大人モードと子供モードを切り替えます'}
+            </Text>
 
-            <TouchableOpacity
-              style={[
-                styles.themeButton,
-                currentTheme === 'child' && styles.themeButtonActive,
-              ]}
-              onPress={() => handleThemeChange('child')}
-              accessibilityLabel="子供モード"
-            >
-              <Text
+            <View style={styles.themeButtons}>
+              <TouchableOpacity
                 style={[
-                  styles.themeButtonText,
-                  currentTheme === 'child' && styles.themeButtonTextActive,
+                  styles.themeButton,
+                  currentTheme === 'adult' && styles.themeButtonActive,
                 ]}
+                onPress={() => handleThemeChange('adult')}
+                accessibilityLabel="大人モード"
               >
-                {theme === 'child' ? 'こどもモード' : '子供モード'}
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.themeButtonText,
+                    currentTheme === 'adult' && styles.themeButtonTextActive,
+                  ]}
+                >
+                  {theme === 'child' ? 'おとなモード' : '大人モード'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
+                  currentTheme === 'child' && styles.themeButtonActive,
+                ]}
+                onPress={() => handleThemeChange('child')}
+                accessibilityLabel="子供モード"
+              >
+                <Text
+                  style={[
+                    styles.themeButtonText,
+                    currentTheme === 'child' && styles.themeButtonTextActive,
+                  ]}
+                >
+                  {theme === 'child' ? 'こどもモード' : '子供モード'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
         {/* タイムゾーン設定 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {theme === 'child' ? 'じかんのせってい' : 'タイムゾーン'}
-          </Text>
-          <Text style={styles.sectionDescription}>
-            {theme === 'child'
-              ? 'あなたのすんでいるばしょのじかんをせっていするよ'
-              : 'お住まいの地域のタイムゾーンを設定します'}
-          </Text>
-
-          {isLoadingTimezone ? (
-            <ActivityIndicator size="small" color="#3b82f6" />
-          ) : (
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={timezone}
-                onValueChange={handleTimezoneChange}
-                style={styles.picker}
-                enabled={!isLoading}
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(20, 184, 166, 0.05)', 'rgba(6, 182, 212, 0.05)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.cardHeader}
+          >
+            <View style={styles.cardHeaderIcon}>
+              <LinearGradient
+                colors={['#14b8a6', '#06b6d4']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconGradient}
               >
-                {(timezones || []).map((tz) => (
-                  <Picker.Item
-                    key={tz.value}
-                    label={tz.label}
-                    value={tz.value}
-                  />
-                ))}
-              </Picker>
+                <Ionicons name="globe-outline" size={16} color="#fff" />
+              </LinearGradient>
             </View>
-          )}
+            <Text style={styles.cardTitle}>
+              {theme === 'child' ? 'じかんのせってい' : 'タイムゾーン'}
+            </Text>
+          </LinearGradient>
+          <View style={styles.cardContent}>
+            <Text style={styles.sectionDescription}>
+              {theme === 'child'
+                ? 'あなたのすんでいるばしょのじかんをせっていするよ'
+                : 'お住まいの地域のタイムゾーンを設定します'}
+            </Text>
+
+            {isLoadingTimezone ? (
+              <ActivityIndicator size="small" color="#3b82f6" />
+            ) : (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={timezone}
+                  onValueChange={handleTimezoneChange}
+                  style={styles.picker}
+                  enabled={!isLoading}
+                >
+                  {(timezones || []).map((tz) => (
+                    <Picker.Item
+                      key={tz.value}
+                      label={tz.label}
+                      value={tz.value}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            )}
+          </View>
         </View>
 
         {/* グループ管理 (子どもユーザー以外) */}
         {user && user.theme !== 'child' && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {theme === 'child' ? 'グループ' : 'グループ管理'}
-            </Text>
-            <Text style={styles.sectionDescription}>
-              {theme === 'child'
-                ? 'グループをせっていできるよ'
-                : 'グループを作成・編集できます'}
-            </Text>
-            
-            <TouchableOpacity
-              style={styles.linkButton}
-              onPress={() => navigation.navigate('GroupManagement')}
+          <View style={styles.card}>
+            <LinearGradient
+              colors={['rgba(147, 51, 234, 0.05)', 'rgba(236, 72, 153, 0.05)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.cardHeader}
             >
-              <Text style={styles.linkButtonText}>
-                {theme === 'child' ? 'グループのせってい' : 'グループ管理画面へ'}
+              <View style={styles.cardHeaderIcon}>
+                <LinearGradient
+                  colors={['#9333ea', '#ec4899']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.iconGradient}
+                >
+                  <Ionicons name="people-outline" size={16} color="#fff" />
+                </LinearGradient>
+              </View>
+              <Text style={styles.cardTitle}>
+                {theme === 'child' ? 'グループ' : 'グループ管理'}
               </Text>
-            </TouchableOpacity>
+            </LinearGradient>
+            <View style={styles.cardContent}>
+              <Text style={styles.sectionDescription}>
+                {theme === 'child'
+                  ? 'グループをせっていできるよ'
+                  : 'グループを作成・編集できます'}
+              </Text>
+              
+              <TouchableOpacity
+                style={styles.linkButton}
+                onPress={() => navigation.navigate('GroupManagement')}
+              >
+                <Text style={styles.linkButtonText}>
+                  {theme === 'child' ? 'グループのせってい' : 'グループ管理画面へ'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
         {/* 通知設定 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {theme === 'child' ? 'つうちのせってい' : '通知設定'}
-          </Text>
-          
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => navigation.navigate('NotificationSettings')}
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(59, 130, 246, 0.05)', 'rgba(147, 51, 234, 0.05)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.cardHeader}
           >
-            <Text style={styles.linkButtonText}>
-              {theme === 'child' ? 'つうちのせっていをひらく' : '通知設定を開く'}
+            <View style={styles.cardHeaderIcon}>
+              <LinearGradient
+                colors={['#3b82f6', '#9333ea']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconGradient}
+              >
+                <Ionicons name="notifications-outline" size={16} color="#fff" />
+              </LinearGradient>
+            </View>
+            <Text style={styles.cardTitle}>
+              {theme === 'child' ? 'つうちのせってい' : '通知設定'}
             </Text>
-          </TouchableOpacity>
+          </LinearGradient>
+          <View style={styles.cardContent}>
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => navigation.navigate('NotificationSettings')}
+            >
+              <Text style={styles.linkButtonText}>
+                {theme === 'child' ? 'つうちのせっていをひらく' : '通知設定を開く'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* アプリ情報 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {theme === 'child' ? 'アプリのじょうほう' : 'アプリ情報'}
-          </Text>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>
-              {theme === 'child' ? 'バージョン' : 'バージョン'}
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(59, 130, 246, 0.05)', 'rgba(147, 51, 234, 0.05)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.cardHeader}
+          >
+            <View style={styles.cardHeaderIcon}>
+              <LinearGradient
+                colors={['#3b82f6', '#9333ea']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconGradient}
+              >
+                <Ionicons name="information-circle-outline" size={16} color="#fff" />
+              </LinearGradient>
+            </View>
+            <Text style={styles.cardTitle}>
+              {theme === 'child' ? 'アプリのじょうほう' : 'アプリ情報'}
             </Text>
-            <Text style={styles.infoValue}>1.0.0</Text>
+          </LinearGradient>
+          <View style={styles.cardContent}>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>
+                {theme === 'child' ? 'バージョン' : 'バージョン'}
+              </Text>
+              <Text style={styles.infoValue}>1.0.0</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => {
+                Alert.alert(
+                  theme === 'child' ? 'リンク' : 'リンク',
+                  theme === 'child'
+                    ? 'ブラウザでひらくよ'
+                    : 'プライバシーポリシーを開きます',
+                );
+              }}
+            >
+              <Text style={styles.linkButtonText}>
+                {theme === 'child' ? 'プライバシーポリシー' : 'プライバシーポリシー'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => {
+                Alert.alert(
+                  theme === 'child' ? 'リンク' : 'リンク',
+                  theme === 'child'
+                    ? 'ブラウザでひらくよ'
+                    : '利用規約を開きます',
+                );
+              }}
+            >
+              <Text style={styles.linkButtonText}>
+                {theme === 'child' ? 'りようきやく' : '利用規約'}
+              </Text>
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => {
-              Alert.alert(
-                theme === 'child' ? 'リンク' : 'リンク',
-                theme === 'child'
-                  ? 'ブラウザでひらくよ'
-                  : 'プライバシーポリシーを開きます',
-              );
-            }}
-          >
-            <Text style={styles.linkButtonText}>
-              {theme === 'child' ? 'プライバシーポリシー' : 'プライバシーポリシー'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => {
-              Alert.alert(
-                theme === 'child' ? 'リンク' : 'リンク',
-                theme === 'child'
-                  ? 'ブラウザでひらくよ'
-                  : '利用規約を開きます',
-              );
-            }}
-          >
-            <Text style={styles.linkButtonText}>
-              {theme === 'child' ? 'りようきやく' : '利用規約'}
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -335,12 +425,6 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   content: {
     padding: getSpacing(16, width),
   },
-  title: {
-    fontSize: getFontSize(24, width, theme),
-    fontWeight: 'bold',
-    color: '#1e293b',
-    marginBottom: getSpacing(24, width),
-  },
   errorContainer: {
     padding: getSpacing(12, width),
     backgroundColor: '#fef2f2',
@@ -353,18 +437,41 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     color: '#dc2626',
     fontSize: getFontSize(14, width, theme),
   },
-  section: {
-    marginBottom: getSpacing(32, width),
-    padding: getSpacing(16, width),
-    backgroundColor: '#fff',
-    borderRadius: getBorderRadius(12, width),
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: getBorderRadius(16, width),
+    marginBottom: getSpacing(16, width),
     ...getShadow(2),
+    overflow: 'hidden',
   },
-  sectionTitle: {
-    fontSize: getFontSize(18, width, theme),
-    fontWeight: '600',
+  cardHeader: {
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: getSpacing(12, width),
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  cardHeaderIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
+  iconGradient: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTitle: {
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '700',
     color: '#1e293b',
-    marginBottom: getSpacing(8, width),
+  },
+  cardContent: {
+    padding: getSpacing(16, width),
   },
   sectionDescription: {
     fontSize: getFontSize(14, width, theme),
