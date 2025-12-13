@@ -26,15 +26,7 @@ import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../u
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { tokenService } from '../../services/token.service';
-
-/**
- * トークン残高情報
- */
-interface TokenBalance {
-  total: number;
-  free: number;
-  paid: number;
-}
+import type { TokenBalance as TokenBalanceAPI } from '../../types/token.types';
 
 /**
  * ドロワーメニュー項目の定義
@@ -73,11 +65,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
   // 状態管理
   const [taskTotal, setTaskTotal] = useState<number>(0);
   const [pendingTotal, setPendingTotal] = useState<number>(0);
-  const [tokenBalance, setTokenBalance] = useState<TokenBalance>({
-    total: 0,
-    free: 0,
-    paid: 0,
-  });
+  const [tokenBalance, setTokenBalance] = useState<TokenBalanceAPI | null>(null);
   const [isLowBalance, setIsLowBalance] = useState<boolean>(false);
   const [showGeneralMenu, setShowGeneralMenu] = useState<boolean>(true);
 
@@ -101,7 +89,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       
       // 低残高判定（閾値: 200,000トークン）
       const LOW_THRESHOLD = 200000;
-      setIsLowBalance(balance.total <= LOW_THRESHOLD);
+      setIsLowBalance(balance.balance <= LOW_THRESHOLD);
 
       // TODO: 未完了タスク件数取得（GET /api/tasks?is_completed=false）
       // setTaskTotal(count);
@@ -254,6 +242,15 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
   const renderTokenBalance = () => {
     const tokenLabel = isChildTheme ? 'コイン' : 'トークン';
 
+    // データ読み込み中はローディング表示
+    if (!tokenBalance) {
+      return (
+        <View style={styles.tokenBalanceContainer}>
+          <Text style={styles.tokenBalanceDetailText}>読み込み中...</Text>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.tokenBalanceContainer}>
         <View style={styles.tokenBalanceHeader}>
@@ -266,12 +263,12 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
         </View>
         
         <Text style={styles.tokenBalanceTotal}>
-          {tokenBalance.total.toLocaleString()}
+          {tokenBalance?.balance?.toLocaleString() ?? '0'}
         </Text>
         
         <View style={styles.tokenBalanceDetail}>
           <Text style={styles.tokenBalanceDetailText}>
-            無料: {tokenBalance.free.toLocaleString()} / 有料: {tokenBalance.paid.toLocaleString()}
+            無料: {tokenBalance?.free_balance?.toLocaleString() ?? '0'} / 有料: {tokenBalance?.paid_balance?.toLocaleString() ?? '0'}
           </Text>
         </View>
 

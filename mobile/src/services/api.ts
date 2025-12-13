@@ -52,10 +52,11 @@ api.interceptors.response.use(
     
     // 401エラー: 認証エラー（セッション切れ）
     if (error.response?.status === 401) {
-      // ポーリングの401エラーはトークン削除しない（一時的なエラーの可能性）
+      // 以下のリクエストの401エラーはトークン削除しない
       const isPollingRequest = error.config?.url?.includes('/unread-count');
+      const isFCMTokenRequest = error.config?.url?.includes('/fcm-token');
       
-      if (!isPollingRequest) {
+      if (!isPollingRequest && !isFCMTokenRequest) {
         console.log('[API] Authentication failed, removing token and redirecting to login');
         
         // トークン削除
@@ -77,7 +78,8 @@ api.interceptors.response.use(
           { cancelable: false }
         );
       } else {
-        console.log('[API] Polling 401 error, keeping token (temporary error)');
+        const reason = isFCMTokenRequest ? 'FCM token registration (not logged in)' : 'Polling request';
+        console.log(`[API] 401 error ignored: ${reason}`);
       }
     }
     
