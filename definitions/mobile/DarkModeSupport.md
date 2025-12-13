@@ -3,12 +3,13 @@
 ## 更新履歴
 
 | 日付 | 更新者 | 更新内容 |
-|------|--------|---------|
+|------|--------|------|
 | 2025-12-13 | GitHub Copilot | 初版作成: iOS/AndroidのOSレベルダークモード自動追従 + 手動切り替え対応 |
 | 2025-12-13 | GitHub Copilot | Phase 1実装完了: カラーパレット、ColorSchemeContext、useThemedColors、App.tsx修正 |
 | 2025-12-13 | GitHub Copilot | Phase 2実装完了: DeadlineBadge, BucketCard, HomeScreen, DrawerContent, AppNavigator対応 |
 | 2025-12-13 | GitHub Copilot | Phase 2 priority:medium完了: ConfirmDialog, ProfileScreen対応（commit d343132） |
 | 2025-12-13 | GitHub Copilot | Phase 2残りコンポーネント完了: RejectReasonModal, TaskApprovalCard, TokenApprovalCard, HeaderNotificationIcon, AvatarWidget, AvatarCreationBanner対応（commit 0cb278c） |
+| 2025-12-13 | GitHub Copilot | Phase 3完了: SettingsScreenにカラースキーマ手動切り替えUI追加（ライト/ダーク/自動）（commit 83b7bc4） |
 
 ---
 
@@ -557,8 +558,9 @@ const MyComponent = () => {
 ### Phase 3: 手動切り替え機能（4日目）
 
 6. **設定画面への追加**
-   - [ ] `SettingsScreen.tsx` にカラーテーマ切り替えUIを追加
-   - [ ] AsyncStorageによる永続化実装
+   - [x] `SettingsScreen.tsx` にカラーテーマ切り替えUIを追加 ✅ 83b7bc4
+   - [x] AsyncStorageによる永続化実装 ✅ 83b7bc4
+   - [x] ライト/ダーク/自動モードの3ボタン切り替え ✅ 83b7bc4
 
 ### Phase 4: テスト・調整（5日目）
 
