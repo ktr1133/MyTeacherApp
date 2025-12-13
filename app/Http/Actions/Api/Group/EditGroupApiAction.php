@@ -3,6 +3,7 @@
 namespace App\Http\Actions\Api\Group;
 
 use App\Services\Profile\GroupServiceInterface;
+use App\Services\Group\GroupTaskLimitServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +20,8 @@ class EditGroupApiAction
      * コンストラクタ
      */
     public function __construct(
-        protected GroupServiceInterface $groupService
+        protected GroupServiceInterface $groupService,
+        protected GroupTaskLimitServiceInterface $taskLimitService
     ) {}
 
     /**
@@ -49,6 +51,9 @@ class EditGroupApiAction
                 ], 404);
             }
 
+            // タスク作成状況を取得
+            $taskUsage = $this->taskLimitService->getGroupTaskUsage($group);
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -56,15 +61,19 @@ class EditGroupApiAction
                         'id' => $group->id,
                         'name' => $group->name,
                         'master_user_id' => $group->master_user_id,
+                        'subscription_active' => (bool) $group->subscription_active,
+                        'subscription_plan' => $group->subscription_plan,
                         'created_at' => $group->created_at->toIso8601String(),
                         'updated_at' => $group->updated_at->toIso8601String(),
                     ],
+                    'task_usage' => $taskUsage,
                     'members' => $members->map(function ($member) {
                         return [
                             'id' => $member->id,
                             'username' => $member->username,
                             'name' => $member->name,
                             'email' => $member->email,
+                            'theme' => $member->theme,
                             'group_edit_flg' => (bool) $member->group_edit_flg,
                             'is_master' => $member->group->master_user_id === $member->id,
                         ];

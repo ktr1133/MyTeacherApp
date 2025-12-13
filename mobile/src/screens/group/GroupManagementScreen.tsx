@@ -41,7 +41,10 @@ export const GroupManagementScreen: React.FC = () => {
   // グループ情報（userから取得）
   const groupId = user?.group_id;
   const groupName = user?.group?.name || 'マイグループ';
-  const isGroupMaster = user?.group_edit_flg ?? false;
+  // 正しいマスター判定: group.master_user_id === user.id
+  const isGroupMaster = user?.group?.master_user_id === user?.id;
+  // 編集権限判定: マスターまたはgroup_edit_flg
+  const canEditGroup = isGroupMaster || (user?.group_edit_flg ?? false);
   const [refreshing, setRefreshing] = useState(false);
 
   // レスポンシブスタイル生成
@@ -181,8 +184,8 @@ export const GroupManagementScreen: React.FC = () => {
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* メンバー管理（グループマスターのみ、将来実装） */}
-          {isGroupMaster && (
+          {/* メンバー管理（編集権限ありのユーザーのみ、将来実装） */}
+          {canEditGroup && (
             <TouchableOpacity
               onPress={navigateToMemberManagement}
               disabled={true}
@@ -217,8 +220,8 @@ export const GroupManagementScreen: React.FC = () => {
             </TouchableOpacity>
           )}
 
-          {/* グループ設定（グループマスターのみ、将来実装） */}
-          {isGroupMaster && (
+          {/* グループ設定（編集権限ありのユーザーのみ、将来実装） */}
+          {canEditGroup && (
             <TouchableOpacity
               onPress={navigateToGroupSettings}
               disabled={true}
