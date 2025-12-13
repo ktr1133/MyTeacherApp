@@ -18,7 +18,7 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Iconify } from 'react-native-iconify';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -420,7 +420,7 @@ export default function ScheduledTaskCreateScreen() {
           end={{ x: 1, y: 0 }}
           style={styles.sectionHeader}
         >
-          <Iconify icon="mdi:information-outline" size={20} color="#FFFFFF" />
+          <MaterialIcons name="info-outline" size={20} color="#FFFFFF" />
           <Text style={styles.sectionHeaderText}>
             {theme === 'child' ? 'きほんじょうほう' : '基本情報'}
           </Text>
@@ -482,7 +482,7 @@ export default function ScheduledTaskCreateScreen() {
           end={{ x: 1, y: 0 }}
           style={styles.sectionHeader}
         >
-          <Iconify icon="mdi:clock-outline" size={20} color="#FFFFFF" />
+          <MaterialIcons name="schedule" size={20} color="#FFFFFF" />
           <Text style={styles.sectionHeaderText}>
             {theme === 'child' ? 'スケジュール' : 'スケジュール設定'} <Text style={styles.required}>*</Text>
           </Text>
@@ -505,7 +505,7 @@ export default function ScheduledTaskCreateScreen() {
           end={{ x: 1, y: 0 }}
           style={styles.sectionHeader}
         >
-          <Iconify icon="mdi:timer-outline" size={20} color="#FFFFFF" />
+          <MaterialIcons name="timer" size={20} color="#FFFFFF" />
           <Text style={styles.sectionHeaderText}>
             {theme === 'child' ? 'きげん' : '期限設定'}
           </Text>
@@ -546,7 +546,7 @@ export default function ScheduledTaskCreateScreen() {
           end={{ x: 1, y: 0 }}
           style={styles.sectionHeader}
         >
-          <Iconify icon="mdi:calendar-range" size={20} color="#FFFFFF" />
+          <MaterialIcons name="date-range" size={20} color="#FFFFFF" />
           <Text style={styles.sectionHeaderText}>
             {theme === 'child' ? 'いつからいつまで' : '実行期間'}
           </Text>
@@ -593,7 +593,7 @@ export default function ScheduledTaskCreateScreen() {
           end={{ x: 1, y: 0 }}
           style={styles.sectionHeader}
         >
-          <Iconify icon="mdi:cog-outline" size={20} color="#FFFFFF" />
+          <MaterialIcons name="settings" size={20} color="#FFFFFF" />
           <Text style={styles.sectionHeaderText}>
             {theme === 'child' ? 'そのほか' : 'その他設定'}
           </Text>
@@ -622,7 +622,7 @@ export default function ScheduledTaskCreateScreen() {
           end={{ x: 1, y: 0 }}
           style={styles.sectionHeader}
         >
-          <Iconify icon="mdi:tag-outline" size={20} color="#FFFFFF" />
+          <MaterialIcons name="label-outline" size={20} color="#FFFFFF" />
           <Text style={styles.sectionHeaderText}>
             {theme === 'child' ? 'タグ' : 'タグ'}
           </Text>

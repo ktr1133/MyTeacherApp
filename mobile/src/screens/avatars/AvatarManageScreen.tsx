@@ -32,6 +32,7 @@ import {
   Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -307,18 +308,19 @@ export const AvatarManageScreen: React.FC = () => {
       }
     >
       <View style={styles.content}>
-        {/* ヘッダー */}
-        <View style={styles.header}>
-          <Text style={[styles.title, isChild && styles.childTitle]}>
-            {isChild ? 'アバターせってい' : 'アバター設定'}
-          </Text>
-        </View>
-
         {/* アバター画像プレビュー */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isChild && styles.childSectionTitle]}>
-            {isChild ? '🎨 アバターのえ' : '🎨 アバター画像'}
-          </Text>
+          <LinearGradient
+            colors={['#EC4899', '#8B5CF6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.sectionHeader}
+          >
+            <MaterialIcons name="image" size={20} color="#FFFFFF" />
+            <Text style={styles.sectionHeaderText}>
+              {isChild ? 'アバターのえ' : 'アバター画像'}
+            </Text>
+          </LinearGradient>
 
           {avatar.generation_status === 'completed' && avatar.images.length > 0 && sortedImages.length > 0 ? (
             <View>
@@ -449,9 +451,17 @@ export const AvatarManageScreen: React.FC = () => {
 
         {/* 設定情報 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isChild && styles.childSectionTitle]}>
-            {isChild ? '👤 みため' : '👤 外見の設定'}
-          </Text>
+          <LinearGradient
+            colors={['#3B82F6', '#6366F1']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.sectionHeader}
+          >
+            <MaterialIcons name="info-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.sectionHeaderText}>
+              {isChild ? 'みため' : '外見の設定'}
+            </Text>
+          </LinearGradient>
           <View style={styles.infoGrid}>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>{isChild ? 'せいべつ' : '性別'}</Text>
@@ -485,9 +495,17 @@ export const AvatarManageScreen: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isChild && styles.childSectionTitle]}>
-            {isChild ? '💬 せいかく' : '💬 性格の設定'}
-          </Text>
+          <LinearGradient
+            colors={['#10B981', '#14B8A6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.sectionHeader}
+          >
+            <MaterialIcons name="chat-bubble-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.sectionHeaderText}>
+              {isChild ? 'せいかく' : '性格の設定'}
+            </Text>
+          </LinearGradient>
           <View style={styles.infoGrid}>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>{isChild ? 'くちょう' : '口調'}</Text>
@@ -665,15 +683,28 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   section: {
     backgroundColor: '#fff',
     borderRadius: getBorderRadius(12, width),
-    padding: getSpacing(16, width),
+    overflow: 'hidden',
     marginBottom: getSpacing(16, width),
     ...getShadow(3, width),
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    gap: getSpacing(8, width),
+  },
+  sectionHeaderText: {
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   sectionTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#333',
     marginBottom: getSpacing(16, width),
+    paddingHorizontal: getSpacing(16, width),
   },
   childSectionTitle: {
     fontSize: getFontSize(20, width, theme),
@@ -783,6 +814,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     alignItems: 'center',
     marginTop: getSpacing(16, width),
     paddingTop: getSpacing(16, width),
+    paddingHorizontal: getSpacing(16, width),
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
@@ -798,6 +830,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   infoGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    paddingHorizontal: getSpacing(16, width),
   },
   infoItem: {
     width: '50%',
@@ -815,6 +848,8 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   buttonContainer: {
     marginTop: getSpacing(8, width),
+    paddingHorizontal: getSpacing(16, width),
+    paddingBottom: getSpacing(16, width),
   },
   buttonWrapper: {
     borderRadius: getBorderRadius(12, width),

@@ -78,8 +78,6 @@ export default function DrawerNavigator() {
           fontWeight: '600',
           fontSize: 18,
         },
-        headerBackTitleVisible: false,
-        gestureEnabled: true,
         // Section 3.3: 全画面共通でヘッダー右側に通知アイコンを表示
         headerRight: () => <HeaderNotificationIcon />,
       }}
@@ -290,7 +288,6 @@ export default function DrawerNavigator() {
         component={GroupManagementScreen}
         options={{
           title: 'グループ管理',
-          gestureEnabled: true, // スワイプバックを有効化
         }}
       />
 

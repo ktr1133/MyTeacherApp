@@ -86,8 +86,8 @@ export const AvatarEditScreen: React.FC = () => {
   const [drawModelVersion, setDrawModelVersion] = useState<AvatarDrawModelVersion>(
     avatar?.draw_model_version || 'anything-v4.0'
   );
-  const [isTransparent] = useState(avatar?.is_transparent ?? true);
-  const [isChibi] = useState(avatar?.is_chibi ?? false);
+  const [isTransparent, setIsTransparent] = useState(avatar?.is_transparent ?? true);
+  const [isChibi, setIsChibi] = useState(avatar?.is_chibi ?? false);
 
   // モーダル表示状態
   const [showModal, setShowModal] = useState(false);
@@ -199,23 +199,19 @@ export const AvatarEditScreen: React.FC = () => {
   return (
     <ScrollView style={[styles.container, isChild && styles.childContainer]}>
       <View style={styles.content}>
-        {/* ヘッダー */}
-        <View style={styles.header}>
-          <Text style={[styles.title, isChild && styles.childTitle]}>
-            {isChild ? 'アバターへんしゅう' : 'アバター編集'}
-          </Text>
-          <Text style={[styles.subtitle, isChild && styles.childSubtitle]}>
-            {isChild
-              ? 'せんせいのみためとせいかくをかえよう'
-              : '教師アバターの外見と性格を変更できます'}
-          </Text>
-        </View>
-
         {/* 外見設定 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isChild && styles.childSectionTitle]}>
-            {isChild ? '👤 みため' : '👤 外見の設定'}
-          </Text>
+          <LinearGradient
+            colors={['#3B82F6', '#6366F1']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.sectionHeader}
+          >
+            <MaterialIcons name="person-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.sectionHeaderText}>
+              {isChild ? 'みため' : '外見の設定'}
+            </Text>
+          </LinearGradient>
 
           {/* 性別 */}
           <View style={styles.formGroup}>
@@ -367,9 +363,17 @@ export const AvatarEditScreen: React.FC = () => {
 
         {/* 性格設定 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isChild && styles.childSectionTitle]}>
-            {isChild ? '💬 せいかく' : '💬 性格の設定'}
-          </Text>
+          <LinearGradient
+            colors={['#10B981', '#14B8A6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.sectionHeader}
+          >
+            <MaterialIcons name="chat-bubble-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.sectionHeaderText}>
+              {isChild ? 'せいかく' : '性格の設定'}
+            </Text>
+          </LinearGradient>
 
           {/* 口調 */}
           <View style={styles.formGroup}>
@@ -458,9 +462,17 @@ export const AvatarEditScreen: React.FC = () => {
 
         {/* 描画モデル設定 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isChild && styles.childSectionTitle]}>
-            {isChild ? '🎨 えのスタイル' : '🎨 描画モデルの選択'}
-          </Text>
+          <LinearGradient
+            colors={['#8B5CF6', '#EC4899']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.sectionHeader}
+          >
+            <MaterialIcons name="palette" size={20} color="#FFFFFF" />
+            <Text style={styles.sectionHeaderText}>
+              {isChild ? 'えのスタイル' : '描画モデルの選択'}
+            </Text>
+          </LinearGradient>
 
           <View style={styles.formGroup}>
             <Text style={[styles.label, isChild && styles.childLabel]}>
@@ -484,6 +496,34 @@ export const AvatarEditScreen: React.FC = () => {
               </Text>
               <Text style={styles.selectButtonArrow}>▼</Text>
             </TouchableOpacity>
+          </View>
+
+          {/* 背景透過 */}
+          <View style={styles.formGroup}>
+            <View style={styles.switchRow}>
+              <Text style={[styles.label, isChild && styles.childLabel]}>
+                {isChild ? 'はいけいをすけすけに' : '背景を透過にする'}
+              </Text>
+              <Switch 
+                value={isTransparent} 
+                onValueChange={setIsTransparent}
+                disabled={isLoading}
+              />
+            </View>
+          </View>
+
+          {/* ちびキャラ */}
+          <View style={styles.formGroup}>
+            <View style={styles.switchRow}>
+              <Text style={[styles.label, isChild && styles.childLabel]}>
+                {isChild ? 'ちびキャラにする' : 'ちびキャラにする'}
+              </Text>
+              <Switch 
+                value={isChibi} 
+                onValueChange={setIsChibi}
+                disabled={isLoading}
+              />
+            </View>
           </View>
 
           {/* トークン消費警告 */}
@@ -607,15 +647,28 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   section: {
     backgroundColor: '#fff',
     borderRadius: getBorderRadius(12, width),
-    padding: getSpacing(16, width),
+    overflow: 'hidden',
     marginBottom: getSpacing(16, width),
     ...getShadow(3, width),
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    gap: getSpacing(8, width),
+  },
+  sectionHeaderText: {
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   sectionTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#333',
     marginBottom: getSpacing(16, width),
+    paddingHorizontal: getSpacing(16, width),
   },
   childSectionTitle: {
     fontSize: getFontSize(20, width, theme),
@@ -623,6 +676,12 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   formGroup: {
     marginBottom: getSpacing(16, width),
+    paddingHorizontal: getSpacing(16, width),
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   label: {
     fontSize: getFontSize(14, width, theme),
@@ -660,6 +719,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     marginTop: getSpacing(8, width),
+    marginHorizontal: getSpacing(16, width),
     borderWidth: 1,
     borderColor: '#38BDF8',
   },
@@ -682,6 +742,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     marginBottom: getSpacing(16, width),
+    marginHorizontal: getSpacing(16, width),
     borderWidth: 1,
     borderColor: '#F5C6CB',
   },
@@ -694,6 +755,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     borderRadius: getBorderRadius(12, width),
     overflow: 'hidden',
     marginBottom: getSpacing(16, width),
+    marginHorizontal: getSpacing(16, width),
   },
   button: {
     padding: getSpacing(16, width),
