@@ -25,6 +25,7 @@ import { useAvatar } from '../../hooks/useAvatar';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { getDeadlineStatus } from '../../utils/taskDeadline';
 import DeadlineBadge from '../../components/tasks/DeadlineBadge';
 
@@ -52,6 +53,7 @@ export default function TagTasksScreen() {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
   const {
     tasks,
     isLoading,
@@ -72,7 +74,7 @@ export default function TagTasksScreen() {
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   /**
    * 初回データ取得
@@ -403,12 +405,19 @@ export default function TagTasksScreen() {
  * 
  * @param width - 画面幅
  * @param theme - テーマ (adult | child)
+ * @param colors - テーマカラー
+ * @param accent - アクセントカラー
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (
+  width: number,
+  theme: 'adult' | 'child',
+  colors: ReturnType<typeof useThemedColors>['colors'],
+  accent: ReturnType<typeof useThemedColors>['accent']
+) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -416,9 +425,9 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingHorizontal: getSpacing(16, width),
     paddingTop: getSpacing(12, width),
     paddingBottom: getSpacing(16, width),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border.default,
   },
   backButton: {
     width: 40,
@@ -429,7 +438,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   backButtonText: {
     fontSize: getFontSize(24, width, theme),
-    color: '#4F46E5',
+    color: accent.primary,
     fontWeight: 'bold',
   },
   headerTitleContainer: {
@@ -440,7 +449,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   headerTitle: {
     fontSize: getFontSize(20, width, theme),
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.text.primary,
     flex: 1,
     marginRight: getSpacing(8, width),
   },
@@ -460,18 +469,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     padding: getSpacing(16, width),
   },
   taskItem: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(12, width),
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border.default,
     ...getShadow(2),
   },
   groupTaskItem: {
-    backgroundColor: theme === 'child' ? '#FFF8E1' : '#FAF5FF',
+    backgroundColor: colors.card,
     borderWidth: 2,
-    borderColor: theme === 'child' ? '#FF6B6B' : '#9333EA',
+    borderColor: theme === 'child' ? '#FF6B6B' : accent.primary,
     ...getShadow(4),
   },
   groupTaskBadge: {
@@ -502,16 +511,16 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     flex: 1,
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text.primary,
     marginRight: getSpacing(8, width),
   },
   completedText: {
     textDecorationLine: 'line-through',
-    color: '#9CA3AF',
+    color: colors.text.disabled,
   },
   taskDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(12, width),
     lineHeight: getFontSize(20, width, theme),
   },
@@ -522,15 +531,15 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(12, width),
   },
   tagBadge: {
-    backgroundColor: '#59B9C6',
+    backgroundColor: accent.primary,
     paddingHorizontal: getSpacing(10, width),
     paddingVertical: getSpacing(4, width),
     borderRadius: getBorderRadius(12, width),
   },
   groupTagBadge: {
-    backgroundColor: 'rgba(147, 51, 234, 0.15)',
+    backgroundColor: `${accent.primary}15`,
     borderWidth: 1,
-    borderColor: 'rgba(147, 51, 234, 0.3)',
+    borderColor: `${accent.primary}4D`,
   },
   tagText: {
     fontSize: getFontSize(12, width, theme),
@@ -560,7 +569,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   taskDueDate: {
     fontSize: getFontSize(12, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.secondary,
   },
   completeButton: {
     marginTop: getSpacing(12, width),
@@ -591,7 +600,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   emptyText: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   footerLoading: {
     paddingVertical: getSpacing(20, width),
