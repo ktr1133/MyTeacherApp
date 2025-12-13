@@ -5,7 +5,7 @@
  * @see /home/ktr/mtdev/definitions/mobile/PushNotification.md - Phase 2.B-7.5
  * @see /home/ktr/mtdev/docs/api/openapi.yaml - POST/DELETE /profile/fcm-token
  */
-import messaging from '@react-native-firebase/messaging';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
 import api from './api';
 import * as storage from '../utils/storage';
@@ -14,7 +14,7 @@ import { STORAGE_KEYS } from '../utils/constants';
 /**
  * FCMパーミッション状態（Firebase Messaging AuthorizationStatusを再エクスポート）
  */
-export const AuthorizationStatus = messaging.AuthorizationStatus;
+export const AuthorizationStatus = FirebaseMessagingTypes.AuthorizationStatus;
 
 /**
  * FCMサービスインターフェース
