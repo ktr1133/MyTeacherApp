@@ -29,6 +29,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { useAvatarManagement } from '../../hooks/useAvatarManagement';
 import { AVATAR_OPTIONS } from '../../utils/constants';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -54,6 +55,7 @@ export const AvatarCreateScreen: React.FC = () => {
   const navigation = useNavigation();
   const { width } = useResponsive();
   const { theme } = useTheme();
+  const { colors, accent } = useThemedColors();
   const { createAvatar, isLoading, error } = useAvatarManagement();
 
   // 外見設定
@@ -83,7 +85,7 @@ export const AvatarCreateScreen: React.FC = () => {
   const [modalTitle, setModalTitle] = useState('');
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
 
   // 推定トークン消費量を取得
   const getEstimatedTokenUsage = (): number => {
@@ -569,10 +571,15 @@ export const AvatarCreateScreen: React.FC = () => {
   );
 };
 
-const createStyles = (width: number, theme: any) => StyleSheet.create({
+const createStyles = (
+  width: number,
+  theme: any,
+  colors: ReturnType<typeof useThemedColors>['colors'],
+  accent: ReturnType<typeof useThemedColors>['accent']
+) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   childContainer: {
     backgroundColor: '#FFF8DC',
@@ -586,7 +593,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   title: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   childTitle: {
@@ -595,14 +602,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   subtitle: {
     fontSize: getFontSize(14, width, theme),
-    color: '#666',
+    color: colors.text.secondary,
   },
   childSubtitle: {
     fontSize: getFontSize(16, width, theme),
     color: '#FF8C42',
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(16, width),
@@ -611,7 +618,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   sectionTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text.primary,
     marginBottom: getSpacing(16, width),
   },
   childSectionTitle: {
@@ -624,7 +631,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   label: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#333',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   childLabel: {
@@ -633,9 +640,9 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   selectionButton: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     paddingVertical: getSpacing(12, width),
     paddingHorizontal: getSpacing(16, width),
     flexDirection: 'row',
@@ -645,14 +652,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   selectionButtonText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
     flex: 1,
   },
   pickerWrapper: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     minHeight: 50,
     justifyContent: 'center',
   },
@@ -663,7 +670,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   picker: {
     height: 50,
     width: '100%',
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   warning: {
     backgroundColor: '#FFF3CD',
@@ -732,7 +739,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderTopLeftRadius: getBorderRadius(20, width),
     borderTopRightRadius: getBorderRadius(20, width),
     maxHeight: '70%',
@@ -745,38 +752,38 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     paddingVertical: getSpacing(16, width),
     paddingHorizontal: getSpacing(20, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border.default,
   },
   modalTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   modalClose: {
     fontSize: getFontSize(24, width, theme),
-    color: '#9ca3af',
+    color: colors.text.disabled,
     fontWeight: 'bold',
   },
   modalOption: {
     paddingVertical: getSpacing(16, width),
     paddingHorizontal: getSpacing(20, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: colors.border.light,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   modalOptionSelected: {
-    backgroundColor: '#eff6ff',
+    backgroundColor: `${accent.primary}15`,
   },
   modalOptionText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
     flex: 1,
     marginRight: getSpacing(8, width),
   },
   modalOptionTextSelected: {
-    color: '#3b82f6',
+    color: accent.primary,
     fontWeight: '600',
   },
 });

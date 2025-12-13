@@ -33,6 +33,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { useAvatarManagement } from '../../hooks/useAvatarManagement';
 import { AVATAR_OPTIONS } from '../../utils/constants';
 import {
@@ -98,7 +99,7 @@ export const AvatarEditScreen: React.FC = () => {
   const [modalOnSelect, setModalOnSelect] = useState<(value: string) => void>(() => () => {});
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
 
   useEffect(() => {
     if (!avatar) {
@@ -614,10 +615,15 @@ export const AvatarEditScreen: React.FC = () => {
 };
 
 // スタイル定義（AvatarCreateScreenと同一）
-const createStyles = (width: number, theme: any) => StyleSheet.create({
+const createStyles = (
+  width: number,
+  theme: any,
+  colors: ReturnType<typeof useThemedColors>['colors'],
+  accent: ReturnType<typeof useThemedColors>['accent']
+) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   childContainer: {
     backgroundColor: '#FFF8DC',
@@ -631,7 +637,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   title: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   childTitle: {
@@ -640,14 +646,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   subtitle: {
     fontSize: getFontSize(14, width, theme),
-    color: '#666',
+    color: colors.text.secondary,
   },
   childSubtitle: {
     fontSize: getFontSize(16, width, theme),
     color: '#FF8C42',
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     overflow: 'hidden',
     marginBottom: getSpacing(16, width),
@@ -668,7 +674,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   sectionTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text.primary,
     marginBottom: getSpacing(16, width),
     paddingHorizontal: getSpacing(16, width),
   },
@@ -688,7 +694,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   label: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#333',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   childLabel: {
@@ -697,9 +703,9 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   pickerWrapper: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     minHeight: 50,
     justifyContent: 'center',
   },
@@ -710,7 +716,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   picker: {
     height: 50,
     width: '100%',
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   pickerItem: {
     height: 120,

@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import type { Group, GroupTaskUsage as TaskUsage } from '../../types/group.types';
 
 interface GroupTaskUsageProps {
@@ -34,9 +35,10 @@ export const GroupTaskUsageComponent: React.FC<GroupTaskUsageProps> = ({
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
 
   // スタイル生成
-  const styles = React.useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = React.useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   // 使用率計算
   const usagePercentage = taskUsage.limit > 0 ? (taskUsage.current / taskUsage.limit) * 100 : 0;
@@ -222,10 +224,15 @@ export const GroupTaskUsageComponent: React.FC<GroupTaskUsageProps> = ({
 /**
  * レスポンシブスタイル生成関数
  */
-const createStyles = (width: number, theme: 'adult' | 'child') =>
+const createStyles = (
+  width: number,
+  theme: 'adult' | 'child',
+  colors: ReturnType<typeof useThemedColors>['colors'],
+  accent: ReturnType<typeof useThemedColors>['accent']
+) =>
   StyleSheet.create({
     container: {
-      backgroundColor: '#ffffff',
+      backgroundColor: colors.card,
       borderRadius: getBorderRadius(16, width),
       padding: getSpacing(16, width),
       marginBottom: getSpacing(16, width),
@@ -235,7 +242,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       shadowRadius: 8,
       elevation: 2,
       borderWidth: 1,
-      borderColor: '#e2e8f0',
+      borderColor: colors.border.default,
     },
     header: {
       flexDirection: 'row',
@@ -259,12 +266,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     title: {
       fontSize: getFontSize(18, width, theme),
       fontWeight: 'bold',
-      color: '#1e293b',
+      color: colors.text.primary,
       marginBottom: getSpacing(2, width),
     },
     subtitle: {
       fontSize: getFontSize(13, width, theme),
-      color: '#64748b',
+      color: colors.text.secondary,
     },
     subscriptionCard: {
       padding: getSpacing(12, width),
@@ -277,8 +284,8 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       borderColor: '#bbf7d0',
     },
     subscriptionInactive: {
-      backgroundColor: '#f8fafc',
-      borderColor: '#e2e8f0',
+      backgroundColor: colors.background,
+      borderColor: colors.border.default,
     },
     subscriptionRow: {
       flexDirection: 'row',
@@ -351,14 +358,14 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     usageLabel: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '500',
-      color: '#475569',
+      color: colors.text.secondary,
     },
     usageValue: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: 'bold',
     },
     usageValueNormal: {
-      color: '#1e293b',
+      color: colors.text.primary,
     },
     usageValueWarning: {
       color: '#ca8a04',
@@ -369,7 +376,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     progressBarContainer: {
       width: '100%',
       height: 12,
-      backgroundColor: '#e2e8f0',
+      backgroundColor: colors.border.default,
       borderRadius: getBorderRadius(16, width),
       overflow: 'hidden',
       marginBottom: getSpacing(8, width),
@@ -379,7 +386,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       borderRadius: getBorderRadius(16, width),
     },
     progressBarNormal: {
-      backgroundColor: '#3b82f6',
+      backgroundColor: accent.primary,
     },
     progressBarWarning: {
       backgroundColor: '#eab308',
@@ -397,7 +404,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       fontSize: getFontSize(13, width, theme),
     },
     statusMessageNormal: {
-      color: '#64748b',
+      color: colors.text.secondary,
     },
     statusMessageWarning: {
       color: '#ca8a04',
@@ -416,18 +423,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      backgroundColor: '#f8fafc',
+      backgroundColor: colors.background,
       padding: getSpacing(12, width),
       borderRadius: getBorderRadius(8, width),
     },
     resetLabel: {
       fontSize: getFontSize(13, width, theme),
-      color: '#64748b',
+      color: colors.text.secondary,
     },
     resetValue: {
       fontSize: getFontSize(13, width, theme),
       fontWeight: '600',
-      color: '#1e293b',
+      color: colors.text.primary,
     },
   });
 
