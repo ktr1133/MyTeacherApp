@@ -52,10 +52,15 @@ export const ColorSchemeProvider: React.FC<{ children: ReactNode }> = ({ childre
   // ユーザー設定モード（デフォルトは'auto'）
   const [mode, setModeState] = useState<ColorSchemeMode>('auto');
   
+  // OSのカラースキーマを状態として保持（Appearance変更の確実な検知）
+  const [detectedSystemScheme, setDetectedSystemScheme] = useState<'light' | 'dark'>(
+    systemColorScheme ?? 'light'
+  );
+  
   // 実際に適用するカラースキーマ
   const colorScheme: 'light' | 'dark' = 
     mode === 'auto' 
-      ? (systemColorScheme ?? 'light') // OSの設定に従う
+      ? detectedSystemScheme // OSの設定に従う
       : mode; // 手動設定値を使用
   
   /**
@@ -78,13 +83,24 @@ export const ColorSchemeProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, []);
   
   /**
-   * OSの設定変更を監視（auto モード時のみ反映）
+   * useRNColorScheme()の変更を監視して状態に反映
+   * （autoモード時のOS設定変更を確実に検知）
+   */
+  useEffect(() => {
+    if (systemColorScheme) {
+      setDetectedSystemScheme(systemColorScheme);
+      console.log('[ColorScheme] useRNColorScheme更新:', systemColorScheme);
+    }
+  }, [systemColorScheme]);
+  
+  /**
+   * OSの設定変更を監視（バックアップ: Appearance API直接監視）
    */
   useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme: newScheme }) => {
-      if (mode === 'auto') {
-        console.log('[ColorScheme] OS設定が変更されました:', newScheme);
-        // mode === 'auto' の場合、systemColorScheme が更新されると自動的に再レンダリング
+      if (newScheme && mode === 'auto') {
+        setDetectedSystemScheme(newScheme);
+        console.log('[ColorScheme] Appearance変更検知:', newScheme);
       }
     });
     
