@@ -27,6 +27,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 /**
  * ProfileScreen コンポーネント
@@ -46,7 +47,8 @@ export const ProfileScreen: React.FC = () => {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [username, setUsername] = useState('');
@@ -176,7 +178,7 @@ export const ProfileScreen: React.FC = () => {
   if (isLoading && !profile) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color={accent.primary} />
         <Text style={styles.loadingText}>
           {theme === 'child' ? 'よみこみちゅう...' : '読み込み中...'}
         </Text>
@@ -373,10 +375,10 @@ export const ProfileScreen: React.FC = () => {
   );
 };
 
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.background,
   },
   content: {
     padding: getSpacing(16, width),
@@ -385,12 +387,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.background,
   },
   loadingText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#64748b',
+    color: colors.text.secondary,
   },
   header: {
     flexDirection: 'row',
@@ -401,12 +403,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   title: {
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: colors.text.primary,
   },
   editButton: {
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(8, width),
-    backgroundColor: '#3b82f6',
+    backgroundColor: accent.primary,
     borderRadius: getBorderRadius(8, width),
   },
   editButtonText: {
@@ -416,14 +418,14 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   errorContainer: {
     padding: getSpacing(12, width),
-    backgroundColor: '#fef2f2',
+    backgroundColor: colors.status.error + '20',
     borderRadius: getBorderRadius(8, width),
     borderLeftWidth: 4,
-    borderLeftColor: '#ef4444',
+    borderLeftColor: colors.status.error,
     marginBottom: getSpacing(16, width),
   },
   errorText: {
-    color: '#dc2626',
+    color: colors.status.error,
     fontSize: getFontSize(14, width, theme),
   },
   form: {
@@ -435,21 +437,21 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   label: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#475569',
+    color: colors.text.secondary,
     marginBottom: getSpacing(8, width),
   },
   input: {
     padding: getSpacing(12, width),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#1e293b',
+    color: colors.text.primary,
   },
   inputDisabled: {
-    backgroundColor: '#f8fafc',
-    color: '#64748b',
+    backgroundColor: colors.surface,
+    color: colors.text.tertiary,
   },
   textArea: {
     height: getSpacing(100, width),
@@ -467,9 +469,9 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: colors.border.default,
   },
   saveButtonWrapper: {
     flex: 1,
@@ -484,7 +486,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   buttonText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#475569',
+    color: colors.text.secondary,
   },
   saveButtonText: {
     color: '#fff',
@@ -492,56 +494,56 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   groupButton: {
     paddingVertical: getSpacing(14, width),
-    backgroundColor: '#f0fdf4',
+    backgroundColor: colors.status.success + '20',
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderColor: colors.status.success + '40',
     alignItems: 'center',
     marginBottom: getSpacing(12, width),
   },
   groupButtonText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#16a34a',
+    color: colors.status.success,
   },
   passwordButton: {
     paddingVertical: getSpacing(14, width),
-    backgroundColor: '#f0f9ff',
+    backgroundColor: colors.status.info + '20',
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: '#bae6fd',
+    borderColor: colors.status.info + '40',
     alignItems: 'center',
     marginBottom: getSpacing(12, width),
   },
   passwordButtonText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#0284c7',
+    color: colors.status.info,
   },
   helpButton: {
     paddingVertical: getSpacing(14, width),
-    backgroundColor: '#f0fdfa',
+    backgroundColor: accent.primary + '20',
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: '#99f6e4',
+    borderColor: accent.primary + '40',
     alignItems: 'center',
     marginBottom: getSpacing(12, width),
   },
   helpButtonText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#0d9488',
+    color: accent.primary,
   },
   deleteButton: {
     paddingVertical: getSpacing(14, width),
-    backgroundColor: '#fef2f2',
+    backgroundColor: colors.status.error + '20',
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: '#fecaca',
+    borderColor: colors.status.error + '40',
     alignItems: 'center',
   },
   deleteButtonText: {
-    color: '#dc2626',
+    color: colors.status.error,
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },

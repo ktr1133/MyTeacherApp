@@ -16,6 +16,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 interface ConfirmDialogProps {
   visible: boolean;
@@ -42,7 +43,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isDangerous = false,
 }) => {
   const { width } = useResponsive();
-  const styles = React.useMemo(() => createStyles(width, isDangerous), [width, isDangerous]);
+  const { colors, accent } = useThemedColors();
+  const styles = React.useMemo(() => createStyles(width, isDangerous, colors, accent), [width, isDangerous, colors, accent]);
 
   return (
     <Modal
@@ -75,17 +77,17 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   );
 };
 
-const createStyles = (width: number, isDangerous: boolean) =>
+const createStyles = (width: number, isDangerous: boolean, colors: any, accent: any) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: colors.overlay,
       justifyContent: 'center',
       alignItems: 'center',
       padding: getSpacing(20, width),
     },
     dialog: {
-      backgroundColor: '#ffffff',
+      backgroundColor: colors.card,
       borderRadius: getBorderRadius(16, width),
       padding: getSpacing(24, width),
       width: '100%',
@@ -99,12 +101,12 @@ const createStyles = (width: number, isDangerous: boolean) =>
     title: {
       fontSize: getFontSize(18, width, 'adult'),
       fontWeight: 'bold',
-      color: '#1e293b',
+      color: colors.text.primary,
       marginBottom: getSpacing(12, width),
     },
     message: {
       fontSize: getFontSize(14, width, 'adult'),
-      color: '#64748b',
+      color: colors.text.secondary,
       lineHeight: getFontSize(20, width, 'adult'),
       marginBottom: getSpacing(24, width),
     },
@@ -121,17 +123,17 @@ const createStyles = (width: number, isDangerous: boolean) =>
       justifyContent: 'center',
     },
     cancelButton: {
-      backgroundColor: '#f1f5f9',
+      backgroundColor: colors.surface,
       borderWidth: 1,
-      borderColor: '#e2e8f0',
+      borderColor: colors.border.default,
     },
     cancelButtonText: {
       fontSize: getFontSize(14, width, 'adult'),
       fontWeight: '600',
-      color: '#475569',
+      color: colors.text.secondary,
     },
     confirmButton: {
-      backgroundColor: isDangerous ? '#ef4444' : '#6366f1',
+      backgroundColor: isDangerous ? colors.status.error : accent.primary,
     },
     confirmButtonText: {
       fontSize: getFontSize(14, width, 'adult'),
