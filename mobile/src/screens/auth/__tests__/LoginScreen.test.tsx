@@ -67,12 +67,12 @@ describe('LoginScreen', () => {
   describe('初期表示', () => {
     it('ログインフォームが正しく表示される', () => {
       // Act
-      const { getByPlaceholderText, getByText } = renderComponent();
+      const { getByPlaceholderText, getByText, getAllByText } = renderComponent();
 
       // Assert
-      expect(getByText('MyTeacher')).toBeTruthy();
+      expect(getAllByText('MyTeacher').length).toBeGreaterThan(0);
       expect(getByText('ログイン')).toBeTruthy();
-      expect(getByPlaceholderText('ユーザー名')).toBeTruthy();
+      expect(getByPlaceholderText('ユーザー名またはメールアドレス')).toBeTruthy();
       expect(getByPlaceholderText('パスワード')).toBeTruthy();
       expect(getByText('アカウントをお持ちでないですか？')).toBeTruthy();
       expect(getByText('新規登録')).toBeTruthy();
@@ -92,7 +92,7 @@ describe('LoginScreen', () => {
     it('ユーザー名を入力できる', () => {
       // Arrange
       const { getByPlaceholderText } = renderComponent();
-      const usernameInput = getByPlaceholderText('ユーザー名');
+      const usernameInput = getByPlaceholderText('ユーザー名またはメールアドレス');
 
       // Act
       fireEvent.changeText(usernameInput, 'test_user');
@@ -146,7 +146,7 @@ describe('LoginScreen', () => {
       fireEvent.press(loginButton);
 
       // Assert
-      const errorMessage = await findByText('ユーザー名とパスワードを入力してください');
+      const errorMessage = await findByText('ユーザー名またはメールアドレスとパスワードを入力してください');
       expect(errorMessage).toBeTruthy();
       expect(mockedAuthService.login).not.toHaveBeenCalled();
     });
@@ -154,7 +154,7 @@ describe('LoginScreen', () => {
     it('ユーザー名のみ入力の場合はエラーを表示する', async () => {
       // Arrange
       const { getByPlaceholderText, getByText, findByText } = renderComponent();
-      const usernameInput = getByPlaceholderText('ユーザー名');
+      const usernameInput = getByPlaceholderText('ユーザー名またはメールアドレス');
       const loginButton = getByText('ログイン');
 
       // Act
@@ -162,7 +162,7 @@ describe('LoginScreen', () => {
       fireEvent.press(loginButton);
 
       // Assert
-      const errorMessage = await findByText('ユーザー名とパスワードを入力してください');
+      const errorMessage = await findByText('ユーザー名またはメールアドレスとパスワードを入力してください');
       expect(errorMessage).toBeTruthy();
       expect(mockedAuthService.login).not.toHaveBeenCalled();
     });
@@ -178,7 +178,7 @@ describe('LoginScreen', () => {
       fireEvent.press(loginButton);
 
       // Assert
-      const errorMessage = await findByText('ユーザー名とパスワードを入力してください');
+      const errorMessage = await findByText('ユーザー名またはメールアドレスとパスワードを入力してください');
       expect(errorMessage).toBeTruthy();
       expect(mockedAuthService.login).not.toHaveBeenCalled();
     });
@@ -198,7 +198,7 @@ describe('LoginScreen', () => {
         },
       });
       const { getByPlaceholderText, getByText } = renderComponent();
-      const usernameInput = getByPlaceholderText('ユーザー名');
+      const usernameInput = getByPlaceholderText('ユーザー名またはメールアドレス');
       const passwordInput = getByPlaceholderText('パスワード');
       const loginButton = getByText('ログイン');
 
@@ -220,7 +220,7 @@ describe('LoginScreen', () => {
         () => new Promise((resolve) => { resolveLogin = resolve; })
       );
       const { getByPlaceholderText, getByText, queryByTestId } = renderComponent();
-      const usernameInput = getByPlaceholderText('ユーザー名');
+      const usernameInput = getByPlaceholderText('ユーザー名またはメールアドレス');
       const passwordInput = getByPlaceholderText('パスワード');
       const loginButton = getByText('ログイン');
 
@@ -252,7 +252,7 @@ describe('LoginScreen', () => {
       };
       mockedAuthService.login.mockRejectedValue(mockError);
       const { getByPlaceholderText, getByText, findByText } = renderComponent();
-      const usernameInput = getByPlaceholderText('ユーザー名');
+      const usernameInput = getByPlaceholderText('ユーザー名またはメールアドレス');
       const passwordInput = getByPlaceholderText('パスワード');
       const loginButton = getByText('ログイン');
 
@@ -271,7 +271,7 @@ describe('LoginScreen', () => {
       const mockError = new Error('Network Error');
       mockedAuthService.login.mockRejectedValue(mockError);
       const { getByPlaceholderText, getByText, findByText } = renderComponent();
-      const usernameInput = getByPlaceholderText('ユーザー名');
+      const usernameInput = getByPlaceholderText('ユーザー名またはメールアドレス');
       const passwordInput = getByPlaceholderText('パスワード');
       const loginButton = getByText('ログイン');
 
@@ -304,7 +304,7 @@ describe('LoginScreen', () => {
     it('すべての入力フィールドにaccessibilityLabelが設定されている', () => {
       // Act
       const { getByPlaceholderText } = renderComponent();
-      const usernameInput = getByPlaceholderText('ユーザー名');
+      const usernameInput = getByPlaceholderText('ユーザー名またはメールアドレス');
       const passwordInput = getByPlaceholderText('パスワード');
 
       // Assert

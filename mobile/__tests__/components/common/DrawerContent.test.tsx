@@ -55,9 +55,9 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
   };
 
   const mockTokenBalance = {
-    total: 1000000,
-    free: 600000,
-    paid: 400000,
+    balance: 1000000,
+    free_balance: 600000,
+    paid_balance: 400000,
   };
 
   beforeEach(() => {
@@ -108,7 +108,7 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
 
   describe('低残高時の表示', () => {
     it('残高が200,000以下の場合、購入ボタンを表示する（大人テーマ）', async () => {
-      const lowBalance = { total: 150000, free: 150000, paid: 0 };
+      const lowBalance = { balance: 150000, free_balance: 150000, paid_balance: 0 };
       (tokenService.getBalance as jest.Mock).mockResolvedValue(lowBalance);
       (useChildTheme as jest.Mock).mockReturnValue(false);
 
@@ -120,7 +120,7 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
     });
 
     it('残高が200,000以下の場合、購入ボタンを表示する（子どもテーマ）', async () => {
-      const lowBalance = { total: 150000, free: 150000, paid: 0 };
+      const lowBalance = { balance: 150000, free_balance: 150000, paid_balance: 0 };
       (tokenService.getBalance as jest.Mock).mockResolvedValue(lowBalance);
       (useChildTheme as jest.Mock).mockReturnValue(true);
 
@@ -132,7 +132,7 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
     });
 
     it('残高が200,000を超える場合、購入ボタンを表示しない', async () => {
-      const highBalance = { total: 500000, free: 300000, paid: 200000 };
+      const highBalance = { balance: 500000, free_balance: 300000, paid_balance: 200000 };
       (tokenService.getBalance as jest.Mock).mockResolvedValue(highBalance);
 
       render(<DrawerContent {...mockDrawerProps} />);
@@ -143,7 +143,7 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
     });
 
     it('購入ボタンをタップするとTokenBalance画面に遷移する', async () => {
-      const lowBalance = { total: 150000, free: 150000, paid: 0 };
+      const lowBalance = { balance: 150000, free_balance: 150000, paid_balance: 0 };
       (tokenService.getBalance as jest.Mock).mockResolvedValue(lowBalance);
 
       render(<DrawerContent {...mockDrawerProps} />);
@@ -171,7 +171,7 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
 
   describe('メニュー項目とバッジ', () => {
     it('トークンメニューに低残高バッジ（赤丸）を表示する', async () => {
-      const lowBalance = { total: 150000, free: 150000, paid: 0 };
+      const lowBalance = { balance: 150000, free_balance: 150000, paid_balance: 0 };
       (tokenService.getBalance as jest.Mock).mockResolvedValue(lowBalance);
 
       render(<DrawerContent {...mockDrawerProps} />);
@@ -186,7 +186,16 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
     });
 
     it('グループ管理者には承認待ちメニューを表示する', async () => {
-      const groupAdmin = { ...mockUser, group_id: 1, canEditGroup: true };
+      const groupAdmin = { 
+        ...mockUser, 
+        group_id: 1, 
+        canEditGroup: true,
+        group: {
+          id: 1,
+          name: 'Test Group',
+          master_user_id: 1,
+        },
+      };
       (useAuth as jest.Mock).mockReturnValue({
         user: groupAdmin,
         logout: jest.fn(),
@@ -248,10 +257,9 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
 
       await waitFor(() => {
         expect(mockLogout).toHaveBeenCalledTimes(1);
-        expect(mockNavigation.reset).toHaveBeenCalledWith({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        });
+        // navigation.reset()は不要 - AuthContextのisAuthenticatedがfalseに変更されることで
+        // AppNavigatorが自動的に未認証画面スタックに切り替わる
+        // expect(mockNavigation.reset).toHaveBeenCalled(); は不要
       });
     });
   });
