@@ -36,7 +36,7 @@ type RouteParams = {
  * 
  * @returns {JSX.Element} WebView画面
  */
-const SubscriptionWebViewScreen: React.FC = () => {
+export const SubscriptionWebViewScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const route = useRoute<RouteProp<RouteParams, 'SubscriptionWebView'>>();
   const { url } = route.params;
@@ -243,5 +243,3 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
 });
-
-export default SubscriptionWebViewScreen;
