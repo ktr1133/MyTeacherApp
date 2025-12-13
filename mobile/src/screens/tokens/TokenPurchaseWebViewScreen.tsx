@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -40,7 +41,8 @@ const TokenPackageListScreen: React.FC = () => {
   const { theme } = useTheme();
   const { packages, loadPackages, isLoading, error } = useTokens();
   const { width } = useResponsive();
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
 
   // 画面フォーカス時にパッケージを更新
   useEffect(() => {
@@ -194,7 +196,7 @@ const TokenPackageListScreen: React.FC = () => {
             {/* 購入ボタン */}
             <View style={styles.purchaseButtonWrapper}>
               <LinearGradient
-                colors={['#f59e0b', '#d97706']}
+                colors={[accent.primary, accent.primary] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.purchaseButtonGradient}
@@ -214,19 +216,19 @@ const TokenPackageListScreen: React.FC = () => {
   );
 };
 
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border.default,
   },
   backButton: {
     paddingVertical: getSpacing(8, width),
@@ -234,13 +236,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   backButtonText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#3b82f6',
+    color: accent.primary,
     fontWeight: '600',
   },
   headerTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text.primary,
     flex: 1,
   },
   scrollView: {
@@ -250,13 +252,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     padding: getSpacing(16, width),
   },
   errorContainer: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: colors.status.error + '20',
     padding: getSpacing(16, width),
     borderRadius: getBorderRadius(8, width),
     marginBottom: getSpacing(16, width),
   },
   errorText: {
-    color: '#991b1b',
+    color: colors.status.error,
     fontSize: getFontSize(14, width, theme),
   },
   emptyContainer: {
@@ -265,12 +267,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   emptyText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#6b7280',
+    color: colors.text.secondary,
   },
   packageCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: colors.card,
     borderWidth: 2,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(20, width),
     padding: getSpacing(24, width),
     marginBottom: getSpacing(16, width),
@@ -279,13 +281,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   packageName: {
     fontSize: getFontSize(20, width, theme),
     fontWeight: '700',
-    color: '#1f2937',
+    color: colors.text.primary,
     marginBottom: getSpacing(16, width),
     textAlign: 'center',
   },
   packageDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6b7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(24, width),
     textAlign: 'center',
   },
@@ -295,29 +297,29 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   packageInfoLabel: {
     fontSize: getFontSize(16, width, theme),
-    color: '#6b7280',
+    color: colors.text.secondary,
     textAlign: 'center',
   },
   packageTokens: {
     fontSize: getFontSize(40, width, theme),
     fontWeight: '900',
-    color: '#f59e0b',
+    color: accent.primary,
     textAlign: 'center',
   },
   packagePrice: {
     fontSize: getFontSize(32, width, theme),
     fontWeight: '800',
-    color: '#1f2937',
+    color: colors.text.primary,
     textAlign: 'center',
   },
   priceLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#9ca3af',
+    color: colors.text.tertiary,
     textAlign: 'center',
     marginTop: getSpacing(4, width),
   },
   discountBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: accent.primary + '20',
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(6, width),
     borderRadius: getBorderRadius(12, width),
@@ -327,7 +329,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   discountText: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#92400e',
+    color: accent.primary,
   },
   purchaseButtonWrapper: {
     marginTop: getSpacing(16, width),
@@ -345,7 +347,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   purchaseButtonText: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#ffffff', // LinearGradient上のテキストは常に白
   },
 });
 
