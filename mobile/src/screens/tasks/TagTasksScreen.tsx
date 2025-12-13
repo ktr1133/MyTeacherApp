@@ -196,16 +196,38 @@ export default function TagTasksScreen() {
     ({ item }: { item: Task }) => {
       const isCompleted = item.is_completed;
       const isPending = !item.is_completed;
+      const isGroupTask = item.is_group_task;
+
+      // カードスタイルをタスク種別で変更
+      const cardStyle = isGroupTask 
+        ? [styles.taskItem, styles.groupTaskItem]
+        : styles.taskItem;
 
       return (
         <TouchableOpacity
-          style={styles.taskItem}
+          style={cardStyle}
           onPress={() => {
             console.log('[TagTasksScreen] Task item pressed:', item.id, item.title);
             navigateToDetail(item.id);
           }}
           activeOpacity={0.7}
         >
+          {/* グループタスクバッジ */}
+          {isGroupTask && (
+            <View style={styles.groupTaskBadge}>
+              <LinearGradient
+                colors={['#9333EA', '#EC4899']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.groupTaskBadgeGradient}
+              >
+                <Text style={styles.groupTaskBadgeText}>
+                  {theme === 'child' ? '⭐グループ' : 'グループタスク'}
+                </Text>
+              </LinearGradient>
+            </View>
+          )}
+
           <View style={styles.taskHeader}>
             <Text style={[styles.taskTitle, isCompleted && styles.completedText]}>
               {item.title}
@@ -222,7 +244,13 @@ export default function TagTasksScreen() {
           {item.tags && item.tags.length > 0 && (
             <View style={styles.tagsContainer}>
               {item.tags.map((tag) => (
-                <View key={tag.id} style={styles.tagBadge}>
+                <View 
+                  key={tag.id} 
+                  style={[
+                    styles.tagBadge,
+                    isGroupTask && styles.groupTagBadge
+                  ]}
+                >
                   <Text style={styles.tagText}>{tag.name}</Text>
                 </View>
               ))}
@@ -231,11 +259,20 @@ export default function TagTasksScreen() {
 
           <View style={styles.taskFooter}>
             {/* グループタスクのみ報酬を表示 */}
-            {item.is_group_task && (
-              <Text style={styles.taskReward}>
-                {theme === 'child' ? '⭐' : '報酬:'} {item.reward}
-                {theme === 'child' ? '' : 'トークン'}
-              </Text>
+            {isGroupTask && (
+              <View style={styles.rewardContainer}>
+                <LinearGradient
+                  colors={['#F59E0B', '#F97316']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.rewardBadge}
+                >
+                  <Text style={styles.rewardText}>
+                    {theme === 'child' ? '⭐' : '報酬'} {item.reward}
+                    {theme === 'child' ? '' : 'トークン'}
+                  </Text>
+                </LinearGradient>
+              </View>
             )}
             {item.due_date && (
               <Text style={styles.taskDueDate}>
@@ -250,7 +287,7 @@ export default function TagTasksScreen() {
                 colors={['#10B981', '#059669']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={{ width: '100%', height: '100%', borderRadius: 8 }}
+                style={styles.gradientButton}
               >
                 <TouchableOpacity
                   style={styles.completeButtonTouchable}
@@ -266,7 +303,7 @@ export default function TagTasksScreen() {
         </TouchableOpacity>
       );
     },
-    [theme, navigateToDetail, handleToggleComplete]
+    [theme, navigateToDetail, handleToggleComplete, styles]
   );
 
   /**
@@ -419,7 +456,33 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(12, width),
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     ...getShadow(2),
+  },
+  groupTaskItem: {
+    backgroundColor: theme === 'child' ? '#FFF8E1' : '#FAF5FF',
+    borderWidth: 2,
+    borderColor: theme === 'child' ? '#FF6B6B' : '#9333EA',
+    ...getShadow(4),
+  },
+  groupTaskBadge: {
+    position: 'absolute',
+    top: -1,
+    right: -1,
+    zIndex: 1,
+    borderTopRightRadius: getBorderRadius(11, width),
+    borderBottomLeftRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
+  groupTaskBadgeGradient: {
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(4, width),
+  },
+  groupTaskBadgeText: {
+    color: '#FFFFFF',
+    fontSize: getFontSize(11, width, theme),
+    fontWeight: 'bold',
   },
   taskHeader: {
     flexDirection: 'row',
@@ -456,6 +519,11 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingVertical: getSpacing(4, width),
     borderRadius: getBorderRadius(12, width),
   },
+  groupTagBadge: {
+    backgroundColor: 'rgba(147, 51, 234, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(147, 51, 234, 0.3)',
+  },
   tagText: {
     fontSize: getFontSize(12, width, theme),
     color: '#FFFFFF',
@@ -465,11 +533,22 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: getSpacing(8, width),
   },
-  taskReward: {
+  rewardContainer: {
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
+  rewardBadge: {
+    paddingHorizontal: getSpacing(12, width),
+    paddingVertical: getSpacing(6, width),
+    borderRadius: getBorderRadius(8, width),
+  },
+  rewardText: {
     fontSize: getFontSize(14, width, theme),
-    fontWeight: '600',
-    color: '#F59E0B',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   taskDueDate: {
     fontSize: getFontSize(12, width, theme),
@@ -480,6 +559,10 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderRadius: getBorderRadius(8, width),
     overflow: 'hidden',
     ...getShadow(2),
+  },
+  gradientButton: {
+    flex: 1,
+    borderRadius: getBorderRadius(8, width),
   },
   completeButtonTouchable: {
     paddingVertical: getSpacing(10, width),

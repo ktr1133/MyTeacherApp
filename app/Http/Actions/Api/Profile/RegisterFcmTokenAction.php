@@ -36,24 +36,19 @@ class RegisterFcmTokenAction
     {
         $user = $request->user();
 
-        try {
-            // 既存トークン確認（新規 or 更新判定用）
-            $existingToken = UserDeviceToken::where('device_token', $request->device_token)
-                ->where('user_id', $user->id)
-                ->exists();
+        // 既存トークン確認（新規 or 更新判定用）
+        $existingToken = UserDeviceToken::where('device_token', $request->device_token)
+            ->where('user_id', $user->id)
+            ->exists();
 
-            $token = $this->service->registerToken(
-                $user->id,
-                $request->device_token,
-                $request->device_type,
-                $request->device_name,
-                $request->app_version
-            );
+        $token = $this->service->registerToken(
+            $user->id,
+            $request->device_token,
+            $request->device_type,
+            $request->device_name,
+            $request->app_version
+        );
 
-            return $this->responder->registered($token, !$existingToken);
-        } catch (\RuntimeException $e) {
-            // トークン重複エラー
-            return $this->responder->conflict();
-        }
+        return $this->responder->registered($token, !$existingToken);
     }
 }

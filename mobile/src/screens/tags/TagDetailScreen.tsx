@@ -166,7 +166,7 @@ export const TagDetailScreen = ({ route }: Props) => {
           colors={['#EF4444', '#DC2626']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={{ width: '100%', height: '100%', borderRadius: 6 }}
+          style={styles.gradientButton}
         >
           <TouchableOpacity
             style={styles.actionButtonTouchable}
@@ -195,7 +195,7 @@ export const TagDetailScreen = ({ route }: Props) => {
           colors={['#10B981', '#059669']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={{ width: '100%', height: '100%', borderRadius: 6 }}
+          style={styles.gradientButton}
         >
           <TouchableOpacity
             style={styles.actionButtonTouchable}
@@ -380,13 +380,19 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     color: '#1F2937',
   },
   actionButton: {
+    width: getSpacing(70, width),
+    height: getSpacing(32, width),
     borderRadius: getBorderRadius(6, width),
     overflow: 'hidden',
     ...getShadow(2),
   },
+  gradientButton: {
+    flex: 1,
+    borderRadius: getBorderRadius(6, width),
+  },
   actionButtonTouchable: {
-    paddingHorizontal: getSpacing(16, width),
-    paddingVertical: getSpacing(8, width),
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },

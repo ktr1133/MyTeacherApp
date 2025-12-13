@@ -50,8 +50,15 @@ class DeviceTokenManagementService implements DeviceTokenManagementServiceInterf
         $existingToken = UserDeviceToken::where('device_token', $deviceToken)->first();
         
         if ($existingToken && $existingToken->user_id !== $userId) {
-            // 異なるユーザーが既に登録している場合は409エラー
-            throw new \RuntimeException('このデバイストークンは既に別のユーザーに登録されています。');
+            // 異なるユーザーが既に登録している場合、古い登録を無効化してログ記録
+            Log::info('FCMトークン所有者変更', [
+                'device_token' => substr($deviceToken, 0, 20) . '...',
+                'old_user_id' => $existingToken->user_id,
+                'new_user_id' => $userId,
+                'reason' => 'ユーザー切り替え（ログアウト→再ログイン）',
+            ]);
+            
+            // 古い登録は自動的に上書きされる（updateOrCreateの仕様）
         }
 
         try {

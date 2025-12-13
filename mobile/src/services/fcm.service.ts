@@ -133,10 +133,12 @@ class FcmService implements IFcmService {
    * 2. FCMトークン取得
    * 3. バックエンドAPI呼び出し（既存トークンは自動的に更新）
    * 
+   * **呼び出しタイミング**: FCMContextがログイン後に自動実行
+   * 
    * **エラー処理**:
    * - パーミッション拒否: 警告ログのみ（例外なし）
    * - トークン取得失敗: 警告ログのみ（例外なし）
-   * - API呼び出し失敗: 例外スロー
+   * - API呼び出し失敗: 例外スロー（401は無視）
    */
   async registerToken(): Promise<void> {
     try {
@@ -177,7 +179,13 @@ class FcmService implements IFcmService {
       });
 
       console.log('[FCM] Token registered successfully');
-    } catch (error) {
+    } catch (error: any) {
+      // 409 Conflictエラー（トークン重複）は無視（Backend側で自動上書き）
+      if (error?.response?.status === 409) {
+        console.warn('[FCM] Token already registered to another user, backend will update automatically');
+        return;
+      }
+      
       console.error('[FCM] Token registration failed:', error);
       throw error;
     }

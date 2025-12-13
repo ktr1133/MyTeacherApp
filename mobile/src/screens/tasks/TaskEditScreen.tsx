@@ -659,15 +659,22 @@ export default function TaskEditScreen() {
       </LinearGradient>
 
       {/* 削除ボタン */}
-      <TouchableOpacity
+      <LinearGradient
+        colors={['#EF4444', '#DC2626']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
         style={[styles.button, styles.deleteButton]}
-        onPress={handleDelete}
-        disabled={isLoading || isSubmitting}
       >
-        <Text style={styles.buttonText}>
-          {theme === 'child' ? 'けす' : '削除'}
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.buttonTouchable}
+          onPress={handleDelete}
+          disabled={isLoading || isSubmitting}
+        >
+          <Text style={styles.buttonText}>
+            {theme === 'child' ? 'けす' : '削除'}
+          </Text>
+        </TouchableOpacity>
+      </LinearGradient>
     </ScrollView>
 
     {/* ローディングオーバーレイ（アバター待機中） */}
@@ -882,7 +889,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     // LinearGradient適用のためbackgroundColor削除
   },
   deleteButton: {
-    backgroundColor: '#EF4444',
+    // LinearGradient適用のためbackgroundColor削除
   },
   buttonText: {
     color: '#fff',

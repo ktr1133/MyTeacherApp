@@ -1088,6 +1088,71 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
+  /auth/forgot-password:
+    post:
+      summary: パスワードリセットリクエスト
+      description: |
+        メールアドレスを送信し、パスワードリセット用のリンクをメールで送信します。
+        
+        **注意**: 
+        - Web版と同じエンドポイントを使用
+        - メールはAWS SES経由で送信（テスト環境のみ稼働、本番はSandbox削除申請後）
+        - リセットリンクはWeb版のreset-passwordページを開く
+      tags: [Authentication]
+      security: []  # 認証不要
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: 登録済みメールアドレス
+                  example: "taro@example.com"
+      responses:
+        '200':
+          description: リセットリンク送信成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "パスワードリセット用のリンクをメールで送信しました"
+        '422':
+          description: バリデーションエラー - メールアドレスが無効、または登録されていない
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "入力内容に誤りがあります"
+                  errors:
+                    type: object
+                    properties:
+                      email:
+                        type: array
+                        items:
+                          type: string
+                        example: ["このメールアドレスは登録されていません"]
+        '429':
+          description: レート制限超過 - 短時間に複数回リクエストした場合
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "リクエストが多すぎます。しばらく時間をおいてから再度お試しください"
+
   # ============================================================
   # User API（1エンドポイント - 全画面共通で使用）
   # ============================================================

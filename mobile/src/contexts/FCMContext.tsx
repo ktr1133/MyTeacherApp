@@ -68,8 +68,11 @@ export const FCMProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.error('[FCMContext] Failed to unregister FCM token:', error);
       });
     } else if (!wasAuthenticated && isAuthenticated) {
-      // ログイン検出: FCMトークン登録は既にuseFCMで実行済み
-      console.log('[FCMContext] User logged in, FCM registration handled by useFCM');
+      // ログイン検出: FCMトークンをバックエンドに登録
+      console.log('[FCMContext] User logged in, registering FCM token to backend...');
+      fcmService.registerToken().catch((error) => {
+        console.error('[FCMContext] Failed to register FCM token:', error);
+      });
     }
 
     // 現在の認証状態を記録

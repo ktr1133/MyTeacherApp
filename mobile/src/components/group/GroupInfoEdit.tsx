@@ -33,7 +33,7 @@ interface GroupInfoEditProps {
  * GroupInfoEdit コンポーネント
  */
 export const GroupInfoEdit: React.FC<GroupInfoEditProps> = ({
-  groupId,
+  groupId: _groupId, // 将来的に使用する可能性があるため保持
   initialName,
   onUpdateSuccess,
   onUpdateError,
@@ -44,7 +44,6 @@ export const GroupInfoEdit: React.FC<GroupInfoEditProps> = ({
   const themeType = isChildTheme ? 'child' : 'adult';
 
   const [groupName, setGroupName] = useState(initialName);
-  const [isValidating, setIsValidating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);

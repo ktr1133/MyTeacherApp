@@ -2,7 +2,7 @@
  * ナビゲーション設定
  * 
  * NavigationFlow.mdに基づく認証フロー:
- * - 未認証: LoginScreen → RegisterScreen
+ * - 未認証: LoginScreen → RegisterScreen → ForgotPasswordScreen
  * - 認証済み: DrawerNavigator（デフォルト: TaskList）
  * 
  * @see /home/ktr/mtdev/definitions/mobile/NavigationFlow.md
@@ -19,6 +19,7 @@ import { usePushNotifications } from '../hooks/usePushNotifications';
 // 認証画面インポート
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 
 // Drawerナビゲーター（Development Build対応）
 import DrawerNavigator from './DrawerNavigator';
@@ -69,6 +70,13 @@ export default function AppNavigator() {
             component={RegisterScreen}
             options={{
               title: '新規登録',
+            }}
+          />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
+            options={{
+              headerShown: false,
             }}
           />
         </Stack.Navigator>

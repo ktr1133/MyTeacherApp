@@ -51,32 +51,40 @@ export const useFCM = (): UseFCMReturn => {
 
   useEffect(() => {
     /**
-     * FCMトークンを登録
+     * FCMトークンを取得（バックエンド登録なし）
+     * 
+     * ログイン前にトークン取得のみ実行し、ログイン後にFCMContextが登録を実行する
      */
-    const registerFCMToken = async () => {
+    const initializeFCM = async () => {
       try {
         setIsInitializing(true);
         setError(null);
 
-        console.log('[useFCM] Starting FCM token registration...');
+        console.log('[useFCM] Initializing FCM (no backend registration)...');
 
-        // パーミッションリクエスト + トークン取得 + バックエンド登録
-        await fcmService.registerToken();
+        // パーミッションリクエスト + トークン取得のみ（バックエンド登録はしない）
+        const hasPermissionGranted = await fcmService.requestPermission();
+        
+        if (!hasPermissionGranted) {
+          console.warn('[useFCM] Permission denied');
+          setHasPermission(false);
+          return;
+        }
 
-        // トークン取得（登録成功後に改めて取得）
+        // トークン取得（ローカルストレージに保存）
         const currentToken = await fcmService.getFcmToken();
         
         if (currentToken) {
           setToken(currentToken);
           setHasPermission(true);
-          console.log('[useFCM] FCM token registered:', currentToken.substring(0, 20) + '...');
+          console.log('[useFCM] FCM token obtained (not registered yet):', currentToken.substring(0, 20) + '...');
         } else {
           setHasPermission(false);
           console.warn('[useFCM] FCM token not available (permission denied or error)');
         }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'FCM registration failed';
-        console.error('[useFCM] Registration error:', errorMessage);
+      } catch (err: any) {
+        const errorMessage = err instanceof Error ? err.message : 'FCM initialization failed';
+        console.error('[useFCM] Initialization error:', errorMessage);
         setError(errorMessage);
         setHasPermission(false);
       } finally {
@@ -92,28 +100,26 @@ export const useFCM = (): UseFCMReturn => {
      * - アプリデータクリア時
      * - Firebaseプロジェクト設定変更時
      * 
-     * **注意**: onTokenRefresh()はunsubscribe関数を返すため、
-     * クリーンアップ時に必ず呼び出す必要があります。
+     * **注意**: トークンリフレッシュ時もバックエンド登録はFCMContextが実行
      */
     const unsubscribeTokenRefresh = messaging().onTokenRefresh(async (newToken) => {
       console.log('[useFCM] Token refreshed:', newToken.substring(0, 20) + '...');
       
       try {
         setToken(newToken);
+        // トークンをローカルストレージに保存（バックエンド登録はFCMContextが実行）
+        await fcmService.getFcmToken();
         
-        // 新しいトークンをバックエンドに登録（既存トークンは自動的に非アクティブ化）
-        await fcmService.registerToken();
-        
-        console.log('[useFCM] Refreshed token registered successfully');
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Token refresh registration failed';
-        console.error('[useFCM] Token refresh registration error:', errorMessage);
+        console.log('[useFCM] Refreshed token saved locally');
+      } catch (err: any) {
+        const errorMessage = err instanceof Error ? err.message : 'Token refresh failed';
+        console.error('[useFCM] Token refresh error:', errorMessage);
         setError(errorMessage);
       }
     });
 
-    // 初期登録実行
-    registerFCMToken();
+    // 初期化実行（トークン取得のみ、登録はしない）
+    initializeFCM();
 
     // クリーンアップ: トークンリフレッシュリスナー解除
     return () => {

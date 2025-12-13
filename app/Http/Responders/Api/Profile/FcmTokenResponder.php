@@ -38,17 +38,4 @@ class FcmTokenResponder
             'message' => 'FCMトークンを削除しました。',
         ], 200);
     }
-
-    /**
-     * トークン重複エラーレスポンス
-     * 
-     * @return JsonResponse
-     */
-    public function conflict(): JsonResponse
-    {
-        return response()->json([
-            'success' => false,
-            'message' => 'このデバイストークンは既に別のユーザーに登録されています。',
-        ], 409);
-    }
 }

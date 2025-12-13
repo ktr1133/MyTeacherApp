@@ -101,15 +101,16 @@ describe('FCMトークン管理API', function () {
             expect($token->last_used_at->greaterThan($initialLastUsedAt))->toBeTrue();
         });
 
-        it('異なるユーザーが同じトークンを登録しようとすると409エラーを返すこと', function () {
+        it('異なるユーザーが同じトークンを登録しようとすると、古い登録を無効化して上書きできること', function () {
             // 既存ユーザーがトークン登録
-            UserDeviceToken::factory()->create([
+            $oldToken = UserDeviceToken::factory()->create([
                 'user_id' => $this->user->id,
                 'device_token' => 'test_fcm_token_conflict',
                 'device_type' => 'ios',
+                'is_active' => true,
             ]);
 
-            // 別ユーザーが同じトークンを登録しようとする
+            // 別ユーザーが同じトークンを登録（デバイス切り替え想定）
             $otherUser = User::factory()->create();
 
             $response = $this->actingAs($otherUser)
@@ -120,11 +121,17 @@ describe('FCMトークン管理API', function () {
                     'app_version' => '1.0.0',
                 ]);
 
-            $response->assertStatus(409)
+            // 成功レスポンス（新規登録扱い）
+            $response->assertStatus(201)
                 ->assertJson([
-                    'success' => false,
-                    'message' => 'このデバイストークンは既に別のユーザーに登録されています。',
+                    'success' => true,
+                    'message' => 'FCMトークンを登録しました。',
                 ]);
+
+            // 新しいユーザーで登録されていることを確認
+            $newToken = UserDeviceToken::where('device_token', 'test_fcm_token_conflict')->first();
+            expect($newToken->user_id)->toBe($otherUser->id);
+            expect($newToken->is_active)->toBe(true);
         });
 
         it('device_typeが不正な値の場合は422エラーを返すこと', function () {

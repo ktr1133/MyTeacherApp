@@ -22,14 +22,16 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
-import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAvatarManagement } from '../../hooks/useAvatarManagement';
 import { AVATAR_OPTIONS } from '../../utils/constants';
+import { MaterialIcons } from '@expo/vector-icons';
 import {
   AvatarSex,
   AvatarHairStyle,
@@ -74,6 +76,12 @@ export const AvatarCreateScreen: React.FC = () => {
   const [isTransparent] = useState(true); // 固定: 背景透過ON
   const [isChibi] = useState(false); // 固定: デフォルメOFF
 
+  // モーダル選択state
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<string>('');
+  const [modalOptions, setModalOptions] = useState<Array<{ value: string; label: string; emoji?: string }>>([]);
+  const [modalTitle, setModalTitle] = useState('');
+
   // レスポンシブスタイル生成
   const styles = useMemo(() => createStyles(width, theme), [width, theme]);
 
@@ -81,6 +89,109 @@ export const AvatarCreateScreen: React.FC = () => {
   const getEstimatedTokenUsage = (): number => {
     const model = AVATAR_OPTIONS.draw_model_version.find(m => m.value === drawModelVersion);
     return model?.estimatedTokenUsage || 5000;
+  };
+
+  /**
+   * モーダルを開く
+   */
+  const openModal = (
+    type: string,
+    title: string,
+    options: Array<{ value: string; label: string; emoji?: string }>
+  ) => {
+    setModalType(type);
+    setModalTitle(title);
+    setModalOptions(options);
+    setShowModal(true);
+  };
+
+  /**
+   * モーダルで選択を確定
+   */
+  const handleModalSelect = (value: string) => {
+    switch (modalType) {
+      case 'sex':
+        setSex(value as AvatarSex);
+        break;
+      case 'hairStyle':
+        setHairStyle(value as AvatarHairStyle);
+        break;
+      case 'hairColor':
+        setHairColor(value as AvatarHairColor);
+        break;
+      case 'eyeColor':
+        setEyeColor(value as AvatarEyeColor);
+        break;
+      case 'clothing':
+        setClothing(value as AvatarClothing);
+        break;
+      case 'accessory':
+        setAccessory(value as AvatarAccessory);
+        break;
+      case 'bodyType':
+        setBodyType(value as AvatarBodyType);
+        break;
+      case 'tone':
+        setTone(value as AvatarTone);
+        break;
+      case 'enthusiasm':
+        setEnthusiasm(value as AvatarEnthusiasm);
+        break;
+      case 'formality':
+        setFormality(value as AvatarFormality);
+        break;
+      case 'humor':
+        setHumor(value as AvatarHumor);
+        break;
+      case 'drawModel':
+        setDrawModelVersion(value as AvatarDrawModelVersion);
+        break;
+    }
+    setShowModal(false);
+  };
+
+  /**
+   * 現在の選択値を取得
+   */
+  const getCurrentValue = (type: string): string => {
+    const values: { [key: string]: string } = {
+      sex,
+      hairStyle,
+      hairColor,
+      eyeColor,
+      clothing,
+      accessory,
+      bodyType,
+      tone,
+      enthusiasm,
+      formality,
+      humor,
+      drawModel: drawModelVersion,
+    };
+    return values[type] || '';
+  };
+
+  /**
+   * 現在の選択値のラベルを取得
+   */
+  const getCurrentLabel = (type: string): string => {
+    const currentValue = getCurrentValue(type);
+    const optionsMap: { [key: string]: any[] } = {
+      sex: AVATAR_OPTIONS.sex,
+      hairStyle: AVATAR_OPTIONS.hair_style,
+      hairColor: AVATAR_OPTIONS.hair_color,
+      eyeColor: AVATAR_OPTIONS.eye_color,
+      clothing: AVATAR_OPTIONS.clothing,
+      accessory: AVATAR_OPTIONS.accessory,
+      bodyType: AVATAR_OPTIONS.body_type,
+      tone: AVATAR_OPTIONS.tone,
+      enthusiasm: AVATAR_OPTIONS.enthusiasm,
+      formality: AVATAR_OPTIONS.formality,
+      humor: AVATAR_OPTIONS.humor,
+      drawModel: AVATAR_OPTIONS.draw_model_version,
+    };
+    const option = optionsMap[type]?.find((o: any) => o.value === currentValue);
+    return option ? (option.emoji ? `${option.emoji} ${option.label}` : option.label) : '';
   };
 
   /**
@@ -180,21 +291,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'せいべつ' : '性別'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={sex}
-                onValueChange={(value) => setSex(value as AvatarSex)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.sex.map((option) => (
-                  <Picker.Item
-                    key={option.value}
-                    label={`${option.emoji} ${option.label}`}
-                    value={option.value}
-                  />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('sex', isChild ? 'せいべつ' : '性別', AVATAR_OPTIONS.sex)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('sex')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* 髪型 */}
@@ -202,17 +305,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'かみがた' : '髪型'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={hairStyle}
-                onValueChange={(value) => setHairStyle(value as AvatarHairStyle)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.hair_style.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('hairStyle', isChild ? 'かみがた' : '髪型', AVATAR_OPTIONS.hair_style)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('hairStyle')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* 髪の色 */}
@@ -220,17 +319,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'かみのいろ' : '髪の色'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={hairColor}
-                onValueChange={(value) => setHairColor(value as AvatarHairColor)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.hair_color.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('hairColor', isChild ? 'かみのいろ' : '髪の色', AVATAR_OPTIONS.hair_color)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('hairColor')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* 目の色 */}
@@ -238,17 +333,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'めのいろ' : '目の色'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={eyeColor}
-                onValueChange={(value) => setEyeColor(value as AvatarEyeColor)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.eye_color.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('eyeColor', isChild ? 'めのいろ' : '目の色', AVATAR_OPTIONS.eye_color)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('eyeColor')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* 服装 */}
@@ -256,17 +347,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'ふくそう' : '服装'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={clothing}
-                onValueChange={(value) => setClothing(value as AvatarClothing)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.clothing.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('clothing', isChild ? 'ふくそう' : '服装', AVATAR_OPTIONS.clothing)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('clothing')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* アクセサリー */}
@@ -274,17 +361,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'アクセサリー' : 'アクセサリー'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={accessory}
-                onValueChange={(value) => setAccessory(value as AvatarAccessory)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.accessory.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('accessory', isChild ? 'アクセサリー' : 'アクセサリー', AVATAR_OPTIONS.accessory)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('accessory')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* 体型 */}
@@ -292,17 +375,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'たいけい' : '体型'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={bodyType}
-                onValueChange={(value) => setBodyType(value as AvatarBodyType)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.body_type.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('bodyType', isChild ? 'たいけい' : '体型', AVATAR_OPTIONS.body_type)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('bodyType')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -317,17 +396,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'くちょう' : '口調'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={tone}
-                onValueChange={(value) => setTone(value as AvatarTone)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.tone.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('tone', isChild ? 'くちょう' : '口調', AVATAR_OPTIONS.tone)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('tone')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* 熱意 */}
@@ -335,17 +410,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'ねつい' : '熱意'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={enthusiasm}
-                onValueChange={(value) => setEnthusiasm(value as AvatarEnthusiasm)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.enthusiasm.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('enthusiasm', isChild ? 'ねつい' : '熱意', AVATAR_OPTIONS.enthusiasm)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('enthusiasm')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* 丁寧さ */}
@@ -353,17 +424,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'ていねいさ' : '丁寧さ'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={formality}
-                onValueChange={(value) => setFormality(value as AvatarFormality)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.formality.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('formality', isChild ? 'ていねいさ' : '丁寧さ', AVATAR_OPTIONS.formality)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('formality')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* ユーモア */}
@@ -371,17 +438,13 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'ユーモア' : 'ユーモア'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={humor}
-                onValueChange={(value) => setHumor(value as AvatarHumor)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.humor.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('humor', isChild ? 'ユーモア' : 'ユーモア', AVATAR_OPTIONS.humor)}
+            >
+              <Text style={styles.selectionButtonText}>{getCurrentLabel('humor')}</Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -395,21 +458,20 @@ export const AvatarCreateScreen: React.FC = () => {
             <Text style={[styles.label, isChild && styles.childLabel]}>
               {isChild ? 'モデル' : 'イラストスタイル'}
             </Text>
-            <View style={[styles.pickerWrapper, isChild && styles.childPickerWrapper]}>
-              <Picker
-                selectedValue={drawModelVersion}
-                onValueChange={(value) => setDrawModelVersion(value as AvatarDrawModelVersion)}
-                style={styles.picker}
-              >
-                {AVATAR_OPTIONS.draw_model_version.map((option) => (
-                  <Picker.Item
-                    key={option.value}
-                    label={`${option.label} - ${option.description}`}
-                    value={option.value}
-                  />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.selectionButton}
+              onPress={() => openModal('drawModel', isChild ? 'モデル' : 'イラストスタイル', 
+                AVATAR_OPTIONS.draw_model_version.map(opt => ({
+                  ...opt,
+                  label: `${opt.label} - ${opt.description}`
+                }))
+              )}
+            >
+              <Text style={styles.selectionButtonText} numberOfLines={1}>
+                {getCurrentLabel('drawModel')}
+              </Text>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+            </TouchableOpacity>
           </View>
 
           {/* トークン消費警告 */}
@@ -458,6 +520,51 @@ export const AvatarCreateScreen: React.FC = () => {
 
         <View style={styles.footer} />
       </View>
+
+      {/* 選択モーダル */}
+      <Modal
+        visible={showModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{modalTitle}</Text>
+              <TouchableOpacity onPress={() => setShowModal(false)}>
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={modalOptions}
+              keyExtractor={(item) => item.value}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.modalOption,
+                    item.value === getCurrentValue(modalType) && styles.modalOptionSelected,
+                  ]}
+                  onPress={() => handleModalSelect(item.value)}
+                >
+                  <Text
+                    style={[
+                      styles.modalOptionText,
+                      item.value === getCurrentValue(modalType) && styles.modalOptionTextSelected,
+                    ]}
+                    numberOfLines={2}
+                  >
+                    {item.emoji ? `${item.emoji} ${item.label}` : item.label}
+                  </Text>
+                  {item.value === getCurrentValue(modalType) && (
+                    <MaterialIcons name="check" size={24} color="#3b82f6" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -523,6 +630,23 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   childLabel: {
     fontSize: getFontSize(16, width, theme),
     color: '#FF8C42',
+  },
+  selectionButton: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: getBorderRadius(8, width),
+    backgroundColor: '#fff',
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minHeight: 50,
+  },
+  selectionButtonText: {
+    fontSize: getFontSize(14, width, theme),
+    color: '#1F2937',
+    flex: 1,
   },
   pickerWrapper: {
     borderWidth: 1,
@@ -601,6 +725,59 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   footer: {
     height: getSpacing(32, width),
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: getBorderRadius(20, width),
+    borderTopRightRadius: getBorderRadius(20, width),
+    maxHeight: '70%',
+    paddingBottom: getSpacing(20, width),
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: getSpacing(16, width),
+    paddingHorizontal: getSpacing(20, width),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  modalTitle: {
+    fontSize: getFontSize(18, width, theme),
+    fontWeight: 'bold',
+    color: '#1F2937',
+  },
+  modalClose: {
+    fontSize: getFontSize(24, width, theme),
+    color: '#9ca3af',
+    fontWeight: 'bold',
+  },
+  modalOption: {
+    paddingVertical: getSpacing(16, width),
+    paddingHorizontal: getSpacing(20, width),
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  modalOptionSelected: {
+    backgroundColor: '#eff6ff',
+  },
+  modalOptionText: {
+    fontSize: getFontSize(16, width, theme),
+    color: '#1F2937',
+    flex: 1,
+    marginRight: getSpacing(8, width),
+  },
+  modalOptionTextSelected: {
+    color: '#3b82f6',
+    fontWeight: '600',
   },
 });
 
