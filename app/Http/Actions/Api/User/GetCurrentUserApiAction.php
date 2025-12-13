@@ -44,6 +44,9 @@ class GetCurrentUserApiAction
                 return $this->responder->unauthorized();
             }
 
+            // グループ情報をEager Loading
+            $user->load('group');
+
             return $this->responder->currentUser($user);
 
         } catch (\Exception $e) {

@@ -122,7 +122,11 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       icon: 'time-outline',
       route: 'PendingApprovals',
       badge: pendingTotal > 0 ? 'pulse' : undefined,
-      condition: (user) => user?.group_edit_flg === true, // グループ管理者のみ
+      condition: (user) => {
+        // マスター権限またはグループ編集権限を持つユーザーのみ表示
+        const isGroupMaster = user?.group?.master_user_id === user?.id;
+        return isGroupMaster || user?.group_edit_flg === true;
+      },
     },
     {
       id: 'tag-management',
@@ -157,7 +161,12 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       label: 'サブスクリプション',
       icon: 'card-outline',
       route: 'SubscriptionManage',
-      condition: (user) => user?.group_id && user?.group_edit_flg === true,
+      condition: (user) => {
+        if (!user?.group_id) return false;
+        // マスター権限またはグループ編集権限を持つユーザーのみ表示
+        const isGroupMaster = user?.group?.master_user_id === user?.id;
+        return isGroupMaster || user?.group_edit_flg === true;
+      },
     },
     {
       id: 'settings',

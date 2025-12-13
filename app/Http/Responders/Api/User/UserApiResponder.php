@@ -25,16 +25,29 @@ class UserApiResponder
      */
     public function currentUser(User $user): JsonResponse
     {
+        $data = [
+            'id' => $user->id,
+            'username' => $user->username,
+            'name' => $user->name,
+            'theme' => $user->theme ?? 'adult',
+            'group_id' => $user->group_id,
+            'group_edit_flg' => (bool) $user->group_edit_flg,
+        ];
+
+        // グループ情報を含める（master_user_idを追加）
+        if ($user->group) {
+            $data['group'] = [
+                'id' => $user->group->id,
+                'name' => $user->group->name,
+                'master_user_id' => $user->group->master_user_id,
+            ];
+        } else {
+            $data['group'] = null;
+        }
+
         return response()->json([
             'success' => true,
-            'data' => [
-                'id' => $user->id,
-                'username' => $user->username,
-                'name' => $user->name,
-                'theme' => $user->theme ?? 'adult',
-                'group_id' => $user->group_id,
-                'group_edit_flg' => (bool) $user->group_edit_flg,
-            ],
+            'data' => $data,
         ], 200);
     }
 

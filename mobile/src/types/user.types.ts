@@ -27,6 +27,7 @@ export interface User {
   group?: {
     id: number;
     name: string;
+    master_user_id: number;
   } | null;
   auth_provider: string;
   cognito_sub: string | null;
