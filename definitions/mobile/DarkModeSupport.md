@@ -8,6 +8,7 @@
 | 2025-12-13 | GitHub Copilot | Phase 1実装完了: カラーパレット、ColorSchemeContext、useThemedColors、App.tsx修正 |
 | 2025-12-13 | GitHub Copilot | Phase 2実装完了: DeadlineBadge, BucketCard, HomeScreen, DrawerContent, AppNavigator対応 |
 | 2025-12-13 | GitHub Copilot | Phase 2 priority:medium完了: ConfirmDialog, ProfileScreen対応（commit d343132） |
+| 2025-12-13 | GitHub Copilot | Phase 2残りコンポーネント完了: RejectReasonModal, TaskApprovalCard, TokenApprovalCard, HeaderNotificationIcon, AvatarWidget, AvatarCreationBanner対応（commit 0cb278c） |
 
 ---
 
@@ -546,9 +547,12 @@ const MyComponent = () => {
 5. **優先度: 中 のコンポーネント修正**
    - [x] `ConfirmDialog.tsx` ✅ d343132
    - [x] `ProfileScreen.tsx` ✅ d343132
-   - [ ] `Modal.tsx`
-   - [ ] `Input.tsx`
-   - [ ] `Card.tsx`
+   - [x] `RejectReasonModal.tsx` ✅ 0cb278c
+   - [x] `TaskApprovalCard.tsx` ✅ 0cb278c
+   - [x] `TokenApprovalCard.tsx` ✅ 0cb278c
+   - [x] `HeaderNotificationIcon.tsx` ✅ 0cb278c
+   - [x] `AvatarWidget.tsx` ✅ 0cb278c
+   - [x] `AvatarCreationBanner.tsx` ✅ 0cb278c
 
 ### Phase 3: 手動切り替え機能（4日目）
 
