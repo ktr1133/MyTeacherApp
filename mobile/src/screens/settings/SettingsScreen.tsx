@@ -19,16 +19,17 @@ import {
   Alert,
   ActivityIndicator,
   Switch,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
 import { useTheme } from '../../contexts/ThemeContext';
 import { userService } from '../../services/user.service';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 /**
  * SettingsScreen コンポーネント
@@ -53,6 +54,9 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
   const [timezones, setTimezones] = useState<Array<{ value: string; label: string }>>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [isLoadingTimezone, setIsLoadingTimezone] = useState(false);
+
+  // タイムゾーン選択モーダル用state
+  const [showTimezoneModal, setShowTimezoneModal] = useState(false);
 
   // 初回タイムゾーン設定取得
   useEffect(() => {
@@ -253,22 +257,20 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
             {isLoadingTimezone ? (
               <ActivityIndicator size="small" color="#3b82f6" />
             ) : (
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={timezone}
-                  onValueChange={handleTimezoneChange}
-                  style={styles.picker}
-                  enabled={!isLoading}
-                >
-                  {(timezones || []).map((tz) => (
-                    <Picker.Item
-                      key={tz.value}
-                      label={tz.label}
-                      value={tz.value}
-                    />
-                  ))}
-                </Picker>
-              </View>
+              <TouchableOpacity
+                style={styles.timezoneButton}
+                onPress={() => setShowTimezoneModal(true)}
+                disabled={isLoading}
+              >
+                <Text style={styles.timezoneButtonText}>
+                  {timezone
+                    ? timezones.find((tz) => tz.value === timezone)?.label || timezone
+                    : theme === 'child'
+                    ? 'タイムゾーンをえらぶ'
+                    : 'タイムゾーンを選択'}
+                </Text>
+                <MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
+              </TouchableOpacity>
             )}
           </View>
         </View>
@@ -413,6 +415,55 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
           </View>
         </View>
       </View>
+
+      {/* タイムゾーン選択モーダル */}
+      <Modal
+        visible={showTimezoneModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowTimezoneModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {theme === 'child' ? 'タイムゾーンをえらぶ' : 'タイムゾーンを選択'}
+              </Text>
+              <TouchableOpacity onPress={() => setShowTimezoneModal(false)}>
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={timezones}
+              keyExtractor={(item) => item.value}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.modalOption,
+                    item.value === timezone && styles.modalOptionSelected,
+                  ]}
+                  onPress={() => {
+                    handleTimezoneChange(item.value);
+                    setShowTimezoneModal(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.modalOptionText,
+                      item.value === timezone && styles.modalOptionTextSelected,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                  {item.value === timezone && (
+                    <MaterialIcons name="check" size={24} color="#3b82f6" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -557,6 +608,76 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontSize: getFontSize(16, width, theme),
     color: '#3b82f6',
     fontWeight: '500',
+  },
+  // タイムゾーン選択ボタン
+  timezoneButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: getBorderRadius(8, width),
+  },
+  timezoneButtonText: {
+    fontSize: getFontSize(16, width, theme),
+    color: '#1e293b',
+    flex: 1,
+  },
+  // モーダルスタイル
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: getBorderRadius(20, width),
+    borderTopRightRadius: getBorderRadius(20, width),
+    paddingBottom: getSpacing(20, width),
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: getSpacing(16, width),
+    paddingHorizontal: getSpacing(20, width),
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  modalTitle: {
+    fontSize: getFontSize(18, width, theme),
+    fontWeight: 'bold',
+    color: '#1e293b',
+  },
+  modalClose: {
+    fontSize: getFontSize(24, width, theme),
+    color: '#64748b',
+    fontWeight: 'bold',
+  },
+  modalOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: getSpacing(16, width),
+    paddingHorizontal: getSpacing(20, width),
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  modalOptionSelected: {
+    backgroundColor: '#eff6ff',
+  },
+  modalOptionText: {
+    fontSize: getFontSize(16, width, theme),
+    color: '#1e293b',
+    flex: 1,
+  },
+  modalOptionTextSelected: {
+    color: '#3b82f6',
+    fontWeight: '600',
   },
 });
 
