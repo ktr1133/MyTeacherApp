@@ -730,7 +730,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
@@ -751,7 +751,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     paddingHorizontal: getSpacing(8, width),
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.default,
     backgroundColor: colors.card,
     alignItems: 'center',
   },
@@ -774,7 +774,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     backgroundColor: colors.card,
     overflow: 'hidden',
@@ -788,7 +788,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   },
   dateButton: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     backgroundColor: colors.card,
@@ -804,7 +804,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   },
   tagSearchInput: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     fontSize: getFontSize(14, width, theme),
@@ -818,7 +818,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     backgroundColor: colors.background,
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.default,
   },
   selectedTagsLabel: {
     fontSize: getFontSize(12, width, theme),
@@ -828,7 +828,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   },
   tagExpandButton: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     backgroundColor: colors.card,
@@ -843,7 +843,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   tagScrollView: {
     maxHeight: 200,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     backgroundColor: colors.background,
@@ -859,9 +859,9 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(6, width),
     borderRadius: getBorderRadius(16, width),
-    backgroundColor: colors.border,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.default,
   },
   tagChipSelected: {
     backgroundColor: accent.primary,
