@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 /**
  * アバター作成促進バナーコンポーネント
@@ -38,6 +39,7 @@ export default function AvatarCreationBanner({ onPress }: AvatarCreationBannerPr
   const { theme } = useTheme();
   const { width } = useResponsive();
   const themeType = theme === 'child' ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
 
   /**
    * バナータップ時の処理
@@ -66,7 +68,7 @@ export default function AvatarCreationBanner({ onPress }: AvatarCreationBannerPr
    * レスポンシブスタイル
    * デバイスサイズとテーマに応じて動的に計算
    */
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   return (
     <TouchableOpacity
@@ -81,7 +83,7 @@ export default function AvatarCreationBanner({ onPress }: AvatarCreationBannerPr
         <Ionicons 
           name="person-outline" 
           size={getFontSize(32, width, themeType)} 
-          color="#EC4899" 
+          color={accent.primary}
         />
       </View>
       <View style={styles.textContainer}>
@@ -95,7 +97,7 @@ export default function AvatarCreationBanner({ onPress }: AvatarCreationBannerPr
       <Ionicons 
         name="chevron-forward" 
         size={getFontSize(24, width, themeType)} 
-        color="#EC4899" 
+        color={accent.primary}
       />
     </TouchableOpacity>
   );
@@ -111,14 +113,16 @@ export default function AvatarCreationBanner({ onPress }: AvatarCreationBannerPr
  * 
  * @param width - 画面幅
  * @param theme - テーマタイプ（'adult' | 'child'）
+ * @param colors - カラーパレット
+ * @param accent - アクセントカラー
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') =>
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) =>
   StyleSheet.create({
     container: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#FDF2F8', // 薄いピンク
+      backgroundColor: accent.primary + '15',
       paddingVertical: getSpacing(16, width),
       paddingHorizontal: getSpacing(16, width),
       marginHorizontal: getSpacing(16, width),
@@ -126,7 +130,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       marginBottom: getSpacing(8, width),
       borderRadius: getBorderRadius(12, width),
       borderWidth: 1,
-      borderColor: '#FBCFE8', // ピンクのボーダー
+      borderColor: accent.primary + '30',
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
@@ -143,13 +147,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
     message: {
       fontWeight: '700',
       fontSize: getFontSize(16, width, theme),
-      color: '#831843', // 濃いピンク
+      color: colors.text.primary,
       marginBottom: getSpacing(4, width),
       lineHeight: getFontSize(22, width, theme),
     },
     description: {
       fontSize: getFontSize(13, width, theme),
-      color: '#9F1239', // ピンク系
+      color: colors.text.secondary,
       lineHeight: getFontSize(18, width, theme),
     },
   });

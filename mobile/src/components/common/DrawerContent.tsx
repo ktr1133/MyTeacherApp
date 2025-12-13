@@ -442,18 +442,18 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
       alignItems: 'center',
       paddingHorizontal: getSpacing(16, width),
       paddingVertical: getSpacing(12, width),
-      backgroundColor: '#F9FAFB',
+      backgroundColor: colors.surface,
     },
     adminToggleLabel: {
       fontSize: getFontSize(12, width, theme),
       fontWeight: '600',
-      color: '#6B7280',
+      color: colors.text.secondary,
       textTransform: 'uppercase',
     },
     adminToggleButton: {
       padding: getSpacing(4, width),
       borderRadius: getBorderRadius(6, width),
-      backgroundColor: '#FFFFFF',
+      backgroundColor: colors.card,
     },
     menuSection: {
       paddingVertical: getSpacing(8, width),
@@ -461,7 +461,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     menuSectionTitle: {
       fontSize: getFontSize(12, width, theme),
       fontWeight: '600',
-      color: '#6B7280',
+      color: colors.text.secondary,
       textTransform: 'uppercase',
       paddingHorizontal: getSpacing(16, width),
       paddingVertical: getSpacing(12, width),
@@ -476,7 +476,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
       borderRadius: getBorderRadius(12, width),
     },
     menuItemActive: {
-      backgroundColor: '#EFF6FF',
+      backgroundColor: colors.isDark ? 'rgba(89, 185, 198, 0.2)' : '#EFF6FF',
     },
     menuIcon: {
       marginRight: getSpacing(12, width),
@@ -485,10 +485,10 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
       flex: 1,
       fontSize: getFontSize(14, width, theme),
       fontWeight: '500',
-      color: '#4B5563',
+      color: colors.text.secondary,
     },
     menuLabelActive: {
-      color: '#59B9C6',
+      color: accent.primary,
       fontWeight: '600',
     },
     badge: {

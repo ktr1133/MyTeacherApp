@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 /**
  * Props型定義
@@ -60,10 +61,11 @@ export const RejectReasonModal: React.FC<RejectReasonModalProps> = ({
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
   const [reason, setReason] = useState('');
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   /**
    * 却下実行
@@ -104,7 +106,7 @@ export const RejectReasonModal: React.FC<RejectReasonModalProps> = ({
           <TextInput
             style={styles.input}
             placeholder="却下理由を入力してください...（任意）"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.text.tertiary}
             value={reason}
             onChangeText={setReason}
             multiline
@@ -144,9 +146,11 @@ export const RejectReasonModal: React.FC<RejectReasonModalProps> = ({
  * 
  * @param width - 画面幅
  * @param theme - テーマ種別
+ * @param colors - カラーパレット
+ * @param accent - アクセントカラー
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') => {
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => {
   const spacing = getSpacing(8, width);
   const borderRadius = getBorderRadius(8, width);
 
@@ -156,7 +160,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
   return StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: colors.overlay,
       justifyContent: 'center',
       alignItems: 'center',
       padding: spacing * 2,
@@ -164,7 +168,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     modalContent: {
       width: modalWidth,
       maxWidth: 500,
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderRadius: borderRadius * 2,
       padding: spacing * 3,
       shadowColor: '#000',
@@ -179,26 +183,26 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     title: {
       fontSize: getFontSize(18, width, theme),
       fontWeight: '600',
-      color: '#333',
+      color: colors.text.primary,
       textAlign: 'center',
     },
     targetText: {
       fontSize: getFontSize(14, width, theme),
-      color: '#666',
+      color: colors.text.secondary,
       textAlign: 'center',
       marginBottom: spacing * 2,
     },
     input: {
       borderWidth: 1,
-      borderColor: '#ddd',
+      borderColor: colors.border.default,
       borderRadius: borderRadius,
       padding: spacing * 1.5,
       fontSize: getFontSize(14, width, theme),
-      color: '#333',
+      color: colors.text.primary,
       minHeight: 100,
       maxHeight: 150,
       marginBottom: spacing * 3,
-      backgroundColor: '#f9f9f9',
+      backgroundColor: colors.surface,
     },
     buttonContainer: {
       flexDirection: 'row',
@@ -214,20 +218,22 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
       justifyContent: 'center',
     },
     cancelButton: {
-      backgroundColor: '#e0e0e0',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border.default,
     },
     cancelButtonText: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '600',
-      color: '#333',
+      color: colors.text.secondary,
     },
     rejectButton: {
-      backgroundColor: '#dc3545',
+      backgroundColor: colors.status.error,
     },
     rejectButtonText: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '600',
-      color: '#fff',
+      color: '#FFFFFF',
     },
     buttonDisabled: {
       opacity: 0.6,

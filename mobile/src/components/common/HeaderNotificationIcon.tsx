@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 /**
  * ヘッダー通知アイコンコンポーネント
@@ -32,6 +33,7 @@ export default function HeaderNotificationIcon() {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const theme = isChildTheme ? 'child' : 'adult';
+  const { colors } = useThemedColors();
 
   /**
    * 通知アイコンタップ時の処理
@@ -50,7 +52,7 @@ export default function HeaderNotificationIcon() {
    * レスポンシブスタイル
    * デバイスサイズとテーマに応じて動的に計算
    */
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const styles = useMemo(() => createStyles(width, theme, colors), [width, theme, colors]);
 
   return (
     <TouchableOpacity
@@ -63,7 +65,7 @@ export default function HeaderNotificationIcon() {
       <Ionicons 
         name="notifications-outline" 
         size={getFontSize(24, width, theme)} 
-        color="#333" 
+        color={colors.text.primary}
       />
       {unreadCount > 0 && (
         <View style={styles.badge} testID="notification-badge">
@@ -86,9 +88,10 @@ export default function HeaderNotificationIcon() {
  * 
  * @param width - 画面幅
  * @param theme - テーマタイプ（'adult' | 'child'）
+ * @param colors - カラーパレット
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') =>
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any) =>
   StyleSheet.create({
     container: {
       position: 'relative',
@@ -99,7 +102,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       position: 'absolute',
       top: 0,
       right: 0,
-      backgroundColor: '#EF4444', // 赤色バッジ
+      backgroundColor: colors.status.error,
       borderRadius: getBorderRadius(10, width),
       minWidth: getSpacing(18, width),
       height: getSpacing(18, width),
@@ -107,7 +110,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') =>
       alignItems: 'center',
       paddingHorizontal: getSpacing(4, width),
       borderWidth: 2,
-      borderColor: '#FFFFFF', // 白い縁取り
+      borderColor: colors.background,
     },
     badgeText: {
       color: '#FFFFFF',

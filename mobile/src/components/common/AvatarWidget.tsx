@@ -17,6 +17,7 @@ import {
   Platform,
 } from 'react-native';
 import { AvatarDisplayData, AvatarAnimationType } from '../../types/avatar.types';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 interface AvatarWidgetProps {
   visible: boolean;
@@ -38,6 +39,7 @@ export const AvatarWidget: React.FC<AvatarWidgetProps> = ({
   position = 'center',
   enableAnimation = true,
 }) => {
+  const { colors } = useThemedColors();
   
   // アニメーション値
   const fadeAnim = useRef(new Animated.Value(0)).current;

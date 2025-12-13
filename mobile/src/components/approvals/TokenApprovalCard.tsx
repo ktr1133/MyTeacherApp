@@ -19,6 +19,7 @@ import {
 import { TokenApprovalItem } from '../../types/approval.types';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 /**
  * Props型定義
@@ -56,9 +57,10 @@ export const TokenApprovalCard: React.FC<TokenApprovalCardProps> = ({
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   /**
    * 申請日時をフォーマット
@@ -153,16 +155,18 @@ export const TokenApprovalCard: React.FC<TokenApprovalCardProps> = ({
  * 
  * @param width - 画面幅
  * @param theme - テーマ種別
+ * @param colors - カラーパレット
+ * @param accent - アクセントカラー
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') => {
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => {
   const spacing = getSpacing(8, width);
   const borderRadius = getBorderRadius(8, width);
   const shadow = getShadow(2);
 
   return StyleSheet.create({
     card: {
-      backgroundColor: '#fff',
+      backgroundColor: colors.card,
       borderRadius: borderRadius * 1.5,
       padding: spacing * 2,
       marginBottom: spacing * 2,
@@ -170,7 +174,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     },
     typeBadge: {
       alignSelf: 'flex-start',
-      backgroundColor: '#ffc107',
+      backgroundColor: colors.status.warning,
       paddingVertical: spacing * 0.5,
       paddingHorizontal: spacing * 1.5,
       borderRadius: borderRadius,
@@ -179,12 +183,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     typeBadgeText: {
       fontSize: getFontSize(12, width, theme),
       fontWeight: '600',
-      color: '#fff',
+      color: '#FFFFFF',
     },
     title: {
       fontSize: getFontSize(16, width, theme),
       fontWeight: '600',
-      color: '#333',
+      color: colors.text.primary,
       marginBottom: spacing * 1.5,
     },
     infoRow: {
@@ -193,24 +197,24 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
     },
     label: {
       fontSize: getFontSize(14, width, theme),
-      color: '#666',
+      color: colors.text.secondary,
       width: width >= 768 ? 100 : 80,
     },
     value: {
       fontSize: getFontSize(14, width, theme),
-      color: '#333',
+      color: colors.text.primary,
       flex: 1,
     },
     valueHighlight: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '600',
-      color: '#28a745',
+      color: colors.status.success,
       flex: 1,
     },
     valuePrice: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '600',
-      color: '#ff6b6b',
+      color: colors.status.error,
       flex: 1,
     },
     buttonContainer: {
@@ -226,20 +230,20 @@ const createStyles = (width: number, theme: 'adult' | 'child') => {
       justifyContent: 'center',
     },
     approveButton: {
-      backgroundColor: '#28a745',
+      backgroundColor: colors.status.success,
     },
     approveButtonText: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '600',
-      color: '#fff',
+      color: '#FFFFFF',
     },
     rejectButton: {
-      backgroundColor: '#dc3545',
+      backgroundColor: colors.status.error,
     },
     rejectButtonText: {
       fontSize: getFontSize(14, width, theme),
       fontWeight: '600',
-      color: '#fff',
+      color: '#FFFFFF',
     },
     buttonDisabled: {
       opacity: 0.6,
