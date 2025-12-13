@@ -53,9 +53,12 @@ export const ColorSchemeProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [mode, setModeState] = useState<ColorSchemeMode>('auto');
   
   // OSのカラースキーマを状態として保持（Appearance変更の確実な検知）
-  const [detectedSystemScheme, setDetectedSystemScheme] = useState<'light' | 'dark'>(
-    systemColorScheme ?? 'light'
-  );
+  const [detectedSystemScheme, setDetectedSystemScheme] = useState<'light' | 'dark'>(() => {
+    // 初期値を確実に設定
+    const initial = systemColorScheme ?? 'light';
+    console.log('[ColorScheme] 初期システムカラースキーマ:', initial);
+    return initial;
+  });
   
   // 実際に適用するカラースキーマ
   const colorScheme: 'light' | 'dark' = 
@@ -97,11 +100,11 @@ export const ColorSchemeProvider: React.FC<{ children: ReactNode }> = ({ childre
    * （autoモード時のOS設定変更を確実に検知）
    */
   useEffect(() => {
-    if (systemColorScheme) {
+    if (systemColorScheme && mode === 'auto') {
       setDetectedSystemScheme(systemColorScheme);
-      console.log('[ColorScheme] useRNColorScheme更新:', systemColorScheme);
+      console.log('[ColorScheme] useRNColorScheme更新 (auto mode):', systemColorScheme);
     }
-  }, [systemColorScheme]);
+  }, [systemColorScheme, mode]);
   
   /**
    * OSの設定変更を監視（バックアップ: Appearance API直接監視）
