@@ -122,7 +122,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       icon: 'time-outline',
       route: 'PendingApprovals',
       badge: pendingTotal > 0 ? 'pulse' : undefined,
-      condition: (user) => user?.canEditGroup === true, // グループ管理者のみ
+      condition: (user) => user?.group_edit_flg === true, // グループ管理者のみ
     },
     {
       id: 'tag-management',
@@ -157,7 +157,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       label: 'サブスクリプション',
       icon: 'card-outline',
       route: 'SubscriptionManage',
-      condition: (user) => user?.group_id && user?.canEditGroup === true,
+      condition: (user) => user?.group_id && user?.group_edit_flg === true,
     },
     {
       id: 'settings',

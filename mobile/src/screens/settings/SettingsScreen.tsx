@@ -64,9 +64,12 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
     try {
       const data = await getTimezoneSettings();
       setTimezone(data.timezone);
-      setTimezones(data.timezones);
+      setTimezones(data.timezones || []); // 安全性チェック追加
     } catch (err) {
       console.error('Failed to load timezone settings', err);
+      // エラー時はデフォルト値を設定
+      setTimezone('Asia/Tokyo');
+      setTimezones([{ value: 'Asia/Tokyo', label: '東京 (UTC+9)' }]);
     } finally {
       setIsLoadingTimezone(false);
     }
@@ -221,7 +224,7 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
                 style={styles.picker}
                 enabled={!isLoading}
               >
-                {timezones.map((tz) => (
+                {(timezones || []).map((tz) => (
                   <Picker.Item
                     key={tz.value}
                     label={tz.label}

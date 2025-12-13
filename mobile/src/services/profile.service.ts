@@ -182,7 +182,31 @@ class ProfileService {
         throw new Error('TIMEZONE_FETCH_FAILED');
       }
 
-      return response.data.data;
+      const data = response.data.data;
+      
+      // API Response:
+      // {
+      //   current_timezone: "Asia/Tokyo",
+      //   current_timezone_name: "東京",
+      //   timezones_grouped: { "アジア": { "Asia/Tokyo": "東京 (UTC+9)", ... }, ... }
+      // }
+      
+      // timezones_groupedをフラット化
+      const timezones: Array<{ value: string; label: string }> = [];
+      const grouped = data.timezones_grouped || {};
+      
+      Object.keys(grouped).forEach(region => {
+        Object.entries(grouped[region] as Record<string, string>).forEach(([value, label]) => {
+          timezones.push({ value, label: label as string });
+        });
+      });
+
+      return {
+        timezone: data.current_timezone || 'Asia/Tokyo',
+        timezones: timezones.length > 0 ? timezones : [
+          { value: 'Asia/Tokyo', label: '東京 (UTC+9)' }
+        ],
+      };
     } catch (error: any) {
       if (error.response?.status === 401) {
         throw new Error('AUTH_REQUIRED');
