@@ -31,6 +31,7 @@ import { useAvatar } from '../../hooks/useAvatar';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 /**
  * ナビゲーションスタック型定義
@@ -78,6 +79,7 @@ export default function CreateTaskScreen() {
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
   const { createTask, isLoading, error, clearError } = useTasks();
   const {
     isVisible: avatarVisible,
@@ -87,7 +89,7 @@ export default function CreateTaskScreen() {
   } = useAvatar();
 
   // レスポンシブスタイル生成
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   // フォーム状態
   const [title, setTitle] = useState('');
@@ -956,10 +958,10 @@ export default function CreateTaskScreen() {
   );
 }
 
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -1011,21 +1013,21 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   label: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text.secondary,
     marginBottom: getSpacing(8, width),
   },
   required: {
     color: '#EF4444',
   },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(10, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#111827',
+    color: colors.text.primary,
   },
   textArea: {
     height: getSpacing(100, width),
@@ -1040,44 +1042,44 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingVertical: getSpacing(10, width),
     paddingHorizontal: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.border.light,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border.default,
   },
   segmentButtonActive: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
+    backgroundColor: accent.primary,
+    borderColor: accent.primary,
   },
   segmentButtonText: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   segmentButtonTextActive: {
     color: '#FFFFFF',
   },
   helpText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.disabled,
     marginTop: getSpacing(4, width),
   },
   dateButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(12, width),
   },
   dateButtonText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#111827',
+    color: colors.text.primary,
   },
   pickerContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     overflow: 'hidden',
     minHeight: Platform.OS === 'ios' ? 150 : 50,
@@ -1089,7 +1091,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   pickerItem: {
     height: Platform.OS === 'ios' ? 150 : 50,
     fontSize: getFontSize(16, width, theme),
-    color: '#111827',
+    color: colors.text.primary,
   },
   tagContainer: {
     flexDirection: 'row',
@@ -1102,18 +1104,18 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(8, width),
     borderRadius: getBorderRadius(16, width),
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.border.light,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border.default,
   },
   tagChipSelected: {
-    backgroundColor: '#59B9C6',
-    borderColor: '#59B9C6',
+    backgroundColor: accent.primary,
+    borderColor: accent.primary,
   },
   tagChipText: {
     fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   tagChipTextSelected: {
     color: '#FFFFFF',
@@ -1126,15 +1128,15 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   selectedTagsContainer: {
     marginBottom: getSpacing(12, width),
     padding: getSpacing(12, width),
-    backgroundColor: '#F0F9FF',
+    backgroundColor: accent.primary + '10',
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: accent.primary + '30',
   },
   selectedTagsLabel: {
     fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
-    color: '#1E40AF',
+    color: accent.primary,
     marginBottom: getSpacing(8, width),
   },
   tagSearchContainer: {
@@ -1144,14 +1146,14 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   tagSearchInput: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(8, width),
     fontSize: getFontSize(14, width, theme),
-    color: '#111827',
+    color: colors.text.primary,
   },
   tagSearchClear: {
     position: 'absolute',
@@ -1160,43 +1162,43 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   tagSearchClearText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.disabled,
   },
   tagExpandButton: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.border.light,
     borderRadius: getBorderRadius(8, width),
     paddingVertical: getSpacing(10, width),
     paddingHorizontal: getSpacing(12, width),
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border.default,
   },
   tagExpandButtonText: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#4F46E5',
+    color: accent.primary,
   },
   tagListContainer: {
     marginTop: getSpacing(8, width),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border.default,
     maxHeight: getSpacing(200, width),
   },
   tagListItem: {
     paddingVertical: getSpacing(12, width),
     paddingHorizontal: getSpacing(16, width),
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: colors.border.light,
   },
   tagListItemText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.secondary,
   },
   tagListEmptyText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.disabled,
     textAlign: 'center',
     paddingVertical: getSpacing(16, width),
   },
@@ -1214,7 +1216,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   switchLabel: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text.secondary,
   },
   buttonTouchable: {
     width: '100%',
@@ -1254,24 +1256,24 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   templatePreview: {
     marginTop: getSpacing(12, width),
     padding: getSpacing(12, width),
-    backgroundColor: '#F0F9FF',
+    backgroundColor: accent.primary + '10',
     borderRadius: getBorderRadius(8, width),
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: accent.primary + '30',
   },
   templatePreviewLabel: {
     fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
-    color: '#1E40AF',
+    color: accent.primary,
     marginBottom: getSpacing(8, width),
   },
   templatePreviewText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.secondary,
     marginBottom: getSpacing(4, width),
   },
   templatePreviewKey: {
     fontWeight: '600',
-    color: '#1E40AF',
+    color: accent.primary,
   },
 });

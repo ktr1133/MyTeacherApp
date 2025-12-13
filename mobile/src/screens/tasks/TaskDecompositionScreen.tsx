@@ -23,6 +23,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAvatar } from '../../hooks/useAvatar';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { taskService } from '../../services/task.service';
 import {
   TaskSpan,
@@ -70,7 +71,8 @@ export default function TaskDecompositionScreen() {
   const route = useRoute<TaskDecompositionRouteProp>();
   const { width } = useResponsive();
   const { theme } = useTheme();
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
   const { dispatchAvatarEvent } = useAvatar();
 
   // ルートパラメータから初期値を取得
@@ -800,10 +802,10 @@ export default function TaskDecompositionScreen() {
 /**
  * スタイル定義
  */
-const createStyles = (width: number, theme: any) => StyleSheet.create({
+const createStyles = (width: number, theme: any, colors: any, accent: any) => StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -818,7 +820,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontSize: getFontSize(24, width, theme),
     fontWeight: 'bold',
     marginBottom: getSpacing(8, width),
-    color: '#333',
+    color: colors.text.primary,
   },
   titleChild: {
     fontSize: getFontSize(28, width, theme),
@@ -826,7 +828,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   description: {
     fontSize: getFontSize(14, width, theme),
-    color: '#666',
+    color: colors.text.secondary,
     marginBottom: getSpacing(24, width),
   },
   inputGroup: {
@@ -836,53 +838,53 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600',
     marginBottom: getSpacing(8, width),
-    color: '#333',
+    color: colors.text.primary,
   },
   required: {
     color: '#FF6B6B',
   },
   helperText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#999',
+    color: colors.text.disabled,
     marginBottom: getSpacing(4, width),
     fontStyle: 'italic',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
   },
   textArea: {
     height: getSpacing(100, width),
     textAlignVertical: 'top',
   },
   infoBox: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: accent.primary + '15',
     padding: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
     marginBottom: getSpacing(20, width),
   },
   infoText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#1976D2',
+    color: accent.primary,
   },
   taskList: {
     marginBottom: getSpacing(20, width),
   },
   taskCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(12, width),
     borderWidth: 2,
-    borderColor: '#ddd',
+    borderColor: colors.border.default,
   },
   taskCardSelected: {
-    borderColor: '#59B9C6',
-    backgroundColor: '#E0F2F7',
+    borderColor: accent.primary,
+    backgroundColor: accent.primary + '10',
   },
   taskCardHeader: {
     flexDirection: 'row',
@@ -893,26 +895,26 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     width: getSpacing(24, width),
     height: getSpacing(24, width),
     borderWidth: 2,
-    borderColor: '#59B9C6',
+    borderColor: accent.primary,
     borderRadius: getBorderRadius(4, width),
     marginRight: getSpacing(12, width),
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    color: '#59B9C6',
+    color: accent.primary,
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
   },
   taskTitle: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#333',
+    color: colors.text.primary,
     flex: 1,
   },
   taskDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#666',
+    color: colors.text.secondary,
     marginBottom: getSpacing(8, width),
     marginLeft: getSpacing(36, width),
   },
@@ -923,7 +925,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   taskMetaText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#999',
+    color: colors.text.disabled,
     marginRight: getSpacing(16, width),
   },
   taskEditGroup: {
@@ -934,11 +936,11 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontSize: getFontSize(12, width, theme),
     fontWeight: '600',
     marginBottom: getSpacing(4, width),
-    color: '#666',
+    color: colors.text.secondary,
   },
   taskHelperText: {
     fontSize: getFontSize(10, width, theme),
-    color: '#999',
+    color: colors.text.disabled,
     marginBottom: getSpacing(4, width),
     fontStyle: 'italic',
   },
@@ -952,22 +954,22 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     paddingHorizontal: getSpacing(12, width),
     borderRadius: getBorderRadius(4, width),
     borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
+    borderColor: colors.border.default,
+    backgroundColor: colors.card,
     alignItems: 'center',
   },
   spanButtonActive: {
-    backgroundColor: '#59B9C6',
-    borderColor: '#59B9C6',
+    backgroundColor: accent.primary,
+    borderColor: accent.primary,
   },
   spanButtonText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#666',
+    color: colors.text.secondary,
     fontWeight: '500',
   },
   spanButtonSubText: {
     fontSize: getFontSize(10, width, theme),
-    color: '#999',
+    color: colors.text.disabled,
     marginTop: getSpacing(2, width),
   },
   spanButtonTextActive: {
@@ -976,11 +978,11 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   taskInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(4, width),
     padding: getSpacing(8, width),
     fontSize: getFontSize(14, width, theme),
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
   },
   button: {
     borderRadius: getBorderRadius(8, width),
@@ -996,9 +998,9 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   secondaryButton: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border.default,
     padding: getSpacing(16, width),
     alignItems: 'center',
   },
@@ -1011,7 +1013,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontWeight: '600',
   },
   buttonTextSecondary: {
-    color: '#333',
+    color: colors.text.primary,
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
   },

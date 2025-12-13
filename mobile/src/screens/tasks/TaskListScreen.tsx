@@ -28,6 +28,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAvatar } from '../../hooks/useAvatar';
 import { useProfile } from '../../hooks/useProfile';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import AvatarCreationBanner from '../../components/common/AvatarCreationBanner';
 import BucketCard from '../../components/tasks/BucketCard';
@@ -65,6 +66,7 @@ export default function TaskListScreen() {
   const { width, deviceSize } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
+  const { colors, accent } = useThemedColors();
   const { profile, isLoading: profileLoading } = useProfile();
   
   const {
@@ -492,7 +494,7 @@ export default function TaskListScreen() {
    * レスポンシブスタイル生成
    * 画面幅・デバイスサイズ・テーマに基づいて動的に計算
    */
-  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   return (
     <View style={styles.container}>
@@ -582,30 +584,32 @@ export default function TaskListScreen() {
  * 
  * @param width - 画面幅
  * @param theme - テーマタイプ
+ * @param colors - テーマカラーパレット
+ * @param accent - アクセントカラー
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
   },
   searchContainer: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(8, width),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border.default,
   },
   searchInput: {
     flex: 1,
     height: getSpacing(40, width),
     paddingHorizontal: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.border.light,
     fontSize: getFontSize(14, width, theme),
-    color: '#111827',
+    color: colors.text.primary,
   },
   clearButton: {
     marginLeft: getSpacing(8, width),
@@ -616,17 +620,17 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   clearButtonText: {
     fontSize: getFontSize(18, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.disabled,
     fontWeight: 'bold' as const,
   },
   searchResultContainer: {
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(8, width),
-    backgroundColor: '#EEF2FF',
+    backgroundColor: accent.primary + '15',
   },
   searchResultText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#4F46E5',
+    color: accent.primary,
     fontWeight: '600' as const,
   },
   columnWrapper: {
@@ -637,7 +641,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     flexDirection: 'row' as const,
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     gap: getSpacing(8, width),
   },
   filterButton: {
@@ -645,16 +649,16 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingVertical: getSpacing(8, width),
     paddingHorizontal: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.border.light,
     alignItems: 'center' as const,
   },
   filterButtonActive: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: accent.primary,
   },
   filterButtonText: {
     fontSize: getFontSize(14, width, theme),
     fontWeight: '600' as const,
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   filterButtonTextActive: {
     color: '#FFFFFF',
@@ -663,7 +667,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     padding: getSpacing(16, width),
   },
   taskItem: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -683,12 +687,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: colors.text.primary,
     marginRight: 8,
   },
   completedText: {
     textDecorationLine: 'line-through' as const,
-    color: '#9CA3AF',
+    color: colors.text.disabled,
   },
   statusBadge: {
     paddingHorizontal: getSpacing(8, width),
@@ -710,11 +714,11 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   statusText: {
     fontSize: getFontSize(12, width, theme),
     fontWeight: '600' as const,
-    color: '#374151',
+    color: colors.text.secondary,
   },
   taskDescription: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(12, width),
     lineHeight: getFontSize(20, width, theme),
   },
@@ -725,14 +729,14 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(12, width),
   },
   tagBadge: {
-    backgroundColor: '#E0E7FF',
+    backgroundColor: accent.primary + '15',
     paddingHorizontal: getSpacing(10, width),
     paddingVertical: getSpacing(4, width),
     borderRadius: getBorderRadius(12, width),
   },
   tagText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#4F46E5',
+    color: accent.primary,
     fontWeight: '600' as const,
   },
   taskFooter: {
@@ -747,7 +751,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   taskDueDate: {
     fontSize: getFontSize(12, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.disabled,
   },
   completeButton: {
     marginTop: getSpacing(12, width),
@@ -770,12 +774,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   emptyText: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: '600' as const,
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginBottom: getSpacing(8, width),
   },
   emptySubtext: {
     fontSize: getFontSize(14, width, theme),
-    color: '#9CA3AF',
+    color: colors.text.disabled,
   },
   footerLoading: {
     paddingVertical: getSpacing(20, width),
@@ -786,7 +790,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   loadingText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginLeft: getSpacing(8, width),
   },
 });
