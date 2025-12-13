@@ -45,7 +45,7 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
     getTimezoneSettings,
     updateTimezone,
   } = useProfile(theme);
-  const { colorSchemeMode, setColorSchemeMode } = useColorScheme();
+  const { mode: colorSchemeMode, setMode: setColorSchemeMode } = useColorScheme();
   const { colors, accent } = useThemedColors();
 
   const { width } = useResponsive();
@@ -153,9 +153,9 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
   /**
    * カラースキーマ変更
    */
-  const handleColorSchemeChange = async (mode: 'light' | 'dark' | 'auto') => {
-    await setColorSchemeMode(mode);
-    const modeLabel = mode === 'light' ? 'ライト' : mode === 'dark' ? 'ダーク' : '自動';
+  const handleColorSchemeChange = async (newMode: 'light' | 'dark' | 'auto') => {
+    await setColorSchemeMode(newMode);
+    const modeLabel = newMode === 'light' ? 'ライト' : newMode === 'dark' ? 'ダーク' : '自動';
     Alert.alert(
       theme === 'child' ? 'きりかえたよ' : 'カラーモード変更',
       theme === 'child'
