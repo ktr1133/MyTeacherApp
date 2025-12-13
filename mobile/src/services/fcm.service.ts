@@ -5,16 +5,22 @@
  * @see /home/ktr/mtdev/definitions/mobile/PushNotification.md - Phase 2.B-7.5
  * @see /home/ktr/mtdev/docs/api/openapi.yaml - POST/DELETE /profile/fcm-token
  */
-import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
 import api from './api';
 import * as storage from '../utils/storage';
 import { STORAGE_KEYS } from '../utils/constants';
 
 /**
- * FCMパーミッション状態（Firebase Messaging AuthorizationStatusを再エクスポート）
+ * FCMパーミッション状態定数
+ * React Native Firebase v23対応
  */
-export const AuthorizationStatus = FirebaseMessagingTypes.AuthorizationStatus;
+export const AuthorizationStatus = {
+  NOT_DETERMINED: -1,
+  DENIED: 0,
+  AUTHORIZED: 1,
+  PROVISIONAL: 2,
+} as const;
 
 /**
  * FCMサービスインターフェース
@@ -48,8 +54,8 @@ class FcmService implements IFcmService {
       // iOS: AUTHORIZED (1) または PROVISIONAL (2)
       // Android: AUTHORIZED (1)
       const enabled = 
-        authStatus === FirebaseMessagingTypes.AuthorizationStatus.AUTHORIZED ||
-        authStatus === FirebaseMessagingTypes.AuthorizationStatus.PROVISIONAL;
+        authStatus === AuthorizationStatus.AUTHORIZED ||
+        authStatus === AuthorizationStatus.PROVISIONAL;
 
       if (enabled) {
         console.log('[FCM] Permission granted');
