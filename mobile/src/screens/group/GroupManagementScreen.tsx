@@ -63,6 +63,9 @@ export const GroupManagementScreen: React.FC = () => {
 
   // メンバー追加
   const [newMemberUsername, setNewMemberUsername] = useState('');
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberPassword, setNewMemberPassword] = useState('');
   const [newMemberEditFlg, setNewMemberEditFlg] = useState(false);
   const [isAddingMember, setIsAddingMember] = useState(false);
 
@@ -170,6 +173,7 @@ export const GroupManagementScreen: React.FC = () => {
    * メンバー追加
    */
   const handleAddMember = async () => {
+    // 必須フィールドバリデーション
     if (!newMemberUsername || newMemberUsername.trim() === '') {
       Alert.alert(
         theme === 'child' ? 'エラー' : 'エラー',
@@ -179,11 +183,41 @@ export const GroupManagementScreen: React.FC = () => {
       );
       return;
     }
+    if (!newMemberEmail || newMemberEmail.trim() === '') {
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        theme === 'child'
+          ? 'メールアドレスをいれてね'
+          : 'メールアドレスを入力してください'
+      );
+      return;
+    }
+    if (!newMemberPassword || newMemberPassword.trim() === '') {
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        theme === 'child'
+          ? 'パスワードをいれてね'
+          : 'パスワードを入力してください'
+      );
+      return;
+    }
+    if (newMemberPassword.length < 8) {
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        theme === 'child'
+          ? 'パスワードは8もじいじょうだよ'
+          : 'パスワードは8文字以上で入力してください'
+      );
+      return;
+    }
 
     setIsAddingMember(true);
     try {
       await GroupService.addMember({
         username: newMemberUsername.trim(),
+        email: newMemberEmail.trim(),
+        password: newMemberPassword,
+        name: newMemberName.trim() || undefined,
         group_edit_flg: newMemberEditFlg,
       });
       Alert.alert(
@@ -192,7 +226,11 @@ export const GroupManagementScreen: React.FC = () => {
           ? 'メンバーをついかしたよ'
           : 'メンバーを追加しました'
       );
+      // フォームクリア
       setNewMemberUsername('');
+      setNewMemberEmail('');
+      setNewMemberName('');
+      setNewMemberPassword('');
       setNewMemberEditFlg(false);
       await fetchGroupInfo();
     } catch (error: any) {
@@ -624,6 +662,7 @@ export const GroupManagementScreen: React.FC = () => {
                 </Text>
               </LinearGradient>
               <View style={styles.cardContent}>
+                {/* ユーザー名 */}
                 <Text style={styles.label}>
                   {theme === 'child' ? 'ユーザーめい' : 'ユーザー名'}
                 </Text>
@@ -636,8 +675,53 @@ export const GroupManagementScreen: React.FC = () => {
                   autoCapitalize="none"
                   editable={!isAddingMember}
                 />
+
+                {/* メールアドレス */}
+                <Text style={[styles.label, { marginTop: 16 }]}>
+                  {theme === 'child' ? 'メールアドレス' : 'メールアドレス'}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={newMemberEmail}
+                  onChangeText={setNewMemberEmail}
+                  placeholder={theme === 'child' ? 'メールアドレス' : 'メールアドレス'}
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!isAddingMember}
+                />
+
+                {/* 表示名（任意） */}
+                <Text style={[styles.label, { marginTop: 16 }]}>
+                  {theme === 'child' ? 'ひょうじめい（なくてもOK）' : '表示名（任意）'}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={newMemberName}
+                  onChangeText={setNewMemberName}
+                  placeholder={theme === 'child' ? 'ひょうじめい' : '表示名'}
+                  placeholderTextColor="#94a3b8"
+                  editable={!isAddingMember}
+                />
+
+                {/* パスワード */}
+                <Text style={[styles.label, { marginTop: 16 }]}>
+                  {theme === 'child' ? 'パスワード（8もじいじょう）' : 'パスワード（8文字以上）'}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={newMemberPassword}
+                  onChangeText={setNewMemberPassword}
+                  placeholder={theme === 'child' ? 'パスワード' : 'パスワード'}
+                  placeholderTextColor="#94a3b8"
+                  secureTextEntry
+                  autoCapitalize="none"
+                  editable={!isAddingMember}
+                />
+
+                {/* 編集権限チェックボックス */}
                 <TouchableOpacity
-                  style={styles.checkboxContainer}
+                  style={[styles.checkboxContainer, { marginTop: 16 }]}
                   onPress={() => setNewMemberEditFlg(!newMemberEditFlg)}
                 >
                   <View style={[styles.checkbox, newMemberEditFlg && styles.checkboxChecked]}>
@@ -649,13 +733,15 @@ export const GroupManagementScreen: React.FC = () => {
                       : '編集権限を付与'}
                   </Text>
                 </TouchableOpacity>
+
+                {/* 追加ボタン */}
                 <TouchableOpacity
                   style={[
                     styles.addButton,
-                    (!newMemberUsername.trim() || isAddingMember) && styles.addButtonDisabled,
+                    (!newMemberUsername.trim() || !newMemberEmail.trim() || !newMemberPassword.trim() || isAddingMember) && styles.addButtonDisabled,
                   ]}
                   onPress={handleAddMember}
-                  disabled={!newMemberUsername.trim() || isAddingMember}
+                  disabled={!newMemberUsername.trim() || !newMemberEmail.trim() || !newMemberPassword.trim() || isAddingMember}
                 >
                   {isAddingMember ? (
                     <ActivityIndicator size="small" color="#ffffff" />

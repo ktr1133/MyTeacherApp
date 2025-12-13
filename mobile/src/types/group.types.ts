@@ -64,6 +64,9 @@ export interface UpdateGroupRequest {
  */
 export interface AddMemberRequest {
   username: string;
+  email: string;
+  password: string;
+  name?: string;
   group_edit_flg: boolean;
 }
 
