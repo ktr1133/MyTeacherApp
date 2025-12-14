@@ -266,20 +266,22 @@ export const SubscriptionWebViewScreen: React.FC = () => {
             // バックエンドURL（開発環境: ngrok、本番環境: 通常のHTTPS）を取得
             const backendHost = API_CONFIG.BASE_URL.replace('/api', '').replace('https://', '').replace('http://', '');
             const isNgrok = backendHost.includes('ngrok');
-            console.log('[SubscriptionWebView] 🌐 Backend host:', backendHost, 'isNgrok:', isNgrok);
+            const isLocalhost = request.url.includes('localhost') || request.url.includes('127.0.0.1');
+            console.log('[SubscriptionWebView] 🌐 Backend host:', backendHost, 'isNgrok:', isNgrok, 'isLocalhost:', isLocalhost);
             
             // バックエンドへのリダイレクトを検出（成功/キャンセル）
-            if (request.url.includes(backendHost)) {
+            // localhost も開発環境として扱う（モバイルから接続不可）
+            if (request.url.includes(backendHost) || isLocalhost) {
               console.log('[SubscriptionWebView] 🔄 Backend redirect detected:', request.url);
               
               // 成功URLの場合
               if (request.url.includes('/api/subscriptions/success') || request.url.includes('/subscription/success')) {
                 console.log('[SubscriptionWebView] ✅ Success redirect detected');
                 
-                // 開発環境（ngrok）の場合: WebView接続をスキップしてネイティブ処理
+                // 開発環境（ngrok/localhost）の場合: WebView接続をスキップしてネイティブ処理
                 // 本番環境: 通常通りWebViewで読み込み（onNavigationStateChangeで処理）
-                if (isNgrok) {
-                  console.log('[SubscriptionWebView] 🚧 Dev environment (ngrok) - handling natively');
+                if (isNgrok || isLocalhost) {
+                  console.log('[SubscriptionWebView] 🚧 Dev environment (ngrok/localhost) - handling natively');
                   Alert.alert(
                     '購入完了',
                     'サブスクリプションの購入が完了しました。',
@@ -292,7 +294,7 @@ export const SubscriptionWebViewScreen: React.FC = () => {
                       },
                     ]
                   );
-                  return false; // ngrokへのWebView接続をブロック
+                  return false; // ngrok/localhostへのWebView接続をブロック
                 }
                 
                 // 本番環境: WebViewで読み込み許可（onNavigationStateChangeで処理）
@@ -304,10 +306,10 @@ export const SubscriptionWebViewScreen: React.FC = () => {
               if (request.url.includes('/api/subscriptions/cancel') || request.url.includes('/subscription/cancel')) {
                 console.log('[SubscriptionWebView] ❌ Cancel redirect detected');
                 
-                // 開発環境（ngrok）の場合: WebView接続をスキップしてネイティブ処理
+                // 開発環境（ngrok/localhost）の場合: WebView接続をスキップしてネイティブ処理
                 // 本番環境: 通常通りWebViewで読み込み（onNavigationStateChangeで処理）
-                if (isNgrok) {
-                  console.log('[SubscriptionWebView] 🚧 Dev environment (ngrok) - handling natively');
+                if (isNgrok || isLocalhost) {
+                  console.log('[SubscriptionWebView] 🚧 Dev environment (ngrok/localhost) - handling natively');
                   Alert.alert(
                     'キャンセル',
                     'サブスクリプションの購入をキャンセルしました。',
@@ -320,7 +322,7 @@ export const SubscriptionWebViewScreen: React.FC = () => {
                       },
                     ]
                   );
-                  return false; // ngrokへのWebView接続をブロック
+                  return false; // ngrok/localhostへのWebView接続をブロック
                 }
                 
                 // 本番環境: WebViewで読み込み許可（onNavigationStateChangeで処理）
