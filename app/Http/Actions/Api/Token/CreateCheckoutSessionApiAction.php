@@ -67,6 +67,13 @@ class CreateCheckoutSessionApiAction
             // Checkout Session作成
             $session = $this->purchaseService->createCheckoutSession($user, $package);
 
+            Log::info('Checkout Session created successfully', [
+                'user_id' => $user->id,
+                'package_id' => $package->id,
+                'session_id' => $session->id,
+                'session_url' => $session->url,
+            ]);
+
             return $this->responder->checkoutSession($session->id, $session->url);
 
         } catch (\RuntimeException $e) {

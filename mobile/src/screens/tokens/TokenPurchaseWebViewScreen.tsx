@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTokens } from '../../hooks/useTokens';
+import { tokenService } from '../../services/token.service';
 
 /**
  * トークンパッケージ一覧画面コンポーネント
@@ -102,21 +103,15 @@ const TokenPackageListScreen: React.FC = () => {
   /**
    * 購入ボタンハンドラー
    * 
-   * Stripe Checkout URLを開く（外部ブラウザ）
+   * Stripe Checkout Session作成APIを呼び出し、WebView画面に遷移
    */
-  const handlePurchase = async (_packageId: number) => {
+  const handlePurchase = async (packageId: number) => {
     try {
-      // TODO: Stripe Checkout Session作成APIを呼び出す
-      // 仮実装: 外部ブラウザでLaravelのCheckout画面を開く
-      Alert.alert(
-        labels.error,
-        '購入機能は現在開発中です。Web版をご利用ください。',
-        [{ text: 'OK' }]
-      );
+      // Stripe Checkout Session作成APIを呼び出す
+      const { url } = await tokenService.createCheckoutSession(packageId);
       
-      // 実装例:
-      // const checkoutUrl = await tokenService.createCheckoutSession(packageId);
-      // await Linking.openURL(checkoutUrl);
+      // WebView画面に遷移
+      navigation.navigate('TokenCheckoutWebView', { url });
     } catch (err) {
       console.error('[TokenPackageList] Purchase error:', err);
       Alert.alert(labels.error, labels.purchaseError);

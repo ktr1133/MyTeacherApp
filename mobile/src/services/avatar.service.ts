@@ -41,7 +41,10 @@ const getAvatar = async (): Promise<Avatar> => {
  */
 const createAvatar = async (data: CreateAvatarRequest): Promise<Avatar> => {
   try {
-    const response = await api.post<AvatarApiResponse>('/avatar', data);
+    // アバター作成は時間がかかる可能性があるため、タイムアウトを30秒に延長
+    const response = await api.post<AvatarApiResponse>('/avatar', data, {
+      timeout: 30000, // 30秒
+    });
     
     return response.data.data.avatar;
   } catch (error: any) {
@@ -88,7 +91,10 @@ const deleteAvatar = async (): Promise<void> => {
  */
 const regenerateImages = async (): Promise<Avatar> => {
   try {
-    const response = await api.post<AvatarApiResponse>('/avatar/regenerate');
+    // 画像再生成は時間がかかる可能性があるため、タイムアウトを30秒に延長
+    const response = await api.post<AvatarApiResponse>('/avatar/regenerate', {}, {
+      timeout: 30000, // 30秒
+    });
     
     return response.data.data.avatar;
   } catch (error: any) {

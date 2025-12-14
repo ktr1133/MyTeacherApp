@@ -33,11 +33,19 @@ class TokenPurchaseService implements TokenPurchaseServiceInterface
                 'payment_method_types' => ['card'],
                 'mode' => 'payment', // 都度決済（subscription以外）
                 'client_reference_id' => (string) $user->id, // ユーザーIDを保存
-                'success_url' => route('tokens.purchase.success') . '?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('tokens.purchase.cancel'),
+                'success_url' => config('app.url') . '/api/tokens/success?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => config('app.url') . '/api/tokens/cancel',
                 'line_items' => [
                     [
-                        'price' => $package->stripe_price_id,
+                        // Stripe Price IDがあればそれを使用、なければprice_dataで動的作成
+                        'price_data' => [
+                            'currency' => 'jpy',
+                            'product_data' => [
+                                'name' => $package->name,
+                                'description' => $package->description,
+                            ],
+                            'unit_amount' => $package->price,
+                        ],
                         'quantity' => 1,
                     ],
                 ],
@@ -48,6 +56,14 @@ class TokenPurchaseService implements TokenPurchaseServiceInterface
                     'purchase_type' => 'token_purchase',
                 ],
             ];
+            
+            // Stripe Price IDがある場合は上書き（本番環境用）
+            if (!empty($package->stripe_price_id)) {
+                $sessionParams['line_items'][0] = [
+                    'price' => $package->stripe_price_id,
+                    'quantity' => 1,
+                ];
+            }
             
             // Stripe顧客IDがあれば指定（再利用）、なければcustomer_emailを設定
             if ($user->hasStripeId()) {

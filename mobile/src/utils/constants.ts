@@ -138,5 +138,15 @@ export const AVATAR_GENERATION_STATUS = {
  */
 export const AVATAR_TOKEN_COST = {
   CREATE: 100000, // アバター作成
-  REGENERATE: 50000, // 画像再生成
+  REGENERATE: 50000, // 画像再生成（旧デフォルト値）
+} as const;
+
+/**
+ * モデル別の推定トークン消費量（画像再生成時）
+ * ※ 5枚分の合計値（全身5種 or バストアップ5種）
+ */
+export const ESTIMATED_TOKEN_USAGES: Record<string, number> = {
+  'anything-v4.0': 5000,  // 1枚1000 × 5枚
+  'animagine-xl-3.1': 2000,  // 1枚400 × 5枚
+  'stable-diffusion-3.5-medium': 23000, // 1枚4600 × 5枚
 } as const;

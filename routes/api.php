@@ -27,6 +27,10 @@ use App\Http\Actions\Api\Group\UpdateMemberPermissionApiAction;
 use App\Http\Actions\Api\Group\ToggleMemberThemeApiAction;
 use App\Http\Actions\Api\Group\TransferGroupMasterApiAction;
 use App\Http\Actions\Api\Group\RemoveMemberApiAction;
+use App\Http\Actions\Api\GroupTask\IndexGroupTaskApiAction;
+use App\Http\Actions\Api\GroupTask\EditGroupTaskApiAction;
+use App\Http\Actions\Api\GroupTask\UpdateGroupTaskApiAction;
+use App\Http\Actions\Api\GroupTask\DestroyGroupTaskApiAction;
 use App\Http\Actions\Api\User\GetCurrentUserApiAction;
 use App\Http\Actions\Api\Profile\EditProfileApiAction;
 use App\Http\Actions\Api\Profile\UpdateProfileApiAction;
@@ -67,6 +71,8 @@ use App\Http\Actions\Api\Token\GetTokenHistoryApiAction;
 use App\Http\Actions\Api\Token\GetTokenPackagesApiAction;
 use App\Http\Actions\Api\Token\CreateCheckoutSessionApiAction;
 use App\Http\Actions\Api\Token\ToggleTokenModeApiAction;
+use App\Http\Actions\Api\Token\HandleCheckoutSuccessApiAction as TokenHandleCheckoutSuccessApiAction;
+use App\Http\Actions\Api\Token\HandleCheckoutCancelApiAction as TokenHandleCheckoutCancelApiAction;
 
 // Phase 2.B-6: Token Purchase Request API (Child Approval Flow)
 use App\Http\Actions\Api\Token\CreatePurchaseRequestApiAction;
@@ -210,6 +216,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/members/{member}', RemoveMemberApiAction::class)->name('api.groups.members.remove');
     });
 
+    // グループタスクAPI
+    Route::prefix('group-tasks')->group(function () {
+        Route::get('/', IndexGroupTaskApiAction::class)->name('api.group-tasks.index');
+        Route::get('/{group_task_id}/edit', EditGroupTaskApiAction::class)->name('api.group-tasks.edit');
+        Route::put('/{group_task_id}', UpdateGroupTaskApiAction::class)->name('api.group-tasks.update');
+        Route::delete('/{group_task_id}', DestroyGroupTaskApiAction::class)->name('api.group-tasks.destroy');
+    });
+
     // プロフィール管理API
     Route::prefix('profile')->group(function () {
         Route::get('/edit', EditProfileApiAction::class)->name('api.profile.edit');
@@ -322,4 +336,10 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('api/subscriptions')->group(function () {
     Route::get('/success', HandleCheckoutSuccessApiAction::class)->name('api.subscriptions.success.public');
     Route::get('/cancel', HandleCheckoutCancelApiAction::class)->name('api.subscriptions.cancel.public');
+});
+
+// Stripe Checkoutからのリダイレクト - トークン購入（認証不要）
+Route::prefix('api/tokens')->group(function () {
+    Route::get('/success', TokenHandleCheckoutSuccessApiAction::class)->name('api.tokens.success.public');
+    Route::get('/cancel', TokenHandleCheckoutCancelApiAction::class)->name('api.tokens.cancel.public');
 });

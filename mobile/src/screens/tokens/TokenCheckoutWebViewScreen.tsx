@@ -1,12 +1,12 @@
 /**
- * サブスクリプション購入WebView画面
+ * トークン購入WebView画面
  * 
- * Stripe CheckoutをWebViewで表示し、購入処理を実行
+ * Stripe CheckoutをWebViewで表示し、トークン購入処理を実行
  * 
- * @module screens/subscriptions/SubscriptionWebViewScreen
+ * @module screens/tokens/TokenCheckoutWebViewScreen
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -18,16 +18,17 @@ import { WebView } from 'react-native-webview';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { API_CONFIG } from '../../utils/constants';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 type RouteParams = {
-  SubscriptionWebView: {
+  TokenCheckoutWebView: {
     url: string;
     title?: string;
   };
 };
 
 /**
- * サブスクリプション購入WebView画面コンポーネント
+ * トークン購入WebView画面コンポーネント
  * 
  * 機能:
  * - Stripe Checkout URLをWebViewで表示
@@ -37,14 +38,17 @@ type RouteParams = {
  * 
  * @returns {JSX.Element} WebView画面
  */
-export const SubscriptionWebViewScreen: React.FC = () => {
+export const TokenCheckoutWebViewScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const route = useRoute<RouteProp<RouteParams, 'SubscriptionWebView'>>();
+  const route = useRoute<RouteProp<RouteParams, 'TokenCheckoutWebView'>>();
   const { url } = route.params;
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const webViewRef = useRef<WebView>(null);
+  
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   /**
    * URL変更時のハンドラー
@@ -53,17 +57,17 @@ export const SubscriptionWebViewScreen: React.FC = () => {
   const handleNavigationStateChange = (navState: any) => {
     const { url: currentUrl } = navState;
 
-    // モバイルAPI経由の成功URL（/api/subscriptions/success）
-    if (currentUrl.includes('/api/subscriptions/success')) {
+    // モバイルAPI経由の成功URL（/api/tokens/success）
+    if (currentUrl.includes('/api/tokens/success')) {
       Alert.alert(
         '購入完了',
-        'サブスクリプションの購入が完了しました。',
+        'トークンの購入が完了しました。',
         [
           {
             text: 'OK',
             onPress: () => {
-              // サブスクリプション管理画面に戻る
-              navigation.navigate('SubscriptionManage');
+              // トークン購入画面に戻る
+              navigation.navigate('TokenPackageList');
             },
           },
         ]
@@ -71,11 +75,11 @@ export const SubscriptionWebViewScreen: React.FC = () => {
       return;
     }
 
-    // モバイルAPI経由のキャンセルURL（/api/subscriptions/cancel）
-    if (currentUrl.includes('/api/subscriptions/cancel')) {
+    // モバイルAPI経由のキャンセルURL（/api/tokens/cancel）
+    if (currentUrl.includes('/api/tokens/cancel')) {
       Alert.alert(
         'キャンセル',
-        'サブスクリプションの購入をキャンセルしました。',
+        'トークンの購入をキャンセルしました。',
         [
           {
             text: 'OK',
@@ -89,15 +93,15 @@ export const SubscriptionWebViewScreen: React.FC = () => {
     }
 
     // Web版の成功URL（後方互換）
-    if (currentUrl.includes('/subscription/success') || currentUrl.includes('success=true')) {
+    if (currentUrl.includes('/tokens/success') || currentUrl.includes('success=true')) {
       Alert.alert(
         '購入完了',
-        'サブスクリプションの購入が完了しました。',
+        'トークンの購入が完了しました。',
         [
           {
             text: 'OK',
             onPress: () => {
-              navigation.navigate('SubscriptionManage');
+              navigation.navigate('TokenPackageList');
             },
           },
         ]
@@ -106,10 +110,10 @@ export const SubscriptionWebViewScreen: React.FC = () => {
     }
 
     // Web版のキャンセルURL（後方互換）
-    if (currentUrl.includes('/subscription/cancel') || currentUrl.includes('canceled=true')) {
+    if (currentUrl.includes('/tokens/cancel') || currentUrl.includes('canceled=true')) {
       Alert.alert(
         'キャンセル',
-        'サブスクリプションの購入をキャンセルしました。',
+        'トークンの購入をキャンセルしました。',
         [
           {
             text: 'OK',
@@ -127,7 +131,7 @@ export const SubscriptionWebViewScreen: React.FC = () => {
    */
   const handleError = (syntheticEvent: any) => {
     const { nativeEvent } = syntheticEvent;
-    console.error('[SubscriptionWebView] WebView error:', {
+    console.error('[TokenCheckoutWebView] WebView error:', {
       code: nativeEvent.code,
       description: nativeEvent.description,
     });
@@ -190,7 +194,7 @@ export const SubscriptionWebViewScreen: React.FC = () => {
           onError={handleError}
           onHttpError={(syntheticEvent) => {
             const { nativeEvent } = syntheticEvent;
-            console.error('[SubscriptionWebView] HTTP error:', {
+            console.error('[TokenCheckoutWebView] HTTP error:', {
               statusCode: nativeEvent.statusCode,
               url: nativeEvent.url,
             });
@@ -213,7 +217,7 @@ export const SubscriptionWebViewScreen: React.FC = () => {
           startInLoadingState={true}
           renderLoading={() => (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#4F46E5" />
+              <ActivityIndicator size="large" color={accent.primary} />
             </View>
           )}
           // iOS設定
@@ -249,18 +253,18 @@ export const SubscriptionWebViewScreen: React.FC = () => {
             if (request.url.includes(backendHost) || isLocalhost) {
               
               // 成功URLの場合
-              if (request.url.includes('/api/subscriptions/success') || request.url.includes('/subscription/success')) {
+              if (request.url.includes('/api/tokens/success') || request.url.includes('/tokens/success')) {
                 // 開発環境（ngrok/localhost）の場合: WebView接続をスキップしてネイティブ処理
                 // 本番環境: 通常通りWebViewで読み込み（onNavigationStateChangeで処理）
                 if (isNgrok || isLocalhost) {
                   Alert.alert(
                     '購入完了',
-                    'サブスクリプションの購入が完了しました。',
+                    'トークンの購入が完了しました。',
                     [
                       {
                         text: 'OK',
                         onPress: () => {
-                          navigation.navigate('SubscriptionManage');
+                          navigation.navigate('TokenPackageList');
                         },
                       },
                     ]
@@ -273,13 +277,13 @@ export const SubscriptionWebViewScreen: React.FC = () => {
               }
               
               // キャンセルURLの場合
-              if (request.url.includes('/api/subscriptions/cancel') || request.url.includes('/subscription/cancel')) {
+              if (request.url.includes('/api/tokens/cancel') || request.url.includes('/tokens/cancel')) {
                 // 開発環境（ngrok/localhost）の場合: WebView接続をスキップしてネイティブ処理
                 // 本番環境: 通常通りWebViewで読み込み（onNavigationStateChangeで処理）
                 if (isNgrok || isLocalhost) {
                   Alert.alert(
                     'キャンセル',
-                    'サブスクリプションの購入をキャンセルしました。',
+                    'トークンの購入をキャンセルしました。',
                     [
                       {
                         text: 'OK',
@@ -300,7 +304,7 @@ export const SubscriptionWebViewScreen: React.FC = () => {
             return true; // その他のURLは許可
           }}
           onMessage={(event) => {
-            console.log('[SubscriptionWebView] Message from WebView:', event.nativeEvent.data);
+            console.log('[TokenCheckoutWebView] Message from WebView:', event.nativeEvent.data);
           }}
           onContentProcessDidTerminate={() => {
             Alert.alert(
@@ -324,17 +328,17 @@ export const SubscriptionWebViewScreen: React.FC = () => {
       
       {isLoading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#4F46E5" />
+          <ActivityIndicator size="large" color={accent.primary} />
         </View>
       )}
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   webView: {
     flex: 1,
@@ -343,12 +347,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: colors.background + 'E6', // 90% opacity
   },
 });

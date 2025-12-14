@@ -2134,6 +2134,327 @@ paths:
           description: 削除成功
 
   # ============================================================
+  # Group Tasks API（4エンドポイント）
+  # グループタスク管理API - グループ全体に割り当てられたタスクの編集
+  # ============================================================
+
+  /group-tasks:
+    get:
+      summary: グループタスク一覧取得
+      description: |
+        ログインユーザーが作成した編集可能なグループタスクの一覧を取得します。
+        group_task_id単位でグループ化され、各グループの代表タスク情報を返します。
+        
+        **権限要件**: group_edit_flg=true または group.master_user_id=user.id
+      tags: [Groups]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: グループタスク一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    group_task_id:
+                      type: string
+                      format: uuid
+                      description: グループタスクID
+                      example: "550e8400-e29b-41d4-a716-446655440000"
+                    title:
+                      type: string
+                      description: タスクタイトル
+                      example: "部屋の掃除"
+                    description:
+                      type: string
+                      nullable: true
+                      description: タスク説明
+                      example: "毎週土曜日に各自の部屋を掃除する"
+                    span:
+                      type: integer
+                      description: タスクの期間（1:短期、3:中期、6:長期）
+                      enum: [1, 3, 6]
+                      example: 1
+                    reward:
+                      type: integer
+                      description: 報酬ポイント
+                      example: 100
+                    due_date:
+                      type: string
+                      format: date
+                      nullable: true
+                      description: 期限
+                      example: "2025-12-31"
+                    requires_approval:
+                      type: boolean
+                      description: 承認必須フラグ
+                      example: true
+                    requires_image:
+                      type: boolean
+                      description: 画像必須フラグ
+                      example: false
+                    assigned_count:
+                      type: integer
+                      description: 割り当て人数
+                      example: 3
+                    created_at:
+                      type: string
+                      format: date-time
+                      description: 作成日時
+                    updated_at:
+                      type: string
+                      format: date-time
+                      description: 更新日時
+        '403':
+          description: 権限エラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "この操作を実行する権限がありません。"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "グループタスクの取得に失敗しました。"
+
+  /group-tasks/{group_task_id}/edit:
+    get:
+      summary: グループタスク編集データ取得
+      description: |
+        特定のグループタスクの編集用データを取得します。
+        
+        **権限要件**: group_edit_flg=true または group.master_user_id=user.id
+      tags: [Groups]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: group_task_id
+          in: path
+          required: true
+          description: グループタスクID（UUID）
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: グループタスク取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  group_task_id:
+                    type: string
+                    format: uuid
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                  title:
+                    type: string
+                    example: "部屋の掃除"
+                  description:
+                    type: string
+                    nullable: true
+                    example: "毎週土曜日に各自の部屋を掃除する"
+                  span:
+                    type: integer
+                    description: タスクの期間（1:短期、3:中期、6:長期）
+                    enum: [1, 3, 6]
+                    example: 1
+                  reward:
+                    type: integer
+                    example: 100
+                  due_date:
+                    type: string
+                    format: date
+                    nullable: true
+                    example: "2025-12-31"
+                  requires_approval:
+                    type: boolean
+                    example: true
+                  requires_image:
+                    type: boolean
+                    example: false
+                  assigned_count:
+                    type: integer
+                    example: 3
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        '403':
+          description: 権限エラー
+        '404':
+          description: グループタスクが見つからない
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "指定されたグループタスクが見つかりません。"
+
+  /group-tasks/{group_task_id}:
+    put:
+      summary: グループタスク更新
+      description: |
+        グループタスクの情報を更新します。
+        同一group_task_idを持つ全タスクが一括更新されます。
+        
+        **権限要件**: group_edit_flg=true または group.master_user_id=user.id
+      tags: [Groups]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: group_task_id
+          in: path
+          required: true
+          description: グループタスクID（UUID）
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - reward
+                - requires_approval
+                - requires_image
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                  description: タスクタイトル
+                  example: "部屋の掃除"
+                description:
+                  type: string
+                  maxLength: 1000
+                  nullable: true
+                  description: タスク説明
+                  example: "毎週土曜日に各自の部屋を掃除する"
+                reward:
+                  type: integer
+                  minimum: 0
+                  description: 報酬ポイント
+                  example: 100
+                requires_approval:
+                  type: boolean
+                  description: 承認必須フラグ
+                  example: true
+                requires_image:
+                  type: boolean
+                  description: 画像必須フラグ
+                  example: false
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "グループタスクを更新しました。"
+                  data:
+                    type: object
+                    properties:
+                      group_task_id:
+                        type: string
+                        format: uuid
+                      title:
+                        type: string
+                      description:
+                        type: string
+                        nullable: true
+                      reward:
+                        type: integer
+                      due_date:
+                        type: string
+                        format: date
+                        nullable: true
+                      requires_approval:
+                        type: boolean
+                      requires_image:
+                        type: boolean
+                      assigned_count:
+                        type: integer
+                      updated_at:
+                        type: string
+                        format: date-time
+        '403':
+          description: 権限エラー
+        '404':
+          description: グループタスクが見つからない
+        '422':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "バリデーションエラーが発生しました。"
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+
+    delete:
+      summary: グループタスク削除
+      description: |
+        グループタスクを論理削除します。
+        同一group_task_idを持つ全タスクが削除されます。
+        
+        **権限要件**: group_edit_flg=true または group.master_user_id=user.id
+      tags: [Groups]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: group_task_id
+          in: path
+          required: true
+          description: グループタスクID（UUID）
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "グループタスクを削除しました。"
+        '403':
+          description: 権限エラー
+        '404':
+          description: グループタスクが見つからない
+
+  # ============================================================
   # Profile API（5エンドポイント）
   # ============================================================
 

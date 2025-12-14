@@ -126,6 +126,22 @@ export async function getCachedTokenBalance(): Promise<TokenBalance | null> {
 }
 
 /**
+ * Stripe Checkout Sessionを作成（トークン購入用）
+ * 
+ * POST /api/v1/tokens/create-checkout-session
+ * 
+ * @param packageId トークンパッケージID
+ * @returns Promise<{ url: string }> Checkout Session URL
+ * @throws エラー時は例外をスロー（400: バリデーションエラー、403: 子どもテーマユーザー）
+ */
+export async function createCheckoutSession(packageId: number): Promise<{ url: string }> {
+  const response = await api.post('/tokens/create-checkout-session', {
+    package_id: packageId,
+  });
+  return { url: response.data.data.session_url };
+}
+
+/**
  * トークンサービスのエクスポート
  * 
  * DrawerContentコンポーネントでの使用のため
@@ -141,6 +157,7 @@ export const tokenService = {
   getCachedBalance: getCachedTokenBalance,
   cacheBalance: cacheTokenBalance,
   clearBalanceCache: clearTokenBalanceCache,
+  createCheckoutSession,
 };
 
 /**

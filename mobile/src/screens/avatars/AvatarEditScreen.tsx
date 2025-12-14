@@ -98,6 +98,7 @@ export const AvatarEditScreen: React.FC = () => {
   const [modalTitle, setModalTitle] = useState('');
   const [modalOptions, setModalOptions] = useState<Array<{value: string, label: string, emoji?: string}>>([]);
   const [modalOnSelect, setModalOnSelect] = useState<(value: string) => void>(() => () => {});
+  const [showModelInfo, setShowModelInfo] = useState(false);
 
   // レスポンシブスタイル生成
   const styles = useMemo(() => createStyles(width, theme, colors), [width, theme, colors]);
@@ -172,7 +173,7 @@ export const AvatarEditScreen: React.FC = () => {
         [
           {
             text: 'OK',
-            onPress: () => navigation.goBack(),
+            onPress: () => navigation.navigate('AvatarManage' as never),
           },
         ],
       );
@@ -496,34 +497,84 @@ export const AvatarEditScreen: React.FC = () => {
           </View>
 
           {/* 背景透過 */}
-          <View style={styles.formGroup}>
-            <View style={styles.switchRow}>
-              <Text style={[styles.label, isChild && styles.childLabel]}>
-                {isChild ? 'はいけいをすけすけに' : '背景を透過にする'}
+          <View style={styles.checkboxGroup}>
+            <TouchableOpacity
+              style={styles.checkboxRow}
+              onPress={() => !isLoading && setIsTransparent(!isTransparent)}
+              activeOpacity={0.7}
+              disabled={isLoading}
+            >
+              <View style={[styles.checkbox, isTransparent && styles.checkboxChecked]}>
+                {isTransparent && <Text style={styles.checkboxIcon}>✓</Text>}
+              </View>
+              <Text style={[styles.checkboxLabel, isChild && styles.childLabel]}>
+                {isChild ? 'はいけいをすけすけに' : '背景を透過する'}
               </Text>
-              <Switch 
-                value={isTransparent} 
-                onValueChange={setIsTransparent}
-                disabled={isLoading}
-              />
-            </View>
+            </TouchableOpacity>
+            <Text style={[styles.helpText, isChild && styles.childHelpText]}>
+              {isChild
+                ? 'オンにすると、えのうしろがとうめいになるよ。\nほかのアプリでつかうときにべんりだよ！'
+                : 'ONにすると、アバター画像の背景が透明になります。\n他のアプリケーションで使用する際に便利です。'}
+            </Text>
           </View>
 
           {/* ちびキャラ */}
-          <View style={styles.formGroup}>
-            <View style={styles.switchRow}>
-              <Text style={[styles.label, isChild && styles.childLabel]}>
+          <View style={styles.checkboxGroup}>
+            <TouchableOpacity
+              style={styles.checkboxRow}
+              onPress={() => !isLoading && setIsChibi(!isChibi)}
+              activeOpacity={0.7}
+              disabled={isLoading}
+            >
+              <View style={[styles.checkbox, isChibi && styles.checkboxChecked]}>
+                {isChibi && <Text style={styles.checkboxIcon}>✓</Text>}
+              </View>
+              <Text style={[styles.checkboxLabel, isChild && styles.childLabel]}>
                 {isChild ? 'ちびキャラにする' : 'ちびキャラにする'}
               </Text>
-              <Switch 
-                value={isChibi} 
-                onValueChange={setIsChibi}
-                disabled={isLoading}
-              />
-            </View>
+            </TouchableOpacity>
+            <Text style={[styles.helpText, isChild && styles.childHelpText]}>
+              {isChild
+                ? 'オンにすると、かわいいちびキャラになるよ。\nつうじょうのえよりもちいさくてかわいいよ！'
+                : 'ONにすると、デフォルメされた可愛いちびキャラスタイルになります。\n通常のアバターよりも小さく、可愛らしい印象になります。'}
+            </Text>
           </View>
 
-          {/* トークン消費警告 */}
+          {/* 描画モデル情報カード（折りたたみ式） */}
+          <View style={styles.infoCard}>
+            <TouchableOpacity
+              style={styles.infoCardHeader}
+              onPress={() => setShowModelInfo(!showModelInfo)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.infoCardHeaderContent}>
+                <View style={styles.infoCardIcon}>
+                  <Text style={styles.infoCardIconText}>ℹ️</Text>
+                </View>
+                <Text style={[styles.infoCardTitle, isChild && styles.childLabel]}>
+                  {isChild ? '画風について' : '描画モデルについて'}
+                </Text>
+              </View>
+              <MaterialIcons
+                name={showModelInfo ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                size={24}
+                color={colors.text.secondary}
+              />
+            </TouchableOpacity>
+            {showModelInfo && (
+              <View style={styles.infoCardContent}>
+                <Text style={[styles.infoCardText, isChild && styles.childHelpText]}>
+                  {isChild
+                    ? '画風によって、絵のタッチが変わるよ。\n使うコインの数も変わるよ。\n好きなタイプを選んでね！'
+                    : '描画モデルによって、アバターのイラストタッチが変わります。\nモデルによって消費するトークンは異なります。\nお好みのスタイルをお選びください。今後、新しいモデルが追加される予定です。'}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* トークン消費警告 */}
+        <View style={styles.section}>
           <View style={[styles.warning, isChild && styles.childWarning]}>
             <Text style={[styles.warningText, isChild && styles.childWarningText]}>
               ℹ️{' '}
@@ -847,6 +898,99 @@ const createStyles = (
   modalOptionText: {
     fontSize: getFontSize(16, width, theme),
     color: '#1F2937',
+  },
+  // チェックボックススタイル
+  checkboxGroup: {
+    marginTop: getSpacing(16, width),
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: getSpacing(8, width),
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: colors.border.default,
+    borderRadius: getBorderRadius(4, width),
+    backgroundColor: colors.background,
+    marginRight: getSpacing(12, width),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#8B5CF6',
+    borderColor: '#8B5CF6',
+  },
+  checkboxIcon: {
+    color: '#fff',
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '600',
+    color: colors.text.primary,
+    flex: 1,
+  },
+  helpText: {
+    fontSize: getFontSize(12, width, theme),
+    color: colors.text.secondary,
+    marginLeft: getSpacing(36, width),
+    lineHeight: getFontSize(18, width, theme),
+  },
+  childHelpText: {
+    fontSize: getFontSize(14, width, theme),
+    color: '#FF8C42',
+  },
+  // 情報カードスタイル
+  infoCard: {
+    marginTop: getSpacing(16, width),
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    borderRadius: getBorderRadius(8, width),
+    backgroundColor: colors.card,
+    overflow: 'hidden',
+  },
+  infoCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: getSpacing(12, width),
+  },
+  infoCardHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  infoCardIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: getBorderRadius(8, width),
+    backgroundColor: '#8B5CF615',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: getSpacing(12, width),
+  },
+  infoCardIconText: {
+    fontSize: getFontSize(18, width, theme),
+  },
+  infoCardTitle: {
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  infoCardContent: {
+    padding: getSpacing(12, width),
+    paddingTop: 0,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+  },
+  infoCardText: {
+    fontSize: getFontSize(12, width, theme),
+    color: colors.text.secondary,
+    lineHeight: getFontSize(18, width, theme),
   },
 });
 

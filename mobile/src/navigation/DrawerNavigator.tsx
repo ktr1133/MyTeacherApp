@@ -27,6 +27,8 @@ import PasswordChangeScreen from '../screens/profile/PasswordChangeScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { NotificationSettingsScreen } from '../screens/settings/NotificationSettingsScreen';
 import GroupManagementScreen from '../screens/group/GroupManagementScreen';
+import GroupTaskEditScreen from '../screens/group/GroupTaskEditScreen';
+import GroupTaskListScreen from '../screens/group/GroupTaskListScreen';
 import ScheduledTaskListScreen from '../screens/scheduled-tasks/ScheduledTaskListScreen';
 import ScheduledTaskHistoryScreen from '../screens/scheduled-tasks/ScheduledTaskHistoryScreen';
 import ScheduledTaskCreateScreen from '../screens/scheduled-tasks/ScheduledTaskCreateScreen';
@@ -36,6 +38,7 @@ import { TagDetailScreen } from '../screens/tags/TagDetailScreen';
 import TagTasksScreen from '../screens/tasks/TagTasksScreen';
 import TokenBalanceScreen from '../screens/tokens/TokenBalanceScreen';
 import TokenPackageListScreen from '../screens/tokens/TokenPurchaseWebViewScreen';
+import { TokenCheckoutWebViewScreen } from '../screens/tokens/TokenCheckoutWebViewScreen';
 import TokenHistoryScreen from '../screens/tokens/TokenHistoryScreen';
 import SubscriptionManageScreen from '../screens/subscriptions/SubscriptionManageScreen';
 import SubscriptionInvoicesScreen from '../screens/subscriptions/SubscriptionInvoicesScreen';
@@ -242,6 +245,13 @@ export default function DrawerNavigator() {
           headerShown: false,
         }}
       />
+      <Drawer.Screen
+        name="TokenCheckoutWebView"
+        component={TokenCheckoutWebViewScreen}
+        options={{
+          title: 'トークン購入',
+        }}
+      />
 
       {/* サブスクリプション */}
       <Drawer.Screen
@@ -326,6 +336,22 @@ export default function DrawerNavigator() {
         component={GroupManagementScreen}
         options={{
           title: 'グループ管理',
+        }}
+      />
+      <Drawer.Screen
+        name="GroupTaskList"
+        component={GroupTaskListScreen}
+        options={{
+          title: 'グループタスク管理',
+          headerShown: false,
+        }}
+      />
+      <Drawer.Screen
+        name="GroupTaskEdit"
+        component={GroupTaskEditScreen}
+        options={{
+          title: 'グループタスク編集',
+          headerShown: false,
         }}
       />
 

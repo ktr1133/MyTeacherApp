@@ -32,7 +32,7 @@ import { useThemedColors } from '../../hooks/useThemedColors';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import AvatarCreationBanner from '../../components/common/AvatarCreationBanner';
 import BucketCard from '../../components/tasks/BucketCard';
-import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow, getHeaderTitleProps } from '../../utils/responsive';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
 
 /**
@@ -53,6 +53,7 @@ type RootStackParamList = {
   TaskEdit: { taskId: number };
   CreateTask: undefined;
   TagTasks: { tagId: number; tagName: string };
+  GroupTaskList: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -63,7 +64,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export default function TaskListScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
-  const { width, deviceSize } = useResponsive();
+  const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
   const { colors, accent } = useThemedColors();
@@ -79,7 +80,6 @@ export default function TaskListScreen() {
     loadMoreTasks,
     toggleComplete,
     clearError,
-    refreshTasks,
   } = useTasks();
   const {
     isVisible: avatarVisible,
@@ -88,7 +88,6 @@ export default function TaskListScreen() {
     hideAvatar,
   } = useAvatar();
 
-  const [selectedStatus] = useState<'pending'>('pending'); // 未完了のみ表示
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
@@ -500,27 +499,42 @@ export default function TaskListScreen() {
   return (
     <View style={styles.container}>
       {/* アバター未作成バナー（条件付き表示） */}
-      {!profileLoading && profile && !profile.teacher_avatar_id && (
+      {!profileLoading && profile && (
         <AvatarCreationBanner />
       )}
 
       {/* 検索バー */}
       <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder={theme === 'child' ? 'さがす' : '検索（タイトル・説明）'}
-          placeholderTextColor="#9CA3AF"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {searchQuery.length > 0 && (
+        <View style={styles.searchBarWrapper}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder={theme === 'child' ? 'さがす' : '検索（タイトル・説明）'}
+            placeholderTextColor="#9CA3AF"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={() => setSearchQuery('')}
+            >
+              <Text style={styles.clearButtonText}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        
+        {/* グループタスク管理ボタン（権限チェック） */}
+        {(profile?.group_edit_flg || profile?.group?.master_user_id === profile?.id) && (
           <TouchableOpacity
-            style={styles.clearButton}
-            onPress={() => setSearchQuery('')}
+            style={styles.groupEditHeaderButton}
+            onPress={() => {
+              navigation.navigate('GroupTaskList');
+            }}
+            accessibilityLabel={theme === 'child' ? 'グループタスクかんり' : 'グループタスク管理'}
           >
-            <Text style={styles.clearButtonText}>✕</Text>
+            <Ionicons name="create-outline" size={24} color="#7C3AED" />
           </TouchableOpacity>
         )}
       </View>
@@ -597,11 +611,17 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   searchContainer: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
+    gap: getSpacing(8, width),
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(8, width),
     backgroundColor: colors.card,
     borderBottomWidth: 1,
     borderBottomColor: colors.border.default,
+  },
+  searchBarWrapper: {
+    flex: 1,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
   },
   searchInput: {
     flex: 1,
@@ -611,6 +631,19 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     backgroundColor: colors.border.light,
     fontSize: getFontSize(14, width, theme),
     color: colors.text.primary,
+  },
+  groupEditHeaderButton: {
+    width: getSpacing(48, width),
+    height: getSpacing(48, width),
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderRadius: getBorderRadius(12, width),
+    backgroundColor: colors.background,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   clearButton: {
     marginLeft: getSpacing(8, width),

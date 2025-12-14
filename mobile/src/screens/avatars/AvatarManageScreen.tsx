@@ -34,11 +34,11 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useThemedColors } from '../../hooks/useThemedColors';
 import { useAvatarManagement } from '../../hooks/useAvatarManagement';
-import { AVATAR_OPTIONS, AVATAR_TOKEN_COST } from '../../utils/constants';
+import { AVATAR_OPTIONS, AVATAR_TOKEN_COST, ESTIMATED_TOKEN_USAGES } from '../../utils/constants';
 import { AvatarImage } from '../../types/avatar.types';
 
 const { width } = Dimensions.get('window');
@@ -113,10 +113,12 @@ export const AvatarManageScreen: React.FC = () => {
     return labels[emotion] || emotion;
   };
 
-  // 初回アバター取得
-  useEffect(() => {
-    loadAvatar();
-  }, []);
+  // 画面フォーカス時にアバター取得（編集後の最新データを反映）
+  useFocusEffect(
+    useCallback(() => {
+      loadAvatar();
+    }, [theme])
+  );
 
   /**
    * アバター読み込み
@@ -162,11 +164,14 @@ export const AvatarManageScreen: React.FC = () => {
    * 画像再生成
    */
   const handleRegenerate = () => {
+    // モデル別のトークン消費量を取得
+    const tokenCost = ESTIMATED_TOKEN_USAGES[avatar?.draw_model_version || 'animagine-xl-3.1'] || 2000;
+    
     Alert.alert(
       theme === 'child' ? 'えをつくりなおす' : '画像再生成',
       theme === 'child'
-        ? `トークンを ${AVATAR_TOKEN_COST.REGENERATE.toLocaleString()} つかって、えをつくりなおすよ。いい？`
-        : `${AVATAR_TOKEN_COST.REGENERATE.toLocaleString()}トークンを消費して画像を再生成します。よろしいですか？`,
+        ? `コインを ${tokenCost.toLocaleString()} つかって、えをつくりなおすよ。いい？`
+        : `${tokenCost.toLocaleString()}トークンを消費して画像を再生成します。よろしいですか？`,
       [
         {
           text: theme === 'child' ? 'やめる' : 'キャンセル',
@@ -524,6 +529,35 @@ export const AvatarManageScreen: React.FC = () => {
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>ユーモア</Text>
               <Text style={styles.infoValue}>{getOptionLabel('humor', avatar.humor)}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* 描画モデル設定 */}
+        <View style={styles.section}>
+          <LinearGradient
+            colors={['#8B5CF6', '#EC4899']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.sectionHeader}
+          >
+            <MaterialIcons name="palette" size={20} color="#FFFFFF" />
+            <Text style={styles.sectionHeaderText}>
+              {isChild ? 'えのスタイル' : '描画モデルの設定'}
+            </Text>
+          </LinearGradient>
+          <View style={styles.infoGrid}>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>{isChild ? 'モデル' : 'イラストスタイル'}</Text>
+              <Text style={styles.infoValue}>{getOptionLabel('draw_model_version', avatar.draw_model_version || 'anything-v4.0')}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>{isChild ? 'はいけい' : '背景'}</Text>
+              <Text style={styles.infoValue}>{avatar.is_transparent ? (isChild ? 'すけすけ' : '透過') : (isChild ? 'ふつう' : '通常')}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>キャラ</Text>
+              <Text style={styles.infoValue}>{avatar.is_chibi ? (isChild ? 'ちびキャラ' : 'ちびキャラ') : (isChild ? 'ふつう' : '通常')}</Text>
             </View>
           </View>
         </View>

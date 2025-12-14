@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTasks } from '../../hooks/useTasks';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -446,7 +447,14 @@ export default function CreateTaskScreen() {
           </Text>
         </View>
         
-        <View style={styles.headerSpacer} />
+        <View style={styles.headerRightButtons}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ScheduledTaskList' as any, { groupId: 1 })}
+            style={styles.headerIconButton}
+          >
+            <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
@@ -924,23 +932,25 @@ export default function CreateTaskScreen() {
           </View>
         )}
 
-        {/* AIタスク分解ボタン */}
-        <LinearGradient
-          colors={['#59B9C6', '#3b82f6']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.decomposeButton, isLoading && styles.decomposeButtonDisabled]}
-        >
-          <TouchableOpacity
-            onPress={handleDecompose}
-            disabled={isLoading}
-            style={styles.buttonTouchable}
+        {/* AIタスク分解ボタン（グループタスク時は非表示） */}
+        {!isGroupTask && (
+          <LinearGradient
+            colors={['#59B9C6', '#3b82f6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.decomposeButton, isLoading && styles.decomposeButtonDisabled]}
           >
-            <Text style={styles.decomposeButtonText}>
-              🤖 {theme === 'child' ? 'AIでこまかくする' : 'AIでタスク分解'}
-            </Text>
-          </TouchableOpacity>
-        </LinearGradient>
+            <TouchableOpacity
+              onPress={handleDecompose}
+              disabled={isLoading}
+              style={styles.buttonTouchable}
+            >
+              <Text style={styles.decomposeButtonText}>
+                🤖 {theme === 'child' ? 'AIでこまかくする' : 'AIでタスク分解'}
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        )}
 
         {/* 作成ボタン */}
         <LinearGradient
@@ -1022,6 +1032,14 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  headerRightButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: getSpacing(12, width),
+  },
+  headerIconButton: {
+    padding: getSpacing(4, width),
   },
   headerSpacer: {
     width: getSpacing(40, width),

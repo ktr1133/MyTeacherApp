@@ -1,5 +1,5 @@
 /**
- * スケジュールタスク編集画面
+ * 自動作成設定編集画面
  * 
  * 既存のスケジュールタスクを編集
  * フォーム構造はScheduledTaskCreateScreenと同じ
@@ -16,10 +16,13 @@ import {
   ActivityIndicator,
   Switch,
   Platform,
+  Modal,
+  FlatList,
 } from 'react-native';
+import { useThemedColors } from '../../hooks/useThemedColors';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
-import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useScheduledTasks } from '../../hooks/useScheduledTasks';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -58,14 +61,15 @@ const WEEKDAYS = [
 const MONTH_DATES = Array.from({ length: 31 }, (_, i) => i + 1);
 
 /**
- * スケジュールタスク編集画面コンポーネント
+ * 自動作成設定編集画面コンポーネント
  */
 export default function ScheduledTaskEditScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<ScreenRouteProp>();
   const { width } = useResponsive();
   const { theme } = useTheme();
-  const styles = useMemo(() => createStyles(width, theme), [width, theme]);
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, theme, colors, accent), [width, theme, colors, accent]);
   const { getEditFormData, updateScheduledTask, isLoading, error } = useScheduledTasks();
 
   const scheduledTaskId = route.params?.scheduledTaskId;
@@ -98,6 +102,10 @@ export default function ScheduledTaskEditScreen() {
 
   // タグ
   const [tagsInput, setTagsInput] = useState('');
+
+  // モーダル用state
+  const [showScheduleTypeModal, setShowScheduleTypeModal] = useState(false);
+  const [selectedScheduleIndex, setSelectedScheduleIndex] = useState(0);
 
   // グループID（更新成功時のナビゲーション用）
   const [groupId, setGroupId] = useState<number>(1);
@@ -356,17 +364,22 @@ export default function ScheduledTaskEditScreen() {
           <Text style={styles.scheduleLabel}>
             {theme === 'child' ? 'しゅるい' : 'タイプ'}:
           </Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={schedule.type}
-              onValueChange={(value) => handleScheduleTypeChange(index, value as ScheduleType)}
-              style={styles.picker}
-            >
-              <Picker.Item label={theme === 'child' ? 'まいにち' : '日次'} value="daily" />
-              <Picker.Item label={theme === 'child' ? 'まいしゅう' : '週次'} value="weekly" />
-              <Picker.Item label={theme === 'child' ? 'まいつき' : '月次'} value="monthly" />
-            </Picker>
-          </View>
+          <TouchableOpacity
+            style={styles.selectButton}
+            onPress={() => {
+              setSelectedScheduleIndex(index);
+              setShowScheduleTypeModal(true);
+            }}
+          >
+            <Text style={styles.selectButtonText}>
+              {schedule.type === 'daily'
+                ? theme === 'child' ? 'まいにち' : '日次'
+                : schedule.type === 'weekly'
+                ? theme === 'child' ? 'まいしゅう' : '週次'
+                : theme === 'child' ? 'まいつき' : '月次'}
+            </Text>
+            <MaterialIcons name="arrow-drop-down" size={24} color={colors.text.primary} />
+          </TouchableOpacity>
         </View>
 
         {/* 時刻入力 */}
@@ -468,6 +481,7 @@ export default function ScheduledTaskEditScreen() {
   }
 
   return (
+    <>
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* 基本情報 */}
       <View style={styles.section}>
@@ -684,16 +698,57 @@ export default function ScheduledTaskEditScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+
+    {/* スケジュールタイプ選択モーダル */}
+    <Modal
+      visible={showScheduleTypeModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowScheduleTypeModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {theme === 'child' ? 'しゅるい' : 'スケジュールタイプ'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowScheduleTypeModal(false)}>
+              <MaterialIcons name="close" size={24} color={colors.text.primary} />
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={[
+              { value: 'daily', label: theme === 'child' ? 'まいにち' : '日次' },
+              { value: 'weekly', label: theme === 'child' ? 'まいしゅう' : '週次' },
+              { value: 'monthly', label: theme === 'child' ? 'まいつき' : '月次' },
+            ]}
+            keyExtractor={(item) => item.value}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.modalOption}
+                onPress={() => {
+                  handleScheduleTypeChange(selectedScheduleIndex, item.value as ScheduleType);
+                  setShowScheduleTypeModal(false);
+                }}
+              >
+                <Text style={styles.modalOptionText}>{item.label}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      </View>
+    </Modal>
+    </>
   );
 }
 
 /**
  * スタイル定義（ScheduledTaskCreateScreenと同じ）
  */
-const createStyles = (width: number, theme: any) => StyleSheet.create({
+const createStyles = (width: number, theme: any, colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
   },
   contentContainer: {
     padding: getSpacing(16, width),
@@ -702,15 +757,15 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
   },
   loadingText: {
     marginTop: getSpacing(12, width),
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
   },
   section: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(16, width),
@@ -719,12 +774,12 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   sectionTitle: {
     fontSize: getFontSize(18, width, theme),
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: colors.text.primary,
     marginBottom: getSpacing(16, width),
   },
   label: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
     marginTop: getSpacing(12, width),
   },
@@ -732,13 +787,13 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     color: '#EF4444',
   },
   input: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   textArea: {
     height: getSpacing(80, width),
@@ -753,15 +808,15 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   switchLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
   },
   scheduleCard: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     marginBottom: getSpacing(12, width),
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border.default,
   },
   scheduleRow: {
     flexDirection: 'row',
@@ -770,35 +825,40 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   scheduleLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
     width: getSpacing(60, width),
   },
-  pickerContainer: {
+  selectButton: {
     flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
-    overflow: 'hidden',
+    padding: getSpacing(10, width),
   },
-  picker: {
-    height: getSpacing(40, width),
+  selectButtonText: {
+    fontSize: getFontSize(16, width, theme),
+    color: colors.text.primary,
   },
   timeInput: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(8, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   weekdayContainer: {
     marginTop: getSpacing(12, width),
   },
   weekdayLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   weekdayButtons: {
@@ -809,19 +869,19 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     paddingHorizontal: getSpacing(12, width),
     paddingVertical: getSpacing(8, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     marginRight: getSpacing(8, width),
     marginBottom: getSpacing(8, width),
   },
   weekdayButtonSelected: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: accent.primary,
+    borderColor: accent.primary,
   },
   weekdayButtonText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
   },
   weekdayButtonTextSelected: {
     color: '#FFFFFF',
@@ -831,7 +891,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   monthDateLabel: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
     marginBottom: getSpacing(8, width),
   },
   monthDateScroll: {
@@ -847,19 +907,19 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     marginRight: getSpacing(8, width),
     marginBottom: getSpacing(8, width),
   },
   monthDateButtonSelected: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: accent.primary,
+    borderColor: accent.primary,
   },
   monthDateButtonText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
   },
   monthDateButtonTextSelected: {
     color: '#FFFFFF',
@@ -869,12 +929,14 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     paddingVertical: getSpacing(8, width),
     paddingHorizontal: getSpacing(12, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: '#EF4444',
     alignSelf: 'flex-start',
   },
   removeScheduleButtonText: {
     fontSize: getFontSize(12, width, theme),
-    color: '#991B1B',
+    color: '#EF4444',
   },
   addScheduleButtonWrapper: {
     borderRadius: getBorderRadius(8, width),
@@ -887,7 +949,7 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   addScheduleButtonText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#1E40AF',
+    color: '#FFFFFF',
     fontWeight: 'bold',
   },
   durationRow: {
@@ -902,40 +964,42 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
   },
   durationField: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(8, width),
     fontSize: getFontSize(16, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
     marginLeft: getSpacing(8, width),
   },
   durationUnit: {
     fontSize: getFontSize(14, width, theme),
-    color: '#6B7280',
+    color: colors.text.secondary,
     marginLeft: getSpacing(4, width),
   },
   dateButton: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
   },
   dateButtonText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   errorContainer: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: '#EF4444',
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(12, width),
     marginBottom: getSpacing(16, width),
   },
   errorText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#991B1B',
+    color: '#EF4444',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -947,13 +1011,15 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     flex: 1,
     paddingVertical: getSpacing(14, width),
     borderRadius: getBorderRadius(8, width),
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border.default,
     marginRight: getSpacing(8, width),
     alignItems: 'center',
   },
   cancelButtonText: {
     fontSize: getFontSize(16, width, theme),
-    color: '#374151',
+    color: colors.text.primary,
     fontWeight: 'bold',
   },
   submitButtonWrapper: {
@@ -970,5 +1036,37 @@ const createStyles = (width: number, theme: any) => StyleSheet.create({
     fontSize: getFontSize(16, width, theme),
     color: '#FFFFFF',
     fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: colors.card,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(20, width),
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: getSpacing(16, width),
+  },
+  modalTitle: {
+    fontSize: getFontSize(18, width, theme),
+    fontWeight: 'bold',
+    color: colors.text.primary,
+  },
+  modalOption: {
+    paddingVertical: getSpacing(12, width),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.default,
+  },
+  modalOptionText: {
+    fontSize: getFontSize(16, width, theme),
+    color: colors.text.primary,
   },
 });
