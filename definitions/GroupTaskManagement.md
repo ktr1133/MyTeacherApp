@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-14 | GitHub Copilot | グループタスク作成上限エラーUI仕様追加: Web版モーダル、モバイル版モーダル |
 | 2025-12-10 | GitHub Copilot | 初版作成: グループタスク編集・削除機能（Web版） |
 
 ---
@@ -608,7 +609,143 @@ INDEX (deleted_at)
 
 ---
 
-## 13. エラーメッセージ一覧
+## 13. グループタスク作成上限エラーUI仕様
+
+### 13.1 概要
+
+サブスク未加入ユーザーが規定回数以上のグループタスクを作成しようとした際の、エラー表示とサブスク管理画面への誘導UI仕様。
+
+### 13.2 エラー判定条件
+
+**バックエンド**: `GroupTaskLimitService::canCreateGroupTask()` が `false` を返す場合
+- サブスクリプション未加入（`subscription_active = false`）
+- 月次作成数が上限に達している（`group_task_count_current_month >= free_group_task_limit`）
+
+### 13.3 Web版仕様
+
+#### 13.3.1 エラーレスポンス形式
+
+**エンドポイント**: `POST /tasks`  
+**HTTPステータス**: 422 Unprocessable Entity  
+**レスポンス**:
+```json
+{
+  "message": "今月のグループタスク作成数が上限（X件）に達しました。プレミアムプランにアップグレードすると無制限でグループタスクを作成できます。",
+  "usage": {
+    "current": 5,
+    "limit": 5,
+    "remaining": 0,
+    "is_unlimited": false,
+    "has_subscription": false,
+    "reset_at": "2025-01-01T00:00:00Z"
+  },
+  "upgrade_required": true
+}
+```
+
+#### 13.3.2 モーダル表示仕様
+
+**コンポーネント**: `/home/ktr/mtdev/resources/views/components/group-task-limit-modal.blade.php`  
+**制御スクリプト**: `GroupTaskLimitModal` (Vanilla JS)
+
+**モーダル構成**:
+1. **ヘッダー**: 紫→ピンクのグラデーション、警告アイコン
+2. **エラーメッセージ**: バックエンドから受け取ったメッセージを表示
+3. **サブスク特典カード**:
+   - グループタスクを無制限に作成
+   - 月次レポート自動生成
+   - 全機能が使い放題
+   - 月額 ¥500〜
+4. **アクションボタン**:
+   - 「閉じる」: モーダルを閉じる
+   - 「サブスク管理画面へ」: `/subscriptions` に遷移
+
+**トリガー**: `group-task.js` の `fetch` エラーハンドリング
+```javascript
+if (errorData.upgrade_required && window.GroupTaskLimitModal) {
+  closeModal(groupModal, groupModalContent);
+  resetForm();
+  window.GroupTaskLimitModal.show(errorData.message);
+}
+```
+
+### 13.4 モバイル版仕様
+
+#### 13.4.1 エラーレスポンス形式
+
+Web版と同じ形式（`POST /api/tasks`）
+
+#### 13.4.2 モーダル表示仕様
+
+**コンポーネント**: `/home/ktr/mtdev/mobile/src/components/common/GroupTaskLimitModal.tsx`
+
+**モーダル構成**:
+1. **ヘッダー**: 紫→ピンクのグラデーション、警告絵文字（⚠️）
+2. **エラーメッセージ**: バックエンドから受け取ったメッセージを表示（テーマ対応不要）
+3. **サブスク特典カード**: Web版と同じ内容（子どもテーマ対応）
+4. **アクションボタン**:
+   - 「閉じる」（子: 「とじる」）: モーダルを閉じる
+   - 「サブスク管理画面へ」（子: 「サブスク画面へ」）: `SubscriptionManage` 画面に遷移
+
+**エラーハンドリングフロー**:
+1. `task.service.ts`: 422エラー + `upgrade_required` フラグを検出してエラーオブジェクトに付与
+   ```typescript
+   if (error.response?.status === 422 && error.response.data.upgrade_required) {
+     const limitError = new Error(error.response.data.message);
+     (limitError as any).upgrade_required = true;
+     throw limitError;
+   }
+   ```
+
+2. `useTasks.ts`: `upgrade_required` フラグ付きエラーは呼び出し元に伝播
+   ```typescript
+   if ((err as any).upgrade_required) {
+     throw err;
+   }
+   ```
+
+3. `CreateTaskScreen.tsx`: エラーをキャッチしてモーダル表示
+   ```typescript
+   try {
+     const newTask = await createTask(taskData);
+   } catch (err: any) {
+     if (err.upgrade_required) {
+       setLimitErrorMessage(err.message);
+       setShowLimitModal(true);
+     }
+   }
+   ```
+
+**レスポンシブ対応**: `useResponsive` + テーマ別フォント・余白調整
+
+### 13.5 その他のエラー表示
+
+**Web版**:
+- グループタスク上限エラー以外のエラーは従来通り `alert()` で表示
+
+**モバイル版**:
+- グループタスク上限エラー以外のエラーは `useTasks` の `error` state にセットされ、`Alert.alert()` で表示（既存実装）
+- バリデーションエラー、ネットワークエラー等は通常のエラーメッセージを表示
+
+### 13.6 実装ファイル一覧
+
+| ファイル | 説明 |
+|---------|------|
+| **Web版** | |
+| `/home/ktr/mtdev/resources/views/components/group-task-limit-modal.blade.php` | モーダルコンポーネント（Blade + Vanilla JS） |
+| `/home/ktr/mtdev/resources/js/dashboard/group-task.js` | エラーハンドリング + モーダル表示トリガー |
+| `/home/ktr/mtdev/resources/views/dashboard.blade.php` | モーダルをinclude |
+| `/home/ktr/mtdev/app/Http/Actions/Task/StoreTaskAction.php` | 既存実装（変更なし） |
+| **モバイル版** | |
+| `/home/ktr/mtdev/mobile/src/components/common/GroupTaskLimitModal.tsx` | モーダルコンポーネント（React Native） |
+| `/home/ktr/mtdev/mobile/src/services/task.service.ts` | エラーレスポンス判定 + `upgrade_required` フラグ付与 |
+| `/home/ktr/mtdev/mobile/src/hooks/useTasks.ts` | エラー伝播処理 |
+| `/home/ktr/mtdev/mobile/src/screens/tasks/CreateTaskScreen.tsx` | エラーキャッチ + モーダル表示 |
+| `/home/ktr/mtdev/app/Http/Actions/Api/Task/StoreTaskApiAction.php` | 既存実装（変更なし） |
+
+---
+
+## 14. エラーメッセージ一覧
 
 | コード | メッセージ | 対処方法 |
 |--------|-----------|---------|

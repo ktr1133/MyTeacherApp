@@ -29,6 +29,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import api from '../../services/api';
 import { useAvatar } from '../../hooks/useAvatar';
 import AvatarWidget from '../../components/common/AvatarWidget';
+import GroupTaskLimitModal from '../../components/common/GroupTaskLimitModal';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { useThemedColors } from '../../hooks/useThemedColors';
@@ -120,6 +121,10 @@ export default function CreateTaskScreen() {
   // グループメンバー状態
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  
+  // グループタスク上限エラーモーダル状態
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [limitErrorMessage, setLimitErrorMessage] = useState('');
 
   /**
    * 初回マウント時にタグ一覧を取得
@@ -333,26 +338,37 @@ export default function CreateTaskScreen() {
       }),
     };
 
-    const newTask = await createTask(taskData);
+    try {
+      const newTask = await createTask(taskData);
 
-    if (newTask) {
-      // アバターイベント発火（グループタスク or 通常タスク）
-      const eventType = isGroupTask ? 'group_task_created' : 'task_created';
-      dispatchAvatarEvent(eventType);
+      if (newTask) {
+        // アバターイベント発火（グループタスク or 通常タスク）
+        const eventType = isGroupTask ? 'group_task_created' : 'task_created';
+        dispatchAvatarEvent(eventType);
 
-      // アバター表示後に画面遷移（3秒待機）
-      setTimeout(() => {
-        Alert.alert(
-          theme === 'child' ? 'できたよ!' : '作成完了',
-          theme === 'child' ? 'あたらしいやることをつくったよ!' : 'タスクを作成しました',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
-      }, 3000);
+        // アバター表示後に画面遷移（3秒待機）
+        setTimeout(() => {
+          Alert.alert(
+            theme === 'child' ? 'できたよ!' : '作成完了',
+            theme === 'child' ? 'あたらしいやることをつくったよ!' : 'タスクを作成しました',
+            [
+              {
+                text: 'OK',
+                onPress: () => navigation.goBack(),
+              },
+            ]
+          );
+        }, 3000);
+      }
+    } catch (err: any) {
+      // グループタスク作成上限エラーの場合はモーダル表示
+      if (err.upgrade_required) {
+        setLimitErrorMessage(err.message || 'グループタスクの作成上限に達しました。');
+        setShowLimitModal(true);
+      } else {
+        // その他のエラーは通常のアラート表示（useTasks内でerror stateにセット済み）
+        console.error('[CreateTaskScreen] Task creation error:', err);
+      }
     }
   }, [
     title,
@@ -364,9 +380,11 @@ export default function CreateTaskScreen() {
     requiresImage,
     isGroupTask,
     groupMembers,
+    selectedTagIds,
     createTask,
     theme,
     navigation,
+    dispatchAvatarEvent,
   ]);
 
   /**
@@ -953,6 +971,13 @@ export default function CreateTaskScreen() {
         data={avatarData}
         onClose={hideAvatar}
         position="center"
+      />
+
+      {/* グループタスク作成上限エラーモーダル */}
+      <GroupTaskLimitModal
+        visible={showLimitModal}
+        message={limitErrorMessage}
+        onClose={() => setShowLimitModal(false)}
       />
     </View>
   );

@@ -77,7 +77,18 @@ class StoreTaskAction
                         'user_id' => $user->id,
                         'group_id' => $user->group_id,
                     ]);
-                    abort(403, 'グループタスク作成権限がありません。');
+                    
+                    $errorMessage = 'グループタスク作成権限がありません。';
+                    
+                    if ($request->expectsJson()) {
+                        return response()->json([
+                            'message' => $errorMessage,
+                        ], 403);
+                    }
+                    
+                    return redirect()->back()
+                        ->withErrors(['error' => $errorMessage])
+                        ->withInput();
                 }
 
                 // グループを取得

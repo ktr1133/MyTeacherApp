@@ -39,6 +39,36 @@ Laravel 12 + Docker構成。**Action-Service-Repositoryパターン**（従来�
 - 新規ファイルは必ず `/home/ktr/mtdev/app/` 配下に作成
 - `composer` コマンドは `/home/ktr/mtdev/` から実行
 
+## ダークモード対応（重要）
+
+**原則**: モバイル・Web双方の新規実装・既存機能修正時は、必ずダークモード対応を実施する。
+
+### ダークモード対応の必須事項
+
+1. **モバイル（React Native）**
+   - **参照ドキュメント**: `/home/ktr/mtdev/definitions/mobile/DarkModeSupport.md`
+   - `useThemedColors()` フックを使用してカラーパレットを取得
+   - `colors.background`, `colors.text`, `colors.card` 等を使用
+   - ハードコードされた色（`#FFFFFF`, `#000000` 等）は禁止
+   - LinearGradient等の装飾的要素は固定色も許容
+
+2. **Web（Laravel + Tailwind CSS）**
+   - **参照ドキュメント**: `/home/ktr/mtdev/definitions/DarkModeSupport-Web.md`
+   - Tailwind CSS の `dark:` プレフィックスを使用
+   - 例: `bg-white dark:bg-gray-800`, `text-gray-900 dark:text-white`
+   - `tailwind.config.js` の `darkMode: 'class'` 設定に準拠
+
+3. **テスト・確認**
+   - モバイル: OSのダークモード切り替えで動作確認
+   - Web: ブラウザのダークモード切り替えで動作確認
+   - 両テーマ（adult/child）での表示確認
+
+### 禁止事項
+
+- ❌ ハードコードされた色の使用（`backgroundColor: '#FFFFFF'` 等）
+- ❌ ダークモードで視認性が低下する色の組み合わせ
+- ❌ ライトモードのみでの動作確認
+
 ## 不具合対応方針（重要）
 
 **原則**: 不具合が発生した際は推測による修正を行わず、必ずログや実行結果に基づいて原因を特定してから修正を実施する。

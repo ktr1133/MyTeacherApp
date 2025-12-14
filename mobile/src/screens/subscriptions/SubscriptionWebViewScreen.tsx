@@ -140,13 +140,19 @@ export const SubscriptionWebViewScreen: React.FC = () => {
     
     // ネットワークエラーの場合は再試行オプションを提供
     const isNetworkError = nativeEvent.code === -1004 || nativeEvent.code === -1009;
+    const isSSLError = nativeEvent.code === -1200 || nativeEvent.code === -1202;
+    
+    let errorMessage = 'ページの読み込みに失敗しました。';
+    if (isNetworkError) {
+      errorMessage = 'ネットワーク接続に失敗しました。インターネット接続を確認してください。';
+    } else if (isSSLError) {
+      errorMessage = 'セキュリティ設定により接続できませんでした。アプリを再起動してください。';
+    }
     
     Alert.alert(
       'エラー',
-      isNetworkError 
-        ? 'ネットワーク接続に失敗しました。インターネット接続を確認してください。'
-        : 'ページの読み込みに失敗しました。',
-      isNetworkError 
+      errorMessage,
+      isNetworkError || isSSLError
         ? [
             {
               text: '再試行',
@@ -210,6 +216,14 @@ export const SubscriptionWebViewScreen: React.FC = () => {
           mixedContentMode="always"
           // タイムアウト設定
           cacheEnabled={false}
+          // ネットワーク設定
+          allowsInlineMediaPlayback={true}
+          mediaPlaybackRequiresUserAction={false}
+          // SSL証明書エラーを無視（開発環境のみ - 本番では削除推奨）
+          onShouldStartLoadWithRequest={(request) => {
+            console.log('[SubscriptionWebView] Loading URL:', request.url);
+            return true;
+          }}
         />
       )}
       

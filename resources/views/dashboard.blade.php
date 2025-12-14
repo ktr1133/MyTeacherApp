@@ -71,6 +71,8 @@
         
         @if(Auth::user()->canEditGroup())
             @include('dashboard.modal-group-task')
+            {{-- グループタスク作成上限エラーモーダル --}}
+            <x-group-task-limit-modal />
         @endif
 
         {{-- タスクカード用モーダル（すべてのタスクに対して body 直下で include） --}}

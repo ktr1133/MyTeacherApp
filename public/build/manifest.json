@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-Dtrs6d7w.css",
+    "file": "assets/app-DrpvzjAW.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -311,7 +311,7 @@
     "isEntry": true
   },
   "resources/js/dashboard/group-task.js": {
-    "file": "assets/group-task-B3qeoxm4.js",
+    "file": "assets/group-task-oU0CukhR.js",
     "name": "group-task",
     "src": "resources/js/dashboard/group-task.js",
     "isEntry": true

@@ -114,6 +114,15 @@ class TaskService {
 
       return response.data.data.task;
     } catch (error: any) {
+      // グループタスク作成上限エラーの特別扱い
+      if (error.response?.status === 422 && error.response.data.upgrade_required) {
+        const limitError = new Error(error.response.data.message || 'GROUP_TASK_LIMIT_REACHED');
+        // エラーオブジェクトにupgrade_requiredフラグを付与
+        (limitError as any).upgrade_required = true;
+        (limitError as any).usage = error.response.data.usage;
+        throw limitError;
+      }
+      
       if (error.response?.status === 422) {
         const errors = error.response.data.errors;
         if (errors?.title) {

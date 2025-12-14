@@ -245,6 +245,7 @@ export const useTasks = (): UseTasksReturn => {
    * 
    * @param data - タスク作成データ
    * @returns 作成されたタスク（失敗時はnull）
+   * @throws Error - グループタスク上限エラーの場合はthrow（upgrade_requiredフラグ付き）
    */
   const createTask = useCallback(
     async (data: CreateTaskData): Promise<Task | null> => {
@@ -267,6 +268,12 @@ export const useTasks = (): UseTasksReturn => {
 
         return newTask;
       } catch (err: any) {
+        // グループタスク作成上限エラーの場合は呼び出し元に伝播
+        if ((err as any).upgrade_required) {
+          throw err;
+        }
+        
+        // その他のエラーは従来通りハンドル
         handleError(err);
         return null;
       } finally {

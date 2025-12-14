@@ -149,7 +149,19 @@ if (groupTaskForm) {
                 }
             } else {
                 const errorData = await response.json();
-                alert('タスクの作成に失敗しました: ' + (errorData.message || '不明なエラー'));
+                
+                // グループタスク作成上限エラーかチェック
+                if (errorData.upgrade_required && window.GroupTaskLimitModal) {
+                    // モーダルを閉じる
+                    closeModal(groupModal, groupModalContent);
+                    resetForm();
+                    
+                    // 上限エラーモーダルを表示
+                    window.GroupTaskLimitModal.show(errorData.message || 'グループタスクの作成上限に達しました。');
+                } else {
+                    // その他のエラーはアラート表示
+                    alert('タスクの作成に失敗しました: ' + (errorData.message || '不明なエラー'));
+                }
             }
         } catch (error) {
             console.error('[Group Task] Error:', error);

@@ -8,19 +8,22 @@ import { render, RenderOptions } from '@testing-library/react-native';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AvatarProvider } from './contexts/AvatarContext';
+import { ColorSchemeProvider } from './contexts/ColorSchemeContext';
 
 /**
  * 全てのプロバイダーでラップするラッパー
  */
 const AllTheProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <AvatarProvider>
-          {children}
-        </AvatarProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ColorSchemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <AvatarProvider>
+            {children}
+          </AvatarProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </ColorSchemeProvider>
   );
 };
 
