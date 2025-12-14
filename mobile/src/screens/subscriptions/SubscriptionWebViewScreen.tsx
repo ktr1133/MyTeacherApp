@@ -209,20 +209,24 @@ export const SubscriptionWebViewScreen: React.FC = () => {
           )}
           // iOS設定
           allowsBackForwardNavigationGestures={true}
+          allowsLinkPreview={false} // Stripe Checkoutでリンクプレビューを無効化
+          sharedCookiesEnabled={true} // Cookie共有を有効化（Stripe Checkoutに必須）
           // Android設定
           domStorageEnabled={true}
           javaScriptEnabled={true}
-          // セキュリティ設定
-          mixedContentMode="always"
-          // タイムアウト設定
-          cacheEnabled={false}
+          thirdPartyCookiesEnabled={true}
           // ネットワーク設定
+          cacheEnabled={false} // キャッシュを無効化（常に最新のCheckoutセッションを読み込む）
+          incognito={false}
+          // メディア設定
           allowsInlineMediaPlayback={true}
           mediaPlaybackRequiresUserAction={false}
-          // SSL証明書エラーを無視（開発環境のみ - 本番では削除推奨）
+          // セキュリティ設定
+          mixedContentMode="compatibility" // 互換性モード（"always"から変更）
+          // URL読み込み制御
           onShouldStartLoadWithRequest={(request) => {
             console.log('[SubscriptionWebView] Loading URL:', request.url);
-            return true;
+            return true; // 全てのURLを許可
           }}
         />
       )}

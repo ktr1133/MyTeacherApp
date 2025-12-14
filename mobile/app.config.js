@@ -25,25 +25,15 @@ export default {
         ITSAppUsesNonExemptEncryption: false,
         UIBackgroundModes: ["remote-notification"],
         // App Transport Security (ATS)設定
-        // ngrokドメインからの画像読み込みを許可
-        // Stripe CheckoutドメインへのWebView接続を許可
+        // 開発環境でのStripe Checkout接続問題を解決するため、一時的に全て許可
+        // 本番環境では個別ドメイン設定に戻すことを推奨
         NSAppTransportSecurity: {
-          NSAllowsArbitraryLoads: false, // デフォルトで全て許可しない
+          NSAllowsArbitraryLoads: true, // 一時的に全HTTPSドメインを許可（開発環境のみ）
           NSExceptionDomains: {
-            "ngrok-free.dev": {
-              NSIncludesSubdomains: true,
-              NSTemporaryExceptionAllowsInsecureHTTPLoads: false,
-              NSTemporaryExceptionRequiresForwardSecrecy: false,
-            },
-            "ngrok.io": {
-              NSIncludesSubdomains: true,
-              NSTemporaryExceptionAllowsInsecureHTTPLoads: false,
-              NSTemporaryExceptionRequiresForwardSecrecy: false,
-            },
-            "stripe.com": {
-              NSIncludesSubdomains: true, // checkout.stripe.com を含む全サブドメインを許可
-              NSTemporaryExceptionAllowsInsecureHTTPLoads: false,
-              NSTemporaryExceptionRequiresForwardSecrecy: false,
+            // localhost除外設定（必要に応じて）
+            "localhost": {
+              NSExceptionAllowsInsecureHTTPLoads: true,
+              NSExceptionRequiresForwardSecrecy: false,
             },
           },
         },
