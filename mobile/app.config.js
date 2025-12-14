@@ -19,7 +19,7 @@ export default {
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.myteacher-famco.app",
+      bundleIdentifier: "com.myteacherfamco.app",
       googleServicesFile: process.env.GOOGLE_SERVICES_IOS ?? "./GoogleService-Info.plist",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
@@ -59,7 +59,7 @@ export default {
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
-      package: "com.myteacher-famco.app",
+      package: "com.myteacherfamco.app",
       googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json"
     },
     web: {
