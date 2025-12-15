@@ -413,7 +413,7 @@ const createStyles = (
 ) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   content: {
     padding: getSpacing(16, width),
@@ -422,7 +422,7 @@ const createStyles = (
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   loadingText: {
     marginTop: getSpacing(16, width),
@@ -433,7 +433,7 @@ const createStyles = (
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
     padding: getSpacing(24, width),
   },
   errorText: {
@@ -462,9 +462,12 @@ const createStyles = (
   section: {
     marginBottom: getSpacing(24, width),
     padding: getSpacing(16, width),
-    backgroundColor: colors.card,
+    backgroundColor: theme === 'child' ? '#FFFFFF' : colors.card,
     borderRadius: getBorderRadius(12, width),
-    ...getShadow(2),
+    ...(theme === 'child' ? {
+      borderWidth: 3,
+      borderColor: '#FF6B6B',
+    } : getShadow(2)),
   },
   sectionTitle: {
     fontSize: getFontSize(18, width, theme),
@@ -504,21 +507,25 @@ const createStyles = (
   },
   notice: {
     padding: getSpacing(16, width),
-    backgroundColor: '#fffbeb',
+    backgroundColor: theme === 'child' ? '#FFF9E6' : '#fffbeb',
     borderRadius: getBorderRadius(12, width),
     borderLeftWidth: 4,
-    borderLeftColor: '#f59e0b',
+    borderLeftColor: theme === 'child' ? '#FF6B6B' : '#f59e0b',
     marginBottom: getSpacing(24, width),
+    ...(theme === 'child' && {
+      borderWidth: 3,
+      borderColor: '#FF6B6B',
+    }),
   },
   noticeTitle: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
-    color: '#92400e',
+    color: theme === 'child' ? '#D32F2F' : '#92400e',
     marginBottom: getSpacing(8, width),
   },
   noticeText: {
     fontSize: getFontSize(14, width, theme),
-    color: '#78350f',
+    color: theme === 'child' ? '#5D4037' : '#78350f',
     lineHeight: getFontSize(20, width, theme),
   },
 });

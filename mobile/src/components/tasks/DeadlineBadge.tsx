@@ -32,11 +32,6 @@ export default function DeadlineBadge({ deadlineInfo, variant = 'absolute' }: De
   // アニメーション用
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  // ステータスがnoneまたはsafeの場合は表示しない
-  if (deadlineInfo.status === 'none' || deadlineInfo.status === 'safe') {
-    return null;
-  }
-
   // approaching（期限が迫っている）の場合はパルスアニメーション
   useEffect(() => {
     if (deadlineInfo.status === 'approaching') {
@@ -60,6 +55,11 @@ export default function DeadlineBadge({ deadlineInfo, variant = 'absolute' }: De
     }
     return undefined;
   }, [deadlineInfo.status, pulseAnim]);
+
+  // ステータスがnoneまたはsafeの場合は表示しない（フック呼び出し後にチェック）
+  if (deadlineInfo.status === 'none' || deadlineInfo.status === 'safe') {
+    return null;
+  }
 
   // ステータス別のスタイル
   const getBadgeStyle = () => {

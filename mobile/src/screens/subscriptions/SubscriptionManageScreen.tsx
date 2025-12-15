@@ -23,7 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow, getHeaderTitleProps } from '../../utils/responsive';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { useThemedColors } from '../../hooks/useThemedColors';
 import type { SubscriptionPlan } from '../../types/subscription.types';
@@ -356,15 +356,17 @@ const createStyles = (
 ) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    backgroundColor: accent.primary,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : accent.primary,
     paddingVertical: getSpacing(20, width),
     paddingHorizontal: getSpacing(16, width),
+    borderBottomWidth: theme === 'child' ? 1 : 0,
+    borderBottomColor: theme === 'child' ? 'rgba(255, 107, 107, 0.2)' : 'transparent',
   },
   headerTitle: {
     fontSize: getFontSize(24, width, theme),
@@ -483,8 +485,8 @@ const createStyles = (
     padding: getSpacing(28, width),
     borderRadius: getBorderRadius(16, width),
     marginBottom: getSpacing(16, width),
-    borderWidth: 2,
-    borderColor: colors.border.default,
+    borderWidth: theme === 'child' ? 3 : 2,
+    borderColor: theme === 'child' ? '#FF6B6B' : colors.border.default,
     ...getShadow(2),
     position: 'relative',
   },

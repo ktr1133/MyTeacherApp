@@ -70,6 +70,7 @@ class ProfileUserEloquentRepository implements ProfileUserRepositoryInterface
 
         return User::where('group_id', $user->group_id)
             ->where('group_edit_flg', false)
+            ->where('id', '!=', $userId)
             ->get();
     }
 

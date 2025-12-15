@@ -220,7 +220,11 @@ export default function TaskDetailScreen() {
           onPress: async () => {
             const success = await deleteTask(taskId);
             if (success) {
-              navigation.goBack();
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('TaskList' as never);
+              }
             }
           },
         },
@@ -486,7 +490,7 @@ export default function TaskDetailScreen() {
         </View>
 
         {/* 画像一覧 */}
-        {task.images.length > 0 && (
+        {task.images && task.images.length > 0 && (
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionIcon}>🖼️</Text>
@@ -764,7 +768,7 @@ const getStatusLabel = (status: string, theme: 'adult' | 'child'): string => {
 const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme === 'child' ? '#FFFBEB' : '#F9FAFB', // bg-amber-50 : bg-gray-50
+    backgroundColor: theme === 'child' ? '#FFF8E1' : '#F9FAFB', // Web版child-theme.cssに統一
   },
   content: {
     flex: 1,

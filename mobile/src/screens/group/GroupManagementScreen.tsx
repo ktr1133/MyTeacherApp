@@ -782,11 +782,11 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.background,
+      backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
     },
     container: {
       flex: 1,
-      backgroundColor: colors.background,
+      backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
     },
     content: {
       padding: getSpacing(16, width),
@@ -795,6 +795,8 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
       backgroundColor: colors.card,
       borderRadius: getBorderRadius(16, width),
       marginBottom: getSpacing(16, width),
+      borderWidth: theme === 'child' ? 3 : 0,
+      borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
       ...getShadow(2),
       overflow: 'hidden',
     },

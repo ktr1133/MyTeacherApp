@@ -417,7 +417,8 @@ const createStyles = (
 ) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    // Web版child-theme.cssの.dashboard-gradient-bgに統一（#FFF8E1 クリーム色）
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -425,9 +426,10 @@ const createStyles = (
     paddingHorizontal: getSpacing(16, width),
     paddingTop: getSpacing(12, width),
     paddingBottom: getSpacing(16, width),
-    backgroundColor: colors.card,
+    // Web版のdashboard-header-blurに準拠（透過+ブラー効果）、画面背景色ベース
+    backgroundColor: theme === 'child' ? 'rgba(255, 248, 225, 0.95)' : colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.default,
+    borderBottomColor: theme === 'child' ? 'rgba(255, 107, 107, 0.2)' : colors.border.default,
   },
   backButton: {
     width: 40,
@@ -469,19 +471,23 @@ const createStyles = (
     padding: getSpacing(16, width),
   },
   taskItem: {
-    backgroundColor: colors.card,
-    borderRadius: getBorderRadius(12, width),
-    padding: getSpacing(16, width),
+    // Web版child-theme.cssの.task-card-modernに統一（太いボーダー+大きめサイズ）
+    backgroundColor: theme === 'child' ? '#FFFFFF' : colors.card,
+    borderRadius: getBorderRadius(theme === 'child' ? 20 : 12, width), // child: 1.25rem (20px)
+    padding: getSpacing(theme === 'child' ? 20 : 16, width),
     marginBottom: getSpacing(12, width),
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    ...getShadow(2),
+    // Web版child-theme.css: 太いボーダー（3px）
+    borderWidth: theme === 'child' ? 3 : 0,
+    borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
+    ...getShadow(theme === 'child' ? 6 : 3),
   },
   groupTaskItem: {
-    backgroundColor: colors.card,
-    borderWidth: 2,
-    borderColor: theme === 'child' ? '#FF6B6B' : accent.primary,
-    ...getShadow(4),
+    // Web版child-theme.cssに統一（クエスト専用=紫ボーダー）
+    backgroundColor: theme === 'child' ? '#FFFFFF' : colors.card,
+    borderWidth: theme === 'child' ? 4 : 2, // child: 4px（クエスト強調）
+    // グループタスク=クエスト（var(--child-quest): #9b59b6）
+    borderColor: theme === 'child' ? '#9b59b6' : accent.primary,
+    ...getShadow(theme === 'child' ? 6 : 4),
   },
   groupTaskBadge: {
     position: 'absolute',

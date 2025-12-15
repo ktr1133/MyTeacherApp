@@ -51,6 +51,7 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
   const [totalPages, setTotalPages] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(false);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const currentPageRef = useRef<number>(1); // currentPageの最新値を追跡
 
   /**
    * 通知一覧取得
@@ -74,6 +75,7 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
 
       setUnreadCount(response.data.unread_count);
       setCurrentPage(page);
+      currentPageRef.current = page; // Refも更新
       setTotalPages(response.data.pagination.last_page);
       setHasMore(page < response.data.pagination.last_page);
     } catch (err) {
@@ -190,8 +192,8 @@ export const useNotifications = (enablePolling: boolean = false): UseNotificatio
   const loadMore = useCallback(async (): Promise<void> => {
     if (!hasMore || loading) return;
 
-    await fetchNotifications(currentPage + 1);
-  }, [hasMore, loading, currentPage, fetchNotifications]);
+    await fetchNotifications(currentPageRef.current + 1);
+  }, [hasMore, loading, fetchNotifications]);
 
   /**
    * リフレッシュ（最初のページを再取得）

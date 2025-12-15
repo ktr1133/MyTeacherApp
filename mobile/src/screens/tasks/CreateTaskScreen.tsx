@@ -29,8 +29,10 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import api from '../../services/api';
 import { useAvatar } from '../../hooks/useAvatar';
+import { useSubscription } from '../../hooks/useSubscription';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import GroupTaskLimitModal from '../../components/common/GroupTaskLimitModal';
+import GroupTaskHelpModal from '../../components/common/GroupTaskHelpModal';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { useThemedColors } from '../../hooks/useThemedColors';
@@ -83,6 +85,7 @@ export default function CreateTaskScreen() {
   const themeType = isChildTheme ? 'child' : 'adult';
   const { colors, accent } = useThemedColors();
   const { createTask, isLoading, error, clearError } = useTasks();
+  const { currentSubscription, loadCurrentSubscription } = useSubscription();
   const {
     isVisible: avatarVisible,
     currentData: avatarData,
@@ -126,12 +129,16 @@ export default function CreateTaskScreen() {
   // グループタスク上限エラーモーダル状態
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [limitErrorMessage, setLimitErrorMessage] = useState('');
+  
+  // グループタスクヘルプモーダル状態
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   /**
-   * 初回マウント時にタグ一覧を取得
+   * 初回マウント時にタグ一覧とサブスク情報を取得
    */
   useEffect(() => {
     fetchTags();
+    loadCurrentSubscription();
   }, []);
 
   /**
@@ -206,6 +213,39 @@ export default function CreateTaskScreen() {
     } finally {
       setIsLoadingMembers(false);
     }
+  };
+
+  /**
+   * スケジュールタスク設定画面への遷移処理
+   * サブスクリプション加入チェックを実施
+   */
+  const handleScheduledTaskNavigation = () => {
+    // サブスクリプション加入チェック
+    if (!currentSubscription) {
+      Alert.alert(
+        theme === 'child' ? '🌟 プレミアムきのう' : '🌟 プレミアム機能',
+        theme === 'child'
+          ? 'タスクじどうさくせいは、プレミアムかいいんのひとだけがつかえるきのうだよ！\n\nプレミアムかいいんになると、まいにち・まいしゅうのタスクをじどうでつくれるようになるよ。'
+          : 'タスク自動作成設定は、プレミアム会員限定の機能です。\n\nプレミアム会員になると、毎日・毎週のタスクを自動で作成できるようになります。',
+        [
+          {
+            text: theme === 'child' ? 'とじる' : 'キャンセル',
+            style: 'cancel',
+          },
+          {
+            text: theme === 'child' ? 'プレミアムになる' : 'プレミアムプランを見る',
+            onPress: () => {
+              // サブスクリプション画面へ遷移
+              navigation.navigate('SubscriptionManage' as any);
+            },
+          },
+        ]
+      );
+      return;
+    }
+
+    // サブスク加入済みの場合は通常遷移
+    navigation.navigate('ScheduledTaskList' as any, { groupId: 1 });
   };
 
   /**
@@ -448,8 +488,16 @@ export default function CreateTaskScreen() {
         </View>
         
         <View style={styles.headerRightButtons}>
+          {isGroupTask && (
+            <TouchableOpacity
+              onPress={() => setShowHelpModal(true)}
+              style={styles.headerIconButton}
+            >
+              <Ionicons name="help-circle-outline" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
-            onPress={() => navigation.navigate('ScheduledTaskList' as any, { groupId: 1 })}
+            onPress={handleScheduledTaskNavigation}
             style={styles.headerIconButton}
           >
             <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
@@ -769,7 +817,7 @@ export default function CreateTaskScreen() {
                 <Text style={styles.helpText}>
                   {theme === 'child'
                     ? 'できたらおとなにみせてね'
-                    : '完了時に親が承認する必要があります'}
+                    : '完了時に親の承認が必要になります。チェックを外すと即座に完了扱いになります。'}
                 </Text>
               </LinearGradient>
             </View>
@@ -796,7 +844,7 @@ export default function CreateTaskScreen() {
                 <Text style={styles.helpText}>
                   {theme === 'child'
                     ? 'できたらしゃしんをとってね'
-                    : '完了時に写真の添付が必要です'}
+                    : 'タスク完了時に証拠画像のアップロードが必要になります'}
                 </Text>
               </LinearGradient>
             </View>
@@ -989,6 +1037,13 @@ export default function CreateTaskScreen() {
         message={limitErrorMessage}
         onClose={() => setShowLimitModal(false)}
       />
+
+      {/* グループタスクヘルプモーダル */}
+      <GroupTaskHelpModal
+        visible={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        theme={theme}
+      />
     </View>
   );
 }
@@ -996,7 +1051,7 @@ export default function CreateTaskScreen() {
 const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   header: {
     flexDirection: 'row',

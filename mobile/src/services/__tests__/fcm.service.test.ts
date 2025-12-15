@@ -153,9 +153,12 @@ describe('fcmService', () => {
       const mockToken = 'fcm-token-test-12345';
       const mockMessagingInstance = {
         getToken: jest.fn().mockResolvedValue(mockToken),
+        isDeviceRegisteredForRemoteMessages: true,
+        registerDeviceForRemoteMessages: jest.fn().mockResolvedValue(undefined),
       };
       mockedMessaging.mockReturnValue(mockMessagingInstance as any);
       mockedStorage.setItem.mockResolvedValue();
+      Platform.OS = 'ios';
 
       // Act
       const result = await fcmService.getFcmToken();
@@ -170,8 +173,11 @@ describe('fcmService', () => {
       // Arrange
       const mockMessagingInstance = {
         getToken: jest.fn().mockResolvedValue(''),
+        isDeviceRegisteredForRemoteMessages: true,
+        registerDeviceForRemoteMessages: jest.fn().mockResolvedValue(undefined),
       };
       mockedMessaging.mockReturnValue(mockMessagingInstance as any);
+      Platform.OS = 'ios';
 
       // Act
       const result = await fcmService.getFcmToken();
@@ -237,6 +243,8 @@ describe('fcmService', () => {
       const mockMessagingInstance = {
         requestPermission: jest.fn().mockResolvedValue(AuthorizationStatus.AUTHORIZED),
         getToken: jest.fn().mockResolvedValue(mockToken),
+        isDeviceRegisteredForRemoteMessages: true,
+        registerDeviceForRemoteMessages: jest.fn().mockResolvedValue(undefined),
       };
       mockedMessaging.mockReturnValue(mockMessagingInstance as any);
       mockedStorage.setItem.mockResolvedValue();
@@ -314,10 +322,13 @@ describe('fcmService', () => {
       const mockMessagingInstance = {
         requestPermission: jest.fn().mockResolvedValue(AuthorizationStatus.AUTHORIZED),
         getToken: jest.fn().mockResolvedValue(mockToken),
+        isDeviceRegisteredForRemoteMessages: true,
+        registerDeviceForRemoteMessages: jest.fn().mockResolvedValue(undefined),
       };
       mockedMessaging.mockReturnValue(mockMessagingInstance as any);
       mockedStorage.setItem.mockResolvedValue();
       mockedApi.post.mockRejectedValue(new Error('API error'));
+      Platform.OS = 'ios';
 
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 

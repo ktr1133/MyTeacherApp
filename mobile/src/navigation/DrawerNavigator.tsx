@@ -13,6 +13,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import DrawerContent from '../components/common/DrawerContent';
 import HeaderNotificationIcon from '../components/common/HeaderNotificationIcon';
 import { useThemedColors } from '../hooks/useThemedColors';
+import { useChildTheme } from '../hooks/useChildTheme';
 
 // 画面インポート
 import TaskListScreen from '../screens/tasks/TaskListScreen';
@@ -65,6 +66,7 @@ const Drawer = createDrawerNavigator();
  */
 export default function DrawerNavigator() {
   const { colors } = useThemedColors();
+  const isChildTheme = useChildTheme();
 
   return (
     <Drawer.Navigator
@@ -78,7 +80,7 @@ export default function DrawerNavigator() {
           width: '80%', // 画面幅の80%
         },
         headerStyle: {
-          backgroundColor: colors.card,
+          backgroundColor: isChildTheme ? '#FFF8E1' : colors.card,
           elevation: 2, // Android
           shadowOpacity: 0.1, // iOS
         },

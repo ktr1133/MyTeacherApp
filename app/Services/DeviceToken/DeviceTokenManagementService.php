@@ -154,4 +154,46 @@ class DeviceTokenManagementService implements DeviceTokenManagementServiceInterf
             throw $e;
         }
     }
+
+    /**
+     * ユーザーの全デバイスを取得（is_activeに関わらず）
+     *
+     * @param int $userId
+     * @return Collection<int, UserDeviceToken>
+     */
+    public function getAllDevices(int $userId): Collection
+    {
+        return $this->repository->getAllByUserId($userId);
+    }
+
+    /**
+     * デバイスをID指定で削除
+     *
+     * @param int $userId
+     * @param int $deviceTokenId
+     * @return bool
+     */
+    public function deleteDeviceById(int $userId, int $deviceTokenId): bool
+    {
+        try {
+            $result = $this->repository->deleteById($userId, $deviceTokenId);
+
+            if ($result) {
+                Log::info('デバイス削除完了', [
+                    'user_id' => $userId,
+                    'device_token_id' => $deviceTokenId,
+                ]);
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error('デバイス削除エラー', [
+                'user_id' => $userId,
+                'device_token_id' => $deviceTokenId,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+    }
 }

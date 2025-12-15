@@ -32,6 +32,7 @@ import { useThemedColors } from '../../hooks/useThemedColors';
 import AvatarWidget from '../../components/common/AvatarWidget';
 import AvatarCreationBanner from '../../components/common/AvatarCreationBanner';
 import BucketCard from '../../components/tasks/BucketCard';
+import HeaderNotificationIcon from '../../components/common/HeaderNotificationIcon';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useChildTheme } from '../../hooks/useChildTheme';
 
@@ -126,41 +127,48 @@ export default function TaskListScreen() {
       ),
       headerBackVisible: false, // iOS: 戻るボタンを非表示
       headerRight: () => (
-        <Pressable
-          onPress={navigateToCreate}
-          style={({ pressed }) => ({
-            marginRight: 0,
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            opacity: pressed ? 0.7 : 1,
-          })}
-        >
-          <MaskedView
-            maskElement={
-              <Text style={{
-                fontSize: 36,
-                fontWeight: '700',
-                lineHeight: 36,
-                backgroundColor: 'transparent',
-              }}>
-                ＋
-              </Text>
-            }
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
+          {/* タスク作成ボタン */}
+          <Pressable
+            onPress={navigateToCreate}
+            style={({ pressed }) => ({
+              marginRight: 8,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              opacity: pressed ? 0.7 : 1,
+            })}
           >
-            <LinearGradient
-              colors={[accent.primary, accent.primary] as const}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{
-                width: 36,
-                height: 36,
-              }}
-            />
-          </MaskedView>
-        </Pressable>
+            <MaskedView
+              maskElement={
+                <Text style={{
+                  fontSize: 36,
+                  fontWeight: '700',
+                  lineHeight: 36,
+                  backgroundColor: 'transparent',
+                }}>
+                  ＋
+                </Text>
+              }
+            >
+              <LinearGradient
+                colors={[accent.primary, accent.primary] as const}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{
+                  width: 36,
+                  height: 36,
+                }}
+              />
+            </MaskedView>
+          </Pressable>
+          
+          {/* 通知アイコン */}
+          <HeaderNotificationIcon />
+        </View>
       ),
       headerStyle: {
-        backgroundColor: colors.card as string,
+        // 子ども向けテーマは画面背景色に統一（#FFF8E1）
+        backgroundColor: (theme === 'child' ? '#FFF8E1' : colors.card) as string,
       },
       headerTintColor: accent.primary as string,
       headerTitleStyle: {
@@ -606,7 +614,8 @@ export default function TaskListScreen() {
 const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    // Web版child-theme.cssの.dashboard-gradient-bgに統一（#FFF8E1 クリーム色）
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   searchContainer: {
     flexDirection: 'row' as const,
@@ -614,9 +623,10 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     gap: getSpacing(8, width),
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(8, width),
-    backgroundColor: colors.card,
+    // 子ども向けテーマは画面背景色に統一（#FFF8E1）
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.default,
+    borderBottomColor: theme === 'child' ? 'rgba(255, 107, 107, 0.2)' : colors.border.default,
   },
   searchBarWrapper: {
     flex: 1,

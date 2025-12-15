@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -132,7 +132,7 @@ export default function NotificationListScreen() {
     Alert.alert(
       theme === 'child' ? 'かくにん' : '確認',
       theme === 'child'
-        ? 'すべてのおしらせをよんだことにするよ'
+        ? 'ぜんぶよんだことにするよ'
         : 'すべての通知を既読にしますか？',
       [
         {
@@ -228,7 +228,7 @@ export default function NotificationListScreen() {
     if (loading && notifications.length === 0) {
       return (
         <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color={accent.primary as string} />
+          <ActivityIndicator size="large" color={accent.primary as string} testID="loading-indicator" />
         </View>
       );
     }
@@ -278,7 +278,7 @@ export default function NotificationListScreen() {
               end={{ x: 1, y: 0 }}
               style={styles.unreadBadge}
             >
-              <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+              <Text style={styles.unreadBadgeText}>未読: {unreadCount}件</Text>
             </LinearGradient>
           )}
         </View>
@@ -296,7 +296,7 @@ export default function NotificationListScreen() {
               style={styles.markAllReadButton}
             >
               <Text style={styles.markAllReadButtonText}>
-                {theme === 'child' ? 'すべてよんだ' : 'すべて既読'}
+                {theme === 'child' ? 'みんなよんだことにする' : 'すべて既読にする'}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -337,6 +337,7 @@ export default function NotificationListScreen() {
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
             tintColor={accent.primary as string}
+            testID="refresh-control"
           />
         }
         onEndReached={handleEndReached}
@@ -344,6 +345,7 @@ export default function NotificationListScreen() {
         contentContainerStyle={
           notifications.length === 0 ? styles.emptyListContent : undefined
         }
+        testID="notification-list"
       />
     </View>
   );
@@ -380,7 +382,7 @@ const formatDate = (dateString: string, theme: 'adult' | 'child'): string => {
 const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -388,9 +390,9 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     alignItems: 'center',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: colors.card,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.default,
+    borderBottomColor: theme === 'child' ? 'rgba(255, 107, 107, 0.2)' : colors.border.default,
   },
   headerTitle: {
     flexDirection: 'row',
@@ -429,9 +431,9 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   searchContainer: {
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(12, width),
-    backgroundColor: colors.card,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.default,
+    borderBottomColor: theme === 'child' ? 'rgba(255, 107, 107, 0.2)' : colors.border.default,
   },
   searchInput: {
     backgroundColor: colors.surface,

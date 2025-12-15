@@ -37,4 +37,19 @@ class NotificationSettingsResponder
             'data' => $settings,
         ], 200);
     }
+
+    /**
+     * 通知設定削除（リセット）成功レスポンス
+     * 
+     * @param array<string, bool> $settings デフォルト設定
+     * @return JsonResponse
+     */
+    public function reset(array $settings): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => '通知設定をデフォルトに戻しました。',
+            'data' => $settings,
+        ], 200);
+    }
 }

@@ -25,11 +25,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useMonthlyReport } from '../../hooks/usePerformance';
 import { BarChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
+import { useChildTheme } from '../../hooks/useChildTheme';
 
 export default function MonthlyReportScreen() {
   const navigation = useNavigation();
   const { width } = useResponsive();
-  const styles = useMemo(() => createStyles(width), [width]);
+  const isChildTheme = useChildTheme();
+  const themeType = isChildTheme ? 'child' : 'adult';
+  const styles = useMemo(() => createStyles(width, themeType), [width, themeType]);
   const {
     report,
     isLoading,
@@ -367,10 +370,10 @@ export default function MonthlyReportScreen() {
   );
 }
 
-const createStyles = (width: number) => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: theme === 'child' ? '#FFF8E1' : '#f3f4f6',
   },
   scrollContent: {
     paddingBottom: getSpacing(24, width),
@@ -507,9 +510,11 @@ const createStyles = (width: number) => StyleSheet.create({
   summaryCard: {
     flex: 1,
     padding: getSpacing(16, width),
-    backgroundColor: '#f9fafb',
+    backgroundColor: theme === 'child' ? '#FFFFFF' : '#f9fafb',
     borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
+    borderWidth: theme === 'child' ? 3 : 0,
+    borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
   },
   summaryCardValue: {
     marginTop: getSpacing(8, width),
@@ -530,11 +535,13 @@ const createStyles = (width: number) => StyleSheet.create({
   summaryDetailCard: {
     flex: 1,
     padding: getSpacing(12, width),
-    backgroundColor: '#f9fafb',
+    backgroundColor: theme === 'child' ? '#FFFFFF' : '#f9fafb',
     borderRadius: getBorderRadius(8, width),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderWidth: theme === 'child' ? 3 : 0,
+    borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
   },
   summaryDetailLabel: {
     fontSize: getFontSize(14, width, {}),
@@ -564,8 +571,10 @@ const createStyles = (width: number) => StyleSheet.create({
   memberCard: {
     marginBottom: getSpacing(12, width),
     padding: getSpacing(16, width),
-    backgroundColor: '#f9fafb',
+    backgroundColor: theme === 'child' ? '#FFFFFF' : '#f9fafb',
     borderRadius: getBorderRadius(12, width),
+    borderWidth: theme === 'child' ? 3 : 0,
+    borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
   },
   memberHeader: {
     flexDirection: 'row',

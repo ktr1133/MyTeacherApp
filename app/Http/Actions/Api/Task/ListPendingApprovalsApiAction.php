@@ -74,19 +74,47 @@ class ListPendingApprovalsApiAction
                 'success' => true,
                 'data' => [
                     'approvals' => collect($approvals->items())->map(function ($approval) {
-                        return [
-                            'type' => $approval->type, // 'task' or 'token_purchase'
-                            'id' => $approval->id,
-                            'title' => $approval->title,
-                            'description' => $approval->description ?? null,
-                            'requester' => [
-                                'id' => $approval->requester->id,
-                                'username' => $approval->requester->username,
-                                'name' => $approval->requester->name,
-                            ],
-                            'requested_at' => $approval->created_at->toIso8601String(),
-                            'metadata' => $approval->metadata ?? [], // タスク報酬、トークン数など
-                        ];
+                        // $approval は配列形式で返される
+                        $type = $approval['type'];
+                        $model = $approval['model'];
+                        
+                        if ($type === 'task') {
+                            return [
+                                'type' => 'task',
+                                'id' => $approval['id'],
+                                'title' => $approval['title'],
+                                'description' => $approval['description'] ?? null,
+                                'requester' => [
+                                    'id' => $model->user->id,
+                                    'username' => $model->user->username,
+                                    'name' => $model->user->name,
+                                ],
+                                'requested_at' => $approval['requested_at']->toIso8601String(),
+                                'metadata' => [
+                                    'reward' => $approval['reward'],
+                                    'has_images' => $approval['has_images'],
+                                    'images_count' => $approval['images_count'],
+                                ],
+                            ];
+                        } else {
+                            // token_purchase
+                            return [
+                                'type' => 'token_purchase',
+                                'id' => $approval['id'],
+                                'title' => $approval['package_name'],
+                                'description' => null,
+                                'requester' => [
+                                    'id' => $model->user->id,
+                                    'username' => $model->user->username,
+                                    'name' => $model->user->name,
+                                ],
+                                'requested_at' => $approval['requested_at']->toIso8601String(),
+                                'metadata' => [
+                                    'token_amount' => $approval['token_amount'],
+                                    'price' => $approval['price'],
+                                ],
+                            ];
+                        }
                     }),
                     'pagination' => [
                         'current_page' => $approvals->currentPage(),

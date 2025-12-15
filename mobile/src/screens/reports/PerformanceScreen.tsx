@@ -572,7 +572,7 @@ export default function PerformanceScreen() {
 const createStyles = (width: number, theme: any, colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   scrollContent: {
     paddingBottom: getSpacing(24, width),
@@ -748,6 +748,8 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     backgroundColor: colors.card,
     borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
+    borderWidth: theme === 'child' ? 3 : 0,
+    borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
     ...getShadow(2),
   },
   summaryLabel: {

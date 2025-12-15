@@ -36,10 +36,7 @@ class GetInvoicesAction
             $user = Auth::user();
             $group = $user->group;
 
-            // 子どもテーマユーザーはアクセス拒否
-            if ($user->useChildTheme()) {
-                return $this->responder->forbiddenResponse();
-            }
+            // 請求履歴の表示は子どもテーマでも許可（閲覧のみ）
 
             // サブスクリプション加入チェック
             if (!$this->subscriptionService->isGroupSubscribed($group)) {

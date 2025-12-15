@@ -80,6 +80,33 @@ class DeviceTokenEloquentRepository implements DeviceTokenRepositoryInterface
     }
 
     /**
+     * ユーザーの全デバイストークンを取得（is_activeに関わらず）
+     *
+     * @param int $userId
+     * @return Collection<int, UserDeviceToken>
+     */
+    public function getAllByUserId(int $userId): Collection
+    {
+        return UserDeviceToken::where('user_id', $userId)
+            ->orderBy('last_used_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * デバイストークンをID指定で削除（is_active = FALSE）
+     *
+     * @param int $userId
+     * @param int $deviceTokenId
+     * @return bool
+     */
+    public function deleteById(int $userId, int $deviceTokenId): bool
+    {
+        return UserDeviceToken::where('user_id', $userId)
+            ->where('id', $deviceTokenId)
+            ->update(['is_active' => false]) > 0;
+    }
+
+    /**
      * デバイストークンを非アクティブ化
      *
      * @param string $deviceToken

@@ -471,28 +471,26 @@ export default function TaskDecompositionScreen() {
         </View>
 
         {/* 実行ボタン */}
-        <View style={[styles.button, styles.primaryButton, isProposing && styles.buttonDisabled]}>
-          <LinearGradient
-            colors={['#59B9C6', '#3b82f6']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{ width: '100%', height: '100%', borderRadius: 8 }}
+        <LinearGradient
+          colors={['#59B9C6', '#3b82f6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.button, styles.primaryButton, (isProposing || !title.trim()) && styles.buttonDisabled]}
+        >
+          <TouchableOpacity
+            style={styles.primaryButtonTouchable}
+            onPress={() => handlePropose(false)}
+            disabled={isProposing || !title.trim()}
           >
-            <TouchableOpacity
-              style={styles.primaryButtonTouchable}
-              onPress={() => handlePropose(false)}
-              disabled={isProposing || !title.trim()}
-            >
-              {isProposing ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {theme === 'child' ? 'わけてもらう' : 'タスクを分解する'}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </LinearGradient>
-        </View>
+            {isProposing ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {theme === 'child' ? 'わけてもらう' : 'タスクを分解する'}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </LinearGradient>
 
         {/* キャンセルボタン */}
         <TouchableOpacity
@@ -658,30 +656,28 @@ export default function TaskDecompositionScreen() {
         </View>
 
         {/* 採用ボタン */}
-        <View style={[styles.button, styles.primaryButton, isProposing && styles.buttonDisabled]}>
-          <LinearGradient
-            colors={['#59B9C6', '#3b82f6']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{ width: '100%', height: '100%', borderRadius: 8 }}
+        <LinearGradient
+          colors={['#59B9C6', '#3b82f6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.button, styles.primaryButton, (isProposing || selectedTaskIndices.size === 0) && styles.buttonDisabled]}
+        >
+          <TouchableOpacity
+            style={styles.primaryButtonTouchable}
+            onPress={handleAdopt}
+            disabled={isProposing || selectedTaskIndices.size === 0}
           >
-            <TouchableOpacity
-              style={styles.primaryButtonTouchable}
-              onPress={handleAdopt}
-              disabled={isProposing || selectedTaskIndices.size === 0}
-            >
-              {isProposing ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {theme === 'child' 
-                    ? `${selectedTaskIndices.size}このやることをつくる` 
-                    : `${selectedTaskIndices.size}件のタスクを作成`}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </LinearGradient>
-        </View>
+            {isProposing ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {theme === 'child' 
+                  ? `${selectedTaskIndices.size}このやることをつくる` 
+                  : `${selectedTaskIndices.size}件のタスクを作成`}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </LinearGradient>
 
         {/* 再提案ボタン */}
         <TouchableOpacity
@@ -750,28 +746,26 @@ export default function TaskDecompositionScreen() {
         </View>
 
         {/* 再提案ボタン */}
-        <View style={[styles.button, styles.primaryButton, isProposing && styles.buttonDisabled]}>
-          <LinearGradient
-            colors={['#59B9C6', '#3b82f6']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{ width: '100%', height: '100%', borderRadius: 8 }}
+        <LinearGradient
+          colors={['#59B9C6', '#3b82f6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.button, styles.primaryButton, (isProposing || !refinementPoints.trim()) && styles.buttonDisabled]}
+        >
+          <TouchableOpacity
+            style={styles.primaryButtonTouchable}
+            onPress={() => handlePropose(true)}
+            disabled={isProposing || !refinementPoints.trim()}
           >
-            <TouchableOpacity
-              style={styles.primaryButtonTouchable}
-              onPress={() => handlePropose(true)}
-              disabled={isProposing || !refinementPoints.trim()}
-            >
-              {isProposing ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {theme === 'child' ? 'もういちどわけてもらう' : '再提案する'}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </LinearGradient>
-        </View>
+            {isProposing ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {theme === 'child' ? 'もういちどわけてもらう' : '再提案する'}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </LinearGradient>
 
         {/* 戻るボタン */}
         <TouchableOpacity
@@ -805,7 +799,7 @@ export default function TaskDecompositionScreen() {
 const createStyles = (width: number, theme: any, colors: any, accent: any) => StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   scrollView: {
     flex: 1,

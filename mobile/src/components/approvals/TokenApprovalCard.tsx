@@ -139,11 +139,13 @@ export const TokenApprovalCard: React.FC<TokenApprovalCardProps> = ({
           onPress={() => onReject(item.id)}
           disabled={isProcessing}
         >
-          {isProcessing ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.rejectButtonText}>却下する</Text>
-          )}
+          <View style={styles.buttonTouchable}>
+            {isProcessing ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.rejectButtonText}>却下する</Text>
+            )}
+          </View>
         </TouchableOpacity>
       </View>
     </View>

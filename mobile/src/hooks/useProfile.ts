@@ -52,7 +52,7 @@ export const useProfile = (theme: 'adult' | 'child' = 'adult') => {
   /**
    * プロフィール情報を更新
    * 
-   * @param data - 更新するプロフィール情報
+   * @param data - 更新するプロフィール情報（username, email, name, theme）
    * @returns 更新されたプロフィール情報
    */
   const updateProfile = useCallback(
@@ -60,12 +60,19 @@ export const useProfile = (theme: 'adult' | 'child' = 'adult') => {
       username?: string;
       email?: string;
       name?: string;
+      theme?: 'adult' | 'child';
     }): Promise<ProfileResponse['data']> => {
       setIsLoading(true);
       setError(null);
 
     try {
-      const updatedProfile = await profileService.updateProfile(data);
+      // themeのみの更新の場合は専用メソッドを使用
+      let updatedProfile: ProfileResponse['data'];
+      if (data.theme && Object.keys(data).length === 1) {
+        updatedProfile = await profileService.updateTheme(data.theme);
+      } else {
+        updatedProfile = await profileService.updateProfile(data);
+      }
       setProfile(updatedProfile);
       return updatedProfile;
     } catch (err: any) {

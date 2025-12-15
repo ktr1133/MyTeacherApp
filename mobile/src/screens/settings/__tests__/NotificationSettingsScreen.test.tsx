@@ -14,6 +14,38 @@ import { useTheme } from '../../../contexts/ThemeContext';
 // モック設定
 jest.mock('../../../hooks/useNotificationSettings');
 jest.mock('../../../contexts/ThemeContext');
+jest.mock('../../../contexts/ColorSchemeContext', () => ({
+  useColorScheme: () => ({ colorScheme: 'light', setColorScheme: jest.fn() }),
+}));
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: () => ({
+    colors: {
+      background: '#FFFFFF',
+      surface: '#F9FAFB',
+      card: '#FFFFFF',
+      text: {
+        primary: '#111827',
+        secondary: '#6B7280',
+        tertiary: '#9CA3AF',
+        disabled: '#D1D5DB',
+      },
+      border: {
+        default: '#E5E7EB',
+        light: 'rgba(229, 231, 235, 0.5)',
+      },
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+      overlay: 'rgba(0, 0, 0, 0.5)',
+    },
+    accent: { primary: '#007AFF', gradient: ['#007AFF', '#0056D2'] },
+    isDark: false,
+    theme: 'adult',
+  }),
+}));
 jest.mock('../../../utils/responsive', () => ({
   useResponsive: () => ({ width: 375, height: 812 }),
   getFontSize: (size: number) => size,
@@ -81,13 +113,13 @@ describe('NotificationSettingsScreen', () => {
     it('should render notification settings screen with all settings', async () => {
       const { getByText } = render(<NotificationSettingsScreen />);
 
-      // タイトル確認
-      expect(getByText('通知設定')).toBeTruthy();
+      // 全体設定セクション確認
+      expect(getByText('Push通知')).toBeTruthy();
+      expect(getByText('すべてのPush通知のON/OFFを切り替えます')).toBeTruthy();
 
-      // 各設定項目のラベル確認（実装に応じて調整）
+      // スイッチラベル確認
       await waitFor(() => {
-        // 実際のラベルはNotificationSettingsScreen.tsxの実装に依存
-        // 以下は推測のため、実装を確認して調整してください
+        expect(getByText('Push通知を受け取る')).toBeTruthy();
         expect(mockUseNotificationSettings).toHaveBeenCalled();
       });
     });
@@ -145,10 +177,12 @@ describe('NotificationSettingsScreen', () => {
         refreshTheme: jest.fn(),
       });
 
-      const { getByText } = render(<NotificationSettingsScreen />);
+      const { getByText, getAllByText } = render(<NotificationSettingsScreen />);
 
-      // 子供向けタイトル確認
-      expect(getByText('つうちのせってい')).toBeTruthy();
+      // 子供向けラベル確認（複数存在するため getAllByText を使用）
+      expect(getAllByText('つうちをうけとる').length).toBeGreaterThan(0);
+      expect(getByText('つうちをうけとるかどうかをきめられるよ')).toBeTruthy();
+      expect(getByText('OFFにすると、つうちがこなくなるよ')).toBeTruthy();
     });
   });
 

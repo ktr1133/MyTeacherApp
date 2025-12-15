@@ -52,4 +52,21 @@ interface DeviceTokenManagementServiceInterface
      * @return bool
      */
     public function deactivateToken(string $deviceToken): bool;
+
+    /**
+     * ユーザーの全デバイスを取得（is_activeに関わらず）
+     *
+     * @param int $userId
+     * @return Collection<int, UserDeviceToken>
+     */
+    public function getAllDevices(int $userId): Collection;
+
+    /**
+     * デバイスをID指定で削除
+     *
+     * @param int $userId
+     * @param int $deviceTokenId
+     * @return bool
+     */
+    public function deleteDeviceById(int $userId, int $deviceTokenId): bool;
 }

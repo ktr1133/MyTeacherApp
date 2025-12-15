@@ -120,14 +120,22 @@ export default function TaskEditScreen() {
       if (!foundTask) {
         console.error('[TaskEditScreen] Task not found after API call');
         Alert.alert('エラー', 'タスクが見つかりません');
-        navigation.goBack();
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.navigate('TaskList' as never);
+        }
         return;
       }
 
       // グループタスクは編集不可
       if (foundTask.is_group_task) {
         Alert.alert('エラー', 'グループタスクは編集できません');
-        navigation.goBack();
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.navigate('TaskList' as never);
+        }
         return;
       }
 
@@ -170,7 +178,11 @@ export default function TaskEditScreen() {
     } catch (error) {
       console.error('[TaskEditScreen] タスク取得エラー:', error);
       Alert.alert('エラー', 'タスクの読み込みに失敗しました');
-      navigation.goBack();
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('TaskList' as never);
+      }
     } finally {
       setLoadingTask(false);
     }
@@ -701,7 +713,7 @@ export default function TaskEditScreen() {
 const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   contentContainer: {
     padding: getSpacing(16, width),
@@ -710,7 +722,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   formGroup: {
     marginBottom: getSpacing(16, width),

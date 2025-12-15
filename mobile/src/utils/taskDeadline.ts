@@ -38,9 +38,10 @@ export interface DeadlineInfo {
  * 
  * @param task タスクオブジェクト
  * @param isChildTheme 子ども向けテーマかどうか
+ * @param userTimezone ユーザーのタイムゾーン（例: "Asia/Tokyo"）。未指定の場合は端末のローカルタイムゾーン
  * @returns 期限状態の情報
  */
-export function getDeadlineStatus(task: Task, isChildTheme: boolean = false): DeadlineInfo {
+export function getDeadlineStatus(task: Task, isChildTheme: boolean = false, userTimezone?: string): DeadlineInfo {
   // 完了済みタスクの場合
   if (task.is_completed || task.completed_at) {
     return {
@@ -58,15 +59,48 @@ export function getDeadlineStatus(task: Task, isChildTheme: boolean = false): De
   }
 
   try {
-    const dueDate = new Date(task.due_date);
-    const now = new Date();
+    // due_dateをユーザーのタイムゾーンで解釈
+    // "2025-12-20"形式の日付文字列を、ユーザーのタイムゾーンでの日付として扱う
+    const dueDateStr = task.due_date;
     
-    // 日付のみで比較（時刻は無視）
-    const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
-    const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // 日付フォーマット（YYYY-MM-DD）の検証
+    // 長期タスクの場合は任意の文字列（例："2年後"）が入るため、早期リターン
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDateStr)) {
+      return {
+        status: 'none',
+        message: '',
+      };
+    }
+    
+    const [year, month, day] = dueDateStr.split('-').map(Number);
+    
+    // ユーザーのタイムゾーンで「今日」の日付を取得
+    const now = new Date();
+    let todayInUserTz: Date;
+    
+    if (userTimezone) {
+      // ユーザーのタイムゾーンでの現在時刻を取得
+      const formatter = new Intl.DateTimeFormat('ja-JP', {
+        timeZone: userTimezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+      const parts = formatter.formatToParts(now);
+      const todayYear = parseInt(parts.find(p => p.type === 'year')?.value || '0');
+      const todayMonth = parseInt(parts.find(p => p.type === 'month')?.value || '0');
+      const todayDay = parseInt(parts.find(p => p.type === 'day')?.value || '0');
+      todayInUserTz = new Date(todayYear, todayMonth - 1, todayDay);
+    } else {
+      // タイムゾーン未指定の場合は端末のローカルタイムゾーン
+      todayInUserTz = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+    
+    // 期限日（ユーザーのタイムゾーン基準）
+    const dueDateInUserTz = new Date(year, month - 1, day);
     
     // ミリ秒単位の差分
-    const diffMs = dueDateOnly.getTime() - todayOnly.getTime();
+    const diffMs = dueDateInUserTz.getTime() - todayInUserTz.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     
     // 期限切れ（過去の日付）
@@ -79,25 +113,11 @@ export function getDeadlineStatus(task: Task, isChildTheme: boolean = false): De
       };
     }
     
-    // 24時間以内の場合は時間単位で表示
+    // 当日の場合は「今日」と表示（時間単位表示は不要）
     if (diffDays === 0) {
-      // 残り時間を計算（現在時刻から期限までの時間）
-      const diffHours = Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60));
-      
-      // 既に期限を過ぎている場合（同日だが時刻が過去）
-      if (diffHours < 0) {
-        return {
-          status: 'overdue',
-          message: '期限切れ',
-          daysUntilDue: 0,
-          hoursUntilDue: diffHours,
-        };
-      }
-      
       return {
         status: 'approaching',
-        message: `残り${diffHours}h`,
-        hoursUntilDue: diffHours,
+        message: isChildTheme ? 'きょう！' : '今日',
         daysUntilDue: 0,
       };
     }
@@ -136,9 +156,10 @@ export function getDeadlineStatus(task: Task, isChildTheme: boolean = false): De
  * 
  * @param tasks タスクの配列
  * @param isChildTheme 子ども向けテーマかどうか
+ * @param userTimezone ユーザーのタイムゾーン（例: "Asia/Tokyo"）。未指定の場合は端末のローカルタイムゾーン
  * @returns 最も緊急度の高い期限情報
  */
-export function getMostUrgentDeadline(tasks: Task[], isChildTheme: boolean = false): DeadlineInfo | null {
+export function getMostUrgentDeadline(tasks: Task[], isChildTheme: boolean = false, userTimezone?: string): DeadlineInfo | null {
   if (!tasks || tasks.length === 0) {
     return null;
   }
@@ -146,7 +167,7 @@ export function getMostUrgentDeadline(tasks: Task[], isChildTheme: boolean = fal
   let mostUrgent: { task: Task; info: DeadlineInfo } | null = null;
 
   for (const task of tasks) {
-    const info = getDeadlineStatus(task, isChildTheme);
+    const info = getDeadlineStatus(task, isChildTheme, userTimezone);
     
     // 完了済みとnoneはスキップ
     if (info.status === 'completed' || info.status === 'none' || info.status === 'safe') {
@@ -171,22 +192,11 @@ export function getMostUrgentDeadline(tasks: Task[], isChildTheme: boolean = fal
         }
       }
     } else if (info.status === 'approaching' && mostUrgent.info.status !== 'overdue') {
-      // approachingの場合、時間/日数が少ない方を優先
-      if (info.hoursUntilDue !== undefined) {
-        // 時間単位の比較
-        const currentHours = mostUrgent.info.hoursUntilDue !== undefined 
-          ? mostUrgent.info.hoursUntilDue 
-          : (mostUrgent.info.daysUntilDue || 0) * 24;
-        if (info.hoursUntilDue < currentHours) {
-          mostUrgent = { task, info };
-        }
-      } else if (mostUrgent.info.hoursUntilDue === undefined) {
-        // 両方日数の場合、日数が少ない方を優先
-        const currentDays = mostUrgent.info.daysUntilDue || 0;
-        const newDays = info.daysUntilDue || 0;
-        if (newDays < currentDays) {
-          mostUrgent = { task, info };
-        }
+      // approachingの場合、日数が少ない方を優先
+      const currentDays = mostUrgent.info.daysUntilDue || 0;
+      const newDays = info.daysUntilDue || 0;
+      if (newDays < currentDays) {
+        mostUrgent = { task, info };
       }
     }
   }

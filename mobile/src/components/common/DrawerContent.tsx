@@ -418,13 +418,13 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   StyleSheet.create({
     scrollViewContent: {
       flexGrow: 1,
-      backgroundColor: colors.background,
+      backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
     },
     header: {
       paddingHorizontal: getSpacing(16, width),
       paddingVertical: getSpacing(20, width),
       borderBottomWidth: 1,
-      borderBottomColor: colors.border.default,
+      borderBottomColor: theme === 'child' ? 'rgba(255, 107, 107, 0.2)' : colors.border.default,
     },
     logo: {
       fontSize: getFontSize(24, width, theme),

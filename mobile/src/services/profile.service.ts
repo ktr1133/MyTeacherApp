@@ -83,6 +83,50 @@ class ProfileService {
   }
 
   /**
+   * テーマを更新
+   * 
+   * Laravel API: PATCH /api/v1/profile
+   * 認証必須（Sanctum token）
+   * 
+   * @param theme - 更新するテーマ（'adult' | 'child'）
+   * @returns 更新されたユーザー情報
+   * @throws Error - 認証エラー、バリデーションエラー、ネットワークエラー
+   */
+  async updateTheme(theme: 'adult' | 'child'): Promise<ProfileResponse['data']> {
+    try {
+      const response = await api.patch<ProfileResponse>('/profile', { theme });
+
+      if (!response.data.success || !response.data.data) {
+        throw new Error('THEME_UPDATE_FAILED');
+      }
+
+      // キャッシュ更新
+      await storage.setItem(
+        STORAGE_KEYS.USER_DATA,
+        JSON.stringify(response.data.data)
+      );
+      // user/currentのキャッシュもクリア
+      await storage.removeItem(STORAGE_KEYS.CURRENT_USER);
+
+      return response.data.data;
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        throw new Error('AUTH_REQUIRED');
+      }
+      if (error.response?.status === 422) {
+        throw new Error('VALIDATION_ERROR');
+      }
+      if (error.message && error.message.startsWith('THEME_')) {
+        throw error;
+      }
+      if (!error.response) {
+        throw new Error('NETWORK_ERROR');
+      }
+      throw new Error('THEME_UPDATE_FAILED');
+    }
+  }
+
+  /**
    * プロフィール情報を更新
    * 
    * Laravel API: PATCH /api/v1/profile

@@ -29,7 +29,7 @@ import { useThemedColors } from '../../hooks/useThemedColors';
  */
 export default function HeaderNotificationIcon() {
   const navigation = useNavigation<any>();
-  const { unreadCount } = useNotifications();
+  const { unreadCount } = useNotifications(true); // ポーリング有効化
   const { width } = useResponsive();
   const isChildTheme = useChildTheme();
   const theme = isChildTheme ? 'child' : 'adult';
@@ -46,7 +46,7 @@ export default function HeaderNotificationIcon() {
    * バッジ表示用の未読数テキスト
    * 100以上の場合は「99+」と表示
    */
-  const badgeText = unreadCount > 99 ? '99+' : unreadCount.toString();
+  const badgeText = (unreadCount ?? 0) > 99 ? '99+' : (unreadCount ?? 0).toString();
 
   /**
    * レスポンシブスタイル
@@ -59,7 +59,7 @@ export default function HeaderNotificationIcon() {
       onPress={handlePress}
       style={styles.container}
       accessibilityLabel="通知"
-      accessibilityHint={`未読通知${unreadCount}件`}
+      accessibilityHint={`未読通知${unreadCount ?? 0}件`}
       testID="header-notification-icon"
     >
       <Ionicons 
@@ -67,7 +67,7 @@ export default function HeaderNotificationIcon() {
         size={getFontSize(24, width, theme)} 
         color={colors.text.primary}
       />
-      {unreadCount > 0 && (
+      {(unreadCount ?? 0) > 0 && (
         <View style={styles.badge} testID="notification-badge">
           <Text style={styles.badgeText}>
             {badgeText}

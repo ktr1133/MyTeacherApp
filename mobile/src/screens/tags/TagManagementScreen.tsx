@@ -23,7 +23,6 @@ import {
   Alert,
   Modal,
   TextInput,
-  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
@@ -294,7 +293,7 @@ export default function TagManagementScreen({ navigation }: Props) {
             /* 編集ボタン */
             <>
               <LinearGradient
-                colors={[accent.primary, accent.primary] as const}
+                colors={[accent.primary as string, accent.primary as string]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={[styles.actionButton, styles.editButton]}
@@ -313,8 +312,11 @@ export default function TagManagementScreen({ navigation }: Props) {
               <LinearGradient
                 colors={
                   canDelete
-                    ? [colors.status.error, colors.status.error] as const
-                    : [colors.border, colors.border] as const
+                    ? [colors.status.error as string, colors.status.error as string]
+                    : [
+                        typeof colors.border === 'string' ? colors.border : colors.border.default,
+                        typeof colors.border === 'string' ? colors.border : colors.border.default
+                      ]
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -504,7 +506,7 @@ export default function TagManagementScreen({ navigation }: Props) {
 const createStyles = (width: number, theme: any, colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -512,9 +514,9 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     alignItems: 'center',
     paddingHorizontal: getSpacing(16, width),
     paddingVertical: getSpacing(16, width),
-    backgroundColor: colors.card,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: theme === 'child' ? 'rgba(255, 107, 107, 0.2)' : colors.border,
   },
   headerTitle: {
     fontSize: getFontSize(24, width, theme),
@@ -572,6 +574,8 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     borderRadius: getBorderRadius(8, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(12, width),
+    borderWidth: theme === 'child' ? 3 : 0,
+    borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
     ...getShadow(2),
   },
   tagInfo: {

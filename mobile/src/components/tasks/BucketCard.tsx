@@ -74,13 +74,8 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
         onPressOut={handlePressOut}
         activeOpacity={1} // アニメーションで制御するため1に設定
       >
-        {/* グラデーション背景（Web版: bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700） */}
-        <LinearGradient
-          colors={isDark ? ['#1F2937', '#374151'] : ['#EFF6FF', '#FAF5FF']} // ダーク: gray-800 → gray-700, ライト: blue-50 → purple-50
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }} // 右下方向のグラデーション
-          style={styles.card}
-        >
+        {/* Web版のbento-cardに統一（白背景+シャドウ） */}
+        <View style={styles.card}>
           {/* ヘッダー */}
           <View style={styles.header}>
             <View style={styles.titleContainer}>
@@ -140,7 +135,7 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
             end={{ x: 1, y: 0 }}
             style={styles.bottomBar}
           />
-        </LinearGradient>
+        </View>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -162,11 +157,15 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any) => S
     marginBottom: getSpacing(16, width), // Web版: gap-4 (lg:gap-6)
   },
   card: {
-    borderRadius: getBorderRadius(16, width), // Web版: rounded-2xl
-    padding: getSpacing(16, width), // Web版: p-4 (lg:p-6)
-    // Web版dashboard.cssの影効果（shadow-lg hover:shadow-2xl）
-    ...getShadow(6), // Web版: shadow-lg相当
-    overflow: 'hidden', // グラデーション背景のclip
+    // Web版child-theme.cssの.bento-cardに統一（グラデーション背景+太い赤ボーダー）
+    backgroundColor: colors.isDark ? colors.card : '#FFFFFF',
+    borderRadius: getBorderRadius(24, width), // Web版: 1.5rem (24px)
+    padding: getSpacing(24, width), // Web版: var(--child-spacing-card) = 1.5rem
+    // Web版child-theme.css: 太い赤ボーダー + 大きいシャドウ
+    borderWidth: theme === 'child' ? 3 : 0,
+    borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
+    ...getShadow(8), // Web版: 0 8px 16px (大きめ)
+    overflow: 'hidden', // 下部バーのclip
   },
   header: {
     flexDirection: 'row',

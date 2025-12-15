@@ -44,6 +44,7 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
     error,
     getTimezoneSettings,
     updateTimezone,
+    updateProfile,
   } = useProfile(theme);
   const { mode: colorSchemeMode, setMode: setColorSchemeMode } = useColorScheme();
   const { colors, accent } = useThemedColors();
@@ -102,9 +103,13 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
     setCurrentTheme(newTheme);
     setTheme(newTheme);
 
-    // Laravel APIでユーザーのテーマを更新（UserService経由）
+    // Laravel APIでユーザーのテーマを更新（ProfileService経由）
     try {
-      await userService.getCurrentUser(); // キャッシュクリア
+      await updateProfile({ theme: newTheme });
+      
+      // キャッシュクリア
+      await userService.getCurrentUser();
+      
       Alert.alert(
         newTheme === 'child' ? 'きりかえたよ' : 'テーマ変更完了',
         newTheme === 'child'
@@ -113,6 +118,14 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
       );
     } catch (err) {
       console.error('Failed to update theme', err);
+      Alert.alert(
+        theme === 'child' ? 'エラーがおきたよ' : 'エラー',
+        theme === 'child'
+          ? 'テーマのへんこうができなかったよ'
+          : 'テーマの変更に失敗しました',
+      );
+      // エラー時は元に戻す
+      setCurrentTheme(theme);
     }
   };
 
@@ -594,7 +607,7 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
 const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   content: {
     padding: getSpacing(16, width),
@@ -615,6 +628,8 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     backgroundColor: colors.card,
     borderRadius: getBorderRadius(16, width),
     marginBottom: getSpacing(16, width),
+    borderWidth: theme === 'child' ? 3 : 0,
+    borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
     ...getShadow(2),
     overflow: 'hidden',
   },

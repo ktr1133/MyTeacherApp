@@ -40,8 +40,11 @@ use App\Http\Actions\Api\Profile\UpdateTimezoneApiAction;
 use App\Http\Actions\Api\Profile\UpdatePasswordApiAction;
 use App\Http\Actions\Api\Profile\GetNotificationSettingsAction;
 use App\Http\Actions\Api\Profile\UpdateNotificationSettingsAction;
+use App\Http\Actions\Api\Profile\DeleteNotificationSettingsAction;
 use App\Http\Actions\Api\Profile\RegisterFcmTokenAction;
 use App\Http\Actions\Api\Profile\DeleteFcmTokenAction;
+use App\Http\Actions\Api\Profile\DeleteDeviceByIdAction;
+use App\Http\Actions\Api\Profile\GetDevicesAction;
 use App\Http\Actions\Api\Tags\TagsListApiAction;
 use App\Http\Actions\Api\Tags\StoreTagApiAction;
 use App\Http\Actions\Api\Tags\UpdateTagApiAction;
@@ -64,6 +67,7 @@ use App\Http\Actions\Api\Notification\MarkNotificationAsReadApiAction;
 use App\Http\Actions\Api\Notification\MarkAllNotificationsAsReadApiAction;
 use App\Http\Actions\Api\Notification\GetUnreadCountApiAction;
 use App\Http\Actions\Api\Notification\SearchNotificationsApiAction;
+use App\Http\Actions\Api\Notifications\SendTestNotificationAction;
 
 // Phase 1.E-1.5.2: Token API
 use App\Http\Actions\Api\Token\GetTokenBalanceApiAction;
@@ -119,6 +123,17 @@ use App\Http\Actions\Api\Subscription\GetBillingPortalUrlAction;
 Route::get('/mtdev-app-bucket/{path}', ProxyS3ImageAction::class)
     ->where('path', '.*')
     ->name('api.storage.proxy');
+
+// ============================================================
+// Health Check（認証不要）
+// ============================================================
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toIso8601String(),
+        'app' => config('app.name'),
+    ]);
+})->name('api.health');
 
 // ============================================================
 // 認証API（モバイルアプリ用 - Sanctum）
@@ -236,10 +251,16 @@ Route::middleware('auth:sanctum')->group(function () {
         // 通知設定API（Phase 2.B-7.5）
         Route::get('/notification-settings', GetNotificationSettingsAction::class)->name('api.profile.notification-settings');
         Route::put('/notification-settings', UpdateNotificationSettingsAction::class)->name('api.profile.notification-settings.update');
+        Route::patch('/notification-settings', UpdateNotificationSettingsAction::class)->name('api.profile.notification-settings.patch'); // PATCH エイリアス
+        Route::delete('/notification-settings', DeleteNotificationSettingsAction::class)->name('api.profile.notification-settings.delete');
         
         // FCMトークン管理API（Phase 2.B-7.5）
         Route::post('/fcm-token', RegisterFcmTokenAction::class)->name('api.profile.fcm-token.register');
         Route::delete('/fcm-token', DeleteFcmTokenAction::class)->name('api.profile.fcm-token.delete');
+        Route::delete('/fcm-token/{id}', DeleteDeviceByIdAction::class)->name('api.profile.fcm-token.delete-by-id');
+        
+        // デバイス管理API（Phase 2.B-7.5 統合テスト用）
+        Route::get('/devices', GetDevicesAction::class)->name('api.profile.devices');
     });
 
     // タグ管理API
@@ -279,6 +300,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/read-all', MarkAllNotificationsAsReadApiAction::class)->name('api.notifications.read-all');
         Route::get('/{id}', ShowNotificationApiAction::class)->name('api.notifications.show');
         Route::patch('/{id}/read', MarkNotificationAsReadApiAction::class)->name('api.notifications.read');
+        
+        // テスト通知送信API（Phase 2.B-7.5 統合テスト用）
+        Route::post('/test', SendTestNotificationAction::class)->name('api.notifications.test');
     });
 
     // トークン管理API

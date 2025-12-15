@@ -183,7 +183,7 @@ const createStyles = (
 ) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   scrollView: {
     flex: 1,
@@ -223,6 +223,8 @@ const createStyles = (
     padding: getSpacing(24, width),
     borderRadius: getBorderRadius(12, width),
     alignItems: 'center',
+    borderWidth: theme === 'child' ? 3 : 0,
+    borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
     ...getShadow(3),
   },
   balanceLabel: {

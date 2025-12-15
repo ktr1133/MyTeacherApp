@@ -48,6 +48,11 @@ class UpdateProfileApiRequest extends FormRequest
                 'string',
                 'max:255',
             ],
+            'theme' => [
+                'sometimes',
+                'string',
+                Rule::in(['adult', 'child']),
+            ],
             'bio' => [
                 'nullable',
                 'string',
@@ -71,6 +76,7 @@ class UpdateProfileApiRequest extends FormRequest
             'username.unique' => 'このユーザー名は既に使用されています。',
             'email.email' => '有効なメールアドレスを入力してください。',
             'email.unique' => 'このメールアドレスは既に使用されています。',
+            'theme.in' => 'テーマはadultまたはchildのいずれかである必要があります。',
             'bio.max' => '自己紹介は500文字以内で入力してください。',
             'avatar.image' => 'アバター画像は画像ファイルである必要があります。',
             'avatar.max' => 'アバター画像のサイズは2MB以内にしてください。',

@@ -79,7 +79,7 @@ export interface Task {
   group_task_id: string | null; // UUID
   assigned_by_user_id: number | null;
   tags: TaskTag[]; // タグ情報（id + name）
-  images: TaskImage[];
+  images?: TaskImage[]; // 画像情報（API側で欠ける場合があるためオプショナル）
   created_at: string; // ISO 8601
   updated_at: string; // ISO 8601
 }

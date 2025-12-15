@@ -333,7 +333,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, _acc
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.background,
+      backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
     },
     header: {
       flexDirection: 'row',

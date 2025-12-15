@@ -36,10 +36,8 @@ class GetSubscriptionPlansAction
             $user = Auth::user();
             $group = $user->group;
 
-            // 子どもテーマユーザーはアクセス拒否
-            if ($user->useChildTheme()) {
-                return $this->responder->forbiddenResponse();
-            }
+            // プラン一覧の表示は子どもテーマでも許可
+            // （プラン変更やキャンセルは親ユーザーのみ）
 
             // プラン一覧取得（連想配列を配列に変換）
             $plansData = $this->subscriptionService->getAvailablePlans();

@@ -26,7 +26,6 @@ import {
   ActivityIndicator,
   Modal,
   FlatList,
-  Switch,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -667,10 +666,10 @@ const createStyles = (
 ) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   childContainer: {
-    backgroundColor: '#FFF8DC',
+    backgroundColor: '#FFF8E1',
   },
   content: {
     padding: getSpacing(16, width),

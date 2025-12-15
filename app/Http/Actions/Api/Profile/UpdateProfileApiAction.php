@@ -56,6 +56,9 @@ class UpdateProfileApiAction
             if (array_key_exists('name', $validated)) {
                 $user->name = !empty($validated['name']) ? $validated['name'] : $user->username;
             }
+            if (array_key_exists('theme', $validated)) {
+                $user->theme = $validated['theme'];
+            }
             if (array_key_exists('avatar_path', $validated)) {
                 $user->avatar_path = $validated['avatar_path'];
             }
@@ -73,6 +76,7 @@ class UpdateProfileApiAction
                     'username' => $user->username,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'theme' => $user->theme,
                     'avatar_path' => $user->avatar_path,
                     'bio' => $user->bio ?? null,
                     'updated_at' => $user->updated_at->toIso8601String(),

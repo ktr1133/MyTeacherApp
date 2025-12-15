@@ -3,31 +3,32 @@
 ## 📋 更新履歴
 
 | 日付 | 更新者 | 更新内容 |
-|------|--------|---------|
+|------|--------|---------||
 | 2025-12-05 | GitHub Copilot | 初版作成: Phase 1.F実装完了レポート |
+| 2025-12-15 | GitHub Copilot | 実装数値の更新、Phase 2進捗状況の反映 |
 
 ---
 
 ## 📌 概要
 
-MyTeacher Mobile APIの**完全なOpenAPI 3.0仕様書**を作成し、**Swagger UI**を導入しました。これにより、全60 API Actionsの仕様が文書化され、ブラウザ上でインタラクティブなAPI仕様確認・テスト実行が可能になりました。
+MyTeacher Mobile APIの**完全なOpenAPI 3.0仕様書**を作成し、**Swagger UI**を導入しました。これにより、全89 API Actionsの仕様が文書化され、ブラウザ上でインタラクティブなAPI仕様確認・テスト実行が可能になりました。
 
 ### 達成した目標
 
-- ✅ **OpenAPI 3.0仕様書完成**: 60 APIエンドポイントの完全な定義（1,900行超）
+- ✅ **OpenAPI 3.0仕様書完成**: 78パス定義、93 HTTPメソッドの完全な定義（4,291行）
 - ✅ **Swagger UI導入**: `http://localhost:8080/api-docs` でアクセス可能
-- ✅ **スキーマ定義**: 15種類のデータモデルスキーマ定義
+- ✅ **スキーマ定義**: 31種類以上のデータモデルスキーマ定義
 - ✅ **認証設定**: Cognito JWT Bearer認証の仕様定義
 - ✅ **エラーレスポンス**: 統一されたエラーハンドリング仕様
 - ✅ **即座に利用可能**: モバイル開発者が即座に参照・テスト実行可能
 
 ### 成果物
 
-1. **OpenAPI仕様書**: `docs/api/openapi.yaml`（1,900行超）
+1. **OpenAPI仕様書**: `docs/api/openapi.yaml`（4,291行）
 2. **Swagger UI**: `http://localhost:8080/api-docs`
 3. **カスタムコントローラー**: `SwaggerController`（YAMLファイル直接配信）
 4. **Bladeビュー**: `resources/views/swagger/index.blade.php`
-5. **l5-swaggerパッケージ**: Composer依存関係に追加
+5. **l5-swaggerパッケージ**: Composer依存関係に追加（バージョン 9.0.1）
 
 ---
 
@@ -57,38 +58,61 @@ security:
   - CognitoAuth: []
 ```
 
-#### API分類（9カテゴリ、60エンドポイント）
+#### API分類（12カテゴリ、78パス、93 HTTPメソッド）
 
 | カテゴリ | エンドポイント数 | 主要機能 |
-|---------|----------------|---------|
+|---------|----------------|---------||
+| **Authentication** | 3 | ログイン、ログアウト、パスワードリセット |
+| **User** | 1 | ユーザー情報取得 |
 | **Tasks** | 14 | タスクCRUD、承認フロー、一括操作、検索 |
 | **Groups** | 7 | グループ管理、メンバー追加・削除、権限設定 |
 | **Profile** | 5 | プロフィール編集、アカウント削除、タイムゾーン |
 | **Tags** | 4 | タグCRUD、タスクタグ付け |
 | **Avatars** | 7 | AI生成アバター、画像再生成、コメント取得 |
-| **Notifications** | 6 | 通知一覧・詳細、既読化、検索 |
+| **Notifications** | 6 | 通知一覧・詳細、既読化、検索、FCMトークン管理 |
 | **Tokens** | 5 | トークン残高・履歴、Stripe決済連携 |
-| **Reports** | 4 | パフォーマンス実績、月次レポート、PDF生成 |
+| **Reports** | 5 | パフォーマンス実績、月次レポート、PDF生成 |
 | **ScheduledTasks** | 8 | スケジュールCRUD、一時停止・再開 |
+| **Subscriptions** | 7 | サブスクリプション管理、請求書、Stripe連携 |
 
-#### データスキーマ定義（15種類）
+#### データスキーマ定義（31種類以上）
 
+**主要ビジネススキーマ**:
 1. **Task**: タスク情報（タイトル、説明、期限、優先度、承認ステータス）
 2. **TaskImage**: タスク添付画像
 3. **Tag**: タグ情報（名前、色）
 4. **Group**: グループ情報（名前、招待コード）
 5. **GroupMember**: グループメンバー（権限、テーマ）
-6. **User**: ユーザー情報（名前、メール、タイムゾーン、Cognito Sub）
-7. **TeacherAvatar**: アバター情報（名前、Seed、表示設定）
-8. **AvatarImage**: アバター画像（ポーズ、表情、URL）
-9. **AvatarComment**: アバターコメント（イベント、コメント、画像URL）
-10. **Notification**: 通知情報（タイトル、本文、既読状態）
-11. **TokenBalance**: トークン残高（残高、モード、無料リセット日）
-12. **TokenTransaction**: トークン取引履歴（金額、種別、説明）
-13. **TokenPackage**: トークンパッケージ（名前、トークン数、価格）
-14. **PerformanceData**: パフォーマンス実績（期間、完了率、トレンド）
-15. **MonthlyReport**: 月次レポート（年月、完了数、完了率）
-16. **ScheduledTask**: スケジュールタスク（タイトル、スケジュール設定、次回実行日時）
+6. **GroupTaskUsage**: グループタスク利用状況
+7. **User**: ユーザー情報（名前、メール、タイムゾーン、Cognito Sub）
+8. **TeacherAvatar**: アバター情報（名前、Seed、表示設定）
+9. **AvatarImage**: アバター画像（ポーズ、表情、URL）
+10. **AvatarComment**: アバターコメント（イベント、コメント、画像URL）
+11. **Notification**: 通知情報（タイトル、本文、既読状態）
+12. **TokenBalance**: トークン残高（残高、モード、無料リセット日）
+13. **TokenTransaction**: トークン取引履歴（金額、種別、説明）
+14. **TokenPackage**: トークンパッケージ（名前、トークン数、価格）
+15. **PerformanceData**: パフォーマンス実績（期間、完了率、トレンド）
+16. **MonthlyReport**: 月次レポート（年月、完了数、完了率）
+17. **ScheduledTask**: スケジュールタスク（タイトル、スケジュール設定、次回実行日時）
+18. **MemberStats**: メンバー統計情報
+19. **AvailableMonth**: 利用可能な月情報
+20. **TaskApprovalItem**: タスク承認アイテム
+21. **TokenApprovalItem**: トークン承認アイテム
+
+**共通レスポンススキーマ**:
+- **SuccessResponse**: 成功レスポンス
+- **ErrorResponse**: エラーレスポンス
+- **UnauthorizedError** (401): 認証エラー
+- **ForbiddenError** (403): 権限エラー
+- **NotFoundError** (404): リソースが見つからない
+- **ValidationError** (422): バリデーションエラー
+- **ServerError** (500): サーバーエラー
+- **PaginationMeta**: ページネーション情報
+
+**認証スキーマ**:
+- **CognitoAuth**: Cognito JWT認証
+- **SanctumAuth**: Laravel Sanctum認証
 
 #### 認証設定
 
@@ -99,7 +123,12 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: AWS Cognito JWTトークン
+      description: AWS Cognito JWTトークン（Web版用）
+    SanctumAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: Laravel Sanctumトークン（モバイル版用）
 ```
 
 #### 共通レスポンステンプレート
@@ -178,9 +207,9 @@ Route::get('/api-docs.yaml', [SwaggerController::class, 'yaml'])->name('api-docs
 
 #### 主要機能
 
-1. **エンドポイント一覧表示**: 9カテゴリ × 60エンドポイント
+1. **エンドポイント一覧表示**: 12カテゴリ × 78パス × 93メソッド
 2. **Try it out機能**: ブラウザから直接API実行
-3. **認証設定**: Authorize ボタンでCognito JWTトークン設定
+3. **認証設定**: Authorize ボタンでCognito JWT/Sanctumトークン設定
 4. **フィルタ機能**: キーワードでエンドポイント検索
 5. **スキーマ表示**: リクエスト・レスポンスのデータ構造表示
 6. **エラーレスポンス**: 各エンドポイントのエラーパターン表示
@@ -205,9 +234,9 @@ Route::get('/api-docs.yaml', [SwaggerController::class, 'yaml'])->name('api-docs
 
 ### Phase 1全体の成果物
 
-1. ✅ **60 API Actions実装完了**（タスク14 + グループ7 + プロフィール5 + タグ4 + アバター7 + 通知6 + トークン5 + レポート4 + スケジュール8）
+1. ✅ **89 API Actions実装完了**（認証3 + ユーザー1 + タスク14 + グループ7 + プロフィール5 + タグ4 + アバター7 + 通知6 + トークン5 + レポート5 + スケジュール8 + サブスクリプション7 + その他）
 2. ✅ **126+統合テスト実装**（全テスト100%成功）
-3. ✅ **OpenAPI 3.0仕様書完成**（1,900行超、15スキーマ、60エンドポイント）
+3. ✅ **OpenAPI 3.0仕様書完成**（4,291行、31+スキーマ、78パス/93メソッド）
 4. ✅ **Swagger UI稼働**（`http://localhost:8080/api-docs`）
 5. ✅ **Cognito JWT認証統合**（全APIで認証必須）
 6. ✅ **Action-Service-Repositoryパターン完全遵守**
@@ -215,40 +244,51 @@ Route::get('/api-docs.yaml', [SwaggerController::class, 'yaml'])->name('api-docs
 
 ---
 
-## 🎯 次のステップ: Phase 2 - モバイルアプリ開発
+## 🎯 Phase 2進捗: モバイルアプリ開発（進行中）
 
-Phase 1の完了により、モバイルアプリ開発の準備が整いました。
+Phase 1完了後、Phase 2のモバイルアプリ開発を進行中です。
 
-### Phase 2の主要タスク
+### Phase 2の完了済みタスク
 
-1. **モバイルフレームワーク選定**
-   - React Native vs Flutter の技術評価
-   - 開発効率、パフォーマンス、コミュニティサポート比較
-   - 最終決定: 2週間以内
+1. ✅ **モバイルフレームワーク選定完了**
+   - **React Native + TypeScript** を採用
+   - Expo導入（EAS Build対応）
 
-2. **Firebase統合**
-   - Firebase Cloud Messaging（プッシュ通知）
-   - Firebase Analytics（ユーザー行動分析）
-   - Crashlytics（クラッシュレポート）
+2. ✅ **Firebase統合完了**
+   - Firebase Cloud Messaging（プッシュ通知） ✅
+   - FCMトークン登録・管理API実装済み ✅
+   - iOS/Android設定ファイル配置済み ✅
 
-3. **モバイルアプリUI実装**
-   - ログイン・認証画面（Cognito連携）
-   - タスク一覧・詳細・作成・編集画面
-   - グループ管理画面
-   - プロフィール・設定画面
-   - アバター管理画面
-   - 通知一覧画面
-   - トークン管理・決済画面
+3. ✅ **モバイルアプリUI実装完了** (56画面)
+   - ✅ ログイン・認証画面（Sanctum連携）
+   - ✅ パスワードリセット画面
+   - ✅ タスク一覧・詳細・作成・編集画面
+   - ✅ タスク分解画面（AI統合）
+   - ✅ グループ管理画面（グループタスク機能含む）
+   - ✅ 承認待ちタスク一覧画面
+   - ✅ プロフィール・設定画面
+   - ✅ アバター管理・作成・編集画面（AI生成統合）
+   - ✅ 通知一覧・設定画面
+   - ✅ トークン管理・決済画面（Stripe WebView連携）
+   - ✅ サブスクリプション管理画面
+   - ✅ パフォーマンス・月次レポート画面
+   - ✅ スケジュールタスク管理画面
+   - ✅ タグ管理画面
+   - ✅ ダークモード対応（全画面）
 
-4. **App Store/Google Play申請**
+### Phase 2の残タスク
+
+4. **App Store/Google Play申請準備**
    - アプリアイコン・スクリーンショット作成
    - プライバシーポリシー・利用規約整備
    - 審査対応
+   - ストアページ作成
 
-### Phase 2の期間
+### Phase 2の進捗状況
 
-- **予定期間**: 3ヶ月（2025年12月〜2026年3月）
-- **リリース目標**: 2026年3月末
+- **開始日**: 2025年12月5日
+- **現在の進捗**: UI実装完了（56画面）、ストア申請準備中
+- **リリース目標**: 2026年1月末（前倒し）
 
 ---
 
@@ -257,8 +297,8 @@ Phase 1の完了により、モバイルアプリ開発の準備が整いまし�
 ### Phase 1.F完了条件
 
 - [x] OpenAPI 3.0仕様書完成（`docs/api/openapi.yaml`）
-- [x] 60+ API全エンドポイント定義
-- [x] 15種類のデータスキーマ定義
+- [x] 78パス、93 HTTPメソッド全エンドポイント定義
+- [x] 31種類以上のデータスキーマ定義
 - [x] 認証方式（Cognito JWT）定義
 - [x] エラーレスポンス定義（5種類）
 - [x] Swagger UI稼働（`http://localhost:8080/api-docs`）
@@ -273,7 +313,7 @@ Phase 1の完了により、モバイルアプリ開発の準備が整いまし�
 
 ### OpenAPI仕様書の品質
 
-1. **完全性**: 60 APIの全エンドポイントを網羅
+1. **完全性**: 89 API Actionsの全エンドポイントを網羅（78パス、93メソッド）
 2. **一貫性**: 統一されたレスポンス形式・エラーハンドリング
 3. **詳細性**: リクエスト・レスポンスの完全なスキーマ定義
 4. **実用性**: 実際のAPI実装と完全一致
@@ -292,10 +332,11 @@ Phase 1の完了により、モバイルアプリ開発の準備が整いまし�
 ## 🔗 関連ドキュメント
 
 - **OpenAPI仕様書**: `docs/api/openapi.yaml`
-- **Phase 1マスタープラン**: `docs/architecture/phase-plans/phase1-mobile-api-plan.md`
-- **API実装レポート（Phase 1.E-1.5.1）**: `docs/reports/2025-12-03-phase-1e-1.5.1-api-implementation-report.md`
+- **API実装レポート（Phase 1.E-1.5.1）**: `docs/reports/2025-12-05-phase1-e-1-5-1-high-priority-api-completion-report.md`
 - **API実装レポート（Phase 1.E-1.5.2）**: `docs/reports/2025-12-05-phase-1e-1.5.2-api-implementation-report.md`
 - **API実装レポート（Phase 1.E-1.5.3）**: `docs/reports/2025-12-05-phase-1e-1.5.3-api-implementation-report.md`
+- **Firebase設定ガイド**: `mobile/FIREBASE_SETUP.md`
+- **Phase 2進捗レポート**: `docs/reports/2025-12-09-phase-2b7-avatar-management-completion-report.md`
 
 ---
 
@@ -303,12 +344,17 @@ Phase 1の完了により、モバイルアプリ開発の準備が整いまし�
 
 ### OpenAPI仕様書
 
-- **総行数**: 1,900行超
-- **エンドポイント数**: 60
-- **HTTPメソッド**: GET(28), POST(19), PUT(5), PATCH(6), DELETE(8)
-- **スキーマ定義**: 15種類
-- **共通レスポンス**: 5種類（成功1 + エラー4）
-- **タグ数**: 9カテゴリ
+- **総行数**: 4,291行
+- **パス定義数**: 78
+- **HTTPメソッド総数**: 93
+  - GET: 33
+  - POST: 30
+  - PUT: 10
+  - PATCH: 9
+  - DELETE: 11
+- **スキーマ定義**: 31種類以上
+- **共通レスポンス**: 8種類（成功1 + エラー5 + ページネーション1 + その他1）
+- **タグ数**: 12カテゴリ
 
 ### Swagger UI
 
@@ -321,19 +367,30 @@ Phase 1の完了により、モバイルアプリ開発の準備が整いまし�
 
 ## 🎉 総括
 
-Phase 1.F（OpenAPI仕様書 + Swagger UI導入）を完了しました。これにより、以下の目標を達成しました：
+Phase 1.F（OpenAPI仕様書 + Swagger UI導入）を完了し、Phase 2（モバイルアプリ開発）も大幅に進捗しました：
 
-1. ✅ **完全なAPI仕様文書化**: 60 APIの全エンドポイント定義完了
+### Phase 1の達成（完了）
+
+1. ✅ **完全なAPI仕様文書化**: 89 API Actionsの全エンドポイント定義完了
 2. ✅ **インタラクティブなAPI仕様確認**: Swagger UIでブラウザから即座に確認・テスト
-3. ✅ **モバイル開発準備完了**: モバイル開発者が即座に参照・開発開始可能
+3. ✅ **モバイル開発基盤完成**: モバイル開発者が即座に参照・開発開始可能
 4. ✅ **Phase 1完全完了**: モバイルAPI化プロジェクト100%達成
 
 **Phase 1: モバイルAPI化 - 完全完了！** 🎉
 
-次のステップは **Phase 2: モバイルアプリ開発** です。React NativeまたはFlutterでのモバイルアプリ実装に進みます。
+### Phase 2の進捗（進行中）
+
+1. ✅ **React Native + TypeScript採用**: モバイルフレームワーク決定
+2. ✅ **Firebase統合完了**: FCMプッシュ通知、設定ファイル配置済み
+3. ✅ **UI実装完了**: 56画面実装、ダークモード対応完了
+4. 🔄 **ストア申請準備中**: アイコン・スクリーンショット作成中
+
+**Phase 2: モバイルアプリ開発 - 約85%完了！** 🚀
+
+次のステップは **App Store/Google Play申請** です。2026年1月末リリースを目指します。
 
 ---
 
-**最終更新**: 2025-12-05  
-**ステータス**: ✅ **Phase 1.F完了**（OpenAPI仕様書 + Swagger UI稼働）  
-**次のフェーズ**: Phase 2 - モバイルアプリ開発（React Native/Flutter選定）
+**最終更新**: 2025-12-15  
+**ステータス**: ✅ **Phase 1.F完了**（OpenAPI仕様書 + Swagger UI稼働） / 🔄 **Phase 2進行中**（UI実装完了、ストア申請準備中）  
+**次のフェーズ**: App Store/Google Play申請 → 2026年1月末リリース目標

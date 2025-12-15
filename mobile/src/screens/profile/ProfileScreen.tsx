@@ -378,7 +378,7 @@ export const ProfileScreen: React.FC = () => {
 const createStyles = (width: number, theme: 'adult' | 'child', colors: any, accent: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   content: {
     padding: getSpacing(16, width),
@@ -387,7 +387,7 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: theme === 'child' ? '#FFF8E1' : colors.background,
   },
   loadingText: {
     marginTop: getSpacing(12, width),

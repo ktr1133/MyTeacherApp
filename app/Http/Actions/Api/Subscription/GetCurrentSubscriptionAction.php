@@ -36,10 +36,8 @@ class GetCurrentSubscriptionAction
             $user = Auth::user();
             $group = $user->group;
 
-            // 子どもテーマユーザーはアクセス拒否
-            if ($user->useChildTheme()) {
-                return $this->responder->forbiddenResponse();
-            }
+            // サブスクリプション情報の取得は子どもテーマでも許可
+            // （表示のみ - プラン変更やキャンセルは親ユーザーのみ）
 
             // 現在のサブスクリプション取得
             $subscription = $this->subscriptionService->getCurrentSubscription($group);

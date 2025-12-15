@@ -36,10 +36,8 @@ class GetBillingPortalUrlAction
             $user = Auth::user();
             $group = $user->group;
 
-            // 子どもテーマユーザーはアクセス拒否
-            if ($user->useChildTheme()) {
-                return $this->responder->forbiddenResponse();
-            }
+            // Billing Portalへのアクセスは子どもテーマでも許可
+            // （Stripe側で請求書確認・ダウンロードのみ可能、変更操作は親ユーザーが実施）
 
             // サブスクリプション加入チェック
             if (!$this->subscriptionService->isGroupSubscribed($group)) {
