@@ -59,9 +59,26 @@
                     
                     <!-- Desktop Navigation -->
                     <div class="hidden md:flex items-center gap-6">
-                        <a href="{{ url('/') }}" class="link-underline text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] transition font-medium text-sm">
-                            Apps
-                        </a>
+                        <!-- Apps Dropdown -->
+                        <div class="relative group">
+                            <button type="button" class="link-underline text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] transition font-medium text-sm inline-flex items-center gap-1">
+                                Apps
+                                <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                <a href="{{ url('/') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-[#59B9C6] transition rounded-t-lg">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
+                                        </svg>
+                                        <span class="font-medium">MyTeacher</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">タスク管理アプリ</p>
+                                </a>
+                            </div>
+                        </div>
                         <a href="{{ route('portal.guide.index') }}" class="link-underline text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] transition font-medium text-sm">
                             使い方ガイド
                         </a>
@@ -111,9 +128,18 @@
                 <!-- Mobile Menu (Hidden by default) -->
                 <div id="mobile-menu" class="hidden md:hidden pb-4">
                     <div class="flex flex-col gap-2">
-                        <a href="{{ url('/') }}" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
-                            Apps
-                        </a>
+                        <!-- Apps Dropdown (Mobile) -->
+                        <button type="button" id="mobile-apps-toggle" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition text-left flex items-center justify-between">
+                            <span>Apps</span>
+                            <svg id="mobile-apps-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div id="mobile-apps-menu" class="hidden ml-4 space-y-1">
+                            <a href="{{ url('/') }}" class="block px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
+                                MyTeacher
+                            </a>
+                        </div>
                         <a href="{{ route('portal.guide.index') }}" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
                             使い方ガイド
                         </a>
@@ -269,6 +295,18 @@
             mobileMenuButton.addEventListener('click', function() {
                 mobileMenu.classList.toggle('hidden');
             });
+
+            // Mobile Apps Dropdown
+            const mobileAppsToggle = document.getElementById('mobile-apps-toggle');
+            const mobileAppsMenu = document.getElementById('mobile-apps-menu');
+            const mobileAppsIcon = document.getElementById('mobile-apps-icon');
+
+            if (mobileAppsToggle) {
+                mobileAppsToggle.addEventListener('click', function() {
+                    mobileAppsMenu.classList.toggle('hidden');
+                    mobileAppsIcon.classList.toggle('rotate-180');
+                });
+            }
         </script>
 
         @stack('scripts')

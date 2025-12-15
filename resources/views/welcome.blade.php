@@ -63,6 +63,30 @@
                     <!-- Navigation Links -->
                     @if (Route::has('login'))
                         <div class="flex items-center gap-2 sm:gap-3">
+                            <!-- Apps Dropdown -->
+                            <div class="relative group">
+                                <button type="button" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 font-medium text-sm min-w-[48px] min-h-[48px] gap-1">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">Apps</span>
+                                    <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div class="absolute left-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <a href="{{ url('/') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-[#59B9C6] transition rounded-t-lg">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
+                                            </svg>
+                                            <span class="font-medium">MyTeacher</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-7">タスク管理アプリ</p>
+                                    </a>
+                                </div>
+                            </div>
+
                             <!-- ポータルサイトリンク -->
                             <a href="{{ route('portal.home') }}" 
                                class="inline-flex items-center justify-center px-3 sm:px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-[#59B9C6] dark:hover:text-[#59B9C6] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 font-medium text-sm min-w-[48px] min-h-[48px]">
@@ -222,6 +246,151 @@
                         <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
                             グループタスクで家事分担、お小遣いをポイント管理
                         </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- モバイルアプリセクション -->
+        <section class="py-24 bg-gradient-to-br from-[#59B9C6]/5 to-purple-500/5 dark:from-[#59B9C6]/10 dark:to-purple-500/10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <span class="inline-block px-4 py-2 bg-[#59B9C6]/10 text-[#59B9C6] rounded-full text-sm font-semibold mb-4">Mobile & Web</span>
+                    <h2 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                        スマホでも、ブラウザでも。
+                    </h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                        学校のタブレットでも、自分のスマホでも。<br>
+                        どんな子にも使いやすい環境を準備しました。
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+                    <!-- 左側: スマートフォンモックアップ -->
+                    <div class="relative">
+                        <div class="w-full max-w-sm mx-auto">
+                            <!-- スマホフレーム -->
+                            <div class="relative bg-gray-900 dark:bg-gray-800 rounded-[3rem] p-4 shadow-2xl">
+                                <!-- ノッチ -->
+                                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-gray-900 dark:bg-gray-800 rounded-b-3xl"></div>
+                                <!-- スクリーン -->
+                                <div class="bg-white dark:bg-gray-700 rounded-[2.5rem] overflow-hidden aspect-[9/19.5]">
+                                    <div class="h-full flex items-center justify-center bg-gradient-to-br from-[#59B9C6]/10 to-purple-500/10">
+                                        <div class="text-center p-6">
+                                            <svg class="w-20 h-20 mx-auto text-[#59B9C6] mb-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
+                                            </svg>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                                スクリーンショット<br>準備中
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 浮遊装飾 -->
+                            <div class="absolute -top-6 -right-6 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl floating-icon"></div>
+                            <div class="absolute -bottom-6 -left-6 w-32 h-32 bg-[#59B9C6]/10 rounded-full blur-2xl floating-icon" style="animation-delay: 0.5s;"></div>
+                        </div>
+                    </div>
+
+                    <!-- 右側: ダウンロード・説明 -->
+                    <div class="space-y-8">
+                        <!-- 特徴説明 -->
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-gradient-to-br from-[#59B9C6] to-[#3b82f6] rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M17.924 2.617a.997.997 0 00-.215-.322l-.004-.004A.997.997 0 0017 2h-4a1 1 0 100 2h1.586l-3.293 3.293a1 1 0 001.414 1.414L16 5.414V7a1 1 0 102 0V3a.997.997 0 00-.076-.383z"/>
+                                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-1">モバイルアプリ</h3>
+                                    <p class="text-gray-600 dark:text-gray-300">プッシュ通知、カメラ連携で使いやすさ向上</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-1">ブラウザ版</h3>
+                                    <p class="text-gray-600 dark:text-gray-300">学校のタブレットでもアクセス可能</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- App Store / Google Play バッジ -->
+                        <div class="space-y-4">
+                            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">モバイルアプリをダウンロード</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <!-- App Store Badge -->
+                                <a href="#" class="inline-flex items-center justify-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition group">
+                                    <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                                    </svg>
+                                    <div class="text-left">
+                                        <div class="text-xs">Download on the</div>
+                                        <div class="text-lg font-semibold -mt-1">App Store</div>
+                                    </div>
+                                </a>
+
+                                <!-- Google Play Badge -->
+                                <a href="#" class="inline-flex items-center justify-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition group">
+                                    <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                                    </svg>
+                                    <div class="text-left">
+                                        <div class="text-xs">GET IT ON</div>
+                                        <div class="text-lg font-semibold -mt-1">Google Play</div>
+                                    </div>
+                                </a>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                ※ 2025年1月リリース予定
+                            </p>
+                        </div>
+
+                        <!-- システム要件 -->
+                        <details class="group">
+                            <summary class="flex items-center justify-between cursor-pointer list-none p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-[#59B9C6] transition">
+                                <span class="font-semibold text-gray-900 dark:text-white">システム要件</span>
+                                <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </summary>
+                            <div class="mt-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-sm space-y-3">
+                                <div>
+                                    <p class="font-semibold text-gray-900 dark:text-white mb-1">📱 iOS版</p>
+                                    <p class="text-gray-600 dark:text-gray-300">iOS 13.0以降 / iPhone、iPad対応</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 dark:text-white mb-1">🤖 Android版</p>
+                                    <p class="text-gray-600 dark:text-gray-300">Android 6.0 (Marshmallow) 以降</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 dark:text-white mb-1">🌐 ブラウザ版</p>
+                                    <p class="text-gray-600 dark:text-gray-300">Chrome 90+、Safari 14+、Firefox 88+、Edge 90+</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">スマートフォン、タブレット、PC対応</p>
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Webアプリへのリンク -->
+                        <div class="text-center pt-4">
+                            <a href="{{ route('login') }}" class="inline-flex items-center text-[#59B9C6] hover:text-[#3b82f6] font-semibold transition group">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"/>
+                                </svg>
+                                ブラウザで今すぐ始める
+                                <svg class="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                </svg>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
