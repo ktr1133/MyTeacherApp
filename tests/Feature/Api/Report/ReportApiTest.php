@@ -273,4 +273,39 @@ class ReportApiTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['year_month']);
     }
+
+    /**
+     * @test
+     * メンバー別概況レポートのグラフラベルがyy/m形式であること
+     */
+    public function test_member_summary_has_correct_date_format_in_labels(): void
+    {
+        // Arrange
+        $yearMonth = now()->subMonth()->format('Y-m');
+        MonthlyReport::factory()->create([
+            'group_id' => $this->group->id,
+            'report_month' => $yearMonth . '-01',
+        ]);
+
+        $data = [
+            'user_id' => $this->user->id,
+            'group_id' => $this->group->id,
+            'year_month' => $yearMonth,
+        ];
+
+        // Act
+        $response = $this->actingAs($this->user)
+            ->postJson('/api/reports/monthly/member-summary', $data);
+
+        // Assert
+        $response->assertStatus(200);
+        $labels = $response->json('data.summary.reward_trend.labels');
+        
+        // すべてのラベルがyy/m形式（例: 25/11）であることを検証
+        expect($labels)->not->toBeNull();
+        expect($labels)->toBeArray();
+        foreach ($labels as $label) {
+            expect($label)->toMatch('/^\d{2}\/\d{1,2}$/');
+        }
+    }
 }
