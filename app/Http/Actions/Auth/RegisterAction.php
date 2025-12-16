@@ -44,7 +44,7 @@ class RegisterAction
     public function store(RegisterRequest $request): RedirectResponse
     {
         // TODO: 登録一時停止中は404を返す
-        // abort(404);
+        abort(404);
         try {
             // ユーザー作成
             $user = $this->profileService->createUser([

@@ -235,7 +235,7 @@ describe('pdf.service', () => {
         exists: true,
         delete: jest.fn().mockResolvedValue(undefined),
       };
-      (File as jest.MockedFunction<typeof File>).mockImplementationOnce(() => existingFile as any);
+      (File as jest.MockedClass<typeof File>).mockImplementationOnce(() => existingFile as any);
 
       // 実行
       await pdfService.deletePdfFile('file:///cache/test.pdf');
@@ -248,7 +248,7 @@ describe('pdf.service', () => {
     it('存在しないファイルの削除をスキップする', async () => {
       // Mock: ファイルが存在しない
       const nonExistentFile = { ...mockFile, exists: false };
-      (File as jest.MockedFunction<typeof File>).mockImplementationOnce(() => nonExistentFile as any);
+      (File as jest.MockedClass<typeof File>).mockImplementationOnce(() => nonExistentFile as any);
 
       // 実行
       await pdfService.deletePdfFile('file:///cache/test.pdf');
@@ -264,7 +264,7 @@ describe('pdf.service', () => {
         exists: true,
         delete: jest.fn().mockRejectedValue(new Error('Delete error')),
       };
-      (File as jest.MockedFunction<typeof File>).mockImplementationOnce(() => errorFile as any);
+      (File as jest.MockedClass<typeof File>).mockImplementationOnce(() => errorFile as any);
 
       // 実行・検証（例外が投げられないことを確認）
       await expect(
