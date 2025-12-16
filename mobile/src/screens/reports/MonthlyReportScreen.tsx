@@ -16,7 +16,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -81,7 +81,7 @@ export default function MonthlyReportScreen() {
 
     Alert.alert(
       'AI生成サマリー',
-      `${userName}さんの月次サマリーを生成しますか？\n（トークンを消費します）`,
+      `${userName}の月次サマリーを生成しますか？\n（トークンを消費します）`,
       [
         { text: 'キャンセル', style: 'cancel' },
         {
@@ -94,7 +94,7 @@ export default function MonthlyReportScreen() {
               
               if (summaryData) {
                 // 検証済みデータを持って専用画面に遷移
-                navigation.navigate('MemberSummary', { data: summaryData });
+                (navigation as any).navigate('MemberSummary', { data: summaryData });
               } else {
                 throw new Error('サマリーデータの取得に失敗しました');
               }
@@ -136,7 +136,8 @@ export default function MonthlyReportScreen() {
     );
   }
 
-  if (error) {
+  // エラー時: レポート未生成の場合はドロップダウンを表示し続ける
+  if (error && !error.includes('生成されていません')) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
@@ -155,6 +156,46 @@ export default function MonthlyReportScreen() {
             </LinearGradient>
           </View>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  // レポート未生成の場合: ドロップダウンと案内メッセージを表示
+  if (error && error.includes('生成されていません')) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {/* 年月選択ドロップダウン */}
+          <View style={styles.pickerContainer}>
+            <Text style={styles.pickerLabel}>対象月</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={`${selectedYear}-${selectedMonth}`}
+                onValueChange={handleMonthChange}
+                style={styles.picker}
+              >
+                {availableMonths.map((month) => (
+                  <Picker.Item
+                    key={`${month.year}-${month.month}`}
+                    label={month.label}
+                    value={`${month.year}-${month.month}`}
+                  />
+                ))}
+              </Picker>
+            </View>
+          </View>
+
+          {/* レポート未生成メッセージ */}
+          <View style={styles.notGeneratedContainer}>
+            <MaterialIcons name="info-outline" size={64} color="#59B9C6" />
+            <Text style={styles.notGeneratedTitle}>レポート未生成</Text>
+            <Text style={styles.notGeneratedMessage}>{error}</Text>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -294,16 +335,24 @@ export default function MonthlyReportScreen() {
             {/* メンバー別統計 */}
             <View style={styles.memberSection}>
               <Text style={styles.sectionTitle}>メンバー別実績</Text>
-              {report.member_stats.map((member) => (
+              {report.member_stats.map((member) => {
+                // 表示名の生成（防御的コーディング）
+                const displayName = member.user_name && member.username
+                  ? `${member.user_name}@${member.username}`
+                  : member.username
+                    ? `@${member.username}`
+                    : member.user_name || 'ユーザー';
+                
+                return (
                 <View key={member.user_id} style={styles.memberCard}>
                   <View style={styles.memberHeader}>
-                    <Text style={styles.memberName}>{member.user_name}</Text>
+                    <Text style={styles.memberName} numberOfLines={1} ellipsizeMode="tail">
+                      {displayName}
+                    </Text>
                     <TouchableOpacity
                       testID={`ai-summary-button-${member.user_id}`}
                       style={styles.summaryButton}
-                      onPress={() =>
-                        handleGenerateSummary(member.user_id, member.user_name)
-                      }
+                      onPress={() => handleGenerateSummary(member.user_id, displayName)}
                       disabled={generatingSummary === member.user_id}
                     >
                       {generatingSummary === member.user_id ? (
@@ -347,7 +396,8 @@ export default function MonthlyReportScreen() {
                     </View>
                   </View>
                 </View>
-              ))}
+                );
+              })}
             </View>
 
             {/* AI生成サマリー */}
@@ -385,7 +435,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   loadingText: {
     marginTop: getSpacing(12, width),
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, undefined),
     color: '#6b7280',
   },
   errorContainer: {
@@ -396,7 +446,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   errorText: {
     marginTop: getSpacing(12, width),
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, undefined),
     color: '#ef4444',
     textAlign: 'center',
   },
@@ -414,7 +464,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, undefined),
     fontWeight: '700',
   },
   lockContainer: {
@@ -425,19 +475,19 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   lockTitle: {
     marginTop: getSpacing(16, width),
-    fontSize: getFontSize(24, width, {}),
+    fontSize: getFontSize(24, width, undefined),
     fontWeight: '700',
     color: '#1f2937',
   },
   lockMessage: {
     marginTop: getSpacing(8, width),
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, undefined),
     color: '#6b7280',
     textAlign: 'center',
   },
   lockNote: {
     marginTop: getSpacing(16, width),
-    fontSize: getFontSize(14, width, {}),
+    fontSize: getFontSize(14, width, undefined),
     color: '#9ca3af',
     textAlign: 'center',
   },
@@ -455,7 +505,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   subscribeButtonText: {
     color: '#fff',
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, undefined),
     fontWeight: '700',
   },
   header: {
@@ -466,13 +516,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderBottomColor: '#e5e7eb',
   },
   headerTitle: {
-    fontSize: getFontSize(24, width, {}),
+    fontSize: getFontSize(24, width, undefined),
     fontWeight: '700',
     color: '#1f2937',
   },
   groupName: {
     marginTop: getSpacing(4, width),
-    fontSize: getFontSize(14, width, {}),
+    fontSize: getFontSize(14, width, undefined),
     color: '#6b7280',
   },
   monthSelector: {
@@ -482,7 +532,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(8, width),
   },
   monthSelectorLabel: {
-    fontSize: getFontSize(14, width, {}),
+    fontSize: getFontSize(14, width, undefined),
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: getSpacing(8, width),
@@ -498,7 +548,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(8, width),
   },
   sectionTitle: {
-    fontSize: getFontSize(18, width, {}),
+    fontSize: getFontSize(18, width, undefined),
     fontWeight: '700',
     color: '#1f2937',
     marginBottom: getSpacing(16, width),
@@ -518,13 +568,13 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
   },
   summaryCardValue: {
     marginTop: getSpacing(8, width),
-    fontSize: getFontSize(24, width, {}),
+    fontSize: getFontSize(24, width, undefined),
     fontWeight: '700',
     color: '#1f2937',
   },
   summaryCardLabel: {
     marginTop: getSpacing(4, width),
-    fontSize: getFontSize(12, width, {}),
+    fontSize: getFontSize(12, width, undefined),
     color: '#6b7280',
   },
   summaryDetailCards: {
@@ -544,11 +594,11 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     borderColor: theme === 'child' ? '#FF6B6B' : 'transparent',
   },
   summaryDetailLabel: {
-    fontSize: getFontSize(14, width, {}),
+    fontSize: getFontSize(14, width, undefined),
     color: '#6b7280',
   },
   summaryDetailValue: {
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, undefined),
     fontWeight: '600',
     color: '#1f2937',
   },
@@ -583,9 +633,11 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     marginBottom: getSpacing(12, width),
   },
   memberName: {
-    fontSize: getFontSize(16, width, {}),
+    flex: 1,
+    fontSize: getFontSize(16, width, undefined),
     fontWeight: '600',
     color: '#1f2937',
+    marginRight: getSpacing(8, width),
   },
   summaryButton: {
     flexDirection: 'row',
@@ -597,7 +649,7 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     gap: getSpacing(4, width),
   },
   summaryButtonText: {
-    fontSize: getFontSize(12, width, {}),
+    fontSize: getFontSize(12, width, undefined),
     fontWeight: '600',
     color: '#8B5CF6',
   },
@@ -618,12 +670,12 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     paddingVertical: getSpacing(4, width),
   },
   memberStatLabel: {
-    fontSize: getFontSize(12, width, {}),
+    fontSize: getFontSize(12, width, undefined),
     color: '#6b7280',
   },
   memberStatValue: {
     marginTop: getSpacing(4, width),
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, undefined),
     fontWeight: '600',
     color: '#1f2937',
   },
@@ -643,18 +695,55 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     gap: getSpacing(8, width),
   },
   aiSummaryTitle: {
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width, undefined),
     fontWeight: '700',
     color: '#6b21a8',
   },
   aiSummaryContent: {
-    fontSize: getFontSize(14, width, {}),
-    lineHeight: getFontSize(22, width, {}),
+    fontSize: getFontSize(14, width, undefined),
+    lineHeight: getFontSize(22, width, undefined),
     color: '#1f2937',
   },
   aiSummaryMeta: {
     marginTop: getSpacing(12, width),
-    fontSize: getFontSize(12, width, {}),
+    fontSize: getFontSize(12, width, undefined),
     color: '#7c3aed',
+  },
+  // レポート未生成時のスタイル
+  notGeneratedContainer: {
+    padding: getSpacing(32, width),
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 400,
+  },
+  notGeneratedTitle: {
+    fontSize: getFontSize(20, width, undefined),
+    fontWeight: '700',
+    color: '#1f2937',
+    marginTop: getSpacing(16, width),
+    marginBottom: getSpacing(8, width),
+  },
+  notGeneratedMessage: {
+    fontSize: getFontSize(16, width, undefined),
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: getSpacing(16, width),
+  },
+  pickerContainer: {
+    paddingHorizontal: getSpacing(16, width),
+    paddingVertical: getSpacing(16, width),
+    backgroundColor: '#fff',
+    marginBottom: getSpacing(8, width),
+  },
+  pickerLabel: {
+    fontSize: getFontSize(14, width, undefined),
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: getSpacing(8, width),
+  },
+  pickerWrapper: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
   },
 });

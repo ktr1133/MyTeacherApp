@@ -26,6 +26,8 @@ class SanctumDebugMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // デバッグログを無効化（必要に応じてコメントを外してください）
+        /*
         $token = $request->bearerToken();
         
         // トークン情報をログ出力
@@ -75,10 +77,12 @@ class SanctumDebugMiddleware
                 }
             }
         }
+        */
 
         $response = $next($request);
 
-        // 認証後のユーザー情報をログ出力
+        // 認証後のユーザー情報をログ出力（デバッグログ無効化）
+        /*
         $user = $request->user();
         if ($user) {
             Log::info('[SanctumDebug] User authenticated', [
@@ -92,6 +96,7 @@ class SanctumDebugMiddleware
                 'response_status' => $response->getStatusCode(),
             ]);
         }
+        */
 
         return $response;
     }

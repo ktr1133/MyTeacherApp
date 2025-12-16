@@ -21,7 +21,8 @@ import {
 } from '../types/performance.types';
 import { ApiResponse } from '../types/api.types';
 
-const MEMBER_SUMMARY_CACHE_KEY_PREFIX = 'member_summary_';
+// キャッシュバージョン: user_name/username追加に伴い v2 に更新
+const MEMBER_SUMMARY_CACHE_KEY_PREFIX = 'member_summary_v3_';
 
 /**
  * Laravel PerformanceServiceの生データをモバイル用ChartDataに変換
@@ -181,6 +182,7 @@ export const getMonthlyReport = async (
           return {
             user_id: parseInt(userId),
             user_name: member.user_name,
+            username: member.username || '',
             completed: normalTasksCount + groupTasksCount, // 合計タスク数
             incomplete: 0, // APIにはincompleteがないため0
             reward: groupTaskData[userId]?.reward || 0, // グループタスクの報酬を取得
@@ -213,9 +215,19 @@ export const getMonthlyReport = async (
   } catch (error: any) {
     console.error('[performanceService] getMonthlyReport error:', {
       status: error.response?.status,
-      message: error.response?.data?.message,
+      message: error.message,
       errorData: error.response?.data,
     });
+    
+    // レポート未生成エラー（404 with not_generated: true）の場合は、
+    // エラーオブジェクトに特別なフラグを追加
+    if (error.response?.status === 404 && error.response?.data?.not_generated) {
+      const notGeneratedError: any = new Error(error.response.data.message || 'レポートが見つかりません。');
+      notGeneratedError.notGenerated = true;
+      notGeneratedError.yearMonth = error.response.data.year_month;
+      throw notGeneratedError;
+    }
+    
     throw error;
   }
 };
@@ -234,7 +246,7 @@ export const getMonthlyReport = async (
  */
 export const generateMemberSummary = async (
   request: GenerateMemberSummaryRequest,
-  userName: string
+  userName: string // 後方互換性のため保持しているが使用しない
 ): Promise<MemberSummaryData> => {
   // キャッシュキー生成（user_id + year_month で一意）
   const cacheKey = `${MEMBER_SUMMARY_CACHE_KEY_PREFIX}${request.user_id}_${request.year_month}`;
@@ -258,10 +270,16 @@ export const generateMemberSummary = async (
   
   const apiData = response.data.data;
   
+  // デバッグ: APIレスポンス全体をログ出力
+  console.log('[performanceService] API Response:', JSON.stringify(apiData, null, 2));
+  console.log('[performanceService] summary.user_name:', apiData.summary.user_name);
+  console.log('[performanceService] summary.username:', apiData.summary.username);
+  
   // API生データを画面表示用データに変換
   const summaryData: MemberSummaryData = {
     user_id: apiData.user_id,
-    user_name: userName,
+    user_name: apiData.summary.user_name,
+    username: apiData.summary.username,
     year_month: apiData.year_month,
     comment: apiData.summary.comment,
     task_classification: apiData.summary.task_classification,

@@ -28,6 +28,8 @@ class GenerateMemberSummaryRequest extends FormRequest
             'user_id' => ['required', 'integer', 'exists:users,id'],
             'group_id' => ['required', 'integer', 'exists:groups,id'],
             'year_month' => ['required', 'string', 'date_format:Y-m'],
+            'comment' => ['nullable', 'string'],  // PDF生成用（オプショナル）
+            'chart_image' => ['nullable', 'string'],  // PDF生成用（オプショナル）
         ];
     }
 
@@ -51,6 +53,11 @@ class GenerateMemberSummaryRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator): void
     {
+        \Illuminate\Support\Facades\Log::warning('API Validation failed: GenerateMemberSummaryRequest', [
+            'errors' => $validator->errors()->toArray(),
+            'input' => $this->all(),
+        ]);
+        
         throw new HttpResponseException(
             response()->json([
                 'message' => 'バリデーションエラー',

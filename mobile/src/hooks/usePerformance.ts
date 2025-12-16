@@ -13,6 +13,7 @@ import {
   MemberSummaryData,
 } from '../types/performance.types';
 import * as performanceService from '../services/performance.service';
+import * as pdfService from '../services/pdf.service';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -158,7 +159,14 @@ export const useMonthlyReport = () => {
       if (month) setSelectedMonth(month);
     } catch (err: any) {
       console.error('[useMonthlyReport] レポート取得エラー:', err);
-      setError(err.response?.data?.message || 'レポートの取得に失敗しました');
+      
+      // レポート未生成エラーの場合は、reportをnullにしてエラーメッセージを表示
+      if (err.notGenerated) {
+        setReport(null);
+        setError(`${err.yearMonth || '選択された月'}のレポートは生成されていません。`);
+      } else {
+        setError(err.response?.data?.message || 'レポートの取得に失敗しました');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -260,6 +268,38 @@ export const useMonthlyReport = () => {
     fetchMonthlyReport();
   }, [fetchMonthlyReport]);
 
+  /**
+   * メンバーサマリーPDFをダウンロード・共有
+   * 
+   * @param userId メンバーID
+   * @param yearMonth 対象年月（YYYY-MM形式）
+   * @param comment AIコメント（オプショナル）
+   * @returns ダウンロード結果
+   * @throws {Error} グループ情報なし、API通信エラー等
+   */
+  const downloadMemberSummaryPdf = useCallback(
+    async (userId: number, yearMonth: string, comment?: string) => {
+      if (!user?.group_id) {
+        throw new Error('グループ情報が取得できません');
+      }
+
+      try {
+        const result = await pdfService.downloadAndShareMemberSummaryPdf({
+          user_id: userId,
+          group_id: user.group_id,
+          year_month: yearMonth,
+          comment,
+        });
+        
+        return result;
+      } catch (err: any) {
+        console.error('[useMonthlyReport] PDF download error:', err);
+        throw err;
+      }
+    },
+    [user]
+  );
+
   // 初回読み込み
   useEffect(() => {
     if (user) {
@@ -283,6 +323,7 @@ export const useMonthlyReport = () => {
     selectedMonth,
     changeMonth,
     generateMemberSummary,
+    downloadMemberSummaryPdf,
     refresh,
   };
 };

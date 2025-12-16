@@ -220,16 +220,18 @@ class OpenAIService implements OpenAIServiceInterface
      *
      * @param array $reportData レポートデータ
      * @param array|null $avatarPersonality アバター性格情報 ['tone', 'enthusiasm', 'formality', 'humor']
+     * @param array $memberChanges メンバー変化情報
+     * @param string $userTheme ユーザーテーマ ('adult' or 'child')
      * @return array ['comment' => string, 'usage' => array]
      */
-    public function generateMonthlyReportComment(array $reportData, ?array $avatarPersonality = null, array $memberChanges = []): array
+    public function generateMonthlyReportComment(array $reportData, ?array $avatarPersonality = null, array $memberChanges = [], string $userTheme = 'child'): array
     {
         if (!$this->apiKey) {
             throw new \RuntimeException('OpenAI API key is not configured.');
         }
 
         // アバター性格に基づいたシステムプロンプト生成（変化情報を含める）
-        $systemPrompt = $this->buildReportCommentSystemPrompt($avatarPersonality, $memberChanges);
+        $systemPrompt = $this->buildReportCommentSystemPrompt($avatarPersonality, $memberChanges, $userTheme);
         
         // レポートデータを要約
         $normalTaskCount = 0;
@@ -320,11 +322,18 @@ class OpenAIService implements OpenAIServiceInterface
      * アバター性格に基づいたシステムプロンプト構築
      *
      * @param array|null $personality アバター性格情報
+     * @param array $memberChanges メンバー変化情報
+     * @param string $userTheme ユーザーテーマ ('adult' or 'child')
      * @return string
      */
-    protected function buildReportCommentSystemPrompt(?array $personality, array $memberChanges = []): string
+    protected function buildReportCommentSystemPrompt(?array $personality, array $memberChanges = [], string $userTheme = 'child'): string
     {
-        $basePrompt = "あなたは教師アバターとして、グループの月次タスク実績レポートにコメントを付けます。";
+        // テーマに応じた基本プロンプト
+        if ($userTheme === 'adult') {
+            $basePrompt = "あなたは教師アバターとして、グループの月次タスク実績レポートにコメントを付けます。丁寧語・敬語を使用し、大人に対して適切な言葉遣いでコメントしてください。";
+        } else {
+            $basePrompt = "あなたは教師アバターとして、グループの月次タスク実績レポートにコメントを付けます。子どもに分かりやすく、親しみやすい口調でコメントしてください。";
+        }
         
         // メンバー変化情報をプロンプトに追加
         $changesSection = '';

@@ -81,11 +81,12 @@ class MemberSummaryTestDataSeeder extends Seeder
         $this->command->info("グループID: {$group->id} - {$group->name}");
 
         // 既存ユーザーを確認（testuser）
-        $masterUser = User::where('group_id', $group->id)->where('id', 8)->first();
+        $masterUser = User::where('username', 'testuser')->first();
         if (!$masterUser) {
-            $this->command->error('testuser (ID: 8) が見つかりません。');
+            $this->command->error('testuser が見つかりません。');
             return;
         }
+        $this->command->info("testuser (ID: {$masterUser->id}) を確認しました。");
 
         // テストユーザー4パターンを作成または取得
         $users = $this->createTestUsers($group, $tokenService);

@@ -6,13 +6,14 @@
  * - タスク分類円グラフ表示
  * - 報酬推移折れ線グラフ表示
  * - トークン消費量表示
+ * - PDF生成・共有機能（Phase 2.B-8追加）
  * - 戻るボタンでの確認ダイアログ
  * 
  * Web版: resources/views/reports/monthly/show.blade.php の
  * {{-- メンバー別概況レポート結果表示モーダル --}} に相当
  */
 
-import { useLayoutEffect, useMemo } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -22,6 +23,7 @@ import {
   TouchableOpacity,
   useColorScheme,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -29,6 +31,7 @@ import { PieChart, LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import { MemberSummaryData } from '../../types/performance.types';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } from '../../utils/responsive';
+import { useMonthlyReport } from '../../hooks/usePerformance';
 
 type RootStackParamList = {
   MemberSummary: { data: MemberSummaryData };
@@ -46,15 +49,33 @@ export default function MemberSummaryScreen() {
   const navigation = useNavigation<MemberSummaryScreenNavigationProp>();
   const route = useRoute<MemberSummaryScreenRouteProp>();
   const { width } = useResponsive();
-  const styles = useMemo(() => createStyles(width), [width]);
+  const styles = useMemo(() => createStyles(width, isDark), [width, isDark]);
   const { data } = route.params;
+  const { downloadMemberSummaryPdf } = useMonthlyReport();
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   const screenWidth = Dimensions.get('window').width;
+
+  // デバッグ: 受け取ったデータをログ出力
+  console.log('[MemberSummaryScreen] Received data:', JSON.stringify(data, null, 2));
+  console.log('[MemberSummaryScreen] user_name:', data.user_name);
+  console.log('[MemberSummaryScreen] username:', data.username);
 
   /**
    * 戻るボタンのカスタマイズ（確認ダイアログ付き）
    */
   useLayoutEffect(() => {
+    // user_nameがnullまたは空文字の場合は@usernameのみ表示
+    const displayName = data.user_name && data.username
+      ? `${data.user_name}@${data.username}` 
+      : data.username 
+        ? `@${data.username}`
+        : 'ユーザー';
+    
+    console.log('[MemberSummaryScreen] displayName for header:', displayName);
+    console.log('[MemberSummaryScreen] data.user_name:', data.user_name);
+    console.log('[MemberSummaryScreen] data.username:', data.username);
+    
     navigation.setOptions({
       headerLeft: () => (
         <TouchableOpacity
@@ -69,9 +90,9 @@ export default function MemberSummaryScreen() {
           />
         </TouchableOpacity>
       ),
-      title: `${data.user_name}さんの概況レポート`,
+      title: `${displayName}の概況レポート`,
     });
-  }, [navigation, isDark, data.user_name]);
+  }, [navigation, isDark, data.user_name, data.username]);
 
   /**
    * 戻るボタン押下時の確認ダイアログ
@@ -88,10 +109,79 @@ export default function MemberSummaryScreen() {
         {
           text: '戻る',
           style: 'destructive',
-          onPress: () => navigation.goBack(),
+          onPress: () => navigation.navigate('MonthlyReport' as never),
         },
       ]
     );
+  };
+
+  /**
+   * PDFダウンロード・共有（Phase 2.B-8追加）
+   * 
+   * エラーハンドリング:
+   * - 402: トークン不足 → トークン購入画面へ誘導
+   * - 403: 権限不足 → エラーメッセージ表示
+   * - 500: サーバーエラー → 再試行オプション表示
+   * - タイムアウト/ネットワークエラー → 再試行オプション表示
+   */
+  const handleDownloadPdf = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      // AIコメントを渡してPDF生成（トークン消費を避ける）
+      await downloadMemberSummaryPdf(data.user_id, data.year_month, data.comment);
+      
+      Alert.alert(
+        '共有完了',
+        'PDFを共有しました'
+      );
+    } catch (error: any) {
+      console.error('[MemberSummaryScreen] PDF download error:', error);
+      
+      // エラー種別に応じた処理
+      if (error.message.includes('トークン残高が不足')) {
+        // 402: トークン不足
+        Alert.alert(
+          'トークン不足',
+          error.message,
+          [
+            { text: 'キャンセル', style: 'cancel' },
+            {
+              text: 'トークンを購入',
+              onPress: () => navigation.navigate('TokenPurchase' as never),
+            },
+          ]
+        );
+      } else if (error.message.includes('権限')) {
+        // 403: 権限不足
+        Alert.alert(
+          '権限エラー',
+          error.message,
+          [{ text: 'OK' }]
+        );
+      } else if (error.message.includes('タイムアウト') || error.message.includes('ネットワーク')) {
+        // タイムアウト/ネットワークエラー
+        Alert.alert(
+          'ネットワークエラー',
+          error.message,
+          [
+            { text: 'キャンセル', style: 'cancel' },
+            { text: '再試行', onPress: () => handleDownloadPdf() },
+          ]
+        );
+      } else {
+        // その他のエラー（500等）
+        Alert.alert(
+          'エラー',
+          error.message || 'PDFのダウンロードに失敗しました',
+          [
+            { text: 'キャンセル', style: 'cancel' },
+            { text: '再試行', onPress: () => handleDownloadPdf() },
+          ]
+        );
+      }
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   /**
@@ -236,22 +326,26 @@ export default function MemberSummaryScreen() {
         </View>
       </View>
 
-      {/* PDF生成ボタン（将来実装） */}
+      {/* PDF生成・共有ボタン（Phase 2.B-8実装） */}
       <View style={[styles.section, isDark && styles.sectionDark]}>
         <TouchableOpacity
-          style={[styles.pdfButton, styles.pdfButtonDisabled]}
-          disabled={true}
+          testID="pdf-share-button"
+          style={[
+            styles.pdfButton,
+            isDownloadingPdf && styles.pdfButtonDisabled,
+          ]}
+          onPress={handleDownloadPdf}
+          disabled={isDownloadingPdf}
         >
-          <Ionicons name="download-outline" size={20} color="#9ca3af" />
-          <Text style={styles.pdfButtonTextDisabled}>
-            PDFダウンロード（準備中）
-          </Text>
+          {isDownloadingPdf ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <>
+              <Ionicons name="share-outline" size={20} color="#ffffff" />
+              <Text style={styles.pdfButtonText}>PDFを共有</Text>
+            </>
+          )}
         </TouchableOpacity>
-        {/* TODO: PDF生成機能実装
-         * - React Native Blob Util等でPDFダウンロード
-         * - バックエンドAPI: POST /reports/monthly/member-summary/pdf
-         * - リクエストボディ: { user_id, year_month, comment, chart_image }
-         */}
       </View>
 
       {/* 生成日時 */}
@@ -264,10 +358,10 @@ export default function MemberSummaryScreen() {
   );
 }
 
-const createStyles = (width: number) => StyleSheet.create({
+const createStyles = (width: number, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: isDark ? '#111827' : '#f9fafb',
   },
   containerDark: {
     backgroundColor: '#111827',
@@ -280,11 +374,11 @@ const createStyles = (width: number) => StyleSheet.create({
     padding: getSpacing(8, width),
   },
   section: {
-    backgroundColor: '#ffffff',
+    backgroundColor: isDark ? '#1f2937' : '#ffffff',
     borderRadius: getBorderRadius(12, width),
     padding: getSpacing(16, width),
     marginBottom: getSpacing(16, width),
-    ...getShadow(2, width),
+    ...getShadow(2),
   },
   sectionDark: {
     backgroundColor: '#1f2937',
@@ -295,18 +389,18 @@ const createStyles = (width: number) => StyleSheet.create({
     marginBottom: getSpacing(12, width),
   },
   sectionTitle: {
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width),
     fontWeight: '600',
-    color: '#111827',
+    color: isDark ? '#f3f4f6' : '#111827',
     marginLeft: getSpacing(8, width),
   },
   sectionTitleDark: {
     color: '#f3f4f6',
   },
   commentText: {
-    fontSize: getFontSize(14, width, {}),
-    lineHeight: getFontSize(22, width, {}),
-    color: '#374151',
+    fontSize: getFontSize(14, width),
+    lineHeight: getFontSize(22, width),
+    color: isDark ? '#d1d5db' : '#374151',
   },
   commentTextDark: {
     color: '#d1d5db',
@@ -322,12 +416,12 @@ const createStyles = (width: number) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: getSpacing(12, width),
-    backgroundColor: '#eff6ff',
+    backgroundColor: isDark ? '#1e3a5f' : '#eff6ff',
     borderRadius: getBorderRadius(8, width),
   },
   tokensText: {
-    fontSize: getFontSize(14, width, {}),
-    color: '#374151',
+    fontSize: getFontSize(14, width),
+    color: isDark ? '#d1d5db' : '#374151',
     marginLeft: getSpacing(8, width),
     flex: 1,
   },
@@ -342,22 +436,16 @@ const createStyles = (width: number) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#10b981',
     padding: getSpacing(14, width),
     borderRadius: getBorderRadius(8, width),
   },
   pdfButtonDisabled: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: isDark ? '#374151' : '#e5e7eb',
   },
   pdfButtonText: {
     color: '#ffffff',
-    fontSize: getFontSize(16, width, {}),
-    fontWeight: '600',
-    marginLeft: getSpacing(8, width),
-  },
-  pdfButtonTextDisabled: {
-    color: '#9ca3af',
-    fontSize: getFontSize(16, width, {}),
+    fontSize: getFontSize(16, width),
     fontWeight: '600',
     marginLeft: getSpacing(8, width),
   },
@@ -366,8 +454,8 @@ const createStyles = (width: number) => StyleSheet.create({
     marginTop: getSpacing(8, width),
   },
   footerText: {
-    fontSize: getFontSize(12, width, {}),
-    color: '#6b7280',
+    fontSize: getFontSize(12, width),
+    color: isDark ? '#9ca3af' : '#6b7280',
   },
   footerTextDark: {
     color: '#9ca3af',

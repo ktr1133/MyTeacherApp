@@ -45,7 +45,8 @@ interface OpenAIServiceInterface
      * @param array $reportData レポートデータ
      * @param array|null $avatarPersonality アバターの性格情報
      * @param array $memberChanges メンバー別の変化データ
+     * @param string $userTheme ユーザーテーマ ('adult' or 'child')
      * @return array ['content' => string, 'usage' => array, 'model' => string]
      */
-    public function generateMonthlyReportComment(array $reportData, ?array $avatarPersonality = null, array $memberChanges = []): array;
+    public function generateMonthlyReportComment(array $reportData, ?array $avatarPersonality = null, array $memberChanges = [], string $userTheme = 'child'): array;
 }

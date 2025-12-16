@@ -151,6 +151,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             
             $summary[$user->id] = [
                 'user_name' => $user->name,
+                'username' => $user->username,
                 'completed_count' => $completedTasks->count(),
                 'tasks' => $completedTasks->map(fn($task) => [
                     'task_id' => $task->id,
@@ -236,6 +237,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             
             $summary[$user->id] = [
                 'user_name' => $user->name,
+                'username' => $user->username,
                 'completed_count' => $userTasks->count(),
                 'reward' => $userTasks->sum('reward'),
                 'tasks' => $userTasks->map(fn($task) => [
@@ -350,6 +352,32 @@ class MonthlyReportService implements MonthlyReportServiceInterface
     {
         $memberTaskSummary = $report->member_task_summary ?? [];
         $groupTaskDetails = $report->group_task_details ?? [];
+        $groupTaskSummary = $report->group_task_summary ?? [];
+        
+        // 既存データにusernameが含まれていない場合は追加
+        $group = $report->group;
+        foreach ($memberTaskSummary as $userId => &$summary) {
+            if (!isset($summary['username'])) {
+                $user = $group->users()->find($userId);
+                if ($user) {
+                    $summary['user_name'] = $user->name;
+                    $summary['username'] = $user->username;
+                }
+            }
+        }
+        unset($summary);
+        
+        // group_task_summaryにもusernameを追加
+        foreach ($groupTaskSummary as $userId => &$summary) {
+            if (!isset($summary['username'])) {
+                $user = $group->users()->find($userId);
+                if ($user) {
+                    $summary['user_name'] = $user->name;
+                    $summary['username'] = $user->username;
+                }
+            }
+        }
+        unset($summary);
         
         // 通常タスク合計を計算
         $totalNormalTasks = 0;
@@ -398,7 +426,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             ],
             'member_details' => $memberTaskSummary,
             'group_task_details' => $groupTaskDetails,
-            'group_task_summary' => $report->group_task_summary ?? [],
+            'group_task_summary' => $groupTaskSummary,
         ];
     }
     
@@ -528,7 +556,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         for ($i = $months - 1; $i >= 0; $i--) {
             $targetMonth = $baseDate->copy()->subMonths($i);
             $targetYearMonth = $targetMonth->format('Y-m');
-            $labels[] = $targetMonth->format('n月');
+            $labels[] = $targetMonth->format('y/m');  // n月 → y/m に変更（11月 → 25/11）
             
             $report = $this->repository->findByGroupAndMonth($group->id, $targetYearMonth);
             
@@ -716,8 +744,15 @@ class MonthlyReportService implements MonthlyReportServiceInterface
             $memberChanges = $this->calculateMemberChanges($reportData, $previousReport);
         }
         
-        // OpenAIサービスを使ってコメント生成（変化情報を含める）
-        $result = $this->openAIService->generateMonthlyReportComment($reportData, $personality, $memberChanges);
+        // グループメンバーのテーマを取得（最初のメンバーのテーマを代表として使用）
+        $userTheme = 'child'; // デフォルトは子ども向け
+        if ($group->users()->exists()) {
+            $firstUser = $group->users()->first();
+            $userTheme = $firstUser->theme ?? 'child';
+        }
+        
+        // OpenAIサービスを使ってコメント生成（変化情報とテーマを含める）
+        $result = $this->openAIService->generateMonthlyReportComment($reportData, $personality, $memberChanges, $userTheme);
         
         return [
             'comment' => $result['comment'],
@@ -843,12 +878,24 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         // AIコメント生成
         $commentResult = $this->generateMemberComment($user, $taskData, $normalTaskTitles, $groupTaskTitles, $taskClassification);
         
-        return [
+        $result = [
+            'user_name' => $user->name,
+            'username' => $user->username,
             'comment' => $commentResult['comment'],
             'task_classification' => $taskClassification,
             'reward_trend' => $rewardTrend,
             'tokens_used' => $commentResult['tokens_used'],
         ];
+        
+        // デバッグ: 返却データをログ出力
+        Log::info('Member summary result', [
+            'user_id' => $userId,
+            'user_name' => $result['user_name'],
+            'username' => $result['username'],
+            'has_comment' => !empty($result['comment']),
+        ]);
+        
+        return $result;
     }
     
     /**
@@ -1019,7 +1066,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
                 $reward = $report->group_task_summary[$userId]['reward'] ?? 0;
             }
             
-            $labels[] = $currentMonth->format('Y/m');
+            $labels[] = $currentMonth->format('y/m');  // Y/m から y/m に変更（2025/11 → 25/11）
             $data[] = $reward;
             
             $currentMonth->addMonth();
@@ -1047,8 +1094,35 @@ class MonthlyReportService implements MonthlyReportServiceInterface
         $groupCount = $taskData['group_tasks_count'];
         $totalCount = $normalCount + $groupCount;
         
-        // システムプロンプト
-        $systemPrompt = <<<PROMPT
+        // ユーザーのテーマを取得（adult or child）
+        $userTheme = $user->theme ?? 'child';
+        
+        // デバッグログ追加
+        Log::info('Member comment generation', [
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_theme' => $userTheme,
+            'theme_from_db' => $user->theme,
+        ]);
+        
+        // テーマに応じてシステムプロンプトを変更
+        if ($userTheme === 'adult') {
+            $systemPrompt = <<<PROMPT
+あなたはメンバーの学習・生活習慣を支援する教師アバターです。
+
+以下の{$user->name}の月次実績データに基づいて、優先順位の高い情報から順にコメントしてください：
+
+【最優先: 報酬情報】
+- 獲得報酬: {$taskData['total_reward']}円
+
+【次点: タスク完了状況】
+- 通常タスク: {$normalCount}件完了（個人タスク）
+- グループタスク: {$groupCount}件完了（チームタスク）
+- 合計: {$totalCount}件完了
+
+PROMPT;
+        } else {
+            $systemPrompt = <<<PROMPT
 あなたは子どもの学習・生活習慣を支援する教師アバターです。
 
 以下の{$user->name}の月次実績データに基づいて、優先順位の高い情報から順にコメントしてください：
@@ -1063,6 +1137,7 @@ class MonthlyReportService implements MonthlyReportServiceInterface
 - 合計: {$totalCount}件完了
 
 PROMPT;
+        }
 
         // タスク分類結果を追加
         if (!empty($taskClassification['labels'])) {
@@ -1102,13 +1177,30 @@ PROMPT;
    ① 最初に報酬を称賛（例: 「今月は{$taskData['total_reward']}円もがんばったね！」）
    ② 次にタスク完了状況を評価（例: 「通常タスク{$normalCount}件、グループタスク{$groupCount}件も達成したね！」）
    ③ 最後にタスク傾向へのコメント（例: 「特に{最多カテゴリ}をがんばっていたね」）
+PROMPT;
+        
+        if ($userTheme === 'adult') {
+            $systemPrompt .= <<<PROMPT
+
+3. 丁寧語・敬語を使用し、大人に対して適切な言葉遣いで記述してください
+4. 具体的な数値（報酬額、タスク件数）を必ず含めてください
+5. 200-300文字程度で簡潔にまとめてください
+PROMPT;
+        } else {
+            $systemPrompt .= <<<PROMPT
+
 3. 子どもが喜ぶ、励まされるトーンで記述してください
 4. 具体的な数値（報酬額、タスク件数）を必ず含めてください
 5. 200-300文字程度で簡潔にまとめてください
 PROMPT;
+        }
 
         // ユーザープロンプト
-        $userPrompt = "このメンバーの月次活動について、上記のルール（報酬→タスク完了→タスク傾向の順）に従って、子どもが喜ぶ具体的なコメントを生成してください。";
+        if ($userTheme === 'adult') {
+            $userPrompt = "このメンバーの月次活動について、上記のルール（報酬→タスク完了→タスク傾向の順）に従って、丁寧語・敬語で具体的なコメントを生成してください。";
+        } else {
+            $userPrompt = "このメンバーの月次活動について、上記のルール（報酬→タスク完了→タスク傾向の順）に従って、子どもが喜ぶ具体的なコメントを生成してください。";
+        }
 
         // OpenAI APIコール
         $result = $this->openAIService->chat($userPrompt, $systemPrompt, 'gpt-4o-mini');

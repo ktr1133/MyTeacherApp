@@ -32,7 +32,7 @@
                         レポートが存在しません
                     </h3>
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                        選択された月（{{ $targetMonth->format('Y年n月') }}）のレポートはまだ生成されていません。<br>
+                        選択された月（{{ $targetMonth->format('Y年n月') }}）のレポートは生成されていません。<br>
                         レポートは毎月1日の午前2時に自動生成されます。
                     </p>
                     <div class="mt-6">

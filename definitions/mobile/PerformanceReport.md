@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-16 | GitHub Copilot | Phase 2.B-8 PDF生成・共有機能要件追加: expo-sharing統合、エラーハンドリング詳細、テスト要件 |
 | 2025-12-08 | GitHub Copilot | Phase 2.B-6実装完了: メンバー別概況画面追加、キャッシュ機能、エラーハンドリング強化 |
 | 2025-12-08 | GitHub Copilot | 質疑応答結果を反映: グラフ種類明確化、アニメーション方針、PDF生成Phase 2.B-8移動、サブスク制限Phase 2.B-6実装 |
 | 2025-12-07 | GitHub Copilot | 初版作成: モバイルアプリ実績・レポート機能（Chart.js移植、PDF生成、共有機能） |
@@ -22,16 +23,18 @@ MyTeacher モバイルアプリにおける実績・レポート機能は、ユ�
 - **グラフ種類**: 積み上げ棒グラフ、折れ線グラフ、ドーナツグラフ
 - **アニメーション**: Web版より制限的だが、なめらかな印象を保つ（enter/exit animations、smooth transitions）
 
-**PDF生成**: `react-native-html-to-pdf` または `@react-pdf/renderer`（Phase 2.B-8で実装予定）
-- HTMLテンプレートからPDF生成（Web版と同じレイアウト）
-- 日本語フォント埋め込み対応
-- **Phase 2.B-8（総合テスト）で実装**: Phase 2.B-6では基本機能（グラフ表示、データ表示）のみ実装
+**PDF生成**: バックエンドAPI経由（Phase 2.B-8で実装）
+- バックエンド: `DownloadMemberSummaryPdfApiAction` (既存実装)
+- エンドポイント: `POST /api/v1/reports/monthly/member-summary/pdf`
+- Web版と同じPDFレイアウト（Blade PDF使用）
+- モバイル側: `expo-file-system` でPDFバイナリを取得・キャッシュ
 
-**共有機能**: `expo-sharing` v14.0.8（Phase 2.B-8で実装予定）
+**共有機能**: `expo-sharing` v12.0.1（Phase 2.B-8で実装）
 - ネイティブ共有ダイアログ表示
 - メール、クラウドストレージ、メッセージアプリへの共有
 - iOS: `UIActivityViewController`
 - Android: Intent ACTION_SEND
+- 実装方針: キャッシュディレクトリに一時保存→共有ダイアログ表示
 
 **色設定**: Tailwind CSSと同じ色を使用
 - メインカラー: `#59B9C6`（ティール系、通常タスク）
@@ -42,16 +45,22 @@ MyTeacher モバイルアプリにおける実績・レポート機能は、ユ�
 | プラットフォーム | 実装状況 | グラフライブラリ | PDF生成 | 共有機能 |
 |----------------|---------|----------------|---------|---------|
 | **Web** | ✅ 実装済み | Chart.js | Blade PDF | ブラウザダウンロード |
-| **モバイル** | 🎯 Phase 2.B-6実装完了 | react-native-chart-kit | （Phase 2.B-8予定） | （Phase 2.B-8予定） |
+| **モバイル** | 🎯 Phase 2.B-8実装中 | react-native-chart-kit | バックエンドAPI | expo-sharing |
 
-**Phase 2.B-6実装内容**:
+**Phase 2.B-6実装完了**:
 - ✅ 月次レポート画面（MonthlyReportScreen）
 - ✅ メンバー別概況専用画面（MemberSummaryScreen）
 - ✅ AsyncStorageキャッシュ機能（対象月別）
 - ✅ AIサマリーAPI連携
 - ✅ データ検証によるクラッシュ防止
 - ✅ 戻るボタン確認ダイアログ
-- ⏭️ PDF生成・共有機能（Phase 2.B-8で実装）
+
+**Phase 2.B-8実装予定（本項で実装）**:
+- 🎯 PDF生成サービス（pdf.service.ts）
+- 🎯 MemberSummaryScreenにPDFボタン追加
+- 🎯 expo-sharing統合（ネイティブ共有ダイアログ）
+- 🎯 エラーハンドリング強化（402/403/500/ネットワークエラー）
+- 🎯 テストコード作成（pdf.service + MemberSummaryScreen）
 
 ---
 
@@ -1496,40 +1505,567 @@ export type RootStackParamList = {
 };
 ```
 
-### 10.8 PDF生成機能（将来実装）
+### 10.8 PDF生成・共有機能（Phase 2.B-8実装）
 
-**現状**: ボタンのみ配置、無効化状態
+#### 10.8.1 概要
 
-**実装予定時の作業**:
-```typescript
-// TODO: PDF生成機能実装（Phase 2.B-8）
-// - React Native Blob Util等でPDFダウンロード
-// - バックエンドAPI: POST /reports/monthly/member-summary/pdf
-// - リクエストボディ: { user_id, year_month, comment, chart_image }
-```
+メンバー別概況画面からPDFをダウンロード・共有できる機能。Web版と同じPDFレイアウトをバックエンドAPI経由で生成し、ネイティブ共有ダイアログで外部アプリに共有する。
 
-**ボタン実装**:
+**実装方針**:
+- バックエンドでPDF生成（Web版Blade PDF使用）
+- モバイルはPDFバイナリをダウンロード・キャッシュ
+- `expo-sharing`でネイティブ共有ダイアログ表示
+- トークン消費なし（メンバーサマリー生成時に消費済み）
+
+#### 10.8.2 UI設計
+
+**MemberSummaryScreen追加要素**:
 ```tsx
-<TouchableOpacity
-  style={[styles.pdfButton, styles.pdfButtonDisabled]}
-  disabled={true}
->
-  <Ionicons name="download-outline" size={20} color="#9ca3af" />
-  <Text style={styles.pdfButtonTextDisabled}>
-    PDFダウンロード（準備中）
-  </Text>
-</TouchableOpacity>
+{/* 画面下部にPDFボタンを追加 */}
+<View style={styles.pdfButtonContainer}>
+  <TouchableOpacity
+    style={styles.pdfButton}
+    onPress={handleDownloadPdf}
+    disabled={isDownloading}
+  >
+    {isDownloading ? (
+      <ActivityIndicator size="small" color="#fff" />
+    ) : (
+      <>
+        <Ionicons name="share-outline" size={20} color="#fff" />
+        <Text style={styles.pdfButtonText}>PDFを共有</Text>
+      </>
+    )}
+  </TouchableOpacity>
+</View>
 ```
 
-### 10.9 テスト要件（Phase 2.B-6実装完了）
+**ボタン配置**:
+- グラフ表示エリアの下、画面最下部
+- レスポンシブ対応（getFontSize, getSpacing使用）
+- ダークモード対応（useThemedColors）
 
-**実装済みテスト**:
+#### 10.8.3 API仕様
+
+**エンドポイント**: `POST /api/v1/reports/monthly/member-summary/pdf`
+
+**リクエストボディ**:
+```typescript
+{
+  user_id: number;      // メンバーID
+  group_id: number;     // グループID
+  year_month: string;   // 対象年月（YYYY-MM形式）
+}
+```
+
+**レスポンス**:
+- Content-Type: `application/pdf`
+- Content-Disposition: `attachment; filename="member-summary-YYYY-MM-{userId}.pdf"`
+- Body: PDFバイナリデータ
+
+**エラーレスポンス**:
+```typescript
+// 権限不足（403）
+{
+  message: 'このレポートをダウンロードする権限がありません。'
+}
+
+// サーバーエラー（500）
+{
+  message: 'PDF生成に失敗しました: {詳細}'
+}
+```
+
+#### 10.8.4 Service層実装（pdf.service.ts）
+
+**責務**: PDF生成APIとの通信、ファイルシステム操作
+
+**メソッド**:
+
+```typescript
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import api from './api';
+
+export interface DownloadPdfParams {
+  user_id: number;
+  group_id: number;
+  year_month: string;
+}
+
+/**
+ * メンバーサマリーPDFをダウンロード・共有
+ * 
+ * @param params ダウンロードパラメータ
+ * @returns ダウンロード成功/失敗
+ * @throws {Error} ネットワークエラー、権限エラー、サーバーエラー
+ */
+export const downloadAndShareMemberSummaryPdf = async (
+  params: DownloadPdfParams
+): Promise<{ success: boolean }> => {
+  try {
+    // 1. PDFバイナリをダウンロード
+    const response = await api.post(
+      '/reports/monthly/member-summary/pdf',
+      params,
+      {
+        responseType: 'blob',
+        timeout: 60000, // 60秒（PDF生成時間を考慮）
+      }
+    );
+
+    // 2. 一時ファイルとして保存
+    const fileName = `member-summary-${params.year_month}-${params.user_id}.pdf`;
+    const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+    
+    // Blobをbase64に変換
+    const reader = new FileReader();
+    const base64Promise = new Promise<string>((resolve, reject) => {
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        resolve(base64data.split(',')[1]); // data:application/pdf;base64, を除去
+      };
+      reader.onerror = reject;
+    });
+    reader.readAsDataURL(response.data);
+    const base64data = await base64Promise;
+
+    // ファイルに書き込み
+    await FileSystem.writeAsStringAsync(fileUri, base64data, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    // 3. 共有ダイアログを表示
+    const canShare = await Sharing.isAvailableAsync();
+    if (!canShare) {
+      throw new Error('この端末では共有機能がサポートされていません');
+    }
+
+    await Sharing.shareAsync(fileUri, {
+      mimeType: 'application/pdf',
+      dialogTitle: 'メンバー別概況レポート',
+      UTI: 'com.adobe.pdf', // iOS用
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('[pdf.service] PDF download error:', error);
+    
+    // エラー種別に応じたメッセージ
+    if (error.response?.status === 403) {
+      throw new Error('レポートをダウンロードする権限がありません');
+    } else if (error.response?.status === 500) {
+      throw new Error('PDF生成に失敗しました。しばらくしてから再試行してください');
+    } else if (error.code === 'ECONNABORTED') {
+      throw new Error('タイムアウトしました。ネットワーク接続を確認してください');
+    } else if (!error.response) {
+      throw new Error('ネットワークエラーが発生しました');
+    }
+    
+    throw new Error('PDFのダウンロードに失敗しました');
+  }
+};
+```
+
+#### 10.8.5 Hook層実装（usePerformance.ts拡張）
+
+**追加メソッド**:
+
+```typescript
+/**
+ * メンバーサマリーPDFをダウンロード・共有
+ * 
+ * @param userId メンバーID
+ * @param yearMonth 対象年月
+ */
+const downloadMemberSummaryPdf = useCallback(
+  async (userId: number, yearMonth: string) => {
+    if (!user?.group_id) {
+      throw new Error('グループ情報が取得できません');
+    }
+
+    try {
+      const result = await performanceService.downloadAndShareMemberSummaryPdf({
+        user_id: userId,
+        group_id: user.group_id,
+        year_month: yearMonth,
+      });
+      
+      return result;
+    } catch (err: any) {
+      console.error('[usePerformance] PDF download error:', err);
+      throw err;
+    }
+  },
+  [user]
+);
+
+return {
+  // ...既存のメソッド
+  downloadMemberSummaryPdf,
+};
+```
+
+#### 10.8.6 Screen層実装（MemberSummaryScreen.tsx拡張）
+
+**追加ロジック**:
+
+```typescript
+const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+const { downloadMemberSummaryPdf } = usePerformance();
+
+/**
+ * PDFダウンロード・共有
+ */
+const handleDownloadPdf = async () => {
+  setIsDownloadingPdf(true);
+  try {
+    await downloadMemberSummaryPdf(data.user_id, data.year_month);
+    
+    Alert.alert(
+      '共有完了',
+      'PDFを共有しました'
+    );
+  } catch (error: any) {
+    console.error('[MemberSummaryScreen] PDF download error:', error);
+    
+    // エラー種別に応じた処理
+    if (error.message.includes('権限')) {
+      Alert.alert(
+        '権限エラー',
+        error.message,
+        [{ text: 'OK' }]
+      );
+    } else if (error.message.includes('タイムアウト') || error.message.includes('ネットワーク')) {
+      Alert.alert(
+        'ネットワークエラー',
+        error.message,
+        [
+          { text: 'キャンセル', style: 'cancel' },
+          { text: '再試行', onPress: () => handleDownloadPdf() },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'エラー',
+        error.message || 'PDFのダウンロードに失敗しました',
+        [
+          { text: 'キャンセル', style: 'cancel' },
+          { text: '再試行', onPress: () => handleDownloadPdf() },
+        ]
+      );
+    }
+  } finally {
+    setIsDownloadingPdf(false);
+  }
+};
+```
+
+#### 10.8.7 エラーハンドリング仕様
+
+**エラー種別と対応**:
+
+| エラー種別 | HTTPステータス | 表示メッセージ | ユーザーアクション |
+|-----------|---------------|---------------|------------------|
+| **トークン不足** | 402 | トークン残高が不足しています | トークン購入画面へ誘導 |
+| **権限不足** | 403 | レポートをダウンロードする権限がありません | OKボタンのみ |
+| **サーバーエラー** | 500 | PDF生成に失敗しました。しばらくしてから再試行してください | キャンセル / 再試行 |
+| **タイムアウト** | - | タイムアウトしました。ネットワーク接続を確認してください | キャンセル / 再試行 |
+| **ネットワークエラー** | - | ネットワークエラーが発生しました | キャンセル / 再試行 |
+| **共有不可** | - | この端末では共有機能がサポートされていません | OKボタンのみ |
+
+**注**: トークン消費はメンバーサマリー生成時（`GenerateMemberSummaryApiAction`）に実施済みのため、PDF生成時には402エラーは発生しない想定。念のため402ハンドリングは実装する。
+
+#### 10.8.8 依存パッケージ
+
+**追加インストール**:
+```bash
+npx expo install expo-file-system expo-sharing
+```
+
+**バージョン**:
+- `expo-file-system`: ^17.0.1
+- `expo-sharing`: ^12.0.1
+
+#### 10.8.9 テスト要件
+
+**Service層テスト（pdf.service.test.ts）**:
+```typescript
+describe('downloadAndShareMemberSummaryPdf', () => {
+  it('PDFバイナリをダウンロードして共有できる', async () => {
+    // Mock: api.post → Blob
+    // Mock: FileSystem.writeAsStringAsync
+    // Mock: Sharing.shareAsync
+    // 検証: 正しいパラメータでAPI呼び出し
+    // 検証: ファイルが正しく保存される
+    // 検証: 共有ダイアログが表示される
+  });
+
+  it('権限エラー（403）で適切なエラーメッセージを返す', async () => {
+    // Mock: api.post → 403エラー
+    // 検証: 'レポートをダウンロードする権限がありません'
+  });
+
+  it('サーバーエラー（500）で適切なエラーメッセージを返す', async () => {
+    // Mock: api.post → 500エラー
+    // 検証: 'PDF生成に失敗しました'
+  });
+
+  it('タイムアウトで適切なエラーメッセージを返す', async () => {
+    // Mock: api.post → ECONNABORTED
+    // 検証: 'タイムアウトしました'
+  });
+
+  it('ネットワークエラーで適切なエラーメッセージを返す', async () => {
+    // Mock: api.post → ネットワークエラー
+    // 検証: 'ネットワークエラーが発生しました'
+  });
+});
+```
+
+**Screen層テスト（MemberSummaryScreen.test.tsx追加）**:
+```typescript
+describe('PDF download', () => {
+  it('PDFボタンが表示される', () => {
+    // 検証: "PDFを共有"ボタンが存在
+  });
+
+  it('PDFボタン押下で共有ダイアログが表示される', async () => {
+    // Mock: downloadMemberSummaryPdf → 成功
+    // 検証: ローディング表示
+    // 検証: '共有完了'アラート表示
+  });
+
+  it('権限エラー時に適切なアラートを表示する', async () => {
+    // Mock: downloadMemberSummaryPdf → 403エラー
+    // 検証: '権限エラー'アラート表示
+  });
+
+  it('ネットワークエラー時に再試行オプションを表示する', async () => {
+    // Mock: downloadMemberSummaryPdf → ネットワークエラー
+    // 検証: 'ネットワークエラー'アラート表示
+    // 検証: '再試行'ボタンが存在
+  });
+
+  it('ダウンロード中はボタンが無効化される', async () => {
+    // Mock: downloadMemberSummaryPdf → 遅延
+    // 検証: ボタンdisabled状態
+    // 検証: ActivityIndicator表示
+  });
+});
+```
+
+#### 10.8.10 レスポンシブ対応
+
+**ボタンスタイル**:
+```typescript
+pdfButtonContainer: {
+  paddingHorizontal: getSpacing(16, width),
+  paddingVertical: getSpacing(16, width),
+  backgroundColor: isDark ? '#1f2937' : '#fff',
+  borderTopWidth: 1,
+  borderTopColor: isDark ? '#374151' : '#e5e7eb',
+},
+pdfButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#10b981', // Emerald-600
+  paddingVertical: getSpacing(12, width),
+  paddingHorizontal: getSpacing(20, width),
+  borderRadius: getBorderRadius(12, width),
+  gap: getSpacing(8, width),
+  ...getShadow(2, width),
+},
+pdfButtonText: {
+  color: '#fff',
+  fontSize: getFontSize(16, width, {}),
+  fontWeight: '600',
+},
+```
+
+**ダークモード対応**:
+- ボタン背景: 固定色（`#10b981` - Emerald-600）
+- コンテナ背景: `useThemedColors()` で動的切替
+- ボーダー色: ダークモード時は `#374151`
+
+#### 10.8.11 実装時の注意事項
+
+1. **FileReader API**: React Nativeでは`react-native-blob-util`等を使用する必要がある場合あり（Expoではpolyfill済み）
+2. **共有後のクリーンアップ**: 一時ファイルは自動削除されるため、手動削除は不要
+3. **権限**: iOS/AndroidともにストレージアクセスとFileSystem書き込みは問題なし
+4. **タイムアウト**: PDF生成に時間がかかる場合があるため、60秒に設定
+5. **レスポンスタイプ**: `responseType: 'blob'` を指定してバイナリデータを取得
+
+#### 10.8.12 将来的な拡張（Optional）
+
+- [ ] PDFプレビュー機能（`react-native-pdf`）
+- [ ] 複数メンバーのPDF一括ダウンロード
+- [ ] PDF生成進捗表示（バックエンド側の対応必要）
+- [ ] オフライン時の動作（キャッシュから再共有）
+
+---
+
+### 10.9 テスト要件（Phase 2.B-8実装）
+
+**実装済みテスト（Phase 2.B-6）**:
 - ✅ `performance.service.test.ts`: generateMemberSummary()
 - ✅ `usePerformance.test.ts`: generateMemberSummary()
 - ✅ `MemberSummaryScreen.test.tsx`: 画面表示、グラフ、戻るボタン
 
-**今後の追加テスト**（Phase 2.B-8）:
-- PDF生成機能
-- オフラインキャッシュ動作
-- エラーリカバリー
+**Phase 2.B-8追加テスト**:
+- 🎯 `pdf.service.test.ts`: PDF生成・共有機能（5テストケース）
+  - 正常系: PDFダウンロード・共有成功
+  - 異常系: 403権限エラー、500サーバーエラー、タイムアウト、ネットワークエラー
+- 🎯 `MemberSummaryScreen.test.tsx`: PDFボタン動作（5テストケース）
+  - 正常系: ボタン表示、共有成功
+  - 異常系: 権限エラー、ネットワークエラー、ローディング状態
+
+**テストカバレッジ目標**: 90%以上（Service層・Hook層・Screen層）
+
+---
+
+## 11. PDF生成・共有機能の画面遷移フロー
+
+### 11.1 通常フロー（成功ケース）
+
+```
+1. MonthlyReportScreen
+   ↓ メンバーカード内の「AIサマリー」ボタン押下
+   
+2. Alert.alert() - 確認ダイアログ
+   「{userName}さんの月次サマリーを生成しますか？（トークンを消費します）」
+   ↓ 「生成」ボタン押下
+   
+3. API呼び出し: POST /api/v1/reports/monthly/member-summary
+   ↓ レスポンス取得（AI生成データ）
+   
+4. MemberSummaryScreen に遷移
+   - AIコメント表示
+   - タスク分類円グラフ表示
+   - 報酬推移折れ線グラフ表示
+   - 「PDFを共有」ボタン表示
+   ↓ 「PDFを共有」ボタン押下
+   
+5. API呼び出し: POST /api/v1/reports/monthly/member-summary/pdf
+   ↓ PDFバイナリ取得
+   
+6. FileSystem.cacheDirectory に一時保存
+   ↓ ファイル書き込み完了
+   
+7. Sharing.shareAsync() - ネイティブ共有ダイアログ
+   ↓ ユーザーが共有先を選択（メール、ドライブ、メッセージ等）
+   
+8. Alert.alert() - 完了通知
+   「PDFを共有しました」
+   ↓ OKボタン押下
+   
+9. MemberSummaryScreen に戻る
+```
+
+### 11.2 エラーフロー
+
+#### ケース1: トークン不足（402エラー）
+
+```
+3. API呼び出し: POST /api/v1/reports/monthly/member-summary
+   ↓ 402 Payment Required
+   
+4. Alert.alert() - エラー通知
+   「トークン残高が不足しています」
+   ↓ 「トークンを購入」ボタン押下
+   
+5. navigation.navigate('TokenPurchase')
+   ↓ トークン購入画面に遷移
+```
+
+#### ケース2: 権限不足（403エラー - PDF生成時）
+
+```
+5. API呼び出し: POST /api/v1/reports/monthly/member-summary/pdf
+   ↓ 403 Forbidden
+   
+6. Alert.alert() - エラー通知
+   「レポートをダウンロードする権限がありません」
+   ↓ OKボタン押下
+   
+7. MemberSummaryScreen に戻る（ボタン再有効化）
+```
+
+#### ケース3: サーバーエラー（500エラー）
+
+```
+5. API呼び出し: POST /api/v1/reports/monthly/member-summary/pdf
+   ↓ 500 Internal Server Error
+   
+6. Alert.alert() - エラー通知
+   「PDF生成に失敗しました。しばらくしてから再試行してください」
+   - 「キャンセル」ボタン: MemberSummaryScreen に戻る
+   - 「再試行」ボタン: Step 5 に戻る（API再呼び出し）
+```
+
+#### ケース4: ネットワークエラー
+
+```
+5. API呼び出し: POST /api/v1/reports/monthly/member-summary/pdf
+   ↓ Network Error（タイムアウト含む）
+   
+6. Alert.alert() - エラー通知
+   「ネットワークエラーが発生しました」
+   - 「キャンセル」ボタン: MemberSummaryScreen に戻る
+   - 「再試行」ボタン: Step 5 に戻る（API再呼び出し）
+```
+
+### 11.3 画面構成の変更点（Phase 2.B-8）
+
+**MemberSummaryScreen.tsx**:
+
+**Before（Phase 2.B-6）**:
+```tsx
+<ScrollView>
+  {/* AIコメントカード */}
+  {/* グラフエリア */}
+  {/* トークン消費情報 */}
+</ScrollView>
+```
+
+**After（Phase 2.B-8）**:
+```tsx
+<ScrollView>
+  {/* AIコメントカード */}
+  {/* グラフエリア */}
+  {/* トークン消費情報 */}
+  
+  {/* ★ 新規追加: PDFボタン */}
+  <View style={styles.pdfButtonContainer}>
+    <TouchableOpacity
+      style={styles.pdfButton}
+      onPress={handleDownloadPdf}
+      disabled={isDownloadingPdf}
+    >
+      {isDownloadingPdf ? (
+        <ActivityIndicator size="small" color="#fff" />
+      ) : (
+        <>
+          <Ionicons name="share-outline" size={20} color="#fff" />
+          <Text style={styles.pdfButtonText}>PDFを共有</Text>
+        </>
+      )}
+    </TouchableOpacity>
+  </View>
+</ScrollView>
+```
+
+### 11.4 Web版との差異
+
+| 項目 | Web版 | モバイル版 |
+|------|-------|-----------|
+| **概況ボタン配置** | 画面上部（全体） | 各メンバーカード |
+| **確認ダイアログ** | カスタムモーダル | Alert.alert() |
+| **概況表示** | モーダル | 専用画面（MemberSummaryScreen） |
+| **PDF生成** | ダウンロード | キャッシュ保存 |
+| **PDF共有** | ブラウザダウンロード | ネイティブ共有ダイアログ |
+| **戻る操作** | モーダルを閉じる | 画面遷移（確認ダイアログ付き） |
+
+---
 

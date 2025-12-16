@@ -41,18 +41,42 @@ class DownloadMemberSummaryPdfApiAction
             $data = $request->validated();
             $currentUser = $request->user();
             
+            // ユーザーオブジェクト取得
+            $targetUser = \App\Models\User::findOrFail($data['user_id']);
+            
             // 権限チェック: グループマスターまたは本人のみ
-            if (!$currentUser->canEditGroup() && $currentUser->id !== $data['user_id']) {
+            if (!$currentUser->canEditGroup() && $currentUser->id !== $targetUser->id) {
                 return response()->json([
                     'message' => 'このレポートをダウンロードする権限がありません。',
                 ], 403);
             }
             
+            // リクエストから必要なデータ取得
+            $yearMonth = $data['year_month'];
+            $comment = $data['comment'] ?? null;
+            $chartImageBase64 = $data['chart_image'] ?? null;
+            
+            // commentが渡されていない場合は、その場で生成
+            if (empty($comment)) {
+                Log::info('PDF generation: Generating new AI comment', [
+                    'user_id' => $targetUser->id,
+                    'year_month' => $yearMonth,
+                ]);
+                
+                $summaryData = $this->reportService->generateMemberSummary(
+                    $targetUser->id,
+                    $data['group_id'],
+                    $yearMonth
+                );
+                $comment = $summaryData['comment'];
+            }
+            
             // PDF生成
             $pdfContent = $this->pdfService->generateMemberSummaryPdf(
-                $data['user_id'],
-                $data['group_id'],
-                $data['year_month']
+                targetUser: $targetUser,
+                yearMonth: $yearMonth,
+                comment: $comment,
+                chartImageBase64: $chartImageBase64
             );
             
             // ファイル名生成

@@ -245,13 +245,28 @@ class PdfGenerationService implements PdfGenerationServiceInterface
      */
     protected function buildChartConfig(array $labels, array $data, int|false $currentMonthIndex): array
     {
-        // 年月ラベルをYY/MM形式に変換（例: "2025年10月" → "25/10"）
+        // 年月ラベルをYY/MM形式に変換
+        // 入力形式: "2025年10月" または "25/10" または "2025/10"
         $simplifiedLabels = array_map(function($label) {
+            // パターン1: "2025年10月" 形式
             if (preg_match('/^(\d{4})年(\d{1,2})月$/', $label, $matches)) {
                 $year = substr($matches[1], -2); // 下2桁
                 $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT); // 2桁ゼロ埋め
                 return $year . '/' . $month;
             }
+            // パターン2: "2025/10" 形式（4桁年）
+            if (preg_match('/^(\d{4})\/(\d{1,2})$/', $label, $matches)) {
+                $year = substr($matches[1], -2); // 下2桁
+                $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT); // 2桁ゼロ埋め
+                return $year . '/' . $month;
+            }
+            // パターン3: "25/10" 形式（既に正しい形式）
+            if (preg_match('/^(\d{2})\/(\d{1,2})$/', $label, $matches)) {
+                $year = $matches[1];
+                $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT); // 2桁ゼロ埋め
+                return $year . '/' . $month;
+            }
+            // それ以外はそのまま返す
             return $label;
         }, $labels);
         

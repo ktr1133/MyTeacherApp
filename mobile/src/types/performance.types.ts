@@ -101,7 +101,8 @@ export interface GroupMember {
  */
 export interface MemberStats {
   user_id: number;
-  user_name: string;
+  user_name: string; // 表示名（usersテーブルのnameカラム）
+  username: string; // ユーザー名（ログインID）
   completed: number; // 合計完了タスク数（通常 + グループ）
   incomplete: number; // 未完了タスク数
   reward: number; // グループタスク報酬合計
@@ -176,6 +177,8 @@ export interface GenerateMemberSummaryRequest {
  */
 export interface MemberSummaryResponse {
   summary: {
+    user_name: string;
+    username: string;
     comment: string;
     task_classification: {
       labels: string[];
@@ -198,6 +201,7 @@ export interface MemberSummaryResponse {
 export interface MemberSummaryData {
   user_id: number;
   user_name: string;
+  username: string; // ユーザー名（ログインID）
   year_month: string;
   comment: string;
   task_classification: {
