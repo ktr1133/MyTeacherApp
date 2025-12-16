@@ -14,6 +14,8 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTasks } from '../../hooks/useTasks';
@@ -80,7 +82,6 @@ export default function TagTasksScreen() {
    * 初回データ取得
    */
   useEffect(() => {
-    console.log('[TagTasksScreen] Mounting, loading tasks...');
     loadTasks();
   }, []);
 
@@ -97,8 +98,6 @@ export default function TagTasksScreen() {
    * タスクデータ変更時にフィルタリング
    */
   useEffect(() => {
-    console.log('[TagTasksScreen] Filtering tasks, tagId:', tagId, 'tasks count:', tasks.length);
-    
     const filtered = tasks.filter(task => {
       if (tagId === 0) {
         // 未分類バケット: タグなしタスク
@@ -109,7 +108,6 @@ export default function TagTasksScreen() {
       }
     });
     
-    console.log('[TagTasksScreen] Filtered tasks count:', filtered.length);
     setFilteredTasks(filtered);
   }, [tagId, tasks]);
 
@@ -146,7 +144,6 @@ export default function TagTasksScreen() {
         );
         
         if (remainingTasks.length === 0) {
-          console.log('[TagTasksScreen] No remaining tasks, navigating back to TaskList');
           // 少し遅延させてアバター表示を見せる
           setTimeout(() => {
             navigation.navigate('TaskList');
@@ -162,18 +159,13 @@ export default function TagTasksScreen() {
    */
   const navigateToDetail = useCallback(
     (taskId: number) => {
-      console.log('[TagTasksScreen] navigateToDetail called, taskId:', taskId);
-      
       const task = tasks.find(t => t.id === taskId);
-      console.log('[TagTasksScreen] found task:', task ? `id=${task.id}, is_group_task=${task.is_group_task}` : 'null');
       
       if (task?.is_group_task) {
         // グループタスク → 詳細画面（編集不可）
-        console.log('[TagTasksScreen] Navigating to TaskDetail');
         navigation.navigate('TaskDetail', { taskId });
       } else {
         // 通常タスク → 編集画面
-        console.log('[TagTasksScreen] Navigating to TaskEdit');
         navigation.navigate('TaskEdit', { taskId });
       }
     },
@@ -210,10 +202,7 @@ export default function TagTasksScreen() {
       return (
         <TouchableOpacity
           style={cardStyle}
-          onPress={() => {
-            console.log('[TagTasksScreen] Task item pressed:', item.id, item.title);
-            navigateToDetail(item.id);
-          }}
+          onPress={() => navigateToDetail(item.id)}
           activeOpacity={0.7}
         >
           {/* 期限バッジ */}
@@ -353,7 +342,10 @@ export default function TagTasksScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* ヘッダー */}
-      <View style={styles.header}>
+      <View style={[
+        styles.header,
+        Platform.OS === 'android' && { paddingTop: StatusBar.currentHeight || 0 }
+      ]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}

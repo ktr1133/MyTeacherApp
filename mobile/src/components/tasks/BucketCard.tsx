@@ -45,7 +45,7 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
   /**
    * レスポンシブスタイル生成
    */
-  const styles = useMemo(() => createStyles(width, themeType, colors), [width, themeType, colors]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, isDark), [width, themeType, colors, isDark]);
 
   /**
    * タップ時のアニメーション（Web版のtranslateY効果を再現）
@@ -152,13 +152,14 @@ export default function BucketCard({ tagName, tasks, onPress, theme }: BucketCar
  * @param theme - テーマタイプ
  * @returns StyleSheet
  */
-const createStyles = (width: number, theme: 'adult' | 'child', colors: any) => StyleSheet.create({
+const createStyles = (width: number, theme: 'adult' | 'child', colors: ReturnType<typeof useThemedColors>['colors'], isDark: boolean) => StyleSheet.create({
   cardContainer: {
     marginBottom: getSpacing(16, width), // Web版: gap-4 (lg:gap-6)
   },
   card: {
     // Web版child-theme.cssの.bento-cardに統一（グラデーション背景+太い赤ボーダー）
-    backgroundColor: colors.isDark ? colors.card : '#FFFFFF',
+    // ダークモード: 明るめのグレー (#374151)、ライトモード: 白
+    backgroundColor: isDark ? '#374151' : '#FFFFFF',
     borderRadius: getBorderRadius(24, width), // Web版: 1.5rem (24px)
     padding: getSpacing(24, width), // Web版: var(--child-spacing-card) = 1.5rem
     // Web版child-theme.css: 太い赤ボーダー + 大きいシャドウ
@@ -202,7 +203,8 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any) => S
   tagName: {
     fontSize: getFontSize(18, width, theme), // Web版: text-base (lg:text-lg)
     fontWeight: 'bold', // Web版: font-bold
-    color: colors.text.primary, // ダークモード対応
+    // ダークモード: 白色で視認性確保、ライトモード: プライマリカラー
+    color: colors.text.primary,
     flex: 1,
   },
   badge: {
@@ -227,14 +229,15 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any) => S
     gap: getSpacing(6, width), // Web版: gap-1.5 (lg:gap-2)
   },
   previewItem: {
-    backgroundColor: colors.isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(255, 255, 255, 0.5)', // ダークモード対応
+    // ダークモード: 明るめのグレー、ライトモード: 白の半透明
+    backgroundColor: isDark ? 'rgba(75, 85, 99, 0.5)' : 'rgba(255, 255, 255, 0.5)',
     borderRadius: getBorderRadius(20, width), // Web版: rounded-full
     paddingHorizontal: getSpacing(12, width), // Web版: px-2 (lg:px-3)
     paddingVertical: getSpacing(4, width), // Web版: py-1 (lg:py-1.5)
     maxWidth: '60%', // Web版: max-w-[60%]
     // Web版: backdrop-blur-sm border border-gray-200/50
     borderWidth: 1,
-    borderColor: colors.border.light, // ダークモード対応
+    borderColor: colors.border.light,
   },
   previewChip: {
     fontSize: getFontSize(12, width, theme), // Web版: text-xs

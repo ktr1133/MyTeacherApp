@@ -22,12 +22,7 @@ const api = axios.create({
 // リクエストインターセプター（JWT自動付与）
 api.interceptors.request.use(
   async (config) => {
-    console.log('[API] Request URL:', (config.baseURL || '') + (config.url || ''));
-    console.log('[API] Request method:', config.method);
-    console.log('[API] Request params:', config.params);
-    
     const token = await storage.getItem(STORAGE_KEYS.JWT_TOKEN);
-    console.log('[API] JWT token:', token ? `${token.substring(0, 20)}...` : 'NOT FOUND');
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -57,8 +52,6 @@ api.interceptors.response.use(
       const isFCMTokenRequest = error.config?.url?.includes('/fcm-token');
       
       if (!isPollingRequest && !isFCMTokenRequest) {
-        console.log('[API] Authentication failed, removing token and redirecting to login');
-        
         // トークン削除
         await storage.removeItem(STORAGE_KEYS.JWT_TOKEN);
         
@@ -77,16 +70,12 @@ api.interceptors.response.use(
           ],
           { cancelable: false }
         );
-      } else {
-        const reason = isFCMTokenRequest ? 'FCM token registration (not logged in)' : 'Polling request';
-        console.log(`[API] 401 error ignored: ${reason}`);
       }
     }
     
     // 404エラー: リソースが見つからない
     else if (error.response?.status === 404) {
       const url = error.config?.url || '';
-      console.log('[API] 404 error for URL:', url);
       
       // タスク詳細など特定のリソースの404エラーの場合
       if (url.includes('/tasks/') || url.includes('/notifications/')) {
@@ -110,8 +99,6 @@ api.interceptors.response.use(
     
     // ネットワークエラー
     else if (error.message === 'Network Error' || !error.response) {
-      console.log('[API] Network error detected');
-      
       Alert.alert(
         'Network Error',
         'Please check your internet connection and try again.',

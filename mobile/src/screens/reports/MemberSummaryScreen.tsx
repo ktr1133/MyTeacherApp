@@ -56,11 +56,6 @@ export default function MemberSummaryScreen() {
 
   const screenWidth = Dimensions.get('window').width;
 
-  // デバッグ: 受け取ったデータをログ出力
-  console.log('[MemberSummaryScreen] Received data:', JSON.stringify(data, null, 2));
-  console.log('[MemberSummaryScreen] user_name:', data.user_name);
-  console.log('[MemberSummaryScreen] username:', data.username);
-
   /**
    * 戻るボタンのカスタマイズ（確認ダイアログ付き）
    */
@@ -71,10 +66,6 @@ export default function MemberSummaryScreen() {
       : data.username 
         ? `@${data.username}`
         : 'ユーザー';
-    
-    console.log('[MemberSummaryScreen] displayName for header:', displayName);
-    console.log('[MemberSummaryScreen] data.user_name:', data.user_name);
-    console.log('[MemberSummaryScreen] data.username:', data.username);
     
     navigation.setOptions({
       headerLeft: () => (

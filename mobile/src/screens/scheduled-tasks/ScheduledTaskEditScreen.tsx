@@ -106,6 +106,9 @@ export default function ScheduledTaskEditScreen() {
   // モーダル用state
   const [showScheduleTypeModal, setShowScheduleTypeModal] = useState(false);
   const [selectedScheduleIndex, setSelectedScheduleIndex] = useState(0);
+  
+  // 時刻ピッカー表示状態（各スケジュールごと）
+  const [showTimePickerIndex, setShowTimePickerIndex] = useState<number | null>(null);
 
   // グループID（更新成功時のナビゲーション用）
   const [groupId, setGroupId] = useState<number>(1);
@@ -198,6 +201,26 @@ export default function ScheduledTaskEditScreen() {
       return newSchedules;
     });
   }, []);
+  
+  /**
+   * 時刻ピッカー選択ハンドラー
+   */
+  const handleTimePickerChange = useCallback((index: number, event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowTimePickerIndex(null);
+    }
+    
+    if (event.type === 'set' && selectedDate) {
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      const timeString = `${hours}:${minutes}`;
+      handleScheduleTimeChange(index, timeString);
+    }
+    
+    if (event.type === 'dismissed' && Platform.OS === 'android') {
+      setShowTimePickerIndex(null);
+    }
+  }, [handleScheduleTimeChange]);
 
   /**
    * 週次スケジュールの曜日トグル
@@ -387,14 +410,31 @@ export default function ScheduledTaskEditScreen() {
           <Text style={styles.scheduleLabel}>
             {theme === 'child' ? 'じこく' : '時刻'}:
           </Text>
-          <TextInput
-            style={styles.timeInput}
-            value={schedule.time}
-            onChangeText={(text) => handleScheduleTimeChange(index, text)}
-            placeholder="09:00"
-            keyboardType="default"
-          />
+          <TouchableOpacity
+            style={styles.timeButton}
+            onPress={() => setShowTimePickerIndex(index)}
+          >
+            <Text style={styles.timeButtonText}>{schedule.time}</Text>
+            <MaterialIcons name="access-time" size={20} color={colors.text.secondary} />
+          </TouchableOpacity>
         </View>
+        
+        {/* 時刻ピッカー */}
+        {showTimePickerIndex === index && (
+          <DateTimePicker
+            value={(() => {
+              const [hours, minutes] = schedule.time.split(':').map(Number);
+              const date = new Date();
+              date.setHours(hours || 9);
+              date.setMinutes(minutes || 0);
+              return date;
+            })()}
+            mode="time"
+            is24Hour={true}
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(event, selectedDate) => handleTimePickerChange(index, event, selectedDate)}
+          />
+        )}
 
         {/* 週次: 曜日選択 */}
         {schedule.type === 'weekly' && (
@@ -843,13 +883,18 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     fontSize: getFontSize(16, width, theme),
     color: colors.text.primary,
   },
-  timeInput: {
+  timeButton: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border.default,
     borderRadius: getBorderRadius(8, width),
-    padding: getSpacing(8, width),
+    padding: getSpacing(10, width),
+  },
+  timeButtonText: {
     fontSize: getFontSize(16, width, theme),
     color: colors.text.primary,
   },
