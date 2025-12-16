@@ -37,6 +37,7 @@
 | 2025-12-11 | GitHub Copilot | Phase 2.B-8完了（Week 1 Webスタイル統一）: Task系9画面LinearGradient統合、Webデザイン完全一致、完了レポート作成（docs/reports/mobile/2025-12-11-week1-web-style-alignment-completion-report.md） |
 | 2025-12-11 | GitHub Copilot | Phase 2.B-8完了（Week 2 Webスタイル統一）: Management/Settings系8画面LinearGradient統合、Webデザイン完全一致、完了レポート作成（docs/reports/mobile/2025-12-11-week2-web-style-alignment-completion-report.md） |
 | 2025-12-11 | GitHub Copilot | Phase 2.B-8完了（Week 3 Webスタイル統一）: Payment/Reports/Auth系8画面LinearGradient統合、プランカードWeb整合（6スタイルカテゴリ）、静的解析警告0件達成、完了レポート作成（docs/reports/mobile/2025-12-11-week3-web-style-alignment-completion-report.md） |
+| 2025-12-16 | GitHub Copilot | Phase 2.B-8完了（PDF生成・グラフ表示修正）: PDF生成・共有機能実装（155行、22テスト）、グラフ年月表示統一（YYYY/MM→YY/MM、キャッシュv3）、user_name/username統合、レポート未生成対応、完了レポート2件作成 |
 
 ---
 
@@ -107,14 +108,29 @@ MyTeacher モバイルアプリ（iOS + Android）の実装計画書です。Pha
       - copilot-instructions.md: インターフェース付きService-Repository実装
     - **完了レポート**: `docs/reports/mobile/2025-12-13-push-notification-settings-completion-report.md`
     - **要件定義**: `definitions/mobile/PushNotification.md`
-  - ✅ **Phase 2.B-8完了**: デザイン修正・総合テスト（2025-12-09～11）
+  - ✅ **Phase 2.B-8完了**: デザイン修正・総合テスト（2025-12-09～16）
     - レスポンシブ対応完了（2025-12-09）: 335テスト、99.7%成功
     - 画面遷移・エラーハンドリング完了（2025-12-11）: 1036テスト成功
     - Web版スタイル統一完了（2025-12-11）: 全25画面、LinearGradient統合
-    - 🎯 **PDF生成・共有機能実装**（未実施）:
-      - react-native-html-to-pdf、expo-sharing
-      - 月次レポートPDF出力（Web版と同じレイアウト、日本語フォント対応）
-      - ネイティブ共有ダイアログ（メール、クラウドストレージ、メッセージアプリ連携）
+    - ✅ **PDF生成・共有機能実装完了**（2025-12-16）:
+      - pdf.service.ts実装（155行、expo-file-system/expo-sharing統合）
+      - MemberSummaryScreen.tsx修正（PDFボタン追加、60行）
+      - エラーハンドリング完全対応（402/403/500/タイムアウト/ネットワーク）
+      - テスト完了: 22 passed / 25 tests（88%、3件はFileReader統合テスト化）
+      - 完了レポート: `docs/reports/2025-12-16-pdf-generation-sharing-completion-report.md`
+    - ✅ **グラフ表示形式修正完了**（2025-12-16）:
+      - Laravel側: MonthlyReportService修正（getTrendData/getMemberRewardTrend、y/m形式統一）
+      - モバイル側: キャッシュバージョンアップ（v2→v3、AsyncStorage）
+      - テスト追加: ReportApiTest::test_member_summary_has_correct_date_format_in_labels
+      - 完了レポート: `docs/reports/2025-12-16-mobile-member-summary-graph-format-fix-report.md`
+    - ✅ **user_name/username統合対応**（2025-12-16）:
+      - MonthlyReportService: member_stats[].username追加、getMemberRewardTrendにuser_name/username返却
+      - performance.types.ts: MemberStats/MemberSummaryDataにusername追加
+      - MonthlyReportScreen/MemberSummaryScreen: 表示名ロジック改善（user_name@username形式）
+    - ✅ **レポート未生成エラーハンドリング強化**（2025-12-16）:
+      - ShowMonthlyReportAction: 404エラーにnot_generatedフラグ追加
+      - performance.service.ts: notGeneratedErrorフラグで未生成判定
+      - MonthlyReportScreen: 未生成時もドロップダウン表示、案内メッセージ追加
 - 🎯 **Phase 2.C**: App Store/Google Play申請 + 公開（4週間、2026年2月～3月）
 
 ### 技術スタック
