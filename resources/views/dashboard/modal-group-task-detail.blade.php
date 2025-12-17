@@ -5,12 +5,12 @@
         <div class="modal-content bg-white dark:bg-gray-900 w-full max-w-2xl shadow-2xl rounded-2xl opacity-0 scale-95 transform transition-all duration-300 flex flex-col max-h-[90vh]">
             {{-- ヘッダー --}}
             <div class="px-6 py-4 border-b flex justify-between items-center bg-purple-600/10 shrink-0">
-                <div>
-                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">グループタスク詳細</h3>
+                <div class="flex-1 min-w-0 pr-4">
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white truncate">{{ $task->title }}</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">編集はできません</p>
                 </div>
                 <button 
-                    class="modal-close-btn p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
+                    class="modal-close-btn p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition flex-shrink-0"
                     aria-label="閉じる">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -22,28 +22,49 @@
             <div class="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
                 {{-- タスク情報 --}}
                 <div class="mb-6">
-                    <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">{{ $task->title }}</h4>
-                    
                     @if($task->description)
                         <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">{{ $task->description }}</p>
                     @endif
                     
-                    <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-600">期間:</span>
-                            <span class="font-medium">{{ $task->getSpanLabel() }}</span>
+                            <div class="text-gray-600 text-xs sm:inline sm:text-sm mb-1 sm:mb-0">担当者<span class="hidden sm:inline">:</span></div>
+                            <div class="font-medium sm:inline sm:ml-1">{{ $task->user->username ?? '不明' }}</div>
                         </div>
                         <div>
-                            <span class="text-gray-600">期限:</span>
+                            <div class="text-gray-600 text-xs sm:inline sm:text-sm mb-1 sm:mb-0">期間<span class="hidden sm:inline">:</span></div>
+                            <div class="font-medium sm:inline sm:ml-1">{{ $task->getSpanLabel() }}</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-600 text-xs sm:inline sm:text-sm mb-1 sm:mb-0">期限<span class="hidden sm:inline">:</span></div>
                             @if($task->due_date)
-                                <span class="font-medium"><x-user-local-time :datetime="$task->due_date" format="Y/m/d" /></span>
+                                @php
+                                    // 長期タスクの場合、due_dateは「一年後」のような相対的な文字列の可能性がある
+                                    // Carbon::parse()が失敗する場合はそのまま表示
+                                    $dueDateDisplay = $task->due_date;
+                                    if ($task->span == config('const.task_spans.short')) {
+                                        try {
+                                            $dueDateDisplay = \Carbon\Carbon::parse($task->due_date)->format('Y/m/d');
+                                        } catch (\Exception $e) {
+                                            // パース失敗時はそのまま表示
+                                        }
+                                    } elseif ($task->span == config('const.task_spans.mid')) {
+                                        try {
+                                            $dueDateDisplay = \Carbon\Carbon::parse($task->due_date)->format('Y年');
+                                        } catch (\Exception $e) {
+                                            // パース失敗時はそのまま表示
+                                        }
+                                    }
+                                    // 長期タスク（long）の場合はそのまま表示
+                                @endphp
+                                <div class="font-medium sm:inline sm:ml-1">{{ $dueDateDisplay }}</div>
                             @else
-                                <span class="font-medium">未設定</span>
+                                <div class="font-medium sm:inline sm:ml-1">未設定</div>
                             @endif
                         </div>
                         <div>
-                            <span class="text-gray-600">承認:</span>
-                            <span class="font-medium">
+                            <div class="text-gray-600 text-xs sm:inline sm:text-sm mb-1 sm:mb-0">承認<span class="hidden sm:inline">:</span></div>
+                            <div class="font-medium sm:inline sm:ml-1">
                                 @if($task->isPendingApproval())
                                     <span class="text-yellow-600">承認待ち</span>
                                 @elseif($task->isApproved())
@@ -51,12 +72,12 @@
                                 @else
                                     <span class="text-gray-500">未申請</span>
                                 @endif
-                            </span>
+                            </div>
                         </div>
                         @if($task->requires_image)
                             <div>
-                                <span class="text-gray-600">画像:</span>
-                                <span class="font-medium text-red-500">必須</span>
+                                <div class="text-gray-600 text-xs sm:inline sm:text-sm mb-1 sm:mb-0">画像<span class="hidden sm:inline">:</span></div>
+                                <div class="font-medium text-red-500 sm:inline sm:ml-1">必須</div>
                             </div>
                         @endif
                     </div>

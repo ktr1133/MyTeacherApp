@@ -40,6 +40,14 @@
     border: 4px solid #fbbf24;
 }
 
+@media (max-width: 640px) {
+    .wizard-card-child {
+        padding: 1rem;
+        border-radius: 1.5rem;
+        border: 3px solid #fbbf24;
+    }
+}
+
 .dark .wizard-card-child {
     background: linear-gradient(135deg, 
         rgba(30, 27, 23, 0.95) 0%, 
@@ -63,6 +71,13 @@
     text-shadow: 2px 2px 0 rgba(251, 191, 36, 0.3);
 }
 
+@media (max-width: 640px) {
+    .wizard-title-child {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
 .dark .wizard-title-child {
     color: #fbbf24;
     text-shadow: 2px 2px 0 rgba(120, 53, 15, 0.5);
@@ -76,6 +91,13 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    .wizard-subtitle-child {
+        font-size: 1.125rem;
+        margin-bottom: 0.75rem;
+    }
 }
 
 .dark .wizard-subtitle-child {
@@ -96,7 +118,7 @@
 @media (max-width: 640px) {
     .selection-grid-child {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+        gap: 0.75rem;
     }
 }
 
@@ -119,6 +141,14 @@
     gap: 0.75rem;
     min-height: 140px;
     box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+}
+
+@media (max-width: 640px) {
+    .selection-card-child {
+        padding: 0.75rem;
+        gap: 0.5rem;
+        min-height: 120px;
+    }
 }
 
 .dark .selection-card-child {
@@ -171,6 +201,13 @@
     object-fit: contain;
 }
 
+@media (max-width: 640px) {
+    .card-icon-image {
+        width: 60px;
+        height: 60px;
+    }
+}
+
 /* ===========================
    カードラベル
    =========================== */
@@ -181,6 +218,15 @@
     color: #78350f;
     text-align: center;
     line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+    .card-label-child {
+        font-size: 0.875rem;
+        line-height: 1.3;
+    }
 }
 
 .dark .card-label-child {

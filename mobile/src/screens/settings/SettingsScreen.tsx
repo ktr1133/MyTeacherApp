@@ -21,6 +21,7 @@ import {
   Switch,
   Modal,
   FlatList,
+  TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
@@ -63,11 +64,27 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
   // タイムゾーン選択モーダル用state
   const [showTimezoneModal, setShowTimezoneModal] = useState(false);
 
+  // プロフィール編集用state
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [editUsername, setEditUsername] = useState(user?.username || '');
+  const [editName, setEditName] = useState(user?.name || '');
+  const [editEmail, setEditEmail] = useState(user?.email || '');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
   // 初回タイムゾーン設定取得
   useEffect(() => {
     loadTimezoneSettings();
     loadNotificationSettings();
   }, []);
+
+  // ユーザー情報更新時にフォームを同期
+  useEffect(() => {
+    if (user) {
+      setEditUsername(user.username || '');
+      setEditName(user.name || '');
+      setEditEmail(user.email || '');
+    }
+  }, [user]);
 
   /**
    * タイムゾーン設定読み込み
@@ -94,6 +111,63 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
   const loadNotificationSettings = async () => {
     // TODO: 通知設定の実装（Phase 2.B-5で実装予定）
     setNotificationsEnabled(false);
+  };
+
+  /**
+   * プロフィール編集モーダルを開く
+   */
+  const openProfileModal = () => {
+    if (user) {
+      setEditUsername(user.username || '');
+      setEditName(user.name || '');
+      setEditEmail(user.email || '');
+      setShowProfileModal(true);
+    }
+  };
+
+  /**
+   * プロフィール情報を更新
+   */
+  const handleUpdateProfile = async () => {
+    if (!editUsername.trim() || !editEmail.trim()) {
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        theme === 'child'
+          ? 'ユーザーめいとメールアドレスはひつようだよ'
+          : 'ユーザー名とメールアドレスは必須です',
+      );
+      return;
+    }
+
+    setIsUpdatingProfile(true);
+    try {
+      await updateProfile({
+        username: editUsername.trim(),
+        name: editName.trim() || undefined,
+        email: editEmail.trim(),
+      });
+
+      // キャッシュクリア
+      await userService.getCurrentUser();
+
+      Alert.alert(
+        theme === 'child' ? 'ほぞんしたよ' : '更新完了',
+        theme === 'child'
+          ? 'プロフィールをこうしんしたよ'
+          : 'プロフィール情報を更新しました',
+      );
+      setShowProfileModal(false);
+    } catch (err: any) {
+      console.error('Failed to update profile', err);
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        err.message || (theme === 'child'
+          ? 'プロフィールのこうしんができなかったよ'
+          : 'プロフィールの更新に失敗しました'),
+      );
+    } finally {
+      setIsUpdatingProfile(false);
+    }
   };
 
   /**
@@ -186,6 +260,82 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
+
+        {/* プロフィール情報 */}
+        <View style={styles.card}>
+          <LinearGradient
+            colors={['rgba(59, 130, 246, 0.05)', 'rgba(147, 51, 234, 0.05)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.cardHeader}
+          >
+            <View style={styles.cardHeaderIcon}>
+              <LinearGradient
+                colors={['#3b82f6', '#9333ea']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconGradient}
+              >
+                <Ionicons name="person-outline" size={16} color="#fff" />
+              </LinearGradient>
+            </View>
+            <Text style={styles.cardTitle}>
+              {theme === 'child' ? 'プロフィール' : 'プロフィール情報'}
+            </Text>
+          </LinearGradient>
+          <View style={styles.cardContent}>
+            <Text style={styles.sectionDescription}>
+              {theme === 'child'
+                ? 'あなたのじょうほうだよ'
+                : 'アカウント情報を確認・編集できます'}
+            </Text>
+
+            {user && (
+              <View style={styles.profileInfo}>
+                <View style={styles.profileRow}>
+                  <Text style={styles.profileLabel}>
+                    {theme === 'child' ? 'ユーザーめい' : 'ユーザー名'}
+                  </Text>
+                  <Text style={styles.profileValue}>{user.username}</Text>
+                </View>
+
+                {user.name && (
+                  <View style={styles.profileRow}>
+                    <Text style={styles.profileLabel}>
+                      {theme === 'child' ? 'なまえ' : '表示名'}
+                    </Text>
+                    <Text style={styles.profileValue}>{user.name}</Text>
+                  </View>
+                )}
+
+                <View style={styles.profileRow}>
+                  <Text style={styles.profileLabel}>
+                    {theme === 'child' ? 'メールアドレス' : 'メールアドレス'}
+                  </Text>
+                  <Text style={styles.profileValue}>{user.email}</Text>
+                </View>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={openProfileModal}
+              disabled={isLoading}
+            >
+              <LinearGradient
+                colors={['#3b82f6', '#9333ea']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.editButtonGradient}
+              >
+                <Ionicons name="create-outline" size={18} color="#fff" />
+                <Text style={styles.editButtonText}>
+                  {theme === 'child' ? 'へんこうする' : '編集する'}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* テーマ設定 */}
         <View style={styles.card}>
@@ -552,6 +702,124 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
         </View>
       </View>
 
+      {/* プロフィール編集モーダル */}
+      <Modal
+        visible={showProfileModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => !isUpdatingProfile && setShowProfileModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {theme === 'child' ? 'プロフィールへんこう' : 'プロフィール編集'}
+              </Text>
+              <TouchableOpacity 
+                onPress={() => setShowProfileModal(false)}
+                disabled={isUpdatingProfile}
+              >
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalForm}>
+              {/* ユーザー名 */}
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>
+                  {theme === 'child' ? 'ユーザーめい' : 'ユーザー名'}
+                  <Text style={styles.required}> *</Text>
+                </Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={editUsername}
+                  onChangeText={setEditUsername}
+                  placeholder={theme === 'child' ? 'ユーザーめいをにゅうりょく' : 'ユーザー名を入力'}
+                  placeholderTextColor={colors.textSecondary}
+                  editable={!isUpdatingProfile}
+                  autoCapitalize="none"
+                />
+              </View>
+
+              {/* 表示名 */}
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>
+                  {theme === 'child' ? 'なまえ' : '表示名'}
+                  <Text style={styles.optionalLabel}> (任意)</Text>
+                </Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={editName}
+                  onChangeText={setEditName}
+                  placeholder={theme === 'child' ? 'なまえをにゅうりょく' : '表示名を入力'}
+                  placeholderTextColor={colors.textSecondary}
+                  editable={!isUpdatingProfile}
+                />
+                <Text style={styles.formHint}>
+                  {theme === 'child'
+                    ? 'なまえをせっていしないときは、ユーザーめいがつかわれるよ'
+                    : '表示名を設定しない場合、ユーザー名が使用されます'}
+                </Text>
+              </View>
+
+              {/* メールアドレス */}
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>
+                  {theme === 'child' ? 'メールアドレス' : 'メールアドレス'}
+                  <Text style={styles.required}> *</Text>
+                </Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={editEmail}
+                  onChangeText={setEditEmail}
+                  placeholder={theme === 'child' ? 'メールアドレスをにゅうりょく' : 'メールアドレスを入力'}
+                  placeholderTextColor={colors.textSecondary}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!isUpdatingProfile}
+                />
+              </View>
+
+              {/* 保存ボタン */}
+              <TouchableOpacity
+                style={[styles.modalSaveButton, isUpdatingProfile && styles.modalSaveButtonDisabled]}
+                onPress={handleUpdateProfile}
+                disabled={isUpdatingProfile}
+              >
+                <LinearGradient
+                  colors={isUpdatingProfile ? ['#9CA3AF', '#9CA3AF'] : ['#3b82f6', '#9333ea']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.modalSaveButtonGradient}
+                >
+                  {isUpdatingProfile ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <>
+                      <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
+                      <Text style={styles.modalSaveButtonText}>
+                        {theme === 'child' ? 'ほぞんする' : '保存する'}
+                      </Text>
+                    </>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+
+              {/* キャンセルボタン */}
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setShowProfileModal(false)}
+                disabled={isUpdatingProfile}
+              >
+                <Text style={styles.modalCancelButtonText}>
+                  {theme === 'child' ? 'キャンセル' : 'キャンセル'}
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
       {/* タイムゾーン選択モーダル */}
       <Modal
         visible={showTimezoneModal}
@@ -846,6 +1114,108 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
   modalOptionTextSelected: {
     color: accent.primary,
     fontWeight: '600',
+  },
+  // プロフィール情報スタイル
+  profileInfo: {
+    gap: getSpacing(12, width),
+  },
+  profileRow: {
+    paddingVertical: getSpacing(12, width),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.subtle,
+  },
+  profileLabel: {
+    fontSize: getFontSize(14, width, theme),
+    color: colors.text.secondary,
+    marginBottom: getSpacing(4, width),
+  },
+  profileValue: {
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  editButton: {
+    marginTop: getSpacing(16, width),
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
+  editButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: getSpacing(12, width),
+    gap: getSpacing(8, width),
+  },
+  editButtonText: {
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: '600',
+    color: '#fff',
+  },
+  // プロフィール編集モーダルスタイル
+  modalForm: {
+    paddingHorizontal: getSpacing(20, width),
+  },
+  formGroup: {
+    marginTop: getSpacing(16, width),
+  },
+  formLabel: {
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: getSpacing(8, width),
+  },
+  required: {
+    color: colors.status.error,
+  },
+  optionalLabel: {
+    fontSize: getFontSize(12, width, theme),
+    color: colors.text.secondary,
+    fontWeight: 'normal',
+  },
+  formInput: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    borderRadius: getBorderRadius(8, width),
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    fontSize: getFontSize(16, width, theme),
+    color: colors.text.primary,
+  },
+  formHint: {
+    fontSize: getFontSize(12, width, theme),
+    color: colors.text.secondary,
+    marginTop: getSpacing(4, width),
+  },
+  modalSaveButton: {
+    marginTop: getSpacing(24, width),
+    borderRadius: getBorderRadius(8, width),
+    overflow: 'hidden',
+  },
+  modalSaveButtonDisabled: {
+    opacity: 0.6,
+  },
+  modalSaveButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: getSpacing(14, width),
+    gap: getSpacing(8, width),
+  },
+  modalSaveButtonText: {
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: '700',
+    color: '#fff',
+  },
+  modalCancelButton: {
+    marginTop: getSpacing(12, width),
+    paddingVertical: getSpacing(12, width),
+    alignItems: 'center',
+  },
+  modalCancelButtonText: {
+    fontSize: getFontSize(16, width, theme),
+    color: colors.text.secondary,
+    fontWeight: '500',
   },
 });
 

@@ -291,6 +291,7 @@ class AvatarWizardChildController {
             'is_transparent': this.formData.is_transparent ? 'する' : 'しない',
             'is_chibi': this.formData.is_chibi ? 'する' : 'しない',
         };
+        console.log('[Avatar Wizard] Confirmation updates:', updates);
         
         Object.keys(updates).forEach(key => {
             const el = document.querySelector(`[data-confirm-${key}]`);
@@ -345,6 +346,7 @@ class AvatarWizardChildController {
      * @param {string} value - 選択された値
      */
     selectOption(fieldName, value) {
+        console.log(`[Avatar Wizard] Selected ${fieldName}:`, value);
         this.formData[fieldName] = value;
         this.saveToStorage();
         this.updateUI();

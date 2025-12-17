@@ -14,7 +14,7 @@
     } elseif ($task->due_date && $task->span === config('const.task_spans.short')) {
         $dueDate = Carbon::parse($task->due_date);
         $today = Carbon::today();
-        $daysUntilDue = $today->diffInDays($dueDate, false);
+        $daysUntilDue = (int) $today->diffInDays($dueDate, false);
         
         if ($daysUntilDue < 0) {
             $dueStatus = 'overdue';
@@ -135,17 +135,18 @@
             @else
                 <div class="flex items-center shrink-0 mt-1">
                     <div class="quest-badge">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
+                            <path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/>
                         </svg>
-                        <span>{{ $isChildTheme ? 'クエスト' : 'グループタスク' }}</span>
+                        <span class="hidden sm:inline ml-1.5">{{ $isChildTheme ? 'クエスト' : 'グループタスク' }}</span>
                     </div>
                 </div>
             @endif
             
             {{-- タイトル部分 --}}
             <div class="flex-1 min-w-0">
-                <h3 class="font-bold text-base text-gray-900 dark:text-white {{ $isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : '' }} break-words leading-snug">
+                <h3 class="font-bold text-base {{ $isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : ($isChildTheme ? 'text-pink-700' : 'text-gray-900') }} dark:text-white break-words leading-snug">
                     {{ $task->title }}
                 </h3>
             </div>
@@ -187,11 +188,17 @@
             {{-- 期限表示 --}}
             @if ($task->due_date)
                 @php
-                    if ($task->span == config('const.task_spans.short')) {
-                        $dueDate = Carbon::parse($task->due_date)->format('Y/m/d');
-                    } elseif ($task->span == config('const.task_spans.mid')) {
-                        $dueDate = Carbon::parse($task->due_date)->format('Y');
-                    } elseif ($task->span == config('const.task_spans.long')) {
+                    $dueDate = $task->due_date; // デフォルトはそのまま表示
+                    try {
+                        if ($task->span == config('const.task_spans.short')) {
+                            $dueDate = Carbon::parse($task->due_date)->format('Y/m/d');
+                        } elseif ($task->span == config('const.task_spans.mid')) {
+                            $dueDate = Carbon::parse($task->due_date)->format('Y');
+                        } elseif ($task->span == config('const.task_spans.long')) {
+                            $dueDate = $task->due_date; // 長期は相対的な文字列の可能性があるのでそのまま
+                        }
+                    } catch (\Exception $e) {
+                        // パース失敗時はそのまま表示（「一年後」などの相対的な文字列）
                         $dueDate = $task->due_date;
                     }
                 @endphp

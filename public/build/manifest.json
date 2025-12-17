@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-9v3MuO6U.css",
+    "file": "assets/app-D8-rw2U_.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -32,7 +32,7 @@
     ]
   },
   "resources/css/avatar/avatar-wizard-child.css": {
-    "file": "assets/avatar-wizard-child-BFBIjVOM.css",
+    "file": "assets/avatar-wizard-child-BAlvPpcK.css",
     "src": "resources/css/avatar/avatar-wizard-child.css",
     "isEntry": true,
     "names": [
@@ -56,7 +56,7 @@
     ]
   },
   "resources/css/child-theme.css": {
-    "file": "assets/child-theme-Bfd_nWXL.css",
+    "file": "assets/child-theme-B64NtREV.css",
     "src": "resources/css/child-theme.css",
     "isEntry": true,
     "names": [
@@ -230,7 +230,7 @@
     "isEntry": true
   },
   "resources/js/auth/register-validation.js": {
-    "file": "assets/register-validation-Co0c8Lbz.js",
+    "file": "assets/register-validation-z4-4iJ6c.js",
     "name": "register-validation",
     "src": "resources/js/auth/register-validation.js",
     "isEntry": true,
@@ -257,7 +257,7 @@
     "isEntry": true
   },
   "resources/js/avatar/avatar-wizard-child.js": {
-    "file": "assets/avatar-wizard-child-BY9N8uSQ.js",
+    "file": "assets/avatar-wizard-child-CHB8bleI.js",
     "name": "avatar-wizard-child",
     "src": "resources/js/avatar/avatar-wizard-child.js",
     "isEntry": true
@@ -404,7 +404,7 @@
     "isEntry": true
   },
   "resources/js/profile/profile-validation.js": {
-    "file": "assets/profile-validation-IngEaS_J.js",
+    "file": "assets/profile-validation-DpXCeLFA.js",
     "name": "profile-validation",
     "src": "resources/js/profile/profile-validation.js",
     "isEntry": true,

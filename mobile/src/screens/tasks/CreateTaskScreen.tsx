@@ -125,6 +125,7 @@ export default function CreateTaskScreen() {
   // グループメンバー状態
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const [hasGroup, setHasGroup] = useState(false); // ユーザーがグループに所属しているか
   
   // グループタスク上限エラーモーダル状態
   const [showLimitModal, setShowLimitModal] = useState(false);
@@ -134,12 +135,53 @@ export default function CreateTaskScreen() {
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   /**
-   * 初回マウント時にタグ一覧とサブスク情報を取得
+   * 初回マウント時にタグ一覧とサブスク情報、グループ所属状態を取得
    */
   useEffect(() => {
+    console.log('[CreateTaskScreen] ========== 初回マウント useEffect実行 ==========');
     fetchTags();
     loadCurrentSubscription();
+    checkUserGroup();
   }, []);
+
+  /**
+   * hasGroup状態の変化を監視（デバッグ用）
+   */
+  useEffect(() => {
+    console.log('[CreateTaskScreen] ========== hasGroup状態変化 ==========', hasGroup);
+  }, [hasGroup]);
+
+  /**
+   * ユーザーのグループ所属状態を確認
+   */
+  const checkUserGroup = async () => {
+    console.log('[CreateTaskScreen] ========== checkUserGroup開始 ==========');
+    try {
+      const response = await api.get('/groups/edit');
+      console.log('[CreateTaskScreen] APIレスポンス:', {
+        status: response.status,
+        success: response.data?.success,
+        hasGroup: !!response.data?.data?.group
+      });
+      
+      // ステータスコード200かつsuccess=trueの場合のみグループありと判定
+      if (response.status === 200 && response.data.success && response.data.data?.group) {
+        console.log('[CreateTaskScreen] ✅ グループあり:', response.data.data.group.name);
+        setHasGroup(true);
+      } else {
+        console.log('[CreateTaskScreen] ❌ グループなし（レスポンス不正）');
+        setHasGroup(false);
+      }
+    } catch (error: any) {
+      console.log('[CreateTaskScreen] ❌ グループなし（404またはエラー）:', {
+        status: error.response?.status,
+        message: error.message
+      });
+      // エラー時（404含む）はグループなしとみなす
+      setHasGroup(false);
+    }
+    console.log('[CreateTaskScreen] ========== checkUserGroup終了 ==========');
+  };
 
   /**
    * タグ一覧取得処理
@@ -496,12 +538,14 @@ export default function CreateTaskScreen() {
               <Ionicons name="help-circle-outline" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           )}
-          <TouchableOpacity
-            onPress={handleScheduledTaskNavigation}
-            style={styles.headerIconButton}
-          >
-            <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
+          {hasGroup && (
+            <TouchableOpacity
+              onPress={handleScheduledTaskNavigation}
+              style={styles.headerIconButton}
+            >
+              <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
         </View>
       </LinearGradient>
 
@@ -851,28 +895,30 @@ export default function CreateTaskScreen() {
           </>
         )}
 
-        <View style={styles.fieldContainer}>
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>
-              {theme === 'child' ? 'みんなのやること' : 'グループタスク'}
+        {hasGroup && (
+          <View style={styles.fieldContainer}>
+            <View style={styles.switchRow}>
+              <Text style={styles.switchLabel}>
+                {theme === 'child' ? 'みんなのやること' : 'グループタスク'}
+              </Text>
+              {isLoadingMembers ? (
+                <ActivityIndicator size="small" color="#4F46E5" />
+              ) : (
+                <Switch
+                  value={isGroupTask}
+                  onValueChange={setIsGroupTask}
+                  trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
+                  thumbColor={isGroupTask ? '#4F46E5' : '#F3F4F6'}
+                />
+              )}
+            </View>
+            <Text style={styles.helpText}>
+              {theme === 'child'
+                ? 'みんなにおなじやることをあげるよ'
+                : 'グループメンバー全員に同じタスクを割り当てます'}
             </Text>
-            {isLoadingMembers ? (
-              <ActivityIndicator size="small" color="#4F46E5" />
-            ) : (
-              <Switch
-                value={isGroupTask}
-                onValueChange={setIsGroupTask}
-                trackColor={{ false: '#D1D5DB', true: '#A5B4FC' }}
-                thumbColor={isGroupTask ? '#4F46E5' : '#F3F4F6'}
-              />
-            )}
           </View>
-          <Text style={styles.helpText}>
-            {theme === 'child'
-              ? 'みんなにおなじやることをあげるよ'
-              : 'グループメンバー全員に同じタスクを割り当てます'}
-          </Text>
-        </View>
+        )}
 
         {/* タスク作成方法選択（グループタスクのみ） */}
         {isGroupTask && (

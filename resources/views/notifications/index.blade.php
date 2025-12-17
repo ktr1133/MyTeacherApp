@@ -64,11 +64,11 @@
                     @if($unreadCount > 0)
                         <form method="POST" action="{{ route('notification.read-all') }}">
                             @csrf
-                            <button type="submit" class="dashboard-btn-primary inline-flex items-center justify-center shrink-0 rounded-xl px-4 py-2.5 text-white shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#59B9C6] transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <button type="submit" class="dashboard-btn-primary inline-flex items-center justify-center shrink-0 rounded-xl px-3 sm:px-4 py-2.5 text-white shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#59B9C6] transition" title="{{ $isChildTheme ? 'すべて読んだことにする' : 'すべて既読' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                 </svg>
-                                <span class="text-sm font-semibold whitespace-nowrap">{{ $isChildTheme ? 'すべて読んだことにする' : 'すべて既読' }}</span>
+                                <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">{{ $isChildTheme ? 'すべて読んだことにする' : 'すべて既読' }}</span>
                             </button>
                         </form>
                     @endif
@@ -169,13 +169,32 @@
                                     @endphp
 
                                     <a href="{{ route('notification.show', $userNotification->id) }}" 
-                                       class="block notification-list-card rounded-xl p-5 transition-all duration-300 
+                                       class="block notification-list-card rounded-xl p-3 pr-2 sm:p-5 sm:pr-5 transition-all duration-300 
                                        {{ $isRead ? 'bg-white dark:bg-gray-800/50' : 'notification-list-card-unread' }} 
-                                       border border-gray-200 dark:border-gray-700 hover:shadow-lg group">
+                                       border border-gray-200 dark:border-gray-700 hover:shadow-lg group relative">
                                         
-                                        <div class="flex items-center gap-4">
+                                        {{-- 優先度バッジ（右上に配置） --}}
+                                        @if($template && !$isDeleted)
+                                            <div class="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 z-10">
+                                                @if($template->priority === 'important')
+                                                    <span class="notification-priority-badge notification-priority-important text-[0.65rem] leading-tight sm:text-sm px-1.5 py-0.5 sm:px-2.5 sm:py-1">
+                                                        重要
+                                                    </span>
+                                                @elseif($template->priority === 'normal')
+                                                    <span class="notification-priority-badge notification-priority-normal text-[0.65rem] leading-tight sm:text-sm px-1.5 py-0.5 sm:px-2.5 sm:py-1">
+                                                        通常
+                                                    </span>
+                                                @else
+                                                    <span class="notification-priority-badge notification-priority-info text-[0.65rem] leading-tight sm:text-sm px-1.5 py-0.5 sm:px-2.5 sm:py-1">
+                                                        情報
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        <div class="flex items-start gap-2 sm:gap-3 pr-10 sm:pr-14">
                                             {{-- 未読インジケーター --}}
-                                            <div class="flex-shrink-0">
+                                            <div class="flex-shrink-0 mt-1">
                                                 @if(!$isRead)
                                                     <div class="notification-unread-dot w-2.5 h-2.5 bg-[#59B9C6] rounded-full"></div>
                                                 @else
@@ -183,24 +202,24 @@
                                                 @endif
                                             </div>
 
-                                            {{-- タイトル --}}
+                                            {{-- タイトルと詳細 --}}
                                             <div class="flex-1 min-w-0">
-                                                <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-1 group-hover:text-[#59B9C6] dark:group-hover:text-[#7DD3DB] transition truncate">
+                                                <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-1.5 sm:mb-2 group-hover:text-[#59B9C6] dark:group-hover:text-[#7DD3DB] transition leading-snug">
                                                     @if($isDeleted)
                                                         <span class="text-gray-400 dark:text-gray-500">[削除された通知]</span>
                                                     @else
                                                         {{ $template->title }}
                                                     @endif
                                                 </h3>
-                                                <div class="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-xs text-gray-600 dark:text-gray-400">
                                                     <span class="flex items-center gap-1">
-                                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                                                         </svg>
-                                                        管理者: {{ $template->sender->username ?? '不明' }}
+                                                        <span class="truncate">管理者: {{ $template->sender->username ?? '不明' }}</span>
                                                     </span>
                                                     <span class="flex items-center gap-1">
-                                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                                                         </svg>
                                                         <x-user-local-time :datetime="$userNotification->created_at" format="Y/m/d H:i" />
@@ -208,27 +227,8 @@
                                                 </div>
                                             </div>
 
-                                            {{-- 優先度バッジ --}}
-                                            @if($template && !$isDeleted)
-                                                <div class="flex-shrink-0">
-                                                    @if($template->priority === 'important')
-                                                        <span class="notification-priority-badge notification-priority-important">
-                                                            重要
-                                                        </span>
-                                                    @elseif($template->priority === 'normal')
-                                                        <span class="notification-priority-badge notification-priority-normal">
-                                                            通常
-                                                        </span>
-                                                    @else
-                                                        <span class="notification-priority-badge notification-priority-info">
-                                                            情報
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            @endif
-
                                             {{-- 矢印アイコン --}}
-                                            <div class="flex-shrink-0">
+                                            <div class="flex-shrink-0 mt-1">
                                                 <svg class="w-5 h-5 text-gray-400 group-hover:text-[#59B9C6] group-hover:translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                                 </svg>

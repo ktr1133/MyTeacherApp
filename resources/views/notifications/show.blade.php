@@ -34,20 +34,20 @@
                         </button>
 
                         {{-- ヘッダーアイコンとタイトル --}}
-                        <div class="flex items-center gap-3">
-                            <div class="dashboard-header-icon w-10 h-10 rounded-xl flex items-center justify-center shadow-lg">
+                        <div class="flex items-center gap-2 sm:gap-3">
+                            <div class="dashboard-header-icon w-10 h-10 rounded-xl hidden sm:flex items-center justify-center shadow-lg">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                                 </svg>
                             </div>
-                            <div>
+                            <div class="min-w-0 flex-1">
                                 @if (!$isChildTheme)
-                                    <h1 class="dashboard-header-title text-lg font-bold">
+                                    <h1 class="dashboard-header-title text-lg font-bold truncate">
                                         通知詳細
                                     </h1>
-                                    <p class="text-xs text-gray-600 dark:text-gray-400">お知らせの内容</p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 truncate">お知らせの内容</p>
                                 @else
-                                    <h1 class="dashboard-header-title text-lg font-bold">
+                                    <h1 class="dashboard-header-title text-lg font-bold truncate">
                                         くわしいおしらせ
                                     </h1>
                                 @endif
@@ -57,15 +57,17 @@
 
                     {{-- 一覧に戻るボタン --}}
                     <a href="{{ route('notifications.index') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                       class="inline-flex items-center px-2 sm:px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                         </svg>
-                        @if (!$isChildTheme)
-                            一覧に戻る
-                        @else
-                            もどる
-                        @endif
+                        <span class="hidden sm:inline">
+                            @if (!$isChildTheme)
+                                一覧に戻る
+                            @else
+                                もどる
+                            @endif
+                        </span>
                     </a>
 
                     {{-- ユーザードロップダウン --}}
@@ -123,9 +125,9 @@
                         <div class="notification-detail-card bento-card rounded-2xl shadow-xl overflow-hidden">
                             {{-- ヘッダー部分 --}}
                             <div class="notification-detail-header p-6 lg:p-8">
-                                <div class="flex items-start gap-4 mb-6">
+                                <div class="sm:flex sm:items-start sm:gap-4 mb-6">
                                     {{-- アイコン --}}
-                                    <div class="flex-shrink-0">
+                                    <div class="hidden sm:block flex-shrink-0">
                                         <div class="w-14 h-14 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
                                             @if($template->isAdminNotification())
                                                 <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">

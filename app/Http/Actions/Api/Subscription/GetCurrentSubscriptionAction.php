@@ -36,6 +36,11 @@ class GetCurrentSubscriptionAction
             $user = Auth::user();
             $group = $user->group;
 
+            // グループが存在しない場合はnullを返す
+            if (!$group) {
+                return $this->responder->currentSubscriptionResponse(null);
+            }
+
             // サブスクリプション情報の取得は子どもテーマでも許可
             // （表示のみ - プラン変更やキャンセルは親ユーザーのみ）
 

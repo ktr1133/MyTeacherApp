@@ -1,6 +1,6 @@
 @props(['buckets', 'tags', 'prefix' => 'default'])
 
-<div class="bento-grid grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 bento-auto-rows">
+<div class="bento-grid flex flex-col gap-3 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4 lg:gap-6 bento-auto-rows">
     @foreach($buckets as $bucket)
         @php
             $count = $bucket['tasks']->count();
@@ -95,7 +95,7 @@
                             <path d="M5 3a2 2 0 00-2 2v3a2 2 0 002 2h3a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 12a2 2 0 00-2 2v3a2 2 0 002 2h3a2 2 0 002-2v-3a2 2 0 00-2-2H5zM12 5a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2h-3a2 2 0 01-2-2V5zM12 14a2 2 0 012-2h3a2 2 0 012 2v3a2 2 0 01-2 2h-3a2 2 0 01-2-2v-3z"/>
                         </svg>
                     </span>
-                    <h3 class="text-base lg:text-lg font-bold text-gray-900 dark:text-white truncate min-w-0">{{ $bucket['name'] }}</h3>
+                    <h3 class="text-base lg:text-lg font-bold {{ $isChildTheme ? 'text-pink-600' : 'text-gray-900' }} dark:text-white truncate min-w-0">{{ $bucket['name'] }}</h3>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0 ml-2">
                     <span class="tag-badge-gradient inline-flex items-center justify-center min-w-[2rem] lg:min-w-[2.5rem] h-6 lg:h-7 px-2 lg:px-3 rounded-full text-xs font-bold shadow-md">

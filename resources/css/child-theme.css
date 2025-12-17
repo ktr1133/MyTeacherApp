@@ -508,12 +508,24 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+@media (max-width: 640px) {
+    .child-theme .notification-list-card {
+        border: 2px solid rgba(89, 185, 198, 0.3);
+    }
+}
+
 .dark .child-theme .notification-list-card {
     background: linear-gradient(135deg, 
         rgba(31, 41, 55, 0.95) 0%, 
         rgba(17, 24, 39, 0.95) 100%
     );
     border: 3px solid rgba(89, 185, 198, 0.4);
+}
+
+@media (max-width: 640px) {
+    .dark .child-theme .notification-list-card {
+        border: 2px solid rgba(89, 185, 198, 0.4);
+    }
 }
 
 .child-theme .notification-list-card:hover {
@@ -526,6 +538,13 @@
 .child-theme .notification-list-card h3 {
     font-size: var(--child-text-lg);
     font-weight: 800;
+}
+
+@media (max-width: 640px) {
+    .child-theme .notification-list-card h3 {
+        font-size: var(--child-text-base);
+        line-height: 1.4;
+    }
 }
 
 .child-theme .notification-list-card .text-xs {

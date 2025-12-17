@@ -62,7 +62,7 @@
                 <input type="hidden" name="formality" value="">
                 <input type="hidden" name="humor" value="">
                 <input type="hidden" name="draw_model_version" value="">
-                <input type="hidden" name="is_transparent" value="1">
+                <input type="hidden" name="is_transparent" value="0">
                 <input type="hidden" name="is_chibi" value="0">
 
                 {{-- ステップ1: 性別 --}}
@@ -101,7 +101,7 @@
                             <div class="selection-grid-child">
                                 @foreach(config('avatar-options.hair_style') as $key => $option)
                                     <div 
-                                        data-select-option="eye_color"
+                                        data-select-option="hair_style"
                                         data-value="{{ $key }}"
                                         class="selection-card-child color-card-child"
                                     >
@@ -220,7 +220,7 @@
                             <div class="selection-grid-child">
                                 @foreach(config('avatar-options.tone') as $key => $option)
                                     <div 
-                                        data-select-option="humor"
+                                        data-select-option="tone"
                                         data-value="{{ $key }}"
                                         class="selection-card-child"
                                     >
@@ -274,7 +274,7 @@
                             <div class="selection-grid-child">
                                 @foreach(config('avatar-options.humor') as $key => $option)
                                     <div 
-                                        data-select-option="eye_color"
+                                        data-select-option="humor"
                                         data-value="{{ $key }}"
                                         class="selection-card-child"
                                     >

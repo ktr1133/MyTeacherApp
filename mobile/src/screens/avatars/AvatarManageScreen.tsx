@@ -185,8 +185,14 @@ export const AvatarManageScreen: React.FC = () => {
               Alert.alert(
                 theme === 'child' ? 'つくりはじめたよ' : '再生成開始',
                 theme === 'child'
-                  ? 'えをつくりなおしているよ。おわったらおしらせするね！'
-                  : '画像の再生成を開始しました。完了したら通知でお知らせします。',
+                  ? 'えをつくりなおしているよ。できたらつうちでおしらせするね！'
+                  : '画像の再生成を開始しました。完了したらプッシュ通知でお知らせします。',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('TaskList' as never),
+                  },
+                ],
               );
             } catch (err) {
               console.error('Failed to regenerate images:', err);
