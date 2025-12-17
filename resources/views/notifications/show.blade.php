@@ -207,8 +207,43 @@
                                 @endif
 
                                 {{-- アクションボタン --}}
-                                @if($template->action_url || $template->official_page_url)
+                                @if($template->action_url || $template->official_page_url || $template->type === 'parent_link_request')
                                     <div class="mt-8 flex flex-wrap gap-3">
+                                        {{-- 親子紐付けリクエスト: 承認・拒否ボタン --}}
+                                        @if($template->type === 'parent_link_request')
+                                            <form method="POST" action="{{ route('notification.approve-parent-link', $notification->id) }}" class="flex-1 min-w-[200px]">
+                                                @csrf
+                                                <button type="submit" 
+                                                        class="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-105">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                    @if (!$isChildTheme)
+                                                        承認する
+                                                    @else
+                                                        しょうにんする
+                                                    @endif
+                                                </button>
+                                            </form>
+                                            
+                                            <form method="POST" action="{{ route('notification.reject-parent-link', $notification->id) }}" 
+                                                  class="flex-1 min-w-[200px]"
+                                                  onsubmit="return confirm('@if (!$isChildTheme)本当に拒否しますか？\n\nCOPPA法により、13歳未満の方は保護者の管理が必要です。拒否するとアカウントが削除されます。@elseほんとうにきょひしますか？\n\nきょひするとアカウントがさくじょされます。@endif');">
+                                                @csrf
+                                                <button type="submit" 
+                                                        class="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-105">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                    @if (!$isChildTheme)
+                                                        拒否する
+                                                    @else
+                                                        きょひする
+                                                    @endif
+                                                </button>
+                                            </form>
+                                        @endif
+                                        
                                         @if($template->action_url)
                                             <a href="{{ $template->action_url }}" 
                                                target="_blank"

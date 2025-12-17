@@ -27,11 +27,15 @@ interface GroupServiceInterface
      * メンバーを追加する。
      * @param User $actor
      * @param string $username
+     * @param string $email
      * @param string $password
+     * @param string|null $name
      * @param bool $canEdit
+     * @param bool $privacyConsent
+     * @param bool $termsConsent
      * @return User
      */
-    public function addMember(User $actor, string $username, string $email, string $password, ?string $name, bool $canEdit): User;
+    public function addMember(User $actor, string $username, string $email, string $password, ?string $name, bool $canEdit, bool $privacyConsent = false, bool $termsConsent = false): User;
 
     /**
      * メンバーの編集権限を更新する。
@@ -98,4 +102,14 @@ interface GroupServiceInterface
      * @return int
      */
     public function getRemainingMemberSlots(Group $group): int;
+
+    /**
+     * 保護者招待トークン経由での家族グループを作成
+     * 
+     * @param User $parentUser 保護者ユーザー
+     * @param User $childUser 子ユーザー
+     * @return Group 作成されたグループ
+     * @throws \RuntimeException グループ作成に失敗した場合
+     */
+    public function createFamilyGroup(User $parentUser, User $childUser): Group;
 }

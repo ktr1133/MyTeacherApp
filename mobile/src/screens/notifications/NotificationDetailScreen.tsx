@@ -6,16 +6,18 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
 import { useThemedColors } from '../../hooks/useThemedColors';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { notificationService } from '../../services/notification.service';
 import { Notification, getNotificationTypeLabel } from '../../types/notification.types';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
   NotificationDetail: { notificationId: number };
@@ -35,13 +37,15 @@ type NotificationDetailRouteProp = RouteProp<RootStackParamList, 'NotificationDe
  */
 export default function NotificationDetailScreen() {
   const route = useRoute<NotificationDetailRouteProp>();
+  const navigation = useNavigation();
   const { theme } = useTheme();
   const { width } = useResponsive();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, logout } = useAuth();
   const { colors, accent } = useThemedColors();
   const [notification, setNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const { notificationId } = route.params;
 
@@ -90,6 +94,103 @@ export default function NotificationDetailScreen() {
       setLoading(false);
     }
   }, [notificationId, isAuthenticated, authLoading]);
+
+  /**
+   * 親アカウント紐付けリクエストを承認
+   */
+  const handleApproveParentLink = useCallback(async () => {
+    if (!notification || actionLoading) return;
+
+    setActionLoading(true);
+    try {
+      const response = await notificationService.approveParentLink(notification.id);
+      
+      if (response.success) {
+        Alert.alert(
+          theme === 'child' ? 'せいこう！' : '承認完了',
+          theme === 'child' 
+            ? `${response.data.parent.name || response.data.parent.username}さんと つながりました！`
+            : `${response.data.parent.name || response.data.parent.username}さんとの紐付けが完了しました。`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // 通知一覧に戻る
+                navigation.goBack();
+              },
+            },
+          ]
+        );
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '承認に失敗しました';
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        errorMessage
+      );
+      console.error('[NotificationDetailScreen] Approve error:', err);
+    } finally {
+      setActionLoading(false);
+    }
+  }, [notification, actionLoading, theme, navigation]);
+
+  /**
+   * 親アカウント紐付けリクエストを拒否
+   * 
+   * ⚠️ COPPA法遵守: 拒否後は自動的にログアウトし、アカウント削除通知を表示
+   */
+  const handleRejectParentLink = useCallback(async () => {
+    if (!notification || actionLoading) return;
+
+    Alert.alert(
+      theme === 'child' ? 'ほんとうに きょひする？' : '紐付けを拒否しますか？',
+      theme === 'child'
+        ? 'きょひすると、アカウントが さくじょされて、ログアウトします。\n（13さいみまん きまり）'
+        : '紐付けを拒否すると、COPPA法の規定により、あなたのアカウントは削除され、ログアウトされます。',
+      [
+        {
+          text: theme === 'child' ? 'やめる' : 'キャンセル',
+          style: 'cancel',
+        },
+        {
+          text: theme === 'child' ? 'きょひする' : '拒否する',
+          style: 'destructive',
+          onPress: async () => {
+            setActionLoading(true);
+            try {
+              const response = await notificationService.rejectParentLink(notification.id);
+              
+              if (response.success && response.data.deleted) {
+                // トークンを削除
+                await AsyncStorage.removeItem('userToken');
+                
+                // ログアウト処理
+                await logout();
+                
+                // メッセージ表示（ログアウト後なのでToast代わりにAlert）
+                Alert.alert(
+                  theme === 'child' ? 'きょひしました' : '紐付けを拒否しました',
+                  theme === 'child'
+                    ? 'アカウントが さくじょされました。\nまた あそびにきてね！'
+                    : response.data.reason || 'COPPA法の規定により、アカウントが削除されました。',
+                  [{ text: 'OK' }]
+                );
+              }
+            } catch (err) {
+              const errorMessage = err instanceof Error ? err.message : '拒否処理に失敗しました';
+              Alert.alert(
+                theme === 'child' ? 'エラー' : 'エラー',
+                errorMessage
+              );
+              console.error('[NotificationDetailScreen] Reject error:', err);
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  }, [notification, actionLoading, theme, logout]);
 
   useEffect(() => {
     // 認証チェック完了後に実行
@@ -193,6 +294,68 @@ export default function NotificationDetailScreen() {
             {notification.template?.content || '内容がありません'}
           </Text>
         </View>
+
+        {/* アクションボタン（親紐付けリクエストの場合のみ表示） */}
+        {notification.template?.type === 'parent_link_request' && !notification.read_at && (
+          <View style={styles.actionButtonsContainer}>
+            <Text style={styles.actionButtonsTitle}>
+              {theme === 'child' ? 'どうする？' : 'アクション'}
+            </Text>
+            
+            {/* 承認ボタン */}
+            <TouchableOpacity
+              onPress={handleApproveParentLink}
+              disabled={actionLoading}
+              style={styles.actionButton}
+            >
+              <LinearGradient
+                colors={[colors.status.success, colors.status.success + 'CC']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionButtonGradient}
+              >
+                {actionLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.actionButtonText}>
+                    {theme === 'child' ? '✓ しょうにんする' : '✓ 承認する'}
+                  </Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* 拒否ボタン */}
+            <TouchableOpacity
+              onPress={handleRejectParentLink}
+              disabled={actionLoading}
+              style={styles.actionButton}
+            >
+              <LinearGradient
+                colors={[colors.status.error, colors.status.error + 'CC']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionButtonGradient}
+              >
+                {actionLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.actionButtonText}>
+                    {theme === 'child' ? '✕ きょひする' : '✕ 拒否する'}
+                  </Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* 警告メッセージ（拒否の場合） */}
+            {theme === 'child' && (
+              <View style={styles.warningBox}>
+                <Text style={styles.warningText}>
+                  ⚠️ きょひすると、アカウントが さくじょされます
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* 既読情報 */}
         {notification.read_at && (
@@ -324,6 +487,47 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     fontSize: getFontSize(16, width, theme),
     color: colors.text.primary,
     lineHeight: getFontSize(24, width, theme),
+  },
+  actionButtonsContainer: {
+    marginTop: getSpacing(24, width),
+    marginBottom: getSpacing(16, width),
+    backgroundColor: colors.surface,
+    borderRadius: getBorderRadius(12, width),
+    padding: getSpacing(16, width),
+  },
+  actionButtonsTitle: {
+    fontSize: getFontSize(16, width, theme),
+    color: colors.text.primary,
+    fontWeight: '700',
+    marginBottom: getSpacing(12, width),
+  },
+  actionButton: {
+    marginBottom: getSpacing(12, width),
+  },
+  actionButtonGradient: {
+    paddingVertical: getSpacing(14, width),
+    paddingHorizontal: getSpacing(24, width),
+    borderRadius: getBorderRadius(8, width),
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48, // iOS HIG + Material Design minimum touch target
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: getFontSize(16, width, theme),
+    fontWeight: '700',
+  },
+  warningBox: {
+    backgroundColor: colors.status.warning + '20',
+    borderRadius: getBorderRadius(8, width),
+    padding: getSpacing(12, width),
+    marginTop: getSpacing(8, width),
+  },
+  warningText: {
+    fontSize: getFontSize(13, width, theme),
+    color: colors.status.warning,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   readInfo: {
     backgroundColor: colors.surface,

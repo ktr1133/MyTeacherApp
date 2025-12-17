@@ -29,19 +29,42 @@ export const authService = {
   /**
    * 新規登録
    * 
-   * 注意: 現在Laravel側で登録は停止中（abort(404)）
-   * Phase 2.B-3以降で開放予定
+   * Phase 6A: 同意記録機能実装済み
+   * Phase 5-2: 13歳未満の場合は保護者同意待ち
    */
   async register(
     email: string,
     password: string,
-    name: string
+    name: string,
+    privacyConsent: boolean,
+    termsConsent: boolean,
+    birthdate?: string,
+    parentEmail?: string
   ): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/register', {
+    const payload: any = {
+      username: email.split('@')[0], // usernameはメールアドレスの@前を使用
       email,
       password,
-      name,
-    });
+      password_confirmation: password,
+      timezone: 'Asia/Tokyo',
+      privacy_policy_consent: privacyConsent ? '1' : '0',
+      terms_consent: termsConsent ? '1' : '0',
+    };
+    
+    // Phase 5-2: 生年月日と保護者メールアドレス
+    if (birthdate) {
+      payload.birthdate = birthdate;
+    }
+    if (parentEmail) {
+      payload.parent_email = parentEmail;
+    }
+    
+    const response = await api.post<AuthResponse>('/auth/register', payload);
+    
+    // Phase 5-2: 保護者同意待ちの場合はトークン未発行
+    if (response.data.requires_parent_consent) {
+      return response.data;
+    }
     
     const { token, user } = response.data;
     await storage.setItem(STORAGE_KEYS.JWT_TOKEN, token);

@@ -53,6 +53,15 @@ class AddMemberRequest extends FormRequest
                 'nullable',
                 'boolean',
             ],
+            // 代理同意（保護者による同意）
+            'privacy_policy_consent' => [
+                'required',
+                'accepted',
+            ],
+            'terms_consent' => [
+                'required',
+                'accepted',
+            ],
         ];
     }
 
@@ -82,6 +91,12 @@ class AddMemberRequest extends FormRequest
             
             // group_edit_flg
             'group_edit_flg.boolean' => 'グループ編集権限の値が不正です。',
+            
+            // 代理同意
+            'privacy_policy_consent.required' => 'プライバシーポリシーへの同意が必要です。',
+            'privacy_policy_consent.accepted' => 'プライバシーポリシーに同意してください。',
+            'terms_consent.required' => '利用規約への同意が必要です。',
+            'terms_consent.accepted' => '利用規約に同意してください。',
         ];
     }
 }

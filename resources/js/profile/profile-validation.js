@@ -92,8 +92,8 @@ async function validateMemberUsername() {
         }
     }
 
-    // ボタン状態を更新
-    updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
+    // ボタン状態を更新（同意チェック含む）
+    updateAddMemberButtonStateWithConsent();
 }
 
 /**
@@ -105,7 +105,7 @@ async function validateMemberEmail() {
 
     if (!email || email.length === 0) {
         hideValidationMessage('email');
-        updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
+        updateAddMemberButtonStateWithConsent();
         return;
     }
 
@@ -127,8 +127,8 @@ async function validateMemberEmail() {
         }
     }
 
-    // ボタン状態を更新
-    updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
+    // ボタン状態を更新（同意チェック含む）
+    updateAddMemberButtonStateWithConsent();
 }
 
 /**
@@ -140,7 +140,7 @@ async function validateMemberPassword() {
 
     if (!password || password.length === 0) {
         hideValidationMessage('password');
-        updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
+        updateAddMemberButtonStateWithConsent();
         return;
     }
 
@@ -162,8 +162,8 @@ async function validateMemberPassword() {
         }
     }
 
-    // ボタン状態を更新
-    updateSubmitButtonState('add-member-button', ['username', 'email', 'password']);
+    // ボタン状態を更新（同意チェック含む）
+    updateAddMemberButtonStateWithConsent();
 }
 
 // デバウンス付きバリデーション関数
@@ -171,6 +171,46 @@ const debouncedValidateGroupName = debounce(validateGroupName, 500);
 const debouncedValidateMemberUsername = debounce(validateMemberUsername, 500);
 const debouncedValidateMemberEmail = debounce(validateMemberEmail, 500);
 const debouncedValidateMemberPassword = debounce(validateMemberPassword, 500);
+
+/**
+ * メンバー追加時の送信ボタン状態更新（同意チェック付き）
+ */
+function updateAddMemberButtonStateWithConsent() {
+    const addMemberButton = document.getElementById('add-member-button');
+    const privacyPolicyConsentCheckbox = document.getElementById('privacy_policy_consent');
+    const termsConsentCheckbox = document.getElementById('terms_consent');
+
+    if (!addMemberButton) {
+        return;
+    }
+
+    // バリデーション状態を確認
+    const fieldsValid = isFormValid(['username', 'email', 'password']);
+    
+    // 同意チェックボックスの状態を確認
+    const consentGiven = privacyPolicyConsentCheckbox && termsConsentCheckbox &&
+                         privacyPolicyConsentCheckbox.checked && termsConsentCheckbox.checked;
+
+    // 全ての条件を満たしている場合のみボタンを有効化
+    if (fieldsValid && consentGiven) {
+        addMemberButton.disabled = false;
+        addMemberButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        
+        if (import.meta.env.DEV) {
+            console.log('[ProfileValidation] Add member button enabled');
+        }
+    } else {
+        addMemberButton.disabled = true;
+        addMemberButton.classList.add('opacity-50', 'cursor-not-allowed');
+        
+        if (import.meta.env.DEV) {
+            console.log('[ProfileValidation] Add member button disabled:', {
+                fieldsValid,
+                consentGiven
+            });
+        }
+    }
+}
 
 // イベントリスナー設定
 document.addEventListener('DOMContentLoaded', function() {
@@ -227,6 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const usernameInput = document.getElementById('username');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
+    const privacyPolicyConsentCheckbox = document.getElementById('privacy_policy_consent');
+    const termsConsentCheckbox = document.getElementById('terms_consent');
     const addMemberForm = document.getElementById('add-member-form');
     const addMemberButton = document.getElementById('add-member-button');
 
@@ -244,8 +286,18 @@ document.addEventListener('DOMContentLoaded', function() {
         emailInput.addEventListener('input', debouncedValidateMemberEmail);
         passwordInput.addEventListener('input', debouncedValidateMemberPassword);
 
+        // 同意チェックボックスのイベントリスナー追加
+        if (privacyPolicyConsentCheckbox && termsConsentCheckbox) {
+            privacyPolicyConsentCheckbox.addEventListener('change', () => {
+                updateAddMemberButtonStateWithConsent();
+            });
+            termsConsentCheckbox.addEventListener('change', () => {
+                updateAddMemberButtonStateWithConsent();
+            });
+        }
+
         if (import.meta.env.DEV) {
-            console.log('[ProfileValidation] Member validation enabled (username, email, password)');
+            console.log('[ProfileValidation] Member validation enabled (username, email, password, consent)');
         }
     }
 

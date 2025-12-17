@@ -85,6 +85,11 @@ return [
         'task_approved'       => 'task_approved',       // タスク承認
         'task_rejected'       => 'task_rejected',       // タスク却下
         
+        // 親子紐付け関連
+        'parent_link_request' => 'parent_link_request', // 保護者紐付けリクエスト（子宛て）
+        'parent_link_approved' => 'parent_link_approved', // 保護者紐付け承認（保護者宛て）
+        'parent_link_rejected' => 'parent_link_rejected', // 保護者紐付け拒否（保護者宛て、アカウント削除通知）
+        
         // 管理者通知
         'admin_announcement'  => 'admin_announcement',  // お知らせ
         'admin_maintenance'   => 'admin_maintenance',   // メンテナンス

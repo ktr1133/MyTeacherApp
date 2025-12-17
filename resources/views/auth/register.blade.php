@@ -295,6 +295,142 @@
                         </p>
                     </div>
 
+                    <!-- Phase 5-2: 生年月日（13歳未満判定用） -->
+                    <div>
+                        <label for="birthdate" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            生年月日（任意）
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <input 
+                                id="birthdate" 
+                                type="date" 
+                                name="birthdate" 
+                                value="{{ old('birthdate') }}"
+                                max="{{ now()->format('Y-m-d') }}"
+                                min="1900-01-01"
+                                class="input-glow block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200"
+                            />
+                        </div>
+
+                        <!-- サーバーサイドエラー -->
+                        @error('birthdate')
+                            <div class="validation-message validation-error validation-error-slide-in">
+                                <svg class="validation-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            13歳未満の方は保護者の同意が必要です。入力いただくと年齢に応じた機能を提供します。
+                        </p>
+                    </div>
+
+                    <!-- Phase 5-2: 保護者メールアドレス（13歳未満の場合に表示） -->
+                    <div id="parent-email-section" style="display: none;">
+                        <label for="parent_email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            保護者のメールアドレス
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <input 
+                                id="parent_email" 
+                                type="email" 
+                                name="parent_email" 
+                                value="{{ old('parent_email') }}"
+                                class="input-glow block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#59B9C6] focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200"
+                                placeholder="保護者のメールアドレスを入力"
+                            />
+                        </div>
+
+                        <!-- サーバーサイドエラー -->
+                        @error('parent_email')
+                            <div class="validation-message validation-error validation-error-slide-in">
+                                <svg class="validation-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+
+                        <div class="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <p class="text-xs text-blue-800 dark:text-blue-400 leading-relaxed">
+                                <strong>13歳未満の方へ：</strong> 保護者の方のメールアドレスに同意依頼メールが送信されます。
+                                保護者の方が同意されるまで、アカウントは仮登録状態となり、ログインできません。
+                                同意期限は7日間です。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 同意チェックボックス（法的要件） -->
+                    <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input 
+                                    id="privacy_policy_consent" 
+                                    name="privacy_policy_consent" 
+                                    type="checkbox" 
+                                    required
+                                    class="w-4 h-4 text-[#59B9C6] bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-[#59B9C6] focus:ring-2 transition duration-200"
+                                />
+                            </div>
+                            <label for="privacy_policy_consent" class="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                                <a href="{{ route('privacy-policy') }}" target="_blank" class="font-semibold text-[#59B9C6] hover:text-purple-600 dark:hover:text-purple-400 underline transition-colors duration-200">
+                                    プライバシーポリシー
+                                </a>
+                                に同意します（必須）
+                            </label>
+                        </div>
+                        
+                        <!-- プライバシーポリシーエラー -->
+                        @error('privacy_policy_consent')
+                            <div class="validation-message validation-error validation-error-slide-in">
+                                <svg class="validation-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input 
+                                    id="terms_consent" 
+                                    name="terms_consent" 
+                                    type="checkbox" 
+                                    required
+                                    class="w-4 h-4 text-[#59B9C6] bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-[#59B9C6] focus:ring-2 transition duration-200"
+                                />
+                            </div>
+                            <label for="terms_consent" class="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                                <a href="{{ route('terms-of-service') }}" target="_blank" class="font-semibold text-[#59B9C6] hover:text-purple-600 dark:hover:text-purple-400 underline transition-colors duration-200">
+                                    利用規約
+                                </a>
+                                に同意します（必須）
+                            </label>
+                        </div>
+                        
+                        <!-- 利用規約エラー -->
+                        @error('terms_consent')
+                            <div class="validation-message validation-error validation-error-slide-in">
+                                <svg class="validation-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+                    </div>
+
                     <!-- 登録ボタン -->
                     <div>
                         <button 
@@ -346,5 +482,51 @@
 
     @push('scripts')
         @vite(['resources/js/auth/register-validation.js'])
+        <script>
+            // Phase 5-2: 生年月日入力時に13歳未満かチェックして保護者メール欄を表示
+            document.addEventListener('DOMContentLoaded', function() {
+                const birthdateInput = document.getElementById('birthdate');
+                const parentEmailSection = document.getElementById('parent-email-section');
+                const parentEmailInput = document.getElementById('parent_email');
+
+                function checkAge() {
+                    const birthdate = birthdateInput.value;
+                    if (!birthdate) {
+                        // 生年月日未入力の場合は保護者メール欄を非表示
+                        parentEmailSection.style.display = 'none';
+                        parentEmailInput.removeAttribute('required');
+                        return;
+                    }
+
+                    // 年齢計算
+                    const today = new Date();
+                    const birth = new Date(birthdate);
+                    let age = today.getFullYear() - birth.getFullYear();
+                    const monthDiff = today.getMonth() - birth.getMonth();
+                    
+                    // 誕生日前の場合は1歳引く
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                        age--;
+                    }
+
+                    // 13歳未満の場合は保護者メール欄を表示
+                    if (age < 13) {
+                        parentEmailSection.style.display = 'block';
+                        parentEmailInput.setAttribute('required', 'required');
+                    } else {
+                        parentEmailSection.style.display = 'none';
+                        parentEmailInput.removeAttribute('required');
+                        parentEmailInput.value = ''; // クリア
+                    }
+                }
+
+                // 生年月日入力時にリアルタイムチェック
+                birthdateInput.addEventListener('change', checkAge);
+                birthdateInput.addEventListener('blur', checkAge);
+
+                // ページロード時にもチェック（old値がある場合）
+                checkAge();
+            });
+        </script>
     @endpush
 </x-guest-layout>

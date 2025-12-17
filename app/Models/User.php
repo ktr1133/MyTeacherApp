@@ -56,6 +56,24 @@ class User extends Authenticatable
         'two_factor_recovery_codes',
         'two_factor_confirmed_at',
         'allowed_ips',
+        // 未成年者・保護者同意関連（COPPA対応）
+        'birthdate',
+        'is_minor',
+        'parent_email',
+        'parent_user_id',
+        'parent_consent_token',
+        'parent_consented_at',
+        'parent_consent_expires_at',
+        'parent_invitation_token',
+        'parent_invitation_expires_at',
+        // 同意管理関連（法令遵守対応）
+        'created_by_user_id',
+        'consent_given_by_user_id',
+        'privacy_policy_version',
+        'terms_version',
+        'privacy_policy_agreed_at',
+        'terms_agreed_at',
+        'self_consented_at',
     ];
     
     /**
@@ -87,6 +105,16 @@ class User extends Authenticatable
         'two_factor_recovery_codes' => 'array',
         'two_factor_confirmed_at' => 'datetime',
         'allowed_ips' => 'array',
+        // 未成年者・保護者同意関連のキャスト
+        'birthdate' => 'date',
+        'is_minor' => 'boolean',
+        'parent_consented_at' => 'datetime',
+        'parent_consent_expires_at' => 'datetime',
+        'parent_invitation_expires_at' => 'datetime',
+        // 同意管理関連のキャスト
+        'privacy_policy_agreed_at' => 'datetime',
+        'terms_agreed_at' => 'datetime',
+        'self_consented_at' => 'datetime',
     ];
 
     /**
@@ -450,5 +478,213 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    // ================================================================================
+    // 未成年者・保護者同意関連メソッド（COPPA対応）
+    // ================================================================================
+
+    /**
+     * ユーザーが未成年者（13歳未満）かどうかを判定
+     * 
+     * @return bool 13歳未満の場合true
+     */
+    public function calculateIsMinor(): bool
+    {
+        if (!$this->birthdate) {
+            return false;
+        }
+
+        $age = \Carbon\Carbon::parse($this->birthdate)->age;
+        return $age < 13;
+    }
+
+    /**
+     * 保護者の同意が必要かどうかを判定
+     * 
+     * @return bool 未成年者で保護者同意未取得の場合true
+     */
+    public function needsParentConsent(): bool
+    {
+        // 未成年者フラグがfalseの場合は不要
+        if (!$this->is_minor) {
+            return false;
+        }
+
+        // 保護者同意済みの場合は不要
+        if ($this->parent_consented_at) {
+            // 有効期限切れでなければ不要
+            if (!$this->isParentConsentExpired()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 保護者同意の有効期限が切れているかを判定
+     * 
+     * @return bool 有効期限切れの場合true
+     */
+    public function isParentConsentExpired(): bool
+    {
+        if (!$this->parent_consent_expires_at) {
+            return false;
+        }
+
+        return \Carbon\Carbon::now()->isAfter($this->parent_consent_expires_at);
+    }
+
+    /**
+     * 保護者招待トークンの有効期限が切れているかを判定
+     * 
+     * @return bool 有効期限切れの場合true
+     */
+    public function isParentInvitationExpired(): bool
+    {
+        if (!$this->parent_invitation_expires_at) {
+            return false;
+        }
+
+        return \Carbon\Carbon::now()->isAfter($this->parent_invitation_expires_at);
+    }
+
+    // ================================================================================
+    // 同意管理関連メソッド（法令遵守対応）
+    // ================================================================================
+
+    /**
+     * 本人同意かどうかを判定
+     * 
+     * @return bool 本人同意の場合true（代理同意でない）
+     */
+    public function isOwnConsent(): bool
+    {
+        return $this->consent_given_by_user_id === null || $this->consent_given_by_user_id === $this->id;
+    }
+
+    /**
+     * 代理同意かどうかを判定
+     * 
+     * @return bool 代理同意の場合true（親が子のアカウントを作成した場合）
+     */
+    public function isProxyConsent(): bool
+    {
+        return !$this->isOwnConsent();
+    }
+
+    /**
+     * プライバシーポリシーの再同意が必要かどうかを判定
+     * 
+     * @return bool 再同意が必要な場合true
+     */
+    public function needsPrivacyPolicyReconsent(): bool
+    {
+        $currentVersion = config('legal.current_versions.privacy_policy');
+        
+        // 未同意の場合は再同意必要
+        if (!$this->privacy_policy_version) {
+            return true;
+        }
+        
+        // バージョンが異なる場合は再同意必要
+        return $this->privacy_policy_version !== $currentVersion;
+    }
+
+    /**
+     * 利用規約の再同意が必要かどうかを判定
+     * 
+     * @return bool 再同意が必要な場合true
+     */
+    public function needsTermsReconsent(): bool
+    {
+        $currentVersion = config('legal.current_versions.terms_of_service');
+        
+        // 未同意の場合は再同意必要
+        if (!$this->terms_version) {
+            return true;
+        }
+        
+        // バージョンが異なる場合は再同意必要
+        return $this->terms_version !== $currentVersion;
+    }
+
+    /**
+     * いずれかの法的文書の再同意が必要かどうかを判定
+     * 
+     * @return bool いずれかの再同意が必要な場合true
+     */
+    public function needsAnyLegalReconsent(): bool
+    {
+        return $this->needsPrivacyPolicyReconsent() || $this->needsTermsReconsent();
+    }
+
+    /**
+     * 同意を記録する
+     * 
+     * @param string $type 同意種別（'privacy_policy' or 'terms'）
+     * @param string|null $version バージョン（nullの場合は現行バージョンを使用）
+     * @return void
+     */
+    public function recordLegalConsent(string $type, ?string $version = null): void
+    {
+        $version = $version ?? config("legal.current_versions.{$type}");
+        
+        if ($type === 'privacy_policy') {
+            $this->privacy_policy_version = $version;
+            $this->privacy_policy_agreed_at = now();
+        } elseif ($type === 'terms' || $type === 'terms_of_service') {
+            $this->terms_version = $version;
+            $this->terms_agreed_at = now();
+        }
+        
+        $this->save();
+    }
+
+    /**
+     * 13歳到達で本人再同意が必要かどうかを判定
+     * 
+     * @return bool 本人再同意が必要な場合true
+     */
+    public function needsSelfConsent(): bool
+    {
+        // 代理同意でない場合は不要
+        if (!$this->isProxyConsent()) {
+            return false;
+        }
+        
+        // 既に本人同意済みの場合は不要
+        if ($this->self_consented_at) {
+            return false;
+        }
+        
+        // 13歳未満の場合は不要
+        if ($this->calculateIsMinor()) {
+            return false;
+        }
+        
+        // 13歳以上で代理同意のまま、本人同意未済の場合は必要
+        return true;
+    }
+
+    /**
+     * 作成者（親ユーザー）とのリレーション
+     * 
+     * @return BelongsTo
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * 同意者（代理同意の場合は親ユーザー）とのリレーション
+     * 
+     * @return BelongsTo
+     */
+    public function consentGiver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'consent_given_by_user_id');
     }
 }

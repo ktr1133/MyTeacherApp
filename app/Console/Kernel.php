@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
         Commands\ListScheduledTasks::class,
         Commands\MonitorRedisHealth::class,
         Commands\MonitorDualAuthCommand::class, // Phase 1.5: 並行運用監視
+        Commands\DeleteUnconsentedMinorsCommand::class, // Phase 5-2: 保護者同意未取得アカウント削除
     ];
 
     /**

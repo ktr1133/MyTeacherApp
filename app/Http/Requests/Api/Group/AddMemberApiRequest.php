@@ -54,6 +54,15 @@ class AddMemberApiRequest extends FormRequest
                 'nullable',
                 'boolean',
             ],
+            // 代理同意（保護者による同意）
+            'privacy_policy_consent' => [
+                'required',
+                'boolean',
+            ],
+            'terms_consent' => [
+                'required',
+                'boolean',
+            ],
         ];
     }
 
@@ -71,6 +80,11 @@ class AddMemberApiRequest extends FormRequest
             'email.unique' => 'このメールアドレスは既に使用されています。',
             'password.required' => 'パスワードは必須です。',
             'password.min' => 'パスワードは8文字以上で入力してください。',
+            // 代理同意
+            'privacy_policy_consent.required' => 'プライバシーポリシーへの同意が必要です。',
+            'privacy_policy_consent.boolean' => 'プライバシーポリシー同意の値が不正です。',
+            'terms_consent.required' => '利用規約への同意が必要です。',
+            'terms_consent.boolean' => '利用規約同意の値が不正です。',
         ];
     }
 

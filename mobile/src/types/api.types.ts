@@ -41,8 +41,13 @@ export interface User {
 }
 
 export interface AuthResponse {
-  token: string;
-  user: User;
+  token?: string;
+  user?: User;
+  // Phase 5-2: 保護者同意待ち
+  requires_parent_consent?: boolean;
+  parent_email?: string;
+  consent_expires_at?: string;
+  message?: string;
 }
 
 // ============================================================

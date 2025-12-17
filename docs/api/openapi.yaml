@@ -62,13 +62,13 @@ tags:
   - name: Groups
     description: グループ管理API（7エンドポイント）
   - name: Profile
-    description: プロフィール管理API（5エンドポイント）
+    description: プロフィール管理API（7エンドポイント  基本5 + 親子紐付け2）
   - name: Tags
     description: タグ管理API（4エンドポイント）
   - name: Avatars
     description: アバター管理API（7エンドポイント）
   - name: Notifications
-    description: 通知API（6エンドポイント）
+    description: 通知API（8エンドポイント  基本6 + 親子紐付け承認・拒否2）
   - name: Tokens
     description: トークン管理API（5エンドポイント）
   - name: Reports
@@ -77,6 +77,8 @@ tags:
     description: スケジュールタスクAPI（8エンドポイント）
   - name: Subscriptions
     description: サブスクリプション管理API（7エンドポイント）
+  - name: Legal
+    description: 法的同意管理API（Phase 6C 再同意、Phase 6D 本人同意）
 
 security:
   - CognitoAuth: []
@@ -1087,6 +1089,255 @@ paths:
                     example: "ログアウトしました"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/register:
+    post:
+      summary: ユーザー登録（モバイル用）
+      description: |
+        新規ユーザーを登録し、Sanctumトークンを取得します。
+        
+        **Phase 6A: 同意記録機能**
+        - プライバシーポリシーと利用規約への同意が必須
+        - 同意バージョンとタイムスタンプを自動記録
+        
+        **Phase 5-2拡張: 保護者招待トークン機能**
+        - `parent_invite_token`を指定すると、保護者アカウントとして登録
+        - 自動的に家族グループが作成され、子アカウントと紐付け
+        - グループ名はランダム8文字、保護者がマスターユーザー
+        
+        **注意**: Web版はCognito JWT認証、モバイル版はSanctum認証を使用します。
+      tags: [Authentication]
+      security: []  # 認証不要
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password, password_confirmation, privacy_policy_consent, terms_consent]
+              properties:
+                username:
+                  type: string
+                  description: ユーザー名（英数字、アンダースコア、ハイフン）
+                  minLength: 3
+                  maxLength: 255
+                  example: "taro_tanaka"
+                email:
+                  type: string
+                  format: email
+                  description: メールアドレス
+                  maxLength: 255
+                  example: "taro@example.com"
+                password:
+                  type: string
+                  format: password
+                  description: パスワード（8文字以上）
+                  minLength: 8
+                  example: "password123"
+                password_confirmation:
+                  type: string
+                  format: password
+                  description: パスワード確認
+                  example: "password123"
+                timezone:
+                  type: string
+                  description: タイムゾーン（省略時はAsia/Tokyo）
+                  example: "Asia/Tokyo"
+                privacy_policy_consent:
+                  type: boolean
+                  description: プライバシーポリシーへの同意（必須）
+                  example: true
+                terms_consent:
+                  type: boolean
+                  description: 利用規約への同意（必須）
+                  example: true
+                parent_invite_token:
+                  type: string
+                  description: |
+                    保護者招待トークン（Phase 5-2拡張）
+                    子アカウント作成時に発行された64文字トークン。
+                    指定すると保護者として登録され、子アカウントと自動紐付け。
+                  minLength: 64
+                  maxLength: 64
+                  example: "aB3cDe5FgH7iJ8kL9mN0pQ1rS2tU3vW4xY5zA6bC7dE8fG9hI0jK1lM2nO3pQ4rS"
+                birthdate:
+                  type: string
+                  format: date
+                  description: |
+                    生年月日（Phase 5-2: 13歳未満判定用）
+                    13歳未満の場合は保護者同意が必要
+                  example: "2010-01-01"
+                parent_email:
+                  type: string
+                  format: email
+                  description: |
+                    保護者のメールアドレス（Phase 5-2: 13歳未満の場合必須）
+                    保護者同意依頼メールを送信
+                  example: "parent@example.com"
+      responses:
+        '201':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Laravel Sanctumトークン（有効期限30日）
+                    example: "1|abcdefghijklmnopqrstuvwxyz123456"
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: "田中太郎"
+                      email:
+                        type: string
+                        format: email
+                        example: "taro@example.com"
+                      username:
+                        type: string
+                        example: "taro_tanaka"
+                      timezone:
+                        type: string
+                        example: "Asia/Tokyo"
+                      avatar_url:
+                        type: string
+                        nullable: true
+                        example: null
+                      group_id:
+                        type: integer
+                        nullable: true
+                        description: グループID（招待トークン経由登録の場合のみ）
+                        example: 456
+                      group_edit_flg:
+                        type: boolean
+                        description: グループ編集権限（招待トークン経由登録の場合はtrue）
+                        example: true
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2025-12-16T10:30:00Z"
+                  linked_child:
+                    type: object
+                    nullable: true
+                    description: 紐付けられた子アカウント情報（招待トークン経由登録の場合のみ）
+                    properties:
+                      id:
+                        type: integer
+                        example: 789
+                      username:
+                        type: string
+                        example: "child_hanako"
+                      group_id:
+                        type: integer
+                        example: 456
+                  group:
+                    type: object
+                    nullable: true
+                    description: 作成されたグループ情報（招待トークン経由登録の場合のみ）
+                    properties:
+                      id:
+                        type: integer
+                        example: 456
+                      name:
+                        type: string
+                        description: ランダム8文字のグループ名
+                        example: "aB3cDe5F"
+                      master_user_id:
+                        type: integer
+                        description: グループマスターユーザーID（保護者）
+                        example: 123
+                  requires_parent_consent:
+                    type: boolean
+                    description: 保護者同意待ちフラグ（13歳未満の場合true、トークン未発行）
+                    example: false
+                  parent_email:
+                    type: string
+                    format: email
+                    nullable: true
+                    description: 保護者メールアドレス（13歳未満の場合のみ）
+                    example: "parent@example.com"
+                  consent_expires_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: 同意期限（13歳未満の場合のみ、7日間）
+                    example: "2025-12-23T10:30:00Z"
+        '400':
+          description: 招待トークンエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "招待リンクが無効または期限切れです。お子様の登録から30日以内に保護者アカウントを作成してください。"
+              examples:
+                invalid_token:
+                  value:
+                    message: "招待リンクが無効または期限切れです。お子様の登録から30日以内に保護者アカウントを作成してください。"
+                already_in_group:
+                  value:
+                    message: "お子様は既に別のグループに所属しています。"
+        '422':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "入力内容に誤りがあります"
+                  errors:
+                    type: object
+                    properties:
+                      username:
+                        type: array
+                        items:
+                          type: string
+                        example: ["このユーザー名は既に使用されています"]
+                      email:
+                        type: array
+                        items:
+                          type: string
+                        example: ["このメールアドレスは既に使用されています"]
+                      password:
+                        type: array
+                        items:
+                          type: string
+                        example: ["パスワードが一致していません"]
+                      privacy_policy_consent:
+                        type: array
+                        items:
+                          type: string
+                        example: ["プライバシーポリシーへの同意が必要です"]
+                      terms_consent:
+                        type: array
+                        items:
+                          type: string
+                        example: ["利用規約への同意が必要です"]
+                      parent_email:
+                        type: array
+                        items:
+                          type: string
+                        example: ["13歳未満の方は保護者のメールアドレスが必要です"]
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "アカウントの作成に失敗しました。もう一度お試しください。"
 
   /auth/forgot-password:
     post:
@@ -4778,3 +5029,727 @@ paths:
           description: サブスクリプション未加入
         '500':
           description: Stripe APIエラー
+
+  # ============================================================
+  # Legal API（Phase 6C: 再同意、Phase 6D: 本人同意）
+  # ============================================================
+
+  /consent-status:
+    get:
+      summary: 同意状態取得（Phase 6C）
+      description: |
+        ユーザーの現在の同意状態を取得します。
+        プライバシーポリシーと利用規約のバージョンと再同意の必要性を返します。
+      tags: [Legal]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requires_reconsent:
+                    type: boolean
+                    description: 再同意が必要かどうか
+                  privacy_policy:
+                    type: object
+                    properties:
+                      current_version:
+                        type: string
+                        nullable: true
+                        description: ユーザーが同意している現在のバージョン
+                        example: "1.0.0"
+                      required_version:
+                        type: string
+                        description: 最新の必須バージョン
+                        example: "1.1.0"
+                      needs_reconsent:
+                        type: boolean
+                        description: プライバシーポリシーの再同意が必要か
+                      agreed_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        description: 同意日時（ISO 8601形式）
+                  terms:
+                    type: object
+                    properties:
+                      current_version:
+                        type: string
+                        nullable: true
+                        example: "1.0.0"
+                      required_version:
+                        type: string
+                        example: "1.1.0"
+                      needs_reconsent:
+                        type: boolean
+                      agreed_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /reconsent:
+    post:
+      summary: 再同意送信（Phase 6C）
+      description: |
+        プライバシーポリシーと利用規約への再同意を記録します。
+        規約更新時に既存ユーザーが最新版に同意する際に使用します。
+      tags: [Legal]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [privacy_policy_consent, terms_consent]
+              properties:
+                privacy_policy_consent:
+                  type: boolean
+                  description: プライバシーポリシーへの同意
+                  example: true
+                terms_consent:
+                  type: boolean
+                  description: 利用規約への同意
+                  example: true
+      responses:
+        '200':
+          description: 再同意成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "再同意が完了しました。"
+                  user:
+                    type: object
+                    properties:
+                      privacy_policy_version:
+                        type: string
+                        description: 更新後のプライバシーポリシーバージョン
+                        example: "1.1.0"
+                      terms_version:
+                        type: string
+                        description: 更新後の利用規約バージョン
+                        example: "1.1.0"
+                      privacy_policy_agreed_at:
+                        type: string
+                        format: date-time
+                        description: プライバシーポリシー同意日時（ISO 8601形式）
+                      terms_agreed_at:
+                        type: string
+                        format: date-time
+                        description: 利用規約同意日時（ISO 8601形式）
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          description: バリデーションエラー
+
+  /self-consent-status:
+    get:
+      summary: 本人同意状態取得（Phase 6D）
+      description: |
+        13歳到達時の本人同意状態を取得します。
+        親が代理同意で登録した子ユーザーが13歳に到達した際、本人同意が必要かどうかを返します。
+      tags: [Legal]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requires_self_consent:
+                    type: boolean
+                    description: 本人同意が必要かどうか
+                  age:
+                    type: integer
+                    nullable: true
+                    description: ユーザーの年齢
+                    example: 13
+                  is_minor:
+                    type: boolean
+                    description: 未成年者かどうか
+                  created_by_user_id:
+                    type: integer
+                    nullable: true
+                    description: 作成者のユーザーID（親）
+                    example: 1
+                  consent_given_by_user_id:
+                    type: integer
+                    nullable: true
+                    description: 同意者のユーザーID（代理同意の場合は親のID）
+                    example: 1
+                  self_consented_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: 本人同意日時（ISO 8601形式）
+                  privacy_policy:
+                    type: object
+                    properties:
+                      current_version:
+                        type: string
+                        nullable: true
+                        example: "1.0.0"
+                      agreed_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                  terms:
+                    type: object
+                    properties:
+                      current_version:
+                        type: string
+                        nullable: true
+                        example: "1.0.0"
+                      agreed_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /self-consent:
+    post:
+      summary: 本人同意送信（Phase 6D）
+      description: |
+        13歳到達時の本人同意を記録します。
+        親の代理同意から本人同意に切り替えます。
+      tags: [Legal]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [privacy_policy_consent, terms_consent]
+              properties:
+                privacy_policy_consent:
+                  type: boolean
+                  description: プライバシーポリシーへの本人同意
+                  example: true
+                terms_consent:
+                  type: boolean
+                  description: 利用規約への本人同意
+                  example: true
+      responses:
+        '200':
+          description: 本人同意成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "おめでとうございます！本人同意が完了しました。"
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 2
+                      age:
+                        type: integer
+                        nullable: true
+                        example: 13
+                      privacy_policy_version:
+                        type: string
+                        example: "1.0.0"
+                      terms_version:
+                        type: string
+                        example: "1.0.0"
+                      privacy_policy_agreed_at:
+                        type: string
+                        format: date-time
+                      terms_agreed_at:
+                        type: string
+                        format: date-time
+                      self_consented_at:
+                        type: string
+                        format: date-time
+                        description: 本人同意日時（ISO 8601形式）
+                      consent_given_by_user_id:
+                        type: integer
+                        description: 同意者のユーザーID（本人に更新される）
+                        example: 2
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          description: バリデーションエラー
+        '500':
+          description: サーバーエラー
+
+  # ============================================================
+  # Parent-Child Linking API（Phase 6-8: 親子紐付け機能）
+  # Phase 6: Mobile API実装完了（2025-12-17）
+  # Phase 7: Mobile UI実装完了（2025-01-22）
+  # Phase 8: テスト実装完了（2025-12-17） - 67 tests, 346 assertions
+  # ============================================================
+
+  /profile/search-unlinked-children:
+    get:
+      summary: 未紐付け子アカウント検索
+      description: |
+        認証済み保護者のメールアドレスで未紐付けの子アカウントを検索します。
+        
+        **用途**: 招待トークン失効後のフォールバック機能。
+        保護者が子アカウントのparent_emailに登録したメールアドレスで検索し、
+        紐付けリクエストを送信するための候補を表示します。
+        
+        **検索条件**:
+        - parent_email = 認証ユーザーのメールアドレス（自動取得）
+        - is_minor = true
+        - parent_user_id = null（未紐付け）
+        - group_id = null（未所属）
+        
+        **注意事項**:
+        - parent_emailはリクエストボディではなく、認証ユーザーから自動取得
+        - 保護者が自身のグループに所属していない場合はエラー
+      tags: [Profile]
+      security:
+        - SanctumAuth: []
+      responses:
+        '200':
+          description: 検索成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "未紐付けの子アカウントが見つかりました。"
+                  data:
+                    type: object
+                    properties:
+                      children:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 789
+                            username:
+                              type: string
+                              example: "child_hanako"
+                            name:
+                              type: string
+                              nullable: true
+                              example: "花子"
+                            email:
+                              type: string
+                              example: "hanako@example.com"
+                            created_at:
+                              type: string
+                              format: date-time
+                              example: "2025-12-15 10:30:00"
+                            is_minor:
+                              type: boolean
+                              example: true
+                      count:
+                        type: integer
+                        description: 検索結果件数
+                        example: 1
+                      parent_email:
+                        type: string
+                        example: "parent@example.com"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /profile/send-child-link-request:
+    post:
+      summary: 親子紐付けリクエスト送信
+      description: |
+        保護者から子アカウントへ親子紐付けリクエストを送信します。
+        
+        **処理内容**:
+        1. 子アカウントが既にグループに所属していないか確認
+        2. 保護者のグループ存在確認
+        3. 通知テンプレート作成（type: parent_link_request）
+        4. ユーザー通知レコード作成
+        5. Push通知送信（SendPushNotificationJob）
+        
+        **注意事項**:
+        - 子アカウントが既にgroup_idを持つ場合はエラー
+        - 保護者がグループに所属していない場合はエラー
+      tags: [Profile]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [child_user_id]
+              properties:
+                child_user_id:
+                  type: integer
+                  description: 紐付けリクエスト送信先の子アカウントID
+                  example: 789
+      responses:
+        '201':
+          description: リクエスト送信成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "お子様に紐付けリクエストを送信しました。"
+                  data:
+                    type: object
+                    properties:
+                      notification_id:
+                        type: integer
+                        description: 作成されたユーザー通知のID
+                        example: 456
+                      child_user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 789
+                          username:
+                            type: string
+                            example: "child_hanako"
+                          name:
+                            type: string
+                            nullable: true
+                            example: "花子"
+        '400':
+          description: バリデーションエラーまたは業務ロジックエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "お子様は既に別のグループに所属しているため、紐付けリクエストを送信できません。"
+                  errors:
+                    type: object
+                    properties:
+                      child_user_id:
+                        type: array
+                        items:
+                          type: string
+                        example: ["お子様は既に別のグループに所属しています。"]
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 子アカウントが見つからない
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "指定された子アカウントが見つかりませんでした。"
+                  errors:
+                    type: object
+                    properties:
+                      child_user_id:
+                        type: array
+                        items:
+                          type: string
+                        example: ["子アカウントが見つかりません。"]
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /notifications/{id}/approve-parent-link:
+    post:
+      summary: 親子紐付け承認
+      description: |
+        子アカウントが保護者からの紐付けリクエストを承認します。
+        
+        **処理内容**:
+        1. 通知種別が parent_link_request であることを確認
+        2. 通知データから parent_user_id, group_id を取得
+        3. 子アカウントが既にグループに所属していないか確認
+        4. トランザクション内で以下を実行:
+           - 子アカウントの parent_user_id, group_id を更新
+           - 通知を既読に
+           - 保護者に承認通知作成（type: parent_link_approved）
+        5. Push通知送信（SendPushNotificationJob）
+        
+        **レスポンス**: 更新後のユーザー情報、保護者情報、グループ情報を返却
+      tags: [Notifications]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 通知テンプレートID
+          schema:
+            type: integer
+            example: 123
+      responses:
+        '200':
+          description: 承認成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "紐付けが完了しました。保護者アカウントと連携されました。"
+                  data:
+                    type: object
+                    properties:
+                      child_user:
+                        type: object
+                        description: 更新後の子アカウント情報
+                        properties:
+                          id:
+                            type: integer
+                            example: 789
+                          username:
+                            type: string
+                            example: "child_hanako"
+                          parent_user_id:
+                            type: integer
+                            example: 123
+                          group_id:
+                            type: integer
+                            example: 456
+                      parent_user:
+                        type: object
+                        description: 保護者アカウント情報
+                        properties:
+                          id:
+                            type: integer
+                            example: 123
+                          username:
+                            type: string
+                            example: "parent_taro"
+                          name:
+                            type: string
+                            nullable: true
+                            example: "太郎"
+                      group:
+                        type: object
+                        description: グループ情報
+                        properties:
+                          id:
+                            type: integer
+                            example: 456
+                          name:
+                            type: string
+                            example: "山田家"
+                          master_user_id:
+                            type: integer
+                            description: グループマスターユーザーID（保護者）
+                            example: 123
+        '400':
+          description: 業務ロジックエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "既に別のグループに所属しているため、紐付けできません。"
+                  errors:
+                    type: object
+                    properties:
+                      group:
+                        type: array
+                        items:
+                          type: string
+                        example: ["既にグループに所属しています。"]
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 通知または関連データが見つからない
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "指定された通知または関連データが見つかりませんでした。"
+                  errors:
+                    type: object
+                    properties:
+                      notification:
+                        type: array
+                        items:
+                          type: string
+                        example: ["通知が見つかりません。"]
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /notifications/{id}/reject-parent-link:
+    post:
+      summary: 親子紐付け拒否
+      description: |
+        子アカウントが保護者からの紐付けリクエストを拒否します。
+        
+        **COPPA法遵守**: 拒否した子アカウントはソフトデリートされます。
+        13歳未満のユーザーは保護者の同意と管理が必要なため、
+        紐付けを拒否した場合はアカウントを削除する必要があります。
+        
+        **処理内容**:
+        1. 通知種別が parent_link_request であることを確認
+        2. 通知を既読に
+        3. トランザクション内で保護者に拒否通知作成（type: parent_link_rejected, priority: important）
+        4. Push通知送信（SendPushNotificationJob）
+        5. 子アカウント削除（soft delete）
+        6. Sanctumトークン無効化（全トークン削除）
+        
+        **レスポンス**: アカウント削除完了とCOPPA法遵守の旨を返却
+        
+        **モバイルアプリ側の対応**:
+        - このレスポンスを受け取ったら、ローカルストレージのトークンを削除
+        - ログイン画面に遷移
+        - COPPA法の説明メッセージを表示
+      tags: [Notifications]
+      security:
+        - SanctumAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 通知テンプレートID
+          schema:
+            type: integer
+            example: 123
+      responses:
+        '200':
+          description: 拒否成功（アカウント削除完了）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "アカウントが削除されました。COPPA法により、13歳未満の方は保護者の同意と管理が必要です。"
+                  data:
+                    type: object
+                    properties:
+                      deleted:
+                        type: boolean
+                        example: true
+                      deleted_at:
+                        type: string
+                        format: date-time
+                        description: 削除日時（ISO 8601形式）
+                        example: "2025-12-17T10:30:00Z"
+                      reason:
+                        type: string
+                        example: "parent_link_rejected"
+                      coppa_compliance:
+                        type: boolean
+                        description: COPPA法遵守フラグ
+                        example: true
+        '400':
+          description: 業務ロジックエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "無効な通知種別です。"
+                  errors:
+                    type: object
+                    properties:
+                      notification:
+                        type: array
+                        items:
+                          type: string
+                        example: ["この通知は親子紐付けリクエストではありません。"]
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 通知または保護者アカウントが見つからない
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "指定された通知または保護者アカウントが見つかりませんでした。"
+                  errors:
+                    type: object
+                    properties:
+                      notification:
+                        type: array
+                        items:
+                          type: string
+                        example: ["通知または保護者アカウントが見つかりません。"]
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+# ============================================================
+# 変更履歴
+# ============================================================
+# 2025-12-17: Phase 8完了 - テスト実装完了（67 tests, 346 assertions）
+#   - 親子紐付け機能の全テストが完了
+#   - Web版 + Mobile API版の統合テスト実施
+#   - COPPA法遵守フロー（拒否時のアカウント削除）検証完了
+# 2025-12-17: Phase 6完了 - Mobile API実装完了
+#   - /profile/search-unlinked-children (GET)
+#   - /profile/send-child-link-request (POST)
+#   - /notifications/{id}/approve-parent-link (POST)
+#   - /notifications/{id}/reject-parent-link (POST)

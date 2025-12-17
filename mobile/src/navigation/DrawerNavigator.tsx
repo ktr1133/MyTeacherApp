@@ -51,6 +51,10 @@ import { AvatarCreateScreen } from '../screens/avatars/AvatarCreateScreen';
 import { AvatarManageScreen } from '../screens/avatars/AvatarManageScreen';
 import { AvatarEditScreen } from '../screens/avatars/AvatarEditScreen';
 import PendingApprovalsScreen from '../screens/approvals/PendingApprovalsScreen';
+import { PrivacyPolicyScreen } from '../screens/legal/PrivacyPolicyScreen';
+import { TermsOfServiceScreen } from '../screens/legal/TermsOfServiceScreen';
+import { ReconsentScreen } from '../screens/legal/ReconsentScreen';
+import SelfConsentScreen from '../screens/legal/SelfConsentScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -330,6 +334,36 @@ export default function DrawerNavigator() {
             </TouchableOpacity>
           ),
         })}
+      />
+
+      {/* 法的情報 */}
+      <Drawer.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicyScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Drawer.Screen
+        name="TermsOfService"
+        component={TermsOfServiceScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Drawer.Screen
+        name="Reconsent"
+        component={ReconsentScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Drawer.Screen
+        name="SelfConsent"
+        component={SelfConsentScreen}
+        options={{
+          headerShown: false,
+        }}
       />
 
       {/* グループ管理 */}

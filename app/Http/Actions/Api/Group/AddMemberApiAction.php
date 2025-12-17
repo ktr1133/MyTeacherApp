@@ -48,7 +48,9 @@ class AddMemberApiAction
                 $validated['email'],
                 $validated['password'], 
                 $validated['name'] ?? null,
-                (bool)($validated['group_edit_flg'] ?? false)
+                (bool)($validated['group_edit_flg'] ?? false),
+                (bool)($validated['privacy_policy_consent'] ?? false),
+                (bool)($validated['terms_consent'] ?? false)
             );
 
             return response()->json([

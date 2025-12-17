@@ -68,6 +68,8 @@ export interface AddMemberRequest {
   password: string;
   name?: string;
   group_edit_flg: boolean;
+  privacy_policy_consent: boolean;
+  terms_consent: boolean;
 }
 
 /**

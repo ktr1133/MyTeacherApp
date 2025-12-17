@@ -31,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'cognito' => \App\Http\Middleware\VerifyCognitoToken::class,
             'dual.auth' => \App\Http\Middleware\DualAuthMiddleware::class,
             'sanctum.debug' => \App\Http\Middleware\SanctumDebugMiddleware::class, // Phase 2.B-5: Sanctum認証デバッグ
+            'check.legal.consent' => \App\Http\Middleware\CheckLegalConsent::class, // Phase 6C: 法的同意チェック
+            'check.self.consent' => \App\Http\Middleware\CheckSelfConsentRequired::class, // Phase 6D: 13歳到達時の本人同意チェック
         ]);
         // ★ Web ミドルウェアグループに追加
         $middleware->web(append: [

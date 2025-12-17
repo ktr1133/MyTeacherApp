@@ -358,6 +358,41 @@ export const ProfileScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
+            {/* 法的情報セクション */}
+            <View style={styles.legalSection}>
+              <Text style={styles.legalSectionTitle}>
+                {theme === 'child' ? 'おやくそく' : '法的情報'}
+              </Text>
+              
+              {/* プライバシーポリシー */}
+              <TouchableOpacity
+                style={styles.legalButton}
+                onPress={() => navigation.navigate('PrivacyPolicy' as never)}
+                accessibilityLabel="プライバシーポリシー"
+              >
+                <View style={styles.legalButtonContent}>
+                  <Text style={styles.legalButtonText}>
+                    {theme === 'child' ? 'プライバシーについて' : 'プライバシーポリシー'}
+                  </Text>
+                  <Text style={styles.legalButtonIcon}>›</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* 利用規約 */}
+              <TouchableOpacity
+                style={styles.legalButton}
+                onPress={() => navigation.navigate('TermsOfService' as never)}
+                accessibilityLabel="利用規約"
+              >
+                <View style={styles.legalButtonContent}>
+                  <Text style={styles.legalButtonText}>
+                    {theme === 'child' ? 'おやくそく' : '利用規約'}
+                  </Text>
+                  <Text style={styles.legalButtonIcon}>›</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
             {/* アカウント削除ボタン */}
             <TouchableOpacity
               style={styles.deleteButton}
@@ -533,6 +568,44 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
     fontSize: getFontSize(16, width, theme),
     fontWeight: '600',
     color: accent.primary,
+  },
+  legalSection: {
+    marginTop: getSpacing(16, width),
+    marginBottom: getSpacing(12, width),
+    paddingVertical: getSpacing(12, width),
+    paddingHorizontal: getSpacing(16, width),
+    backgroundColor: colors.card,
+    borderRadius: getBorderRadius(12, width),
+    borderWidth: 1,
+    borderColor: colors.border.default,
+  },
+  legalSectionTitle: {
+    fontSize: getFontSize(14, width, theme),
+    fontWeight: '600',
+    color: colors.text.secondary,
+    marginBottom: getSpacing(12, width),
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  legalButton: {
+    paddingVertical: getSpacing(12, width),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.default,
+  },
+  legalButtonContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  legalButtonText: {
+    fontSize: getFontSize(16, width, theme),
+    color: colors.text.primary,
+    fontWeight: '500',
+  },
+  legalButtonIcon: {
+    fontSize: getFontSize(20, width, theme),
+    color: colors.text.tertiary,
+    fontWeight: '300',
   },
   deleteButton: {
     paddingVertical: getSpacing(14, width),

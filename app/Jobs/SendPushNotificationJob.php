@@ -58,6 +58,16 @@ class SendPushNotificationJob implements ShouldQueue
     }
 
     /**
+     * ユーザーIDを取得（テスト用）
+     *
+     * @return int
+     */
+    public function getUserId(): int
+    {
+        return $this->userId;
+    }
+
+    /**
      * ジョブ実行
      *
      * @param FcmServiceInterface $fcmService FCMサービス
@@ -207,6 +217,11 @@ class SendPushNotificationJob implements ShouldQueue
         // トークン関連
         if (str_starts_with($notificationType, 'token_')) {
             return 'token';
+        }
+
+        // 親子紐付け関連（Phase 5-2拡張）
+        if (str_starts_with($notificationType, 'parent_link_')) {
+            return 'group'; // グループ関連機能のため 'group' カテゴリに分類
         }
 
         // システム関連

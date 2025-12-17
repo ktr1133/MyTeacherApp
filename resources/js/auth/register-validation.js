@@ -16,7 +16,7 @@ import {
     updateSubmitButtonState,
 } from '../common/validation-core.js';
 
-// バリデーション状態を初期化（タイムゾーンはデフォルト値があるため除外）
+// バリデーション状態を初期化（タイムゾーンはデフォルト値があるため除外、同意チェックボックスは動的に検証）
 initValidationState(['username', 'email', 'password', 'password_confirmation']);
 
 /**
@@ -50,8 +50,8 @@ async function validateUsername() {
         }
     }
 
-    // ボタン状態を更新
-    updateSubmitButtonState('register-button', ['username', 'password', 'password_confirmation']);
+    // ボタン状態を更新（同意チェックボックスも検証）
+    updateSubmitButtonStateWithConsent();
 }
 
 /**
@@ -90,8 +90,36 @@ async function validateEmail() {
         }
     }
 
-    // ボタン状態を更新
-    updateSubmitButtonState('register-button', ['username', 'email', 'password', 'password_confirmation']);
+    // ボタン状態を更新（同意チェックボックスも検証）
+    updateSubmitButtonStateWithConsent();
+}
+
+/**
+ * 同意チェックボックスの検証を含むボタン状態更新
+ */
+function updateSubmitButtonStateWithConsent() {
+    const privacyCheckbox = document.getElementById('privacy_policy_consent');
+    const termsCheckbox = document.getElementById('terms_consent');
+    
+    // 必須フィールドのバリデーション状態
+    const fieldsValid = isFormValid(['username', 'email', 'password', 'password_confirmation']);
+    
+    // 同意チェックボックスの状態
+    const consentsChecked = privacyCheckbox && privacyCheckbox.checked && termsCheckbox && termsCheckbox.checked;
+    
+    // 両方がtrueの場合のみボタンを有効化
+    const registerButton = document.getElementById('register-button');
+    if (registerButton) {
+        if (fieldsValid && consentsChecked) {
+            registerButton.disabled = false;
+            registerButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            registerButton.classList.add('hover:shadow-2xl', 'transform', 'hover:scale-105');
+        } else {
+            registerButton.disabled = true;
+            registerButton.classList.add('opacity-50', 'cursor-not-allowed');
+            registerButton.classList.remove('hover:shadow-2xl', 'transform', 'hover:scale-105');
+        }
+    }
 }
 
 /**
@@ -196,6 +224,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('password');
     const confirmationInput = document.getElementById('password_confirmation');
     const timezoneSelect = document.getElementById('timezone');
+    const privacyCheckbox = document.getElementById('privacy_policy_consent');
+    const termsCheckbox = document.getElementById('terms_consent');
     const registerForm = document.getElementById('register-form');
 
     if (usernameInput) {
@@ -218,18 +248,33 @@ document.addEventListener('DOMContentLoaded', function() {
     if (timezoneSelect) {
         timezoneSelect.addEventListener('change', validateTimezone);
     }
+    
+    // 同意チェックボックスのイベントリスナー
+    if (privacyCheckbox) {
+        privacyCheckbox.addEventListener('change', updateSubmitButtonStateWithConsent);
+    }
+    
+    if (termsCheckbox) {
+        termsCheckbox.addEventListener('change', updateSubmitButtonStateWithConsent);
+    }
 
     // フォーム送信時のバリデーション
     if (registerForm) {
         registerForm.addEventListener('submit', function(e) {
-            const valid = isFormValid(['username', 'email', 'password', 'password_confirmation']);
+            const fieldsValid = isFormValid(['username', 'email', 'password', 'password_confirmation']);
+            const consentsChecked = privacyCheckbox && privacyCheckbox.checked && termsCheckbox && termsCheckbox.checked;
 
-            if (!valid) {
+            if (!fieldsValid || !consentsChecked) {
                 e.preventDefault();
-                alert('入力内容に誤りがあります。すべての項目を正しく入力してください。');
+                
+                if (!consentsChecked) {
+                    alert('プライバシーポリシーと利用規約への同意が必要です。');
+                } else {
+                    alert('入力内容に誤りがあります。すべての項目を正しく入力してください。');
+                }
 
                 if (import.meta.env.DEV) {
-                    console.warn('[RegisterValidation] Form submission blocked:', window.validationState);
+                    console.warn('[RegisterValidation] Form submission blocked:', { fieldsValid, consentsChecked, validationState: window.validationState });
                 }
             } else {
                 if (import.meta.env.DEV) {

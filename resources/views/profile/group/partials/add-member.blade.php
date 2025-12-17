@@ -172,6 +172,66 @@
             <x-input-error class="mt-2" :messages="$errors->get('password')" />
         </div>
 
+        {{-- 保護者による同意（代理同意） --}}
+        <div class="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
+            <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-3">
+                {{ __('保護者による同意（代理同意）') }}
+            </h3>
+            <p class="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                {{ __('お子様のアカウントを作成する場合、保護者としてプライバシーポリシーおよび利用規約に同意する必要があります。') }}
+            </p>
+
+            {{-- プライバシーポリシーへの同意 --}}
+            <div class="mb-4">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input 
+                        type="checkbox" 
+                        id="privacy_policy_consent" 
+                        name="privacy_policy_consent" 
+                        value="1" 
+                        class="mt-0.5 w-4 h-4 text-indigo-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:ring-2"
+                        {{ old('privacy_policy_consent') ? 'checked' : '' }}
+                        required
+                    >
+                    <span class="flex-1 text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100">
+                        <a href="{{ route('privacy-policy') }}" 
+                           target="_blank" 
+                           class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline font-medium">
+                            {{ __('プライバシーポリシー') }}
+                        </a>
+                        {{ __('に保護者として同意します') }}
+                        <span class="text-red-600 dark:text-red-400 ml-1">*</span>
+                    </span>
+                </label>
+                <x-input-error class="mt-2" :messages="$errors->get('privacy_policy_consent')" />
+            </div>
+
+            {{-- 利用規約への同意 --}}
+            <div>
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input 
+                        type="checkbox" 
+                        id="terms_consent" 
+                        name="terms_consent" 
+                        value="1" 
+                        class="mt-0.5 w-4 h-4 text-indigo-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 focus:ring-2"
+                        {{ old('terms_consent') ? 'checked' : '' }}
+                        required
+                    >
+                    <span class="flex-1 text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100">
+                        <a href="{{ route('terms-of-service') }}" 
+                           target="_blank" 
+                           class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline font-medium">
+                            {{ __('利用規約') }}
+                        </a>
+                        {{ __('に保護者として同意します') }}
+                        <span class="text-red-600 dark:text-red-400 ml-1">*</span>
+                    </span>
+                </label>
+                <x-input-error class="mt-2" :messages="$errors->get('terms_consent')" />
+            </div>
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button 
                 id="add-member-button"

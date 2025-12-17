@@ -78,6 +78,8 @@ use App\Http\Actions\Notification\MarkAllNotificationsAsReadAction;
 use App\Http\Actions\Notification\ShowNotificationAction;
 use App\Http\Actions\Notification\SearchNotificationsAction;
 use App\Http\Actions\Notification\SearchResultsNotificationAction;
+use App\Http\Actions\Notification\ApproveParentLinkAction;
+use App\Http\Actions\Notification\RejectParentLinkAction;
 use App\Http\Actions\Profile\EditProfileAction;
 use App\Http\Actions\Profile\UpdateProfileAction;
 use App\Http\Actions\Profile\DeleteProfileAction;
@@ -90,6 +92,8 @@ use App\Http\Actions\Profile\Group\UpdateMemberPermissionAction;
 use App\Http\Actions\Profile\Group\ToggleMemberThemeAction;
 use App\Http\Actions\Profile\Group\TransferGroupMasterAction;
 use App\Http\Actions\Profile\Group\RemoveMemberAction;
+use App\Http\Actions\Profile\Group\SearchUnlinkedChildrenAction;
+use App\Http\Actions\Profile\Group\SendChildLinkRequestAction;
 use App\Http\Actions\Reports\IndexPerformanceAction;
 use App\Http\Actions\Reports\ShowMonthlyReportAction;
 use App\Http\Actions\Reports\GenerateMemberSummaryAction;
@@ -182,6 +186,17 @@ Route::get('/', function () {
 });
 
 // =========================================================================
+// 法的情報ページ（公開アクセス - 認証不要）
+// =========================================================================
+Route::get('/privacy-policy', function () {
+    return view('legal.privacy-policy');
+})->name('privacy-policy');
+
+Route::get('/terms-of-service', function () {
+    return view('legal.terms-of-service');
+})->name('terms-of-service');
+
+// =========================================================================
 // ゲストユーザー向けルート（認証前）
 // =========================================================================
 Route::middleware(['guest'])->group(function () {
@@ -196,6 +211,29 @@ Route::middleware(['guest'])->group(function () {
 });
 
 // =========================================================================
+// 保護者同意（13歳未満新規登録） - 認証不要
+// =========================================================================
+Route::get('/parent-consent/{token}', [\App\Http\Actions\Legal\ParentConsentAction::class, 'show'])->name('legal.parent-consent');
+Route::post('/parent-consent/{token}', [\App\Http\Actions\Legal\ParentConsentAction::class, 'store'])->name('legal.parent-consent.store');
+
+// 保護者同意完了画面（招待リンク表示）
+Route::get('/parent-consent-complete/{token}', function (string $token) {
+    // トークンからユーザーを取得（セッションがない場合のフォールバック）
+    if (!session('child_user')) {
+        $user = \App\Models\User::where('parent_invitation_token', $token)
+            ->where('is_minor', true)
+            ->whereNotNull('parent_consented_at')
+            ->first();
+        
+        if ($user) {
+            session(['child_user' => $user]);
+        }
+    }
+    
+    return view('legal.parent-consent-complete');
+})->name('legal.parent-consent-complete');
+
+// =========================================================================
 // 認証済みユーザー向けルート
 // =========================================================================
 Route::middleware(['auth'])->group(function () {
@@ -206,6 +244,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/validate/member-username', ValidateUsernameAction::class)->name('validate.member.username');
     Route::post('/validate/member-email', ValidateEmailAction::class)->name('validate.member.email');
     Route::post('/validate/member-password', ValidatePasswordAction::class)->name('validate.member.password');
+
+    // =========================================================================
+    // 法的同意管理（Phase 6C: 再同意プロセス）
+    // =========================================================================
+    Route::get('/legal/reconsent', \App\Http\Actions\Legal\ShowReconsentAction::class)->name('legal.reconsent');
+    Route::post('/legal/reconsent', \App\Http\Actions\Legal\ReconsentAction::class)->name('legal.reconsent.submit');
+
+    // =========================================================================
+    // 本人同意（Phase 6D: 13歳到達時の本人再同意）
+    // =========================================================================
+    Route::get('/legal/self-consent', \App\Http\Actions\Legal\ShowSelfConsentAction::class)->name('legal.self-consent');
+    Route::post('/legal/self-consent', \App\Http\Actions\Legal\SelfConsentAction::class)->name('legal.self-consent.submit');
 
     // --- メインメニュー画面 (タスク一覧) ---
     Route::get('/dashboard', IndexTaskAction::class)->middleware(['verified'])->name('dashboard');
@@ -279,6 +329,10 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/group/member/{member}/theme', ToggleMemberThemeAction::class)->name('group.member.theme');
         Route::post('/group/transfer/{newMaster}', TransferGroupMasterAction::class)->name('group.master.transfer');
         Route::delete('/group/member/{member}', RemoveMemberAction::class)->name('group.member.remove');
+        
+        // --- Phase 5-2拡張: 未紐付け子アカウント検索・紐付けリクエスト ---
+        Route::post('/group/search-children', SearchUnlinkedChildrenAction::class)->name('profile.group.search-children');
+        Route::post('/group/send-link-request', SendChildLinkRequestAction::class)->name('profile.group.send-link-request');
     });
 
     // ========================================
@@ -384,6 +438,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/read-all', MarkAllNotificationsAsReadAction::class)->name('read-all');
         Route::get('/search/api', SearchNotificationsAction::class)->name('search.api');
         Route::get('/search/results', SearchResultsNotificationAction::class)->name('search.results');
+        
+        // 親子紐付け承認・拒否
+        Route::post('/{notification}/approve-parent-link', ApproveParentLinkAction::class)->name('approve-parent-link');
+        Route::post('/{notification}/reject-parent-link', RejectParentLinkAction::class)->name('reject-parent-link');
     });
 
     // ========================================

@@ -45,6 +45,10 @@ use App\Http\Actions\Api\Profile\RegisterFcmTokenAction;
 use App\Http\Actions\Api\Profile\DeleteFcmTokenAction;
 use App\Http\Actions\Api\Profile\DeleteDeviceByIdAction;
 use App\Http\Actions\Api\Profile\GetDevicesAction;
+use App\Http\Actions\Api\Profile\Group\SearchUnlinkedChildrenApiAction;
+use App\Http\Actions\Api\Profile\Group\SendChildLinkRequestApiAction;
+use App\Http\Actions\Api\Notification\ApproveParentLinkApiAction;
+use App\Http\Actions\Api\Notification\RejectParentLinkApiAction;
 use App\Http\Actions\Api\Tags\TagsListApiAction;
 use App\Http\Actions\Api\Tags\StoreTagApiAction;
 use App\Http\Actions\Api\Tags\UpdateTagApiAction;
@@ -140,6 +144,7 @@ Route::get('/health', function () {
 // ============================================================
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Actions\Api\Auth\RegisterApiAction;
 
 Route::prefix('auth')->group(function () {
     // ログイン（username + password → Sanctum token）
@@ -155,8 +160,19 @@ Route::prefix('auth')->group(function () {
         ->middleware('guest')
         ->name('api.auth.forgot-password');
     
-    // 登録は現在停止中（RegisterAction::store で abort(404)）
-    // Route::post('/register', [RegisterAction::class, 'apiStore'])->name('api.auth.register');
+    // ユーザー登録（Phase 6A: 同意記録機能実装）
+    Route::post('/register', RegisterApiAction::class)
+        ->middleware('guest')
+        ->name('api.auth.register');
+    
+    // ============================================================
+    // Phase 5-2: 保護者同意API（13歳未満新規登録）
+    // 認証不要（公開エンドポイント）
+    // ============================================================
+    Route::get('/parent-consent/{token}', [\App\Http\Actions\Api\Legal\ParentConsentApiAction::class, 'show'])
+        ->name('api.parent-consent');
+    Route::post('/parent-consent/{token}', [\App\Http\Actions\Api\Legal\ParentConsentApiAction::class, 'store'])
+        ->name('api.parent-consent.store');
 });
 
 // ============================================================
@@ -169,6 +185,18 @@ Route::post('/webhooks/stripe/token-purchase', HandleTokenPurchaseWebhookAction:
 // Phase 2.B: モバイルアプリ実装（Cognito → Sanctum認証に統一）
 // ============================================================
 Route::middleware('auth:sanctum')->group(function () {
+    
+    // ============================================================
+    // 法的同意管理API（Phase 6C: 再同意プロセス）
+    // ============================================================
+    Route::get('/consent-status', \App\Http\Actions\Api\Legal\GetConsentStatusApiAction::class)->name('api.consent-status');
+    Route::post('/reconsent', \App\Http\Actions\Api\Legal\ReconsentApiAction::class)->name('api.reconsent');
+
+    // ============================================================
+    // 本人同意API（Phase 6D: 13歳到達時の本人再同意）
+    // ============================================================
+    Route::get('/self-consent-status', \App\Http\Actions\Api\Legal\GetSelfConsentStatusApiAction::class)->name('api.self-consent-status');
+    Route::post('/self-consent', \App\Http\Actions\Api\Legal\SelfConsentApiAction::class)->name('api.self-consent');
     
     // ユーザー情報API
     Route::get('/user', function (Request $request) {
@@ -261,6 +289,12 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // デバイス管理API（Phase 2.B-7.5 統合テスト用）
         Route::get('/devices', GetDevicesAction::class)->name('api.profile.devices');
+        
+        // 親子紐付け機能API（Phase 6）
+        Route::prefix('group')->group(function () {
+            Route::post('/search-children', SearchUnlinkedChildrenApiAction::class)->name('api.profile.group.search-children');
+            Route::post('/send-link-request', SendChildLinkRequestApiAction::class)->name('api.profile.group.send-link-request');
+        });
     });
 
     // タグ管理API
@@ -303,6 +337,10 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // テスト通知送信API（Phase 2.B-7.5 統合テスト用）
         Route::post('/test', SendTestNotificationAction::class)->name('api.notifications.test');
+        
+        // 親子紐付け承認・拒否API（Phase 6）
+        Route::post('/{id}/approve-parent-link', ApproveParentLinkApiAction::class)->name('api.notifications.approve-parent-link');
+        Route::post('/{id}/reject-parent-link', RejectParentLinkApiAction::class)->name('api.notifications.reject-parent-link');
     });
 
     // トークン管理API

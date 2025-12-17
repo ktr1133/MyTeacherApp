@@ -87,9 +87,11 @@ class GroupService implements GroupServiceInterface
      * @param string $password
      * @param string|null $name
      * @param bool $canEdit
+     * @param bool $privacyConsent 保護者によるプライバシーポリシー同意
+     * @param bool $termsConsent 保護者による利用規約同意
      * @return User
      */
-    public function addMember(User $actor, string $username, string $email, string $password, ?string $name, bool $canEdit): User
+    public function addMember(User $actor, string $username, string $email, string $password, ?string $name, bool $canEdit, bool $privacyConsent = false, bool $termsConsent = false): User
     {
         $group = $actor->group;
         if (!$group || !$this->canEditGroup($actor)) {
@@ -101,20 +103,33 @@ class GroupService implements GroupServiceInterface
             abort(422, 'グループメンバー数が上限に達しています。サブスクリプションプランをアップグレードしてください。');
         }
 
-        return DB::transaction(function () use ($username, $email, $password, $name, $group, $canEdit, &$user): User {
+        return DB::transaction(function () use ($username, $email, $password, $name, $group, $canEdit, $actor, $privacyConsent, $termsConsent, &$user): User {
             if (User::where('username', $username)->exists()) {
                 abort(422, '指定されたユーザー名は既に存在します。');
             }
 
+            // 代理同意の記録準備
+            $consentData = [];
+            if ($privacyConsent && $termsConsent) {
+                $consentData = [
+                    'created_by_user_id' => $actor->id,
+                    'consent_given_by_user_id' => $actor->id,
+                    'privacy_policy_version' => config('legal.current_versions.privacy_policy'),
+                    'terms_version' => config('legal.current_versions.terms_of_service'),
+                    'privacy_policy_agreed_at' => now(),
+                    'terms_agreed_at' => now(),
+                ];
+            }
+
             // ユーザー作成＆グループ作成
-            return $this->groupUsers->create([
+            return $this->groupUsers->create(array_merge([
                 'username' => $username,
                 'email' => $email,
                 'name' => $name ?? $username, // nameが空の場合はusernameを使用
                 'password' => Hash::make($password),
                 'group_id' => $group->id,
                 'group_edit_flg' => $canEdit,
-            ]);
+            ], $consentData));
         });
     }
 
@@ -265,5 +280,70 @@ class GroupService implements GroupServiceInterface
     {
         $currentMemberCount = $group->users()->count();
         return max(0, $group->max_members - $currentMemberCount);
+    }
+
+    /**
+     * 保護者招待トークン経由での家族グループを作成
+     * 
+     * ランダム8文字のグループ名を生成し、保護者をマスターユーザーとして設定。
+     * 保護者と子アカウントを同じグループに所属させる。
+     * 
+     * @param User $parentUser 保護者ユーザー
+     * @param User $childUser 子ユーザー
+     * @return Group 作成されたグループ
+     * @throws \RuntimeException グループ作成に失敗した場合
+     */
+    public function createFamilyGroup(User $parentUser, User $childUser): Group
+    {
+        try {
+            return DB::transaction(function () use ($parentUser, $childUser) {
+                // 子アカウントの既存グループチェック
+                if ($childUser->group_id !== null) {
+                    throw new \RuntimeException('お子様は既に別のグループに所属しています。');
+                }
+
+                // ランダム8文字のグループ名生成（英数字混合）
+                $groupName = \Illuminate\Support\Str::random(8);
+
+                // グループ作成
+                $group = $this->groups->create([
+                    'name' => $groupName,
+                    'master_user_id' => $parentUser->id,
+                ]);
+
+                // 保護者アカウントにグループ設定
+                $this->groupUsers->update($parentUser, [
+                    'group_id' => $group->id,
+                    'group_edit_flg' => true, // グループ編集権限: ON
+                ]);
+
+                // 子アカウントに親子紐付け + グループ参加
+                $this->groupUsers->update($childUser, [
+                    'parent_user_id' => $parentUser->id,
+                    'group_id' => $group->id,
+                    'parent_invitation_token' => null, // トークン無効化（再利用防止）
+                ]);
+
+                \Illuminate\Support\Facades\Log::info('Family group created via parent invitation', [
+                    'group_id' => $group->id,
+                    'group_name' => $groupName,
+                    'parent_user_id' => $parentUser->id,
+                    'parent_username' => $parentUser->username,
+                    'child_user_id' => $childUser->id,
+                    'child_username' => $childUser->username,
+                ]);
+
+                return $group;
+            });
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to create family group', [
+                'parent_user_id' => $parentUser->id,
+                'child_user_id' => $childUser->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new \RuntimeException('グループの作成に失敗しました: ' . $e->getMessage(), 0, $e);
+        }
     }
 }

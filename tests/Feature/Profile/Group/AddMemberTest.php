@@ -15,7 +15,7 @@ class AddMemberTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * グループメンバー追加: 全フィールド正常
+     * グループメンバー追加: 全フィールド正常（代理同意含む）
      */
     public function test_member_can_be_added_with_all_fields(): void
     {
@@ -32,6 +32,8 @@ class AddMemberTest extends TestCase
             'password' => 'password123',
             'name' => 'New Member',
             'group_edit_flg' => false,
+            'privacy_policy_consent' => true,
+            'terms_consent' => true,
         ]);
 
         $response->assertRedirect();
@@ -43,6 +45,118 @@ class AddMemberTest extends TestCase
         $this->assertEquals('New Member', $newMember->name);
         $this->assertEquals($group->id, $newMember->group_id);
         $this->assertFalse($newMember->group_edit_flg);
+
+        // 代理同意が記録されていることを確認
+        $this->assertEquals($master->id, $newMember->created_by_user_id);
+        $this->assertEquals($master->id, $newMember->consent_given_by_user_id);
+        $this->assertEquals(config('legal.current_versions.privacy_policy'), $newMember->privacy_policy_version);
+        $this->assertEquals(config('legal.current_versions.terms_of_service'), $newMember->terms_version);
+        $this->assertNotNull($newMember->privacy_policy_agreed_at);
+        $this->assertNotNull($newMember->terms_agreed_at);
+    }
+
+    /**
+     * グループメンバー追加: プライバシーポリシー同意が必須
+     */
+    public function test_member_requires_privacy_policy_consent(): void
+    {
+        $group = Group::create(['name' => 'Test Group']);
+        $master = User::factory()->create([
+            'group_id' => $group->id,
+            'group_edit_flg' => true,
+        ]);
+
+        $response = $this->actingAs($master)->post('/profile/group/member', [
+            'username' => 'newmember',
+            'email' => 'newmember@example.com',
+            'password' => 'password123',
+            'privacy_policy_consent' => false, // 同意なし
+            'terms_consent' => true,
+        ]);
+
+        $response->assertSessionHasErrors('privacy_policy_consent');
+    }
+
+    /**
+     * グループメンバー追加: 利用規約同意が必須
+     */
+    public function test_member_requires_terms_consent(): void
+    {
+        $group = Group::create(['name' => 'Test Group']);
+        $master = User::factory()->create([
+            'group_id' => $group->id,
+            'group_edit_flg' => true,
+        ]);
+
+        $response = $this->actingAs($master)->post('/profile/group/member', [
+            'username' => 'newmember',
+            'email' => 'newmember@example.com',
+            'password' => 'password123',
+            'privacy_policy_consent' => true,
+            'terms_consent' => false, // 同意なし
+        ]);
+
+        $response->assertSessionHasErrors('terms_consent');
+    }
+
+    /**
+     * グループメンバー追加: 両方の同意が必須
+     */
+    public function test_member_requires_both_consents(): void
+    {
+        $group = Group::create(['name' => 'Test Group']);
+        $master = User::factory()->create([
+            'group_id' => $group->id,
+            'group_edit_flg' => true,
+        ]);
+
+        $response = $this->actingAs($master)->post('/profile/group/member', [
+            'username' => 'newmember',
+            'email' => 'newmember@example.com',
+            'password' => 'password123',
+            'privacy_policy_consent' => false,
+            'terms_consent' => false,
+        ]);
+
+        $response->assertSessionHasErrors(['privacy_policy_consent', 'terms_consent']);
+    }
+
+    /**
+     * グループメンバー追加: 代理同意で正しいバージョンが記録される
+     */
+    public function test_member_records_correct_consent_versions(): void
+    {
+        $group = Group::create(['name' => 'Test Group']);
+        $master = User::factory()->create([
+            'group_id' => $group->id,
+            'group_edit_flg' => true,
+        ]);
+
+        $response = $this->actingAs($master)->post('/profile/group/member', [
+            'username' => 'childuser',
+            'email' => 'child@example.com',
+            'password' => 'password123',
+            'name' => 'Child User',
+            'privacy_policy_consent' => true,
+            'terms_consent' => true,
+        ]);
+
+        $response->assertRedirect();
+
+        $child = User::where('username', 'childuser')->first();
+        
+        // 代理同意の記録を確認
+        $this->assertEquals($master->id, $child->created_by_user_id);
+        $this->assertEquals($master->id, $child->consent_given_by_user_id);
+        
+        // バージョン確認
+        $this->assertEquals(config('legal.current_versions.privacy_policy'), $child->privacy_policy_version);
+        $this->assertEquals(config('legal.current_versions.terms_of_service'), $child->terms_version);
+        
+        // タイムスタンプ確認
+        $this->assertNotNull($child->privacy_policy_agreed_at);
+        $this->assertNotNull($child->terms_agreed_at);
+        $this->assertNull($child->self_consented_at); // 代理同意なのでNULL
     }
 
     /**
@@ -62,6 +176,8 @@ class AddMemberTest extends TestCase
             'password' => 'password123',
             'name' => '', // 空文字
             'group_edit_flg' => false,
+            'privacy_policy_consent' => true,
+            'terms_consent' => true,
         ]);
 
         $response->assertRedirect();
@@ -87,6 +203,8 @@ class AddMemberTest extends TestCase
             'password' => 'password123',
             'name' => 'Editor User',
             'group_edit_flg' => true, // 編集権限あり
+            'privacy_policy_consent' => true,
+            'terms_consent' => true,
         ]);
 
         $response->assertRedirect();
@@ -232,6 +350,8 @@ class AddMemberTest extends TestCase
             'username' => 'newuser',
             'email' => 'newuser@example.com',
             'password' => 'password123',
+            'privacy_policy_consent' => true,
+            'terms_consent' => true,
         ]);
 
         $response->assertForbidden(); // 403
@@ -263,6 +383,8 @@ class AddMemberTest extends TestCase
             'username' => 'newuser',
             'email' => 'newuser@example.com',
             'password' => 'password123',
+            'privacy_policy_consent' => true,
+            'terms_consent' => true,
         ]);
 
         // 422エラー（制限超過）
@@ -300,6 +422,8 @@ class AddMemberTest extends TestCase
             'username' => 'newuser',
             'email' => 'newuser@example.com',
             'password' => 'password123',
+            'privacy_policy_consent' => true,
+            'terms_consent' => true,
         ]);
 
         $response->assertRedirect();

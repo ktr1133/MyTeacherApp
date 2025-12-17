@@ -126,4 +126,71 @@ export const notificationService = {
       throw error;
     }
   },
+
+  /**
+   * 親子紐付けリクエストを承認（Phase 6）
+   * 
+   * @param notificationId 通知テンプレートID
+   * @returns 成功メッセージ、更新後のユーザー情報
+   * @throws Error API通信エラー時
+   */
+  async approveParentLink(notificationId: number): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      user: {
+        id: number;
+        username: string;
+        parent_user_id: number;
+        group_id: number;
+      };
+      parent: {
+        id: number;
+        username: string;
+        name: string | null;
+      };
+      group: {
+        id: number;
+        name: string;
+      };
+    };
+  }> {
+    try {
+      const response = await apiClient.post(`/notifications/${notificationId}/approve-parent-link`);
+      return response.data;
+    } catch (error) {
+      console.error('[notificationService.approveParentLink] Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 親子紐付けリクエストを拒否（Phase 6）
+   * 
+   * 注意: COPPA法により、拒否した場合はアカウントが削除されます。
+   * このAPIを呼び出した後は、ローカルストレージのトークンを削除し、
+   * ログイン画面に遷移する必要があります。
+   * 
+   * @param notificationId 通知テンプレートID
+   * @returns アカウント削除完了メッセージ
+   * @throws Error API通信エラー時
+   */
+  async rejectParentLink(notificationId: number): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      deleted: boolean;
+      deleted_at: string;
+      reason: string;
+      coppa_compliance: boolean;
+    };
+  }> {
+    try {
+      const response = await apiClient.post(`/notifications/${notificationId}/reject-parent-link`);
+      return response.data;
+    } catch (error) {
+      console.error('[notificationService.rejectParentLink] Error:', error);
+      throw error;
+    }
+  },
 };

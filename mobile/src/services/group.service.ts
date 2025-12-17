@@ -71,3 +71,49 @@ export const transferMaster = async (newMasterId: number): Promise<void> => {
 export const removeMember = async (memberId: number): Promise<void> => {
   await api.delete(`/groups/members/${memberId}`);
 };
+
+/**
+ * 未紐付け子アカウントを検索（Phase 6）
+ */
+export const searchUnlinkedChildren = async (parentEmail: string): Promise<{
+  success: boolean;
+  message: string;
+  data: {
+    children: Array<{
+      id: number;
+      username: string;
+      name: string | null;
+      email: string;
+      created_at: string;
+      is_minor: boolean;
+    }>;
+    count: number;
+    parent_email: string;
+  };
+}> => {
+  const response = await api.post('/profile/group/search-children', {
+    parent_email: parentEmail,
+  });
+  return response.data;
+};
+
+/**
+ * 紐付けリクエストを送信（Phase 6）
+ */
+export const sendLinkRequest = async (childUserId: number): Promise<{
+  success: boolean;
+  message: string;
+  data: {
+    notification_id: number;
+    child_user: {
+      id: number;
+      username: string;
+      name: string | null;
+    };
+  };
+}> => {
+  const response = await api.post('/profile/group/send-link-request', {
+    child_user_id: childUserId,
+  });
+  return response.data;
+};

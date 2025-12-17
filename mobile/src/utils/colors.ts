@@ -44,6 +44,13 @@ export interface ColorPalette {
     info: string;
   };
   
+  /** 情報ボックス用カラー */
+  info: {
+    background: string;
+    border: string;
+    text: string;
+  };
+  
   /** オーバーレイ */
   overlay: string;
 }
@@ -84,6 +91,12 @@ export const LightColors: ColorPalette = {
     info: '#3B82F6',            // blue-500
   },
   
+  info: {
+    background: '#EFF6FF',      // blue-50
+    border: '#BFDBFE',          // blue-200
+    text: '#1E40AF',            // blue-800
+  },
+  
   overlay: 'rgba(0, 0, 0, 0.5)',
 };
 
@@ -121,6 +134,12 @@ export const DarkColors: ColorPalette = {
     warning: '#FBBF24',         // amber-400 (ダークモードで明度UP)
     error: '#F87171',           // red-400 (ダークモードで明度UP)
     info: '#60A5FA',            // blue-400 (ダークモードで明度UP)
+  },
+  
+  info: {
+    background: '#1E3A8A',      // blue-900/20
+    border: '#1E40AF',          // blue-800
+    text: '#93C5FD',            // blue-300
   },
   
   overlay: 'rgba(0, 0, 0, 0.7)',

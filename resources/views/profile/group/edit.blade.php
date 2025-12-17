@@ -130,7 +130,7 @@
 
                     {{-- グループ基本情報 --}}
                     <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter">
-                        <div class="px-6 py-4 border-b border-purple-500/20 dark:border-purple-500/30 bg-gradient-to-r from-purple-500/5 to-pink-50/50 dark:from-purple-500/10 dark:to-pink-900/10">
+                        <div class="-mx-4 sm:mx-0 px-8 sm:px-6 py-4 border-b border-purple-500/20 dark:border-purple-500/30 bg-gradient-to-r from-purple-500/5 to-pink-50/50 dark:from-purple-500/10 dark:to-pink-900/10">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow" style="background: linear-gradient(to bottom right, rgb(147 51 234), rgb(219 39 119));">
                                     <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -142,7 +142,7 @@
                                 </h2>
                             </div>
                         </div>
-                        <div class="p-6">
+                        <div class="p-4 sm:p-6">
                             @include('profile.group.partials.update-group-information')
                         </div>
                     </div>
@@ -157,7 +157,7 @@
                     {{-- タスク自動作成の設定 --}}
                     @if ($group && Auth::user()->canEditGroup())
                         <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.1s;">
-                            <div class="px-6 py-5 border-b border-indigo-500/20 dark:border-indigo-500/30 bg-gradient-to-r from-indigo-500/10 via-blue-500/5 to-purple-500/10 dark:from-indigo-500/20 dark:via-blue-500/10 dark:to-purple-500/20">
+                            <div class="-mx-4 sm:mx-0 px-8 sm:px-6 py-5 border-b border-indigo-500/20 dark:border-indigo-500/30 bg-gradient-to-r from-indigo-500/10 via-blue-500/5 to-purple-500/10 dark:from-indigo-500/20 dark:via-blue-500/10 dark:to-purple-500/20">
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div class="flex items-start gap-4">
                                         <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0" style="background: linear-gradient(to bottom right, rgb(79 70 229), rgb(59 130 246), rgb(147 51 234));">
@@ -233,10 +233,15 @@
                         </div>
                     @endif
 
+                    {{-- 未紐付け子アカウント検索（Phase 5-2拡張） --}}
+                    @if (Auth::user()->group_id)
+                        @include('profile.group.partials.search-unlinked-children')
+                    @endif
+
                     {{-- メンバー一覧 --}}
                     @if ($group)
                         <div id="member-list" class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.15s;">
-                            <div class="px-6 py-4 border-b border-blue-500/20 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/5 to-purple-50/50 dark:from-blue-500/10 dark:to-purple-900/10">
+                            <div class="-mx-4 sm:mx-0 px-8 sm:px-6 py-4 border-b border-blue-500/20 dark:border-blue-500/30 bg-gradient-to-r from-blue-500/5 to-purple-50/50 dark:from-blue-500/10 dark:to-purple-900/10">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow" style="background: linear-gradient(to bottom right, rgb(37 99 235), rgb(147 51 234));">
                                         <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -248,7 +253,7 @@
                                     </h2>
                                 </div>
                             </div>
-                            <div class="p-6">
+                            <div class="p-4 sm:p-6">
                                 @include('profile.group.partials.member-list')
                             </div>
                         </div>
@@ -257,7 +262,7 @@
                     {{-- メンバー追加 --}}
                     @if ($group && Auth::user()->canEditGroup())
                         <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.2s;">
-                            <div class="px-6 py-4 border-b border-green-500/20 dark:border-green-500/30 bg-gradient-to-r from-green-500/5 to-emerald-50/50 dark:from-green-500/10 dark:to-emerald-900/10">
+                            <div class="-mx-4 sm:mx-0 px-8 sm:px-6 py-4 border-b border-green-500/20 dark:border-green-500/30 bg-gradient-to-r from-green-500/5 to-emerald-50/50 dark:from-green-500/10 dark:to-emerald-900/10">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center shadow">
                                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +274,7 @@
                                     </h2>
                                 </div>
                             </div>
-                            <div class="p-6">
+                            <div class="p-4 sm:p-6">
                                 @include('profile.group.partials.add-member')
                             </div>
                         </div>

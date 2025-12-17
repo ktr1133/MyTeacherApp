@@ -12,7 +12,7 @@ interface AuthContextType {
   loading: boolean;
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  register: (email: string, password: string, name: string, privacyConsent: boolean, termsConsent: boolean) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -102,10 +102,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (
+    email: string, 
+    password: string, 
+    name: string, 
+    privacyConsent: boolean, 
+    termsConsent: boolean,
+    birthdate?: string,
+    parentEmail?: string
+  ) => {
     try {
-      // 登録実行（トークン取得）
-      await authService.register(email, password, name);
+      // Phase 5-2: 登録実行（トークン取得、13歳未満の場合は保護者同意待ち）
+      const response = await authService.register(
+        email, 
+        password, 
+        name, 
+        privacyConsent, 
+        termsConsent,
+        birthdate,
+        parentEmail
+      );
+      
+      // Phase 5-2: 保護者同意待ちの場合はトークン未発行
+      if (response.requires_parent_consent) {
+        return { 
+          success: true, 
+          requiresParentConsent: true,
+          parentEmail: response.parent_email 
+        };
+      }
       
       // 登録成功後、APIから最新のユーザー情報（グループ情報含む）を取得
       console.log('[AuthContext] REGISTER - fetching current user data from API...');

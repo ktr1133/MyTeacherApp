@@ -22,12 +22,20 @@ class RegisterRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
             // タイムゾーンはデフォルト値があるため、バリデーション不要
+            // 同意チェックボックス（法的要件）
+            'privacy_policy_consent' => ['required', 'accepted'],
+            'terms_consent' => ['required', 'accepted'],
+            // Phase 5-2: 13歳未満新規登録時の保護者メール同意
+            'birthdate' => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
+            'parent_email' => ['nullable', 'email', 'max:255', 'required_if:birthdate,<,' . now()->subYears(13)->format('Y-m-d')],
         ];
+
+        return $rules;
     }
 
     /**
@@ -47,6 +55,18 @@ class RegisterRequest extends FormRequest
             'email.max' => 'メールアドレスは255文字以内で入力してください。',
             'password.required' => 'パスワードは必須です。',
             'password.confirmed' => 'パスワードが一致していません。',
+            // 同意チェックボックスのエラーメッセージ
+            'privacy_policy_consent.required' => 'プライバシーポリシーへの同意が必要です。',
+            'privacy_policy_consent.accepted' => 'プライバシーポリシーへの同意が必要です。',
+            'terms_consent.required' => '利用規約への同意が必要です。',
+            'terms_consent.accepted' => '利用規約への同意が必要です。',
+            // Phase 5-2: 生年月日・保護者メールのエラーメッセージ
+            'birthdate.date' => '有効な生年月日を入力してください。',
+            'birthdate.before' => '生年月日は今日より前の日付である必要があります。',
+            'birthdate.after' => '生年月日は1900年1月1日以降である必要があります。',
+            'parent_email.required_if' => '13歳未満の方は保護者のメールアドレスが必要です。',
+            'parent_email.email' => '有効な保護者のメールアドレスを入力してください。',
+            'parent_email.max' => '保護者のメールアドレスは255文字以内で入力してください。',
         ];
     }
 }

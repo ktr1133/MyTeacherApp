@@ -37,6 +37,7 @@ import { useResponsive, getFontSize, getSpacing, getBorderRadius, getShadow } fr
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { GroupTaskUsageComponent } from '../../components/group/GroupTaskUsage';
+import { SearchChildrenModal } from '../../components/group/SearchChildrenModal';
 import * as GroupService from '../../services/group.service';
 import type { Group, GroupMember, GroupTaskUsage } from '../../types/group.types';
 
@@ -69,7 +70,12 @@ export const GroupManagementScreen: React.FC = () => {
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberPassword, setNewMemberPassword] = useState('');
   const [newMemberEditFlg, setNewMemberEditFlg] = useState(false);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
+  const [termsConsent, setTermsConsent] = useState(false);
   const [isAddingMember, setIsAddingMember] = useState(false);
+
+  // 未紐付け子検索モーダル
+  const [showSearchChildrenModal, setShowSearchChildrenModal] = useState(false);
 
   // 確認ダイアログ
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -212,6 +218,17 @@ export const GroupManagementScreen: React.FC = () => {
       );
       return;
     }
+    
+    // 同意チェックバリデーション
+    if (!privacyConsent || !termsConsent) {
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        theme === 'child'
+          ? 'プライバシーポリシーとりようきやくにどういしてね'
+          : 'プライバシーポリシーおよび利用規約への同意が必要です'
+      );
+      return;
+    }
 
     setIsAddingMember(true);
     try {
@@ -221,6 +238,8 @@ export const GroupManagementScreen: React.FC = () => {
         password: newMemberPassword,
         name: newMemberName.trim() || undefined,
         group_edit_flg: newMemberEditFlg,
+        privacy_policy_consent: privacyConsent,
+        terms_consent: termsConsent,
       });
       Alert.alert(
         theme === 'child' ? 'せいこう' : '成功',
@@ -234,6 +253,8 @@ export const GroupManagementScreen: React.FC = () => {
       setNewMemberName('');
       setNewMemberPassword('');
       setNewMemberEditFlg(false);
+      setPrivacyConsent(false);
+      setTermsConsent(false);
       await fetchGroupInfo();
     } catch (error: any) {
       console.error('[GroupManagementScreen] Add member error:', error);
@@ -408,6 +429,16 @@ export const GroupManagementScreen: React.FC = () => {
 
   return (
     <>
+      {/* 未紐付け子検索モーダル */}
+      <SearchChildrenModal
+        visible={showSearchChildrenModal}
+        onClose={() => setShowSearchChildrenModal(false)}
+        onSuccess={() => {
+          setShowSearchChildrenModal(false);
+          loadGroupData();
+        }}
+      />
+
       <ScrollView
         style={styles.container}
         refreshControl={
@@ -664,6 +695,32 @@ export const GroupManagementScreen: React.FC = () => {
                 </Text>
               </LinearGradient>
               <View style={styles.cardContent}>
+                {/* 未紐付け子検索ボタン */}
+                <TouchableOpacity
+                  style={styles.searchChildrenButton}
+                  onPress={() => setShowSearchChildrenModal(true)}
+                >
+                  <LinearGradient
+                    colors={accent.gradient as any}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.searchChildrenButtonGradient}
+                  >
+                    <Text style={styles.searchChildrenButtonText}>
+                      {theme === 'child' 
+                        ? '🔍 こどもを さがして ついか' 
+                        : '🔍 未紐付け子検索'}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                {/* 区切り線 */}
+                <View style={styles.divider}>
+                  <Text style={styles.dividerText}>
+                    {theme === 'child' ? 'または' : 'または'}
+                  </Text>
+                </View>
+
                 {/* ユーザー名 */}
                 <Text style={styles.label}>
                   {theme === 'child' ? 'ユーザーめい' : 'ユーザー名'}
@@ -736,14 +793,60 @@ export const GroupManagementScreen: React.FC = () => {
                   </Text>
                 </TouchableOpacity>
 
+                {/* 保護者による同意（代理同意） */}
+                <View style={[styles.consentSection, { marginTop: 20 }]}>
+                  <Text style={styles.consentTitle}>
+                    {theme === 'child'
+                      ? 'ほごしゃのどうい'
+                      : '保護者による同意（代理同意）'}
+                  </Text>
+                  <Text style={styles.consentDescription}>
+                    {theme === 'child'
+                      ? 'おこさまのアカウントをつくるときは、ほごしゃとしてどういしてね'
+                      : 'お子様のアカウントを作成する場合、保護者としてプライバシーポリシーおよび利用規約に同意する必要があります。'}
+                  </Text>
+
+                  {/* プライバシーポリシーへの同意 */}
+                  <TouchableOpacity
+                    style={[styles.checkboxContainer, { marginTop: 12 }]}
+                    onPress={() => setPrivacyConsent(!privacyConsent)}
+                  >
+                    <View style={[styles.checkbox, privacyConsent && styles.checkboxChecked]}>
+                      {privacyConsent && <Text style={styles.checkmark}>✓</Text>}
+                    </View>
+                    <Text style={styles.checkboxLabel}>
+                      {theme === 'child'
+                        ? 'プライバシーポリシーにどういする'
+                        : 'プライバシーポリシーに保護者として同意します'}
+                      <Text style={styles.required}> *</Text>
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* 利用規約への同意 */}
+                  <TouchableOpacity
+                    style={[styles.checkboxContainer, { marginTop: 8 }]}
+                    onPress={() => setTermsConsent(!termsConsent)}
+                  >
+                    <View style={[styles.checkbox, termsConsent && styles.checkboxChecked]}>
+                      {termsConsent && <Text style={styles.checkmark}>✓</Text>}
+                    </View>
+                    <Text style={styles.checkboxLabel}>
+                      {theme === 'child'
+                        ? 'りようきやくにどういする'
+                        : '利用規約に保護者として同意します'}
+                      <Text style={styles.required}> *</Text>
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
                 {/* 追加ボタン */}
                 <TouchableOpacity
                   style={[
                     styles.addButton,
-                    (!newMemberUsername.trim() || !newMemberEmail.trim() || !newMemberPassword.trim() || isAddingMember) && styles.addButtonDisabled,
+                    (!newMemberUsername.trim() || !newMemberEmail.trim() || !newMemberPassword.trim() || !privacyConsent || !termsConsent || isAddingMember) && styles.addButtonDisabled,
                   ]}
                   onPress={handleAddMember}
-                  disabled={!newMemberUsername.trim() || !newMemberEmail.trim() || !newMemberPassword.trim() || isAddingMember}
+                  disabled={!newMemberUsername.trim() || !newMemberEmail.trim() || !newMemberPassword.trim() || !privacyConsent || !termsConsent || isAddingMember}
                 >
                   {isAddingMember ? (
                     <ActivityIndicator size="small" color={colors.background} />
@@ -1046,6 +1149,57 @@ const createStyles = (width: number, theme: 'adult' | 'child', colors: any, acce
       fontSize: getFontSize(16, width, theme),
       fontWeight: '600',
       color: colors.background,
+    },
+    consentSection: {
+      backgroundColor: theme === 'child' ? '#E3F2FD' : colors.card,
+      borderRadius: getBorderRadius(12, width),
+      padding: getSpacing(16, width),
+      borderWidth: theme === 'child' ? 2 : 1,
+      borderColor: theme === 'child' ? '#2196F3' : colors.border,
+    },
+    consentTitle: {
+      fontSize: getFontSize(14, width, theme),
+      fontWeight: '600',
+      color: colors.text.primary,
+      marginBottom: getSpacing(8, width),
+    },
+    consentDescription: {
+      fontSize: getFontSize(13, width, theme),
+      color: colors.text.secondary,
+      lineHeight: getFontSize(18, width, theme),
+      marginBottom: getSpacing(8, width),
+    },
+    required: {
+      color: '#EF4444',
+      fontWeight: 'bold',
+    },
+    searchChildrenButton: {
+      marginBottom: getSpacing(16, width),
+    },
+    searchChildrenButtonGradient: {
+      paddingVertical: getSpacing(14, width),
+      paddingHorizontal: getSpacing(24, width),
+      borderRadius: getBorderRadius(8, width),
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 48,
+    },
+    searchChildrenButtonText: {
+      color: '#FFFFFF',
+      fontSize: getFontSize(16, width, theme),
+      fontWeight: '700',
+    },
+    divider: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: getSpacing(16, width),
+    },
+    dividerText: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: getFontSize(14, width, theme),
+      color: colors.text.tertiary,
+      fontWeight: '600',
     },
   });
 

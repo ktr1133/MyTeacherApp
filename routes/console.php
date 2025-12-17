@@ -107,6 +107,22 @@ Schedule::command('notifications:delete-expired')
     ->appendOutputTo(storage_path('logs/notifications-cleanup.log'));
 
 // ========================================
+// 90日経過ユーザー削除（GDPR対応 - 毎日午前1時）
+// ========================================
+Schedule::command('batch:delete-inactive-users')
+    ->dailyAt('01:00')
+    ->timezone('Asia/Tokyo')
+    ->withoutOverlapping()  // 二重実行防止
+    ->onOneServer()         // 複数サーバー環境での重複実行防止
+    ->appendOutputTo(storage_path('logs/delete-inactive-users.log'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('90日経過ユーザー削除成功');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('90日経過ユーザー削除失敗');
+    });
+
+// ========================================
 // Redis健全性監視（5分ごと）
 // ========================================
 Schedule::command('redis:monitor')
@@ -138,6 +154,23 @@ Schedule::command('subscription:cleanup-expired')
     })
     ->onFailure(function () {
         \Illuminate\Support\Facades\Log::error('サブスクリプションクリーンアップ失敗');
+    });
+
+// ========================================
+// Phase 5-2: 保護者同意未取得アカウント削除（毎日深夜3時）
+// 13歳未満で7日間同意がないアカウントを削除
+// ========================================
+Schedule::command('legal:delete-unconsented-minors')
+    ->dailyAt('03:00')
+    ->timezone('Asia/Tokyo')
+    ->withoutOverlapping()  // 二重実行防止
+    ->onOneServer()         // 複数サーバー環境での重複実行防止
+    ->appendOutputTo(storage_path('logs/delete-unconsented-minors.log'))
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('保護者同意未取得アカウント削除成功');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('保護者同意未取得アカウント削除失敗');
     });
 
 // ========================================
