@@ -63,7 +63,7 @@ jobs:
     # ClamAV Service Container（ウイルススキャンテスト用）
     services:
       clamav:
-        image: clamav/clamav:1.4
+        image: clamav/clamav:latest
         ports:
           - 3310:3310
         options: >-
