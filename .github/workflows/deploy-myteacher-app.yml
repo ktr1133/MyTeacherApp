@@ -224,6 +224,8 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           APP_KEY: ${{ secrets.APP_KEY }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SES_ACCESS_KEY_ID: ${{ secrets.SES_ACCESS_KEY_ID }}
+          SES_SECRET_ACCESS_KEY: ${{ secrets.SES_SECRET_ACCESS_KEY }}
         run: |
           # コンテナイメージを更新
           jq --arg IMAGE "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
@@ -250,11 +252,26 @@ jobs:
               [{name: "LOG_CHANNEL", value: "stderr"}]' \
             task-definition-tmp3.json > task-definition-tmp4.json
           
+          # SES環境変数を追加（メール送信設定）
+          jq --arg SES_KEY "$SES_ACCESS_KEY_ID" --arg SES_SECRET "$SES_SECRET_ACCESS_KEY" \
+            '.containerDefinitions[0].environment = 
+              [.containerDefinitions[0].environment[] | 
+                select(.name != "MAIL_MAILER" and .name != "MAIL_FROM_ADDRESS" and 
+                       .name != "MAIL_FROM_NAME" and .name != "SES_ACCESS_KEY_ID" and 
+                       .name != "SES_SECRET_ACCESS_KEY" and .name != "SES_REGION")] + 
+              [{name: "MAIL_MAILER", value: "ses"},
+               {name: "MAIL_FROM_ADDRESS", value: "noreply@my-teacher-app.com"},
+               {name: "MAIL_FROM_NAME", value: "MyTeacher"},
+               {name: "SES_ACCESS_KEY_ID", value: $SES_KEY},
+               {name: "SES_SECRET_ACCESS_KEY", value: $SES_SECRET},
+               {name: "SES_REGION", value: "ap-northeast-1"}]' \
+            task-definition-tmp4.json > task-definition-tmp5.json
+          
           # ENTRYPOINT/CMDを明示的に設定（ECSがDockerイメージのENTRYPOINTを無視する問題の回避）
           # デバッグ: startup-debug.shが実行されるか確認
           jq '.containerDefinitions[0].entryPoint = ["/usr/local/bin/startup-debug.sh"] |
               .containerDefinitions[0].command = ["apache2-foreground"]' \
-            task-definition-tmp4.json > task-definition-new.json
+            task-definition-tmp5.json > task-definition-new.json
           
           echo "=== Task Definition Preview ==="
           jq '.containerDefinitions[0] | {name, image, entryPoint, command}' task-definition-new.json
