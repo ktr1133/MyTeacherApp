@@ -117,6 +117,8 @@ describe('グループ管理API', function () {
                     'password' => 'password123',
                     'name' => '新メンバー',
                     'group_edit_flg' => false,
+                    'privacy_policy_consent' => true,
+                    'terms_consent' => true,
                 ]);
 
             $response->assertStatus(201)
