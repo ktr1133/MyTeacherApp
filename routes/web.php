@@ -314,7 +314,7 @@ Route::middleware(['auth'])->group(function () {
     // --- アカウント管理画面 ---
     Route::prefix('/profile')->group(function () {
         Route::get('/edit', EditProfileAction::class)->name('profile.edit');
-        Route::patch('/update', UpdateProfileAction::class)->name('profile.update');
+        Route::match(['patch', 'post'], '/update', UpdateProfileAction::class)->name('profile.update');
         Route::delete('/delete', DeleteProfileAction::class)->name('profile.destroy');
         
         // タイムゾーン設定
