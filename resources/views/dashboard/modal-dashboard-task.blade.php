@@ -217,25 +217,29 @@
             </div>
 
             {{-- 状態2のボタン --}}
-            <div id="state-2-buttons" class="flex gap-3" style="display: none;">
+            <div id="state-2-buttons" class="flex gap-2 sm:gap-3" style="display: none;">
                 <button type="button" id="cancel-decomposition-btn"
-                        class="inline-flex justify-center items-center px-5 py-2 border-2 {{ $isChildTheme ? 'border-amber-300 text-amber-800 bg-white hover:bg-amber-50' : 'border-[#59B9C6]/30 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-[#59B9C6]/10 dark:hover:bg-[#59B9C6]/20' }} text-sm font-semibold rounded-lg transition">
-                    キャンセル
+                        class="inline-flex justify-center items-center px-3 sm:px-5 py-2 border-2 {{ $isChildTheme ? 'border-amber-300 text-amber-800 bg-white hover:bg-amber-50' : 'border-[#59B9C6]/30 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-[#59B9C6]/10 dark:hover:bg-[#59B9C6]/20' }} text-sm font-semibold rounded-lg transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    <span class="hidden sm:inline ml-2">キャンセル</span>
                 </button>
                 <button type="button" id="refine-proposal-btn"
-                        class="inline-flex justify-center items-center px-5 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 shadow-lg hover:shadow-xl transition">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="inline-flex justify-center items-center px-3 sm:px-5 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 shadow-lg hover:shadow-xl transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
-                    再提案
+                    <span class="hidden sm:inline ml-2">再提案</span>
                 </button>
                 <button type="button" id="adopt-proposal-btn"
-                        class="inline-flex justify-center items-center px-5 py-2 border border-transparent text-sm font-semibold rounded-lg text-white {{ $isChildTheme ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-[#59B9C6] to-blue-600 hover:from-[#4AA0AB] hover:to-blue-700' }} shadow-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="inline-flex justify-center items-center px-3 sm:px-5 py-2 border border-transparent text-sm font-semibold rounded-lg text-white {{ $isChildTheme ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-[#59B9C6] to-blue-600 hover:from-[#4AA0AB] hover:to-blue-700' }} shadow-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled>
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    <span>この提案を受け入れる (<span id="adopt-task-count">0</span>件)</span>
+                    <span class="hidden sm:inline ml-2">この提案を受け入れる (<span id="adopt-task-count">0</span>件)</span>
+                    <span class="sm:hidden ml-2">登録</span>
                 </button>
             </div>
 
