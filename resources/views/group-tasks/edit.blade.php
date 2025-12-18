@@ -110,8 +110,23 @@
                                         </svg>
                                         <span class="pr-8">期限 <span class="text-red-500">*</span></span>
                                     </label>
+                                    @php
+                                        $dueDateValue = '';
+                                        if (!empty($groupTask['due_date'])) {
+                                            try {
+                                                $dueDateValue = \Carbon\Carbon::parse($groupTask['due_date'])->format('Y-m-d');
+                                            } catch (\Carbon\Exceptions\InvalidFormatException $e) {
+                                                // 日本語テキスト等のdatetime形式以外の場合は空欄にする
+                                                \Log::warning('Failed to parse due_date as datetime in edit screen', [
+                                                    'due_date' => $groupTask['due_date'],
+                                                    'group_task_id' => $groupTask['group_task_id'] ?? null,
+                                                ]);
+                                                $dueDateValue = '';
+                                            }
+                                        }
+                                    @endphp
                                     <input type="date" name="due_date" id="due_date" required
-                                        value="{{ old('due_date', !empty($groupTask['due_date']) ? \Carbon\Carbon::parse($groupTask['due_date'])->format('Y-m-d') : '') }}"
+                                        value="{{ old('due_date', $dueDateValue) }}"
                                         class="w-full px-4 py-2.5 border border-purple-200 dark:border-purple-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-sm"
                                         min="{{ date('Y-m-d') }}">
                                 </div>
