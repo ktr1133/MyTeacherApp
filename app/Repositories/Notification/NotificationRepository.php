@@ -172,6 +172,16 @@ class NotificationRepository implements NotificationRepositoryInterface
 
         UserNotification::insert($notifications);
 
+        // Push通知ジョブをディスパッチ
+        $insertedNotifications = UserNotification::where('notification_template_id', $template->id)
+            ->whereIn('user_id', $userIds)
+            ->where('created_at', '>=', now()->subSeconds(5))
+            ->get();
+
+        foreach ($insertedNotifications as $notification) {
+            \App\Jobs\SendPushNotificationJob::dispatch($notification->id, $notification->user_id);
+        }
+
         return count($notifications);
     }
 
