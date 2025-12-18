@@ -10,7 +10,9 @@ export default {
     extra: {
       eas: {
         projectId: "293f5236-a789-455d-b73a-e990044fc7f0"
-      }
+      },
+      privacyPolicyUrl: "https://my-teacher-app.com/privacy-policy",
+      termsOfServiceUrl: "https://my-teacher-app.com/terms-of-service"
     },
     splash: {
       image: "./assets/splash-icon.png",
@@ -62,10 +64,6 @@ export default {
           category: ["BROWSABLE", "DEFAULT"]
         }
       ]
-    },
-    extra: {
-      privacyPolicyUrl: "https://my-teacher-app.com/privacy-policy",
-      termsOfServiceUrl: "https://my-teacher-app.com/terms-of-service"
     },
     web: {
       favicon: "./assets/favicon.png"

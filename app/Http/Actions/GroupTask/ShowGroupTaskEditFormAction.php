@@ -45,7 +45,7 @@ class ShowGroupTaskEditFormAction
         try {
             // グループタスク取得
             $groupTask = $this->taskManagementService->findEditableGroupTask($user, $groupTaskId);
-            
+
             if (!$groupTask) {
                 abort(404, '指定されたグループタスクが見つかりません。');
             }
