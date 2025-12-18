@@ -181,6 +181,11 @@ Route::prefix('auth')->group(function () {
 Route::post('/webhooks/stripe/token-purchase', HandleTokenPurchaseWebhookAction::class)->name('webhooks.stripe.token-purchase');
 
 // ============================================================
+// 法的文書取得API（モバイルアプリ用 - 認証不要）
+// ============================================================
+Route::get('/legal/{type}', \App\Http\Actions\Api\Legal\GetLegalDocumentApiAction::class)->name('api.legal.document');
+
+// ============================================================
 // モバイルアプリAPI（Sanctum認証）
 // Phase 2.B: モバイルアプリ実装（Cognito → Sanctum認証に統一）
 // ============================================================
@@ -197,11 +202,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // ============================================================
     Route::get('/self-consent-status', \App\Http\Actions\Api\Legal\GetSelfConsentStatusApiAction::class)->name('api.self-consent-status');
     Route::post('/self-consent', \App\Http\Actions\Api\Legal\SelfConsentApiAction::class)->name('api.self-consent');
-    
-    // ============================================================
-    // 法的文書取得API（モバイルアプリ用）
-    // ============================================================
-    Route::get('/legal/{type}', \App\Http\Actions\Api\Legal\GetLegalDocumentApiAction::class)->name('api.legal.document');
     
     // ユーザー情報API
     Route::get('/user', function (Request $request) {
