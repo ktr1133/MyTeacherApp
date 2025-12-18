@@ -8,7 +8,22 @@
  */
 const { withAndroidManifest } = require('@expo/config-plugins');
 
-const PRIVACY_POLICY_URL = 'https://my-teacher-app.com/privacy-policy';
+// 環境変数からAPIのURLを取得し、プライバシーポリシーのURLを構築
+// EXPO_PUBLIC_API_URL が設定されている場合は、/api を除いたベースURLを使用
+const getPrivacyPolicyUrl = () => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+  
+  if (apiUrl) {
+    // /api を除いたベースURLを取得
+    const baseUrl = apiUrl.replace(/\/api\/?$/, '');
+    return `${baseUrl}/privacy-policy`;
+  }
+  
+  // 環境変数が設定されていない場合は本番URLを使用
+  return 'https://my-teacher-app.com/privacy-policy';
+};
+
+const PRIVACY_POLICY_URL = getPrivacyPolicyUrl();
 
 module.exports = function withAndroidPrivacyPolicy(config) {
   return withAndroidManifest(config, (config) => {
@@ -42,7 +57,9 @@ module.exports = function withAndroidPrivacyPolicy(config) {
 
       console.log(`✅ プライバシーポリシーURLを追加しました: ${PRIVACY_POLICY_URL}`);
     } else {
-      console.log(`ℹ️  プライバシーポリシーURLは既に設定されています: ${existingMetaData.$['android:value']}`);
+      // 既存のURLを更新
+      existingMetaData.$['android:value'] = PRIVACY_POLICY_URL;
+      console.log(`✅ プライバシーポリシーURLを更新しました: ${PRIVACY_POLICY_URL}`);
     }
 
     return config;
