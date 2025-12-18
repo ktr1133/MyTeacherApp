@@ -85,4 +85,25 @@ class ProfileUserEloquentRepository implements ProfileUserRepositoryInterface
             ->orderBy('username')
             ->get();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChildrenByParentUserId(int $parentUserId): Collection
+    {
+        return User::query()
+            ->where('parent_user_id', $parentUserId)
+            ->get();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateChildrenParentEmail(Collection $children, string $newEmail): int
+    {
+        $userIds = $children->pluck('id')->toArray();
+        
+        return User::whereIn('id', $userIds)
+            ->update(['parent_email' => $newEmail]);
+    }
 }

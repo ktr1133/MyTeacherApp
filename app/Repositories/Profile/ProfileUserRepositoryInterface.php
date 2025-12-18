@@ -56,4 +56,21 @@ interface ProfileUserRepositoryInterface
      * @return Collection<int, User>
      */
     public function getGroupMembersByGroupId(int $groupId): Collection;
+
+    /**
+     * 指定されたユーザーを親とする子ユーザーを取得する。
+     *
+     * @param int $parentUserId 親ユーザーのID
+     * @return Collection<int, User> 子ユーザーのコレクション
+     */
+    public function getChildrenByParentUserId(int $parentUserId): Collection;
+
+    /**
+     * 複数の子ユーザーのparent_emailを一括更新する。
+     *
+     * @param Collection<int, User> $children 子ユーザーのコレクション
+     * @param string $newEmail 新しいメールアドレス
+     * @return int 更新された行数
+     */
+    public function updateChildrenParentEmail(Collection $children, string $newEmail): int;
 }

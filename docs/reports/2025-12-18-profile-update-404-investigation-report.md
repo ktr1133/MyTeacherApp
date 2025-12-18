@@ -6,18 +6,32 @@
 |------|--------|---------|
 | 2025-12-18 | GitHub Copilot | 初版作成: 本番環境でのプロフィール更新404エラーの調査結果 |
 | 2025-12-18 | GitHub Copilot | **問題解決**: HTTPメソッド不一致（POST vs PATCH）が原因と特定、ルート定義修正で解決 |
+| 2025-12-18 | GitHub Copilot | **根本原因特定**: email_verified_atカラムが本番DBに存在しないことが真の原因、Schema::hasColumnでチェック追加 |
 
 ## 概要
 
-本番環境でWebアカウント管理画面においてメールアドレスを変更して更新した際、404エラーが発生する問題を調査しました。ローカル環境では問題なく動作しているため、環境依存の問題であることが確認されました。
+本番環境でWebアカウント管理画面においてメールアドレスを変更して更新した際、404エラー（実際は500エラー）が発生する問題を調査しました。ローカル環境では問題なく動作しているため、環境依存の問題であることが確認されました。
 
 **✅ 問題解決済み（2025-12-18）**:
+
+**第1の問題（解決済み）**:
 - **原因**: HTTPメソッド不一致（フォームが `POST` で送信、ルートは `PATCH` のみ許可）
 - **根本原因**: Laravel 12では `_method` パラメータによるHTTPメソッドオーバーライドがデフォルトで無効
 - **解決策**: ルート定義を `Route::match(['patch', 'post'], ...)` に変更
 - **修正ファイル**: 
   - `routes/web.php` - PATCHとPOST両方許可
   - `resources/views/profile/partials/update-profile-information-form.blade.php` - `@method('patch')` 削除
+
+**第2の問題（根本原因）**:
+- **真の原因**: 本番環境のusersテーブルに `email_verified_at` カラムが存在しない
+- **エラー**: `SQLSTATE[42703]: Undefined column: 7 ERROR: column "email_verified_at" of relation "users" does not exist`
+- **発生箇所**: `UpdateProfileAction.php:41` - メールアドレス変更時に `email_verified_at = null` を設定
+- **解決策**: `Schema::hasColumn('users', 'email_verified_at')` でカラムの存在を確認してから更新
+- **修正ファイル**: `app/Http/Actions/Profile/UpdateProfileAction.php`
+
+**なぜローカルでは動作したのか**:
+- ローカル環境のusersテーブルには `email_verified_at` カラムが存在
+- 本番環境は手動でテーブルが作成されたか、マイグレーション実行前のデータが残存している可能性
 
 ## 調査結果
 

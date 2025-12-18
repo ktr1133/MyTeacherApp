@@ -85,3 +85,94 @@ test('correct password must be provided to delete account', function () {
 
     $this->assertNotNull($user->fresh());
 });
+
+test('parent email is updated for children when parent changes email', function () {
+    // 親ユーザー作成
+    $parent = User::factory()->create([
+        'username' => 'parent_user',
+        'email' => 'parent@example.com',
+    ]);
+
+    // 子ユーザー作成（parent_user_id、parent_emailを設定）
+    $child1 = User::factory()->create([
+        'parent_user_id' => $parent->id,
+        'parent_email' => 'parent@example.com',
+    ]);
+
+    $child2 = User::factory()->create([
+        'parent_user_id' => $parent->id,
+        'parent_email' => 'parent@example.com',
+    ]);
+
+    // 他の親を持つ子ユーザー（更新されないことを確認）
+    $otherParent = User::factory()->create([
+        'username' => 'other_parent',
+        'email' => 'other@example.com',
+    ]);
+    $otherChild = User::factory()->create([
+        'parent_user_id' => $otherParent->id,
+        'parent_email' => 'other@example.com',
+    ]);
+
+    // 親ユーザーのメールアドレスを変更
+    $response = $this
+        ->actingAs($parent)
+        ->patch('/profile/update', [
+            'username' => 'parent_user',
+            'name' => $parent->name,
+            'email' => 'new-parent@example.com',
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile/edit');
+
+    // 親ユーザーのメールアドレスが更新されたことを確認
+    $parent->refresh();
+    $this->assertSame('new-parent@example.com', $parent->email);
+
+    // 子ユーザーのparent_emailが更新されたことを確認
+    $child1->refresh();
+    $child2->refresh();
+    $this->assertSame('new-parent@example.com', $child1->parent_email);
+    $this->assertSame('new-parent@example.com', $child2->parent_email);
+
+    // 他の親を持つ子ユーザーは影響を受けないことを確認
+    $otherChild->refresh();
+    $this->assertSame('other@example.com', $otherChild->parent_email);
+});
+
+test('parent email is not updated for children when parent email unchanged', function () {
+    // 親ユーザー作成
+    $parent = User::factory()->create([
+        'username' => 'parent_user',
+        'email' => 'parent@example.com',
+    ]);
+
+    // 子ユーザー作成
+    $child = User::factory()->create([
+        'parent_user_id' => $parent->id,
+        'parent_email' => 'parent@example.com',
+    ]);
+
+    // 親ユーザーのメールアドレスを変更せず、名前だけ変更
+    $response = $this
+        ->actingAs($parent)
+        ->patch('/profile/update', [
+            'username' => 'parent_user',
+            'name' => 'Updated Name',
+            'email' => 'parent@example.com', // 同じメールアドレス
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile/edit');
+
+    // 親ユーザーの名前が更新されたことを確認
+    $parent->refresh();
+    $this->assertSame('Updated Name', $parent->name);
+
+    // 子ユーザーのparent_emailは変更なし（元のまま）
+    $child->refresh();
+    $this->assertSame('parent@example.com', $child->parent_email);
+});

@@ -3,6 +3,7 @@
 namespace App\Http\Actions\Api\Profile;
 
 use App\Http\Requests\Api\Profile\UpdateProfileApiRequest;
+use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Schema;
  */
 class UpdateProfileApiAction
 {
+    public function __construct(
+        private ProfileUserRepositoryInterface $userRepository
+    ) {}
     /**
      * プロフィール情報を更新
      *
@@ -36,6 +40,9 @@ class UpdateProfileApiAction
 
             $validated = $request->validated();
 
+            // メールアドレス変更チェック
+            $emailChanged = array_key_exists('email', $validated) && $user->email !== $validated['email'];
+
             // 画像アップロード（任意）
             if ($request->hasFile('avatar')) {
                 // 既存の画像があれば削除
@@ -51,6 +58,10 @@ class UpdateProfileApiAction
                 $user->username = $validated['username'];
             }
             if (array_key_exists('email', $validated)) {
+                // メールアドレス変更時はemail_verified_atをリセット（カラムが存在する場合）
+                if ($emailChanged && Schema::hasColumn('users', 'email_verified_at')) {
+                    $user->email_verified_at = null;
+                }
                 $user->email = $validated['email'];
             }
             if (array_key_exists('name', $validated)) {
@@ -67,6 +78,28 @@ class UpdateProfileApiAction
             }
 
             $user->save();
+
+            // メールアドレスが変更された場合、子ユーザーのparent_emailも更新
+            if ($emailChanged) {
+                try {
+                    $children = $this->userRepository->getChildrenByParentUserId($user->id);
+                    if ($children->isNotEmpty()) {
+                        $updatedCount = $this->userRepository->updateChildrenParentEmail($children, $validated['email']);
+                        Log::info('子ユーザーのparent_email更新完了（API）', [
+                            'parent_user_id' => $user->id,
+                            'new_email' => $validated['email'],
+                            'updated_count' => $updatedCount,
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('子ユーザーのparent_email更新失敗（API）', [
+                        'parent_user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                    // 親ユーザーの更新は成功しているため、エラーをログに記録するのみ
+                }
+            }
 
             return response()->json([
                 'success' => true,

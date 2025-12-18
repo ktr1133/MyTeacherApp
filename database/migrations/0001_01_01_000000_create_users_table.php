@@ -31,7 +31,6 @@ return new class extends Migration
             $table->string('username')->unique()->comment('ユーザー名');
             $table->string('email')->unique()->comment('メールアドレス');
             $table->string('name')->nullable()->comment('表示名');
-            $table->timestamp('email_verified_at')->nullable()->comment('メール認証日時');
             $table->timestamp('last_login_at')->nullable()->comment('最終ログイン日時');
             $table->unsignedBigInteger('group_id')->nullable()->comment('グループID');
             $table->boolean('group_edit_flg')->default(false)->comment('グループ編集フラグ');

@@ -4,14 +4,18 @@ namespace App\Http\Actions\Profile;
 
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Responders\Profile\ProfileResponder;
+use App\Repositories\Profile\ProfileUserRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UpdateProfileAction
 {
     public function __construct(
-        private ProfileResponder $responder
+        private ProfileResponder $responder,
+        private ProfileUserRepositoryInterface $userRepository
     ) {}
 
     /**
@@ -36,8 +40,11 @@ class UpdateProfileAction
             $validated['avatar_path'] = $path;
         }
 
-        // メールアドレスが変更された場合は検証状態をリセット
-        if ($user->email !== $validated['email']) {
+        // メールアドレス変更チェック
+        $emailChanged = $user->email !== $validated['email'];
+        
+        // メールアドレスが変更された場合は検証状態をリセット（カラムが存在する場合のみ）
+        if ($emailChanged && Schema::hasColumn('users', 'email_verified_at')) {
             $user->email_verified_at = null;
         }
 
@@ -58,6 +65,28 @@ class UpdateProfileAction
         }
 
         $user->save();
+
+        // メールアドレスが変更された場合、子ユーザーのparent_emailも更新
+        if ($emailChanged) {
+            try {
+                $children = $this->userRepository->getChildrenByParentUserId($user->id);
+                if ($children->isNotEmpty()) {
+                    $updatedCount = $this->userRepository->updateChildrenParentEmail($children, $validated['email']);
+                    Log::info('子ユーザーのparent_email更新完了', [
+                        'parent_user_id' => $user->id,
+                        'new_email' => $validated['email'],
+                        'updated_count' => $updatedCount,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('子ユーザーのparent_email更新失敗', [
+                    'parent_user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                // 親ユーザーの更新は成功しているため、エラーをログに記録するのみ
+            }
+        }
 
         // Responder を通してリダイレクト
         return $this->responder->respondUpdateSuccess();
