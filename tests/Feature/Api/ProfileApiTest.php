@@ -5,6 +5,7 @@ use Laravel\Sanctum\Sanctum;
 
 test('api: profile information can be updated', function () {
     $user = User::factory()->create([
+        'username' => 'test_user_update',
         'email' => 'old@example.com',
     ]);
 
@@ -33,6 +34,7 @@ test('api: profile information can be updated', function () {
 test('api: parent email is updated for children when parent changes email', function () {
     // 親ユーザー作成
     $parent = User::factory()->create([
+        'username' => 'test_parent',
         'email' => 'parent@example.com',
     ]);
 
@@ -49,6 +51,7 @@ test('api: parent email is updated for children when parent changes email', func
 
     // 他の親を持つ子ユーザー
     $otherParent = User::factory()->create([
+        'username' => 'test_other_parent',
         'email' => 'other@example.com',
     ]);
     $otherChild = User::factory()->create([
@@ -90,6 +93,7 @@ test('api: parent email is updated for children when parent changes email', func
 test('api: parent email is not updated for children when parent email unchanged', function () {
     // 親ユーザー作成
     $parent = User::factory()->create([
+        'username' => 'test_parent_unchanged',
         'email' => 'parent@example.com',
         'name' => 'Original Name',
     ]);
@@ -121,6 +125,7 @@ test('api: parent email is not updated for children when parent email unchanged'
 
 test('api: theme can be updated', function () {
     $user = User::factory()->create([
+        'username' => 'test_user_theme',
         'theme' => 'adult',
     ]);
 
