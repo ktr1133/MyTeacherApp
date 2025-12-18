@@ -6,13 +6,23 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://fizzy-formless-sandi.ngrok-free.dev/api",
+        "GOOGLE_SERVICES_JSON": "{\"project_info\":{\"project_number\":\"59209979450\",\"project_id\":\"my-teacher-bcb8d\",\"storage_bucket\":\"my-teacher-bcb8d.firebasestorage.app\"},\"client\":[{\"client_info\":{\"mobilesdk_app_id\":\"1:59209979450:android:ec204c77bdd459e59b0703\",\"android_client_info\":{\"package_name\":\"com.myteacherfamco.app\"}},\"oauth_client\":[],\"api_key\":[{\"current_key\":\"AIzaSyAG4XUlpQ_9xx_wg0PTSjNa_B6xCUTeUQo\"}],\"services\":{\"appinvite_service\":{\"other_platform_oauth_client\":[]}}}],\"configuration_version\":\"1\"}"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://my-teacher-app.com/api"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://my-teacher-app.com/api"
+      }
     }
   },
   "submit": {

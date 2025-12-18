@@ -1,4 +1,7 @@
+# Environment variables
+.env
+.env.local
 
-# Firebase config files (managed via EAS environment variables)
-google-services.json
-GoogleService-Info.plist
+# Firebase config files (committed for EAS Build)
+# google-services.json (本番用設定はコミット対象)
+# GoogleService-Info.plist (本番用設定はコミット対象)

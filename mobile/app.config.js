@@ -50,7 +50,7 @@ export default {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: "com.myteacherfamco.app",
-      googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json"
+      googleServicesFile: "./google-services.json"
     },
     web: {
       favicon: "./assets/favicon.png"

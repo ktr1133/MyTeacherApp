@@ -243,9 +243,10 @@ mobile/ios/
 mobile/android/
 mobile/coverage/
 
-# Firebase configuration files (DO NOT COMMIT)
+# Firebase configuration files
+# (For EAS Build: committed but excluded from web deployment)
 mobile/GoogleService-Info.plist
-mobile/google-services.json
+# mobile/google-services.json (EAS Build requires this file)
 
 # Firebase Admin SDK credentials (DO NOT COMMIT)
 storage/app/firebase/credentials.json
