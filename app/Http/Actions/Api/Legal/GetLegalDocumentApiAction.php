@@ -4,7 +4,6 @@ namespace App\Http\Actions\Api\Legal;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -35,13 +34,13 @@ class GetLegalDocumentApiAction
                 ], 400);
             }
 
-            $configKey = str_replace('-', '_', $type);
-            $filePath = config("legal.file_paths.{$configKey}");
-
-            if (!$filePath || !File::exists($filePath)) {
-                Log::error('法的文書ファイルが見つかりません', [
+            // Bladeファイルから直接HTMLを取得
+            $viewName = "legal.{$type}";
+            
+            if (!view()->exists($viewName)) {
+                Log::error('法的文書ビューが見つかりません', [
                     'type' => $type,
-                    'path' => $filePath,
+                    'view' => $viewName,
                 ]);
 
                 return response()->json([
@@ -50,7 +49,17 @@ class GetLegalDocumentApiAction
                 ], 404);
             }
 
-            $content = File::get($filePath);
+            // HTMLをレンダリング
+            $html = view($viewName)->render();
+            
+            // HTMLタグを除去してプレーンテキストに変換
+            $content = strip_tags($html);
+            
+            // 連続する空白・改行を整理
+            $content = preg_replace('/\s+/u', ' ', $content);
+            $content = trim($content);
+
+            $configKey = str_replace('-', '_', $type);
             $version = config("legal.current_versions.{$configKey}");
 
             return response()->json([
