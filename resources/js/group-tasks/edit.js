@@ -51,19 +51,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /**
      * 期限フィールドを切り替える
-     * @param {number} span - スパン値（1: 短期, 2: 中期, 3: 長期）
+     * @param {number} span - スパン値（1: 短期, 3: 中期, 6: 長期）
      * @param {Object} containers - 期限コンテナのDOM要素
      * @param {Object} inputs - 期限入力フィールドのDOM要素
      */
     function switchDueDateField(span, containers, inputs) {
-        // すべてのコンテナを非表示にし、入力を無効化
-        Object.values(containers).forEach(container => {
+        // すべてのコンテナから'show'クラスを削除し、入力を無効化
+        Object.keys(containers).forEach(key => {
+            const container = containers[key];
             if (container) {
-                container.style.display = 'none';
+                container.classList.remove('show');
             }
         });
         
-        Object.values(inputs).forEach(input => {
+        Object.keys(inputs).forEach(key => {
+            const input = inputs[key];
             if (input) {
                 input.disabled = true;
             }
@@ -92,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (targetContainer && targetInput) {
-            targetContainer.style.display = 'block';
+            targetContainer.classList.add('show');
             targetInput.disabled = false;
             
             // 値が空の場合のみデフォルト値を設定
