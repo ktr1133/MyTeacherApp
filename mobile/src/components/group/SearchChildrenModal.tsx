@@ -21,7 +21,7 @@
  * ```
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -36,6 +36,7 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useThemedColors } from '../../hooks/useThemedColors';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
@@ -73,15 +74,23 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { user } = useAuth();
   const { theme } = useTheme();
   const { colors, accent } = useThemedColors();
   const { width } = useResponsive();
 
-  const [parentEmail, setParentEmail] = useState('');
+  const [parentEmail, setParentEmail] = useState(user?.email || '');
   const [children, setChildren] = useState<ChildAccount[]>([]);
   const [searching, setSearching] = useState(false);
   const [sendingRequestFor, setSendingRequestFor] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // ユーザー情報更新時にメールアドレスを同期
+  useEffect(() => {
+    if (user?.email) {
+      setParentEmail(user.email);
+    }
+  }, [user?.email]);
 
   /**
    * 未紐付け子アカウント検索

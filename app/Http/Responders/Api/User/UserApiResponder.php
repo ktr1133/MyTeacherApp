@@ -17,8 +17,8 @@ class UserApiResponder
     /**
      * 現在のユーザー情報取得成功レスポンス
      * 
-     * モバイルアプリのテーマシステムで使用する最小限の情報を返却
-     * プロフィール編集APIとは異なり、email, bio等の詳細情報は含まない
+     * モバイルアプリのテーマシステム、設定画面で使用する情報を返却
+     * email, bio等の詳細情報も含む（モバイル設定画面で必要）
      *
      * @param User $user
      * @return JsonResponse
@@ -29,6 +29,7 @@ class UserApiResponder
             'id' => $user->id,
             'username' => $user->username,
             'name' => $user->name,
+            'email' => $user->email,
             'theme' => $user->theme ?? 'adult',
             'group_id' => $user->group_id,
             'group_edit_flg' => (bool) $user->group_edit_flg,

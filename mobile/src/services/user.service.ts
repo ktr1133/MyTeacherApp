@@ -21,6 +21,7 @@ export interface CurrentUserResponse {
     id: number;
     username: string;
     name: string;
+    email: string;
     theme: 'adult' | 'child';
     group_id: number | null;
     group_edit_flg: boolean;
