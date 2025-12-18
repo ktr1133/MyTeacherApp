@@ -722,6 +722,11 @@
                         </svg>
                         <span class="text-lg font-bold gradient-text">MyTeacher</span>
                     </div>
+                    <div class="flex items-center gap-4 text-sm">
+                        <a href="{{ route('terms-of-service') }}" class="hover:text-[#59B9C6] transition">利用規約</a>
+                        <span>|</span>
+                        <a href="{{ route('privacy-policy') }}" class="hover:text-[#59B9C6] transition">プライバシーポリシー</a>
+                    </div>
                     <p>&copy; {{ date('Y') }} MyTeacher. All rights reserved.</p>
                     <p class="text-sm">Powered by OpenAI GPT-4o-mini & Stable Diffusion</p>
                 </div>

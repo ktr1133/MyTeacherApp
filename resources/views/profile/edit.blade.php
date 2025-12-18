@@ -239,6 +239,95 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- 法的情報 --}}
+                    <div class="bento-card rounded-2xl shadow-lg overflow-hidden task-card-enter" style="animation-delay: 0.45s;">
+                        <div class="px-6 py-4 border-b border-gray-500/20 dark:border-gray-500/30 bg-gradient-to-r from-gray-500/5 to-slate-50/50 dark:from-gray-500/10 dark:to-slate-900/10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-600 to-slate-600 flex items-center justify-center shadow">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <h2 class="text-sm font-bold bg-gradient-to-r from-gray-600 to-slate-600 bg-clip-text text-transparent">
+                                    @if (!$isChildTheme)
+                                        法的情報
+                                    @else
+                                        おやくそく
+                                    @endif
+                                </h2>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="max-w-xl">
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                    @if (!$isChildTheme)
+                                        サービスのご利用にあたり、以下の規約をご確認ください。
+                                    @else
+                                        サービスをつかうときの、おやくそくをよんでね。
+                                    @endif
+                                </p>
+                                <div class="space-y-3">
+                                    <a href="{{ route('privacy-policy') }}" 
+                                       target="_blank"
+                                       class="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all group">
+                                        <div class="flex items-center gap-3">
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-[#59B9C6] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                            </svg>
+                                            <div>
+                                                <p class="font-medium text-gray-900 dark:text-white">
+                                                    @if (!$isChildTheme)
+                                                        プライバシーポリシー
+                                                    @else
+                                                        プライバシーについて
+                                                    @endif
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    @if (!$isChildTheme)
+                                                        個人情報の取り扱いについて
+                                                    @else
+                                                        じぶんのじょうほうについて
+                                                    @endif
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <svg class="w-5 h-5 text-gray-400 group-hover:text-[#59B9C6] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                        </svg>
+                                    </a>
+                                    <a href="{{ route('terms-of-service') }}" 
+                                       target="_blank"
+                                       class="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-[#59B9C6] dark:hover:border-[#59B9C6] hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all group">
+                                        <div class="flex items-center gap-3">
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-[#59B9C6] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            <div>
+                                                <p class="font-medium text-gray-900 dark:text-white">
+                                                    @if (!$isChildTheme)
+                                                        利用規約
+                                                    @else
+                                                        つかうときのおやくそく
+                                                    @endif
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    @if (!$isChildTheme)
+                                                        サービス利用条件について
+                                                    @else
+                                                        サービスのつかいかた
+                                                    @endif
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <svg class="w-5 h-5 text-gray-400 group-hover:text-[#59B9C6] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>

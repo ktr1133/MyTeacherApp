@@ -229,8 +229,8 @@
                         <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                             <li><a href="{{ route('portal.contact') }}" class="hover:text-[#59B9C6] transition">お問い合わせ</a></li>
                             <li><a href="{{ route('portal.maintenance') }}" class="hover:text-[#59B9C6] transition">メンテナンス情報</a></li>
-                            <li><a href="#" class="hover:text-[#59B9C6] transition">利用規約</a></li>
-                            <li><a href="#" class="hover:text-[#59B9C6] transition">プライバシーポリシー</a></li>
+                            <li><a href="{{ route('terms-of-service') }}" class="hover:text-[#59B9C6] transition">利用規約</a></li>
+                            <li><a href="{{ route('privacy-policy') }}" class="hover:text-[#59B9C6] transition">プライバシーポリシー</a></li>
                         </ul>
                     </div>
 

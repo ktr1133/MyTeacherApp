@@ -10,6 +10,11 @@ export const API_CONFIG = {
   TIMEOUT: 10000,
 } as const;
 
+// WebアプリURL（APIのベースURLから'/api'を除去して生成）
+// 本番環境: https://my-teacher-app.com
+// 開発環境: EXPO_PUBLIC_API_URLが設定されている場合はそれを使用、未設定ならngrok URL
+export const WEB_APP_URL = API_CONFIG.BASE_URL.replace('/api', '');
+
 // ストレージキー
 export const STORAGE_KEYS = {
   JWT_TOKEN: 'jwt_token',
