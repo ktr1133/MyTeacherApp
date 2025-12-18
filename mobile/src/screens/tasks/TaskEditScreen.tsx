@@ -155,25 +155,20 @@ export default function TaskEditScreen() {
       if (foundTask.due_date) {
         setDueDate(foundTask.due_date);
         
+        // due_dateがdatetime形式かどうかをチェック
+        const dateObj = new Date(foundTask.due_date);
+        const isValidDate = !isNaN(dateObj.getTime());
+        
         // span別に初期値を設定
-        if (foundTask.span === 1) {
+        if (foundTask.span === 1 && isValidDate) {
           // 短期: YYYY-MM-DD形式をDateオブジェクトに変換
-          try {
-            const date = new Date(foundTask.due_date);
-            setSelectedDate(date);
-          } catch (e) {
-            console.error('日付パースエラー:', e);
-          }
-        } else if (foundTask.span === 2) {
+          setSelectedDate(dateObj);
+        } else if (foundTask.span === 2 && isValidDate) {
           // 中期: YYYY-MM-DDから年を抽出
-          try {
-            const year = new Date(foundTask.due_date).getFullYear().toString();
-            setSelectedYear(year);
-          } catch (e) {
-            console.error('年パースエラー:', e);
-          }
+          const year = dateObj.getFullYear().toString();
+          setSelectedYear(year);
         }
-        // 長期: そのまま文字列として扱う
+        // 長期または非datetime形式: そのまま文字列として扱う
       }
     } catch (error) {
       console.error('[TaskEditScreen] タスク取得エラー:', error);

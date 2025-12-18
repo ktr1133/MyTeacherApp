@@ -127,21 +127,32 @@ export default function GroupTaskEditScreen() {
       let preparedSelectedYear = new Date().getFullYear().toString();
       
       if (task.due_date) {
+        // due_dateがdatetime形式かどうかをチェック
         const dateObj = new Date(task.due_date);
-        if (uiSpan === 1) {
-          // 短期: YYYY-MM-DD形式
-          const year = dateObj.getFullYear();
-          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-          const day = String(dateObj.getDate()).padStart(2, '0');
-          preparedDueDate = `${year}-${month}-${day}`;
-          preparedSelectedDate = dateObj;
-        } else if (uiSpan === 2) {
-          // 中期: YYYY年形式
-          const year = dateObj.getFullYear().toString();
-          preparedDueDate = `${year}年`;
-          preparedSelectedYear = year;
+        const isValidDate = !isNaN(dateObj.getTime());
+        
+        if (isValidDate) {
+          if (uiSpan === 1) {
+            // 短期: YYYY-MM-DD形式
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            preparedDueDate = `${year}-${month}-${day}`;
+            preparedSelectedDate = dateObj;
+          } else if (uiSpan === 2) {
+            // 中期: YYYY年形式
+            const year = dateObj.getFullYear().toString();
+            preparedDueDate = `${year}年`;
+            preparedSelectedYear = year;
+          } else {
+            // 長期（datetime形式の場合）: YYYY-MM-DD形式で表示
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            preparedDueDate = `${year}-${month}-${day}`;
+          }
         } else {
-          // 長期: そのまま
+          // 日本語テキスト等の非datetime形式: そのまま表示
           preparedDueDate = task.due_date;
         }
       }

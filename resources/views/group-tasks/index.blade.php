@@ -135,23 +135,34 @@
                                         {{-- 期限 --}}
                                         @if(!empty($groupTask['due_date']))
                                             @php
-                                                $dueDate = \Carbon\Carbon::parse($groupTask['due_date']);
-                                                $isOverdue = $dueDate->isPast();
-                                                $isToday = $dueDate->isToday();
-                                                $isTomorrow = $dueDate->isTomorrow();
+                                                // due_dateがdatetime形式かどうかをチェック
+                                                try {
+                                                    $dueDate = \Carbon\Carbon::parse($groupTask['due_date']);
+                                                    $isOverdue = $dueDate->isPast();
+                                                    $isToday = $dueDate->isToday();
+                                                    $isTomorrow = $dueDate->isTomorrow();
+                                                    $isValidDate = true;
+                                                } catch (\Exception $e) {
+                                                    // パース失敗時は日本語テキストとして扱う
+                                                    $isValidDate = false;
+                                                }
                                             @endphp
-                                            <div class="flex items-center gap-2 text-sm {{ $isOverdue ? 'text-red-600 dark:text-red-400' : ($isToday ? 'text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-400') }}">
+                                            <div class="flex items-center gap-2 text-sm {{ $isValidDate && $isOverdue ? 'text-red-600 dark:text-red-400' : ($isValidDate && $isToday ? 'text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-400') }}">
                                                 <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                                                 </svg>
                                                 <span class="font-medium">
-                                                    {{ $dueDate->format('Y/m/d') }}
-                                                    @if($isOverdue)
-                                                        (期限切れ)
-                                                    @elseif($isToday)
-                                                        (今日)
-                                                    @elseif($isTomorrow)
-                                                        (明日)
+                                                    @if($isValidDate)
+                                                        {{ $dueDate->format('Y/m/d') }}
+                                                        @if($isOverdue)
+                                                            (期限切れ)
+                                                        @elseif($isToday)
+                                                            (今日)
+                                                        @elseif($isTomorrow)
+                                                            (明日)
+                                                        @endif
+                                                    @else
+                                                        {{ $groupTask['due_date'] }}
                                                     @endif
                                                 </span>
                                             </div>
