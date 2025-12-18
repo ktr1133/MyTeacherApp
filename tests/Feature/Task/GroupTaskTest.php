@@ -113,7 +113,7 @@ describe('グループタスク登録機能', function () {
         $response1 = $this->actingAs($this->master)->post(route('tasks.store'), [
             'title' => 'グループタスク：資料作成',
             'description' => '発表資料を作成',
-            'span' => 2,
+            'span' => 3, // 中期（config/const.phpに合わせて修正）
             'priority' => 4,
             'is_group_task' => true,
             'assigned_user_id' => $this->normalMember->id,
@@ -136,7 +136,7 @@ describe('グループタスク登録機能', function () {
         $response2 = $this->actingAs($this->master)->post(route('tasks.store'), [
             'title' => 'グループタスク：資料作成',
             'description' => '発表資料を作成',
-            'span' => 2,
+            'span' => 3, // 中期（config/const.phpに合わせて修正）
             'priority' => 4,
             'is_group_task' => true,
             'assigned_user_id' => $member2->id,
@@ -227,7 +227,7 @@ describe('グループタスク登録機能', function () {
         // 実行
         $response = $this->actingAs($this->master)->post(route('tasks.store'), [
             'title' => '報酬500円タスク',
-            'span' => 3,
+            'span' => 6, // 長期（任意文字列のdue_dateを使用）
             'due_date' => '1ヶ月後',
             'is_group_task' => true,
             'assigned_user_id' => $this->normalMember->id,

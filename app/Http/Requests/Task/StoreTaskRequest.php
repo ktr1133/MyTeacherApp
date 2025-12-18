@@ -26,7 +26,7 @@ class StoreTaskRequest extends FormRequest
         $rules = [
             'title'       => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'span'        => ['required', 'integer', 'in:1,2,3'],
+            'span'        => ['required', 'integer', 'in:1,3,6'], // config/const.phpに合わせて修正
             'due_date'    => ['nullable', 'string'],
             'priority'    => ['nullable', 'integer', 'between:1,5'],
             'tags'        => ['nullable', 'array'],

@@ -337,7 +337,7 @@ describe('AdoptProposalAction - 提案採用', function () {
             'proposal_id' => $proposal->id,
             'tasks' => [
                 ['title' => '採用タスク1', 'span' => 1, 'priority' => 2],
-                ['title' => '採用タスク2', 'span' => 2, 'priority' => 3],
+                ['title' => '採用タスク2', 'span' => 3, 'priority' => 3], // 中期（config/const.phpに合わせて修正）
                 ['title' => '採用タスク3', 'span' => 1, 'priority' => 1],
             ],
         ]);
@@ -357,7 +357,7 @@ describe('AdoptProposalAction - 提案採用', function () {
         $this->assertDatabaseHas('tasks', [
             'user_id' => $user->id,
             'title' => '採用タスク2',
-            'span' => 2,
+            'span' => 3, // 中期（config/const.phpに合わせて修正）
         ]);
         $this->assertDatabaseHas('tasks', [
             'user_id' => $user->id,
@@ -426,7 +426,7 @@ describe('AdoptProposalAction - 提案採用', function () {
             'tasks' => [
                 [
                     'title' => '長期タスク',
-                    'span' => 3, // 長期
+                    'span' => 6, // 長期（任意文字列のdue_dateを使用）
                     'due_date' => '2年後',
                 ],
             ],

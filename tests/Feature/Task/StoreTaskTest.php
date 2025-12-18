@@ -74,7 +74,7 @@ it('通常タスクを新規登録できる（全項目指定）', function () {
     $data = [
         'title' => 'テストタスク（全項目）',
         'description' => 'これはテスト説明です。詳細な内容を記載します。',
-        'span' => config('const.task_spans.mid'), // 2: 中期
+        'span' => config('const.task_spans.mid'), // 3: 中期
         'due_date' => $dueDate,
         'priority' => 4,
         'tags' => ['重要', '急ぎ'],
@@ -92,7 +92,7 @@ it('通常タスクを新規登録できる（全項目指定）', function () {
         'title' => 'テストタスク（全項目）',
         'user_id' => $this->user->id,
         'description' => 'これはテスト説明です。詳細な内容を記載します。',
-        'span' => 2,
+        'span' => 3,
         'priority' => 4,
     ]);
 
@@ -136,7 +136,7 @@ it('新規タグを指定してタスク登録できる', function () {
     // Arrange
     $data = [
         'title' => '新規タグ付きタスク',
-        'span' => 2,
+        'span' => 3, // 中期（config/const.phpに合わせて修正）
         'tags' => ['新規タグ1', '新規タグ2', '新規タグ3'],
     ];
 

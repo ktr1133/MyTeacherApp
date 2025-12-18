@@ -29,7 +29,7 @@ final class AdoptProposalAction
             'proposal_id' => 'required|integer|exists:task_proposals,id',
             'tasks' => 'required|array|min:1',
             'tasks.*.title' => 'required|string|max:255',
-            'tasks.*.span' => 'required|integer|in:1,2,3',
+            'tasks.*.span' => 'required|integer|in:1,3,6', // config/const.phpに合わせて修正
             'tasks.*.priority' => 'nullable|integer|min:1|max:3',
             'tasks.*.tags'  => 'nullable|array',
             'tasks.*.due_date'  => 'nullable|string',

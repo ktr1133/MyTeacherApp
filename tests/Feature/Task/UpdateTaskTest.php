@@ -134,7 +134,7 @@ describe('タスク更新機能', function () {
         $response = $this->actingAs($this->user)->put(route('tasks.update', $task), [
             'title' => '完全に更新されたタイトル',
             'description' => '完全に更新された説明',
-            'span' => 3,
+            'span' => 6,
             'due_date' => '来年の春頃',
             'tags' => [],
         ]);
@@ -144,7 +144,7 @@ describe('タスク更新機能', function () {
         $task->refresh();
         expect($task->title)->toBe('完全に更新されたタイトル')
             ->and($task->description)->toBe('完全に更新された説明')
-            ->and($task->span)->toBe(3);
+            ->and($task->span)->toBe(6);
     });
     
     // ========================================

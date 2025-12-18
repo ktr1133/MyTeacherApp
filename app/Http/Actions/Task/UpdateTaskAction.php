@@ -50,7 +50,7 @@ class UpdateTaskAction
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'span' => 'required|integer|in:1,2,3',
+            'span' => 'required|integer|in:1,3,6', // config/const.phpに合わせて修正
             'due_date' => 'nullable|string|max:255',
             'tags' => 'nullable|array',
             'tags.*' => 'integer|exists:tags,id',
