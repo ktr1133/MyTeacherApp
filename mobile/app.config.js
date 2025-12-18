@@ -50,7 +50,22 @@ export default {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: "com.myteacherfamco.app",
-      googleServicesFile: "./google-services.json"
+      googleServicesFile: "./google-services.json",
+      permissions: [],
+      intentFilters: [
+        {
+          action: "VIEW",
+          data: {
+            scheme: "https",
+            host: "my-teacher-app.com"
+          },
+          category: ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    extra: {
+      privacyPolicyUrl: "https://my-teacher-app.com/privacy-policy",
+      termsOfServiceUrl: "https://my-teacher-app.com/terms-of-service"
     },
     web: {
       favicon: "./assets/favicon.png"
@@ -69,7 +84,8 @@ export default {
             ]
           }
         }
-      ]
+      ],
+      "./plugins/withAndroidPrivacyPolicy"
     ]
   }
 };
