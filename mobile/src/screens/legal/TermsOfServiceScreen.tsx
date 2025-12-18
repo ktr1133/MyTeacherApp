@@ -2,7 +2,8 @@
  * TermsOfServiceScreen - 利用規約表示画面
  * 
  * 機能:
- * - Web版利用規約をWebViewで表示
+ * - Laravel APIから利用規約テキストを取得
+ * - ScrollView内にMarkdown形式で表示
  * - カスタムヘッダー（戻るボタン、タイトル）
  * - ローディングインジケーター
  * - エラーハンドリング
@@ -14,7 +15,7 @@
  * - DarkModeSupport.md: ダークモード実装ガイドライン
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -23,22 +24,16 @@ import {
   StyleSheet,
   StatusBar,
   Platform,
+  ScrollView,
+  Alert,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useResponsive, getSpacing, getBorderRadius } from '../../utils/responsive';
+import { useResponsive, getSpacing, getBorderRadius, getFontSize } from '../../utils/responsive';
 import { useThemedColors } from '../../hooks/useThemedColors';
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { Ionicons } from '@expo/vector-icons';
-import { WEB_APP_URL } from '../../utils/constants';
-
-/**
- * 利用規約画面URL
- * WEB_APP_URLはAPI_CONFIG.BASE_URLから自動生成されます
- * 本番環境: https://my-teacher-app.com/terms-of-service
- * 開発環境: EXPO_PUBLIC_API_URLの設定に依存
- */
-const TERMS_OF_SERVICE_URL = `${WEB_APP_URL}/terms-of-service`;
+import legalService from '../../services/legal.service';
 
 /**
  * TermsOfServiceScreen コンポーネント
@@ -49,25 +44,38 @@ export const TermsOfServiceScreen: React.FC = () => {
   const isChildTheme = useChildTheme();
   const themeType = isChildTheme ? 'child' : 'adult';
   const { colors, accent } = useThemedColors();
-  const styles = useMemo(() => createStyles(width, colors, accent), [width, colors, accent]);
+  const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [content, setContent] = useState('');
 
   /**
-   * WebViewロード完了ハンドラー
+   * 利用規約を取得
    */
-  const handleLoadEnd = () => {
-    setLoading(false);
-  };
+  useEffect(() => {
+    const fetchTerms = async () => {
+      try {
+        setLoading(true);
+        setError(false);
+        const data = await legalService.getTermsOfService();
+        setContent(data.content);
+      } catch (err) {
+        console.error('[TermsOfServiceScreen] Failed to fetch terms:', err);
+        setError(true);
+        Alert.alert(
+          themeType === 'child' ? 'エラー' : 'エラー',
+          themeType === 'child' 
+            ? 'おやくそくを よみこめなかったよ'
+            : '利用規約の読み込みに失敗しました'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  /**
-   * WebViewエラーハンドラー
-   */
-  const handleError = () => {
-    setLoading(false);
-    setError(true);
-  };
+    fetchTerms();
+  }, [themeType]);
 
   /**
    * 戻るボタンハンドラー
@@ -79,13 +87,22 @@ export const TermsOfServiceScreen: React.FC = () => {
   /**
    * 再読み込みハンドラー
    */
-  const handleReload = () => {
-    setError(false);
-    setLoading(true);
+  const handleReload = async () => {
+    try {
+      setLoading(true);
+      setError(false);
+      const data = await legalService.getTermsOfService();
+      setContent(data.content);
+    } catch (err) {
+      console.error('[TermsOfServiceScreen] Failed to reload terms:', err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar
         barStyle={themeType === 'child' ? 'light-content' : colors.background === '#000000' ? 'light-content' : 'dark-content'}
         backgroundColor={colors.background}
@@ -125,28 +142,16 @@ export const TermsOfServiceScreen: React.FC = () => {
         </View>
       )}
 
-      {/* WebView */}
-      {!error && (
-        <WebView
-          source={{ uri: TERMS_OF_SERVICE_URL }}
-          style={styles.webview}
-          onLoadEnd={handleLoadEnd}
-          onError={handleError}
-          startInLoadingState={true}
-          renderLoading={() => (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={accent.primary} />
-            </View>
-          )}
-          // ダークモード対応: コンテンツのテーマを同期
-          injectedJavaScript={`
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-              document.documentElement.classList.add('dark');
-            }
-          `}
-        />
+      {/* コンテンツ表示 */}
+      {!loading && !error && (
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.contentContainer}
+        >
+          <Text style={styles.contentText}>{content}</Text>
+        </ScrollView>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -155,6 +160,7 @@ export const TermsOfServiceScreen: React.FC = () => {
  */
 const createStyles = (
   width: number,
+  themeType: 'adult' | 'child',
   colors: ReturnType<typeof useThemedColors>['colors'],
   accent: ReturnType<typeof useThemedColors>['accent']
 ) => {
@@ -202,9 +208,16 @@ const createStyles = (
     headerRight: {
       width: 44,
     },
-    webview: {
+    scrollView: {
       flex: 1,
-      backgroundColor: colors.background,
+    },
+    contentContainer: {
+      padding: getSpacing(16, width),
+    },
+    contentText: {
+      fontSize: getFontSize(14, width, themeType),
+      color: colors.text.primary,
+      lineHeight: getFontSize(22, width, themeType),
     },
     loadingContainer: {
       position: 'absolute',

@@ -22,6 +22,18 @@ import type {
 } from '../types/legal.types';
 
 /**
+ * 法的文書レスポンス型
+ */
+export interface LegalDocumentResponse {
+  success: boolean;
+  data: {
+    type: 'privacy-policy' | 'terms-of-service';
+    content: string;
+    version: string;
+  };
+}
+
+/**
  * LegalService クラス
  */
 class LegalService {
@@ -70,9 +82,38 @@ class LegalService {
     const response = await api.post<SelfConsentResponse>('/self-consent', data);
     return response.data;
   }
+
+  /**
+   * プライバシーポリシーを取得
+   * 
+   * @returns プライバシーポリシーのテキスト
+   * @throws {Error} API呼び出しエラー
+   */
+  async getPrivacyPolicy(): Promise<LegalDocumentResponse['data']> {
+    const response = await api.get<LegalDocumentResponse>('/legal/privacy-policy');
+    return response.data.data;
+  }
+
+  /**
+   * 利用規約を取得
+   * 
+   * @returns 利用規約のテキスト
+   * @throws {Error} API呼び出しエラー
+   */
+  async getTermsOfService(): Promise<LegalDocumentResponse['data']> {
+    const response = await api.get<LegalDocumentResponse>('/legal/terms-of-service');
+    return response.data.data;
+  }
 }
 
 export default new LegalService();
 
 // Named exports for convenience
-export const { getConsentStatus, submitReconsent, getSelfConsentStatus, submitSelfConsent } = new LegalService();
+export const { 
+  getConsentStatus, 
+  submitReconsent, 
+  getSelfConsentStatus, 
+  submitSelfConsent,
+  getPrivacyPolicy,
+  getTermsOfService,
+} = new LegalService();
