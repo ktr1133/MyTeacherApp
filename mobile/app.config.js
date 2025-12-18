@@ -1,11 +1,11 @@
 export default {
   expo: {
-    name: "mobile",
+    name: "MyTeacher",
     slug: "mobile",
     version: "1.0.0",
     orientation: "default",
     icon: "./assets/icon.png",
-    userInterfaceStyle: "light",
+    userInterfaceStyle: "automatic",
     newArchEnabled: true,
     extra: {
       eas: {
@@ -23,25 +23,38 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.myteacherfamco.app",
       googleServicesFile: process.env.GOOGLE_SERVICES_IOS ?? "./GoogleService-Info.plist",
+      buildNumber: "1",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         UIBackgroundModes: ["remote-notification"],
         // App Transport Security (ATS)設定
-        // 開発環境でのStripe Checkout接続問題を解決するため、一時的に全て許可
-        // 本番環境では個別ドメイン設定に戻すことを推奨
-        NSAppTransportSecurity: {
-          NSAllowsArbitraryLoads: true, // 一時的に全HTTPSドメインを許可（開発環境のみ）
-          NSExceptionDomains: {
-            // localhost除外設定（必要に応じて）
-            "localhost": {
-              NSExceptionAllowsInsecureHTTPLoads: true,
-              NSExceptionRequiresForwardSecrecy: false,
-            },
-          },
-        },
+        // 本番環境: 個別ドメイン設定推奨
+        // 開発環境: 一時的に全許可（Stripe Checkout接続問題対応）
+        NSAppTransportSecurity: process.env.EAS_BUILD_PROFILE === "production" 
+          ? {
+              NSExceptionDomains: {
+                "my-teacher-app.com": {
+                  NSExceptionRequiresForwardSecrecy: false,
+                  NSIncludesSubdomains: true
+                },
+                "stripe.com": {
+                  NSExceptionRequiresForwardSecrecy: false,
+                  NSIncludesSubdomains: true
+                }
+              }
+            }
+          : {
+              NSAllowsArbitraryLoads: true, // 開発環境のみ
+              NSExceptionDomains: {
+                "localhost": {
+                  NSExceptionAllowsInsecureHTTPLoads: true,
+                  NSExceptionRequiresForwardSecrecy: false,
+                }
+              }
+            }
       },
       entitlements: {
-        "aps-environment": "development"
+        "aps-environment": process.env.EAS_BUILD_PROFILE === "production" ? "production" : "development"
       }
     },
     android: {
@@ -52,6 +65,7 @@ export default {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: "com.myteacherfamco.app",
+      versionCode: 1,
       googleServicesFile: "./google-services.json",
       permissions: [],
       intentFilters: [
