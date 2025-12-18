@@ -85,12 +85,17 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
   const [sendingRequestFor, setSendingRequestFor] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // ユーザー情報更新時にメールアドレスを同期
+  // モーダルが開かれた時とユーザー情報更新時にメールアドレスを同期
   useEffect(() => {
-    if (user?.email) {
+    console.log('[SearchChildrenModal] visible:', visible);
+    console.log('[SearchChildrenModal] user:', JSON.stringify(user, null, 2));
+    console.log('[SearchChildrenModal] user.email:', user?.email);
+    
+    if (visible && user?.email) {
+      console.log('[SearchChildrenModal] Setting parentEmail to:', user.email);
       setParentEmail(user.email);
     }
-  }, [user?.email]);
+  }, [visible, user?.email]);
 
   /**
    * 未紐付け子アカウント検索
@@ -180,7 +185,7 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
    * モーダルを閉じる
    */
   const handleClose = () => {
-    setParentEmail('');
+    // 検索結果とエラーのみクリア（親メールアドレスは保持）
     setChildren([]);
     setError(null);
     onClose();
