@@ -954,6 +954,141 @@ docs/reports/YYYY-MM-DD-タイトル-report.md
 
 ---
 
+## モバイルアプリ開発規約（重要）
+
+### EAS Build（Expo Application Services）
+
+**原則**: モバイルアプリのビルドはEAS Buildを使用し、ローカルビルドは行わない。
+
+#### ビルドプロファイル
+
+```json
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://ngrok-url.ngrok-free.dev/api"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://my-teacher-app.com/api"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://my-teacher-app.com/api"
+      }
+    }
+  }
+}
+```
+
+#### ビルドコマンド
+
+```bash
+# プレビュービルド（内部テスト用）- 推奨
+eas build --profile preview --platform android
+eas build --profile preview --platform ios
+
+# プロダクションビルド
+eas build --profile production --platform android
+eas build --profile production --platform ios
+```
+
+### Firebase設定ファイル管理
+
+**重要**: `google-services.json` (Android) と `GoogleService-Info.plist` (iOS) は、EAS Buildで必要なためGitリポジトリにコミットします。
+
+**セキュリティ考慮事項**:
+- Firebase API keyは「制限付きキー」で、Androidパッケージ名（`com.myteacherfamco.app`）/iOSバンドルID（`com.myteacherfamco.app`）による制限が適用されています
+- 第三者がキーを取得しても、指定されたパッケージ名以外では使用できません
+- ただし、サーバーキー（Firebase Admin SDK）は**絶対にコミットしない**
+
+**.gitignore設定**:
+```gitignore
+# Firebase configuration files
+# (For EAS Build: committed but excluded from web deployment)
+mobile/GoogleService-Info.plist
+# mobile/google-services.json (EAS Build requires this file)
+
+# Firebase Admin SDK credentials (DO NOT COMMIT)
+storage/app/firebase/credentials.json
+storage/app/firebase/*.json
+!storage/app/firebase/.gitkeep
+```
+
+### レスポンシブデザイン規約
+
+**参照ドキュメント**: `/home/ktr/mtdev/definitions/mobile/ResponsiveDesignGuideline.md`
+
+**必須事項**:
+1. **SafeAreaView使用**: すべての画面で使用（ノッチ対応）
+2. **useThemedColors()使用**: ダークモード対応（ハードコード色禁止）
+3. **Dimensions API使用**: 画面サイズに応じた動的レイアウト
+4. **ScrollView設定**: `flex: 1` + `contentContainerStyle`で適切なパディング
+5. **最小タッチサイズ**: 44×44pt以上を確保
+
+**実装例**:
+```typescript
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemedColors } from '@/hooks/useThemedColors';
+import { Dimensions, ScrollView } from 'react-native';
+
+const Screen = () => {
+  const colors = useThemedColors();
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 768;
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          padding: isTablet ? 32 : 16,
+        }}
+      >
+        {/* コンテンツ */}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+```
+
+### 環境変数管理
+
+**API URL**: `process.env.EXPO_PUBLIC_API_URL` を使用（ハードコード禁止）
+
+```typescript
+// ✅ OK: 環境変数を使用
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+const response = await fetch(`${API_URL}/tasks`);
+
+// ❌ NG: ハードコードされたURL
+const response = await fetch('https://my-teacher-app.com/api/tasks');
+```
+
+### 禁止事項
+
+- ❌ **Alpine.js**: iPad互換性問題があるため、モバイルアプリでは使用禁止
+- ❌ **ハードコードされた色**: `useThemedColors()`を必ず使用
+- ❌ **ハードコードされたURL**: 環境変数を必ず使用
+- ❌ **SafeAreaView未使用**: ノッチ対応のため必須
+- ❌ **AsyncStorageへのセンシティブ情報保存**: SecureStoreを使用
+
+### 参考ドキュメント
+
+- **開発規約**: `/home/ktr/mtdev/docs/mobile/mobile-rules.md`
+- **ダークモード**: `/home/ktr/mtdev/definitions/mobile/DarkModeSupport.md`
+- **レスポンシブ**: `/home/ktr/mtdev/definitions/mobile/ResponsiveDesignGuideline.md`
+- **テスト**: `/home/ktr/mtdev/mobile/TESTING.md`
+
+---
+
 ## コミュニケーションスタイル
 
 - 要件が不明確な場合は推測せず質問する

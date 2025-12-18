@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-18 | GitHub Copilot | プライバシーポリシー・利用規約実装での実践知見を追記（ScrollView, SafeAreaView） |
 | 2025-12-09 | GitHub Copilot | 初版作成: Dimensions APIを使用したレスポンシブ設計の詳細仕様 |
 
 ---

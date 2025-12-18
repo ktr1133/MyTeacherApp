@@ -30,11 +30,15 @@ import { useResponsive, getSpacing, getBorderRadius } from '../../utils/responsi
 import { useThemedColors } from '../../hooks/useThemedColors';
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { Ionicons } from '@expo/vector-icons';
+import { WEB_APP_URL } from '../../utils/constants';
 
 /**
- * 利用規約画面URL（本番環境）
+ * 利用規約画面URL
+ * WEB_APP_URLはAPI_CONFIG.BASE_URLから自動生成されます
+ * 本番環境: https://my-teacher-app.com/terms-of-service
+ * 開発環境: EXPO_PUBLIC_API_URLの設定に依存
  */
-const TERMS_OF_SERVICE_URL = 'https://my-teacher-app.com/terms-of-service';
+const TERMS_OF_SERVICE_URL = `${WEB_APP_URL}/terms-of-service`;
 
 /**
  * TermsOfServiceScreen コンポーネント

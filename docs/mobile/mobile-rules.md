@@ -4,6 +4,7 @@
 
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
+| 2025-12-18 | GitHub Copilot | EAS Build設定とFirebase設定ファイル管理方針を追記（google-services.jsonコミット対応） |
 | 2025-12-12 | GitHub Copilot | ポータル実装レポート保管先を追加: `/home/ktr/mtdev/docs/reports/portal/` |
 | 2025-12-09 | GitHub Copilot | レスポンシブ設計方針を全面刷新: Dimensions API積極使用、Android/iOS/タブレット対応 |
 | 2025-12-09 | GitHub Copilot | 画面デザイン方針の詳細化、Tailwind CSS変換規則追加 |
