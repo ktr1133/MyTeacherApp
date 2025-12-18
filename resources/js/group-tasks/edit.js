@@ -79,12 +79,12 @@ document.addEventListener('DOMContentLoaded', function() {
             targetContainer = containers.short;
             targetInput = inputs.short;
             defaultValue = new Date().toISOString().split('T')[0];
-        } else if (span === 2) {
+        } else if (span === 3) {
             // 中期: 年選択
             targetContainer = containers.mid;
             targetInput = inputs.mid;
             defaultValue = new Date().getFullYear().toString();
-        } else if (span === 3) {
+        } else if (span === 6) {
             // 長期: テキスト入力
             targetContainer = containers.long;
             targetInput = inputs.long;

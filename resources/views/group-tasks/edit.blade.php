@@ -136,7 +136,7 @@
 
                                     @php
                                         // 既存データからspanと期限を判定
-                                        $currentSpan = old('span', $groupTask['span'] ?? 2);
+                                        $currentSpan = old('span', $groupTask['span'] ?? 3);
                                         $dueDate = old('due_date', $groupTask['due_date'] ?? '');
                                         
                                         // 各フィールドの初期値
