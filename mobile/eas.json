@@ -15,7 +15,7 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://my-teacher-app.com/api"
+        "EXPO_PUBLIC_API_URL": "https://fizzy-formless-sandi.ngrok-free.dev/api"
       }
     },
     "production": {
