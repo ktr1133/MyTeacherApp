@@ -120,7 +120,8 @@ export const TermsOfServiceScreen: React.FC = () => {
   const handleSectionPress = (sectionId: string) => {
     const offset = sectionRefs.current[sectionId];
     if (offset !== undefined) {
-      scrollViewRef.current?.scrollTo({ y: offset - 100, animated: true });
+      // ヘッダー高さ（約80px）+ SafeArea + 余白を考慮して200px引く
+      scrollViewRef.current?.scrollTo({ y: Math.max(0, offset - 200), animated: true });
     } else {
       console.warn('[TermsOfServiceScreen] Section not found:', sectionId);
     }
@@ -224,17 +225,23 @@ export const TermsOfServiceScreen: React.FC = () => {
       // テーブル配下のすべてのtr要素を抽出
       const rows: any[] = [];
       
-      const extractRows = (node: any) => {
+      const extractRows = (node: any, depth: number = 0) => {
         if (!node) return;
         if (node.type === 'tag' && node.name === 'tr') {
           rows.push(node);
         }
         if (node.children) {
-          node.children.forEach((child: any) => extractRows(child));
+          node.children.forEach((child: any) => extractRows(child, depth + 1));
         }
       };
       
       extractRows(tnode);
+      
+      // デバッグ: テーブル情報をログ出力
+      console.log('[TermsOfServiceScreen] Table renderer called, rows found:', rows.length);
+      if (rows.length === 0) {
+        console.warn('[TermsOfServiceScreen] No rows found in table', tnode);
+      }
       
       // テキスト抽出ヘルパー
       const getTextContent = (node: any): string => {
@@ -245,6 +252,17 @@ export const TermsOfServiceScreen: React.FC = () => {
         }
         return '';
       };
+      
+      // rowsが見つからない場合はフォールバック（テーブルを表示しない）
+      if (rows.length === 0) {
+        return (
+          <View style={{ marginBottom: getSpacing(16, width) }}>
+            <Text style={{ color: colors.text.secondary, fontSize: getFontSize(12, width, themeType) }}>
+              （テーブルデータなし）
+            </Text>
+          </View>
+        );
+      }
       
       return (
         <ScrollView
