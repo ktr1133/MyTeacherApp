@@ -669,14 +669,7 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
 
             <TouchableOpacity
               style={styles.linkButton}
-              onPress={() => {
-                Alert.alert(
-                  theme === 'child' ? 'リンク' : 'リンク',
-                  theme === 'child'
-                    ? 'ブラウザでひらくよ'
-                    : 'プライバシーポリシーを開きます',
-                );
-              }}
+              onPress={() => navigation.navigate('PrivacyPolicy')}
             >
               <Text style={styles.linkButtonText}>
                 {theme === 'child' ? 'プライバシーポリシー' : 'プライバシーポリシー'}
@@ -685,14 +678,7 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
 
             <TouchableOpacity
               style={styles.linkButton}
-              onPress={() => {
-                Alert.alert(
-                  theme === 'child' ? 'リンク' : 'リンク',
-                  theme === 'child'
-                    ? 'ブラウザでひらくよ'
-                    : '利用規約を開きます',
-                );
-              }}
+              onPress={() => navigation.navigate('TermsOfService')}
             >
               <Text style={styles.linkButtonText}>
                 {theme === 'child' ? 'りようきやく' : '利用規約'}
