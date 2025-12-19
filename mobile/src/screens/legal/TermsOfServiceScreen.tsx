@@ -32,7 +32,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import RenderHtml from 'react-native-render-html';
+import RenderHtml, { HTMLElementModel, HTMLContentModel } from 'react-native-render-html';
 import { useResponsive, getSpacing, getBorderRadius, getFontSize } from '../../utils/responsive';
 import { useThemedColors } from '../../hooks/useThemedColors';
 import { useChildTheme } from '../../hooks/useChildTheme';
@@ -529,6 +529,12 @@ export const TermsOfServiceScreen: React.FC = () => {
             tagsStyles={tagsStyles}
             renderers={renderers}
             ignoredDomTags={[]}  // テーブルタグを無視しない
+            customHTMLElementModels={{
+              table: HTMLElementModel.fromCustomModel({
+                tagName: 'table',
+                contentModel: HTMLContentModel.block,
+              }),
+            }}
             enableExperimentalMarginCollapsing={true}
           />
           
