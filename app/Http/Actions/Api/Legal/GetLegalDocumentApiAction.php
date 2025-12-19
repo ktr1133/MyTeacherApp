@@ -52,20 +52,29 @@ class GetLegalDocumentApiAction
             // HTMLをレンダリング
             $html = view($viewName)->render();
             
-            // style/scriptタグとその内容を削除
+            // style/scriptタグとその内容を削除（モバイル用）
             $html = preg_replace('/<style[^>]*>.*?<\/style>/is', '', $html);
             $html = preg_replace('/<script[^>]*>.*?<\/script>/is', '', $html);
             
-            // HTMLタグを除去してプレーンテキストに変換
-            $content = strip_tags($html);
+            // DOCTYPE, html, head, body タグを削除（本文のみ抽出）
+            $html = preg_replace('/<!DOCTYPE[^>]*>/is', '', $html);
+            $html = preg_replace('/<html[^>]*>/is', '', $html);
+            $html = preg_replace('/<\/html>/is', '', $html);
+            $html = preg_replace('/<head[^>]*>.*?<\/head>/is', '', $html);
+            $html = preg_replace('/<body[^>]*>/is', '', $html);
+            $html = preg_replace('/<\/body>/is', '', $html);
             
-            // 連続する空白を1つのスペースに（改行は保持）
-            $content = preg_replace('/[^\S\r\n]+/u', ' ', $content);
+            // header/footerタグを削除（ナビゲーション不要）
+            $html = preg_replace('/<header[^>]*>.*?<\/header>/is', '', $html);
+            $html = preg_replace('/<footer[^>]*>.*?<\/footer>/is', '', $html);
             
-            // 3つ以上の連続改行を2つに
-            $content = preg_replace('/\n{3,}/u', "\n\n", $content);
+            // main タグの中身のみ抽出
+            if (preg_match('/<main[^>]*>(.*?)<\/main>/is', $html, $matches)) {
+                $html = $matches[1];
+            }
             
-            $content = trim($content);
+            // 不要な空白を削除
+            $html = trim($html);
 
             $configKey = str_replace('-', '_', $type);
             $version = config("legal.current_versions.{$configKey}");
@@ -74,7 +83,7 @@ class GetLegalDocumentApiAction
                 'success' => true,
                 'data' => [
                     'type' => $type,
-                    'content' => $content,
+                    'html' => $html,  // HTMLとして返す
                     'version' => $version,
                 ],
             ], 200);

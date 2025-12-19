@@ -2,8 +2,10 @@
  * TermsOfServiceScreen - 利用規約表示画面
  * 
  * 機能:
- * - Laravel APIから利用規約テキストを取得
- * - ScrollView内にMarkdown形式で表示
+ * - Laravel APIから利用規約HTML取得
+ * - react-native-render-htmlでスタイル付き表示
+ * - 目次リンクによるオートスクロール
+ * - 「トップへ戻る」ボタン
  * - カスタムヘッダー（戻るボタン、タイトル）
  * - ローディングインジケーター
  * - エラーハンドリング
@@ -15,7 +17,7 @@
  * - DarkModeSupport.md: ダークモード実装ガイドライン
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -29,6 +31,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import RenderHtml from 'react-native-render-html';
 import { useResponsive, getSpacing, getBorderRadius, getFontSize } from '../../utils/responsive';
 import { useThemedColors } from '../../hooks/useThemedColors';
 import { useChildTheme } from '../../hooks/useChildTheme';
@@ -45,10 +48,12 @@ export const TermsOfServiceScreen: React.FC = () => {
   const themeType = isChildTheme ? 'child' : 'adult';
   const { colors, accent } = useThemedColors();
   const styles = useMemo(() => createStyles(width, themeType, colors, accent), [width, themeType, colors, accent]);
-
+  
+  const scrollViewRef = useRef<ScrollView>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [content, setContent] = useState('');
+  const [htmlContent, setHtmlContent] = useState('');
+  const [sectionOffsets, setSectionOffsets] = useState<{ [key: string]: number }>({});
 
   /**
    * 利用規約を取得
@@ -59,7 +64,7 @@ export const TermsOfServiceScreen: React.FC = () => {
         setLoading(true);
         setError(false);
         const data = await legalService.getTermsOfService();
-        setContent(data.content);
+        setHtmlContent(data.html);
       } catch (err) {
         console.error('[TermsOfServiceScreen] Failed to fetch terms:', err);
         setError(true);
@@ -92,7 +97,7 @@ export const TermsOfServiceScreen: React.FC = () => {
       setLoading(true);
       setError(false);
       const data = await legalService.getTermsOfService();
-      setContent(data.content);
+      setHtmlContent(data.html);
     } catch (err) {
       console.error('[TermsOfServiceScreen] Failed to reload terms:', err);
       setError(true);
@@ -100,6 +105,134 @@ export const TermsOfServiceScreen: React.FC = () => {
       setLoading(false);
     }
   };
+
+  /**
+   * トップへ戻るハンドラー
+   */
+  const handleScrollToTop = () => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
+  /**
+   * セクションスクロールハンドラー
+   */
+  const handleSectionPress = (sectionId: string) => {
+    const offset = sectionOffsets[sectionId];
+    if (offset !== undefined) {
+      scrollViewRef.current?.scrollTo({ y: offset - 100, animated: true });
+    }
+  };
+
+  /**
+   * HTML用のタグ描画カスタマイズ
+   */
+  const renderers = {
+    a: ({ tnode, onLinkPress }: any) => {
+      const href = tnode.attributes.href || '';
+      
+      // 内部アンカーリンク（#intro等）
+      if (href.startsWith('#')) {
+        const sectionId = href.substring(1);
+        return (
+          <Text
+            style={styles.link}
+            onPress={() => handleSectionPress(sectionId)}
+          >
+            {tnode.children[0]?.data || ''}
+          </Text>
+        );
+      }
+      
+      // トップへ戻るリンク
+      if (href === '/' || href.includes('トップへ戻る')) {
+        return (
+          <Text
+            style={styles.link}
+            onPress={handleScrollToTop}
+          >
+            {tnode.children[0]?.data || 'トップへ戻る'}
+          </Text>
+        );
+      }
+      
+      // 外部リンク（デフォルト処理）
+      return (
+        <Text style={styles.link} onPress={onLinkPress}>
+          {tnode.children[0]?.data || ''}
+        </Text>
+      );
+    },
+  };
+
+  /**
+   * HTML用のタグスタイル
+   */
+  const tagsStyles = useMemo(() => ({
+    body: {
+      color: colors.text.primary,
+      fontSize: getFontSize(14, width, themeType),
+      lineHeight: getFontSize(22, width, themeType),
+    },
+    h1: {
+      fontSize: getFontSize(28, width, themeType),
+      fontWeight: '700' as const,
+      color: colors.text.primary,
+      marginBottom: getSpacing(16, width),
+    },
+    h2: {
+      fontSize: getFontSize(22, width, themeType),
+      fontWeight: '600' as const,
+      color: colors.text.primary,
+      marginTop: getSpacing(24, width),
+      marginBottom: getSpacing(12, width),
+      paddingBottom: getSpacing(8, width),
+      borderBottomWidth: 2,
+      borderBottomColor: accent.primary,
+    },
+    h3: {
+      fontSize: getFontSize(18, width, themeType),
+      fontWeight: '600' as const,
+      color: colors.text.primary,
+      marginTop: getSpacing(16, width),
+      marginBottom: getSpacing(8, width),
+    },
+    p: {
+      color: colors.text.primary,
+      marginBottom: getSpacing(12, width),
+      lineHeight: getFontSize(22, width, themeType),
+    },
+    a: {
+      color: accent.primary,
+      textDecorationLine: 'underline' as const,
+    },
+    ul: {
+      marginLeft: getSpacing(16, width),
+      marginBottom: getSpacing(12, width),
+    },
+    ol: {
+      marginLeft: getSpacing(16, width),
+      marginBottom: getSpacing(12, width),
+    },
+    li: {
+      color: colors.text.primary,
+      marginBottom: getSpacing(6, width),
+    },
+    strong: {
+      fontWeight: '600' as const,
+      color: colors.text.primary,
+    },
+    nav: {
+      backgroundColor: colors.card,
+      padding: getSpacing(16, width),
+      borderRadius: getBorderRadius(8, width),
+      borderWidth: 1,
+      borderColor: colors.border.default,
+      marginBottom: getSpacing(16, width),
+    },
+    section: {
+      marginBottom: getSpacing(24, width),
+    },
+  }), [colors, accent, width, themeType]);
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -145,10 +278,26 @@ export const TermsOfServiceScreen: React.FC = () => {
       {/* コンテンツ表示 */}
       {!loading && !error && (
         <ScrollView 
+          ref={scrollViewRef}
           style={styles.scrollView}
           contentContainerStyle={styles.contentContainer}
         >
-          <Text style={styles.contentText}>{content}</Text>
+          <RenderHtml
+            contentWidth={width - getSpacing(32, width)}
+            source={{ html: htmlContent }}
+            tagsStyles={tagsStyles}
+            renderers={renderers}
+            enableExperimentalMarginCollapsing={true}
+          />
+          
+          {/* トップへ戻るボタン */}
+          <TouchableOpacity
+            onPress={handleScrollToTop}
+            style={styles.scrollToTopButton}
+          >
+            <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
+            <Text style={styles.scrollToTopText}>トップへ戻る</Text>
+          </TouchableOpacity>
         </ScrollView>
       )}
     </SafeAreaView>
@@ -214,10 +363,37 @@ const createStyles = (
     contentContainer: {
       padding: getSpacing(16, width),
     },
-    contentText: {
-      fontSize: getFontSize(14, width, themeType),
-      color: colors.text.primary,
-      lineHeight: getFontSize(22, width, themeType),
+    link: {
+      color: accent.primary,
+      textDecorationLine: 'underline',
+    },
+    scrollToTopButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: accent.primary,
+      paddingVertical: getSpacing(12, width),
+      paddingHorizontal: getSpacing(24, width),
+      borderRadius: getBorderRadius(8, width),
+      marginTop: getSpacing(24, width),
+      marginBottom: getSpacing(16, width),
+      ...Platform.select({
+        ios: {
+          shadowColor: accent.primary,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 4,
+        },
+      }),
+    },
+    scrollToTopText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: '#FFFFFF',
+      marginLeft: getSpacing(8, width),
     },
     loadingContainer: {
       position: 'absolute',

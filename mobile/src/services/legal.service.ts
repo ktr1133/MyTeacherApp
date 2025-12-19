@@ -28,7 +28,7 @@ export interface LegalDocumentResponse {
   success: boolean;
   data: {
     type: 'privacy-policy' | 'terms-of-service';
-    content: string;
+    html: string;  // content → html に変更
     version: string;
   };
 }
