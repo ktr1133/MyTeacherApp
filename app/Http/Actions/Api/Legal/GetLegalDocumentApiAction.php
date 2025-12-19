@@ -78,7 +78,11 @@ class GetLegalDocumentApiAction
             $html = preg_replace('/<p[^>]*>最終更新日:.*?<\/p>/is', '', $html);
             
             // overflow-x-auto divとその閉じタグをペアで削除（中身のtableは残す）
-            $html = preg_replace('/<div\s+class="overflow-x-auto">\s*(<table[^>]*>.*?<\/table>)\s*<\/div>/is', '$1', $html);
+            // class属性の順序や前後の空白に柔軟に対応
+            $html = preg_replace('/<div[^>]*class="[^"]*overflow-x-auto[^"]*"[^>]*>(.*?)<\/div>/is', '$1', $html);
+            
+            // デバッグ: テーブルタグが含まれているか確認
+            \Log::info('[GetLegalDocumentApiAction] Table tags found: ' . substr_count($html, '<table'));
             
             // 不要な空白を削除
             $html = trim($html);
