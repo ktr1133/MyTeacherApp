@@ -28,6 +28,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -131,7 +132,7 @@ export const TermsOfServiceScreen: React.FC = () => {
       const { tnode } = props;
       const href = tnode.attributes?.href || '';
       
-      // テキストコンテンツを取得（子ノードから）
+      // テキストコンテンツを取得（子ノードから再帰的に）
       const getTextContent = (node: any): string => {
         if (!node) return '';
         if (node.data) return node.data;
@@ -149,6 +150,7 @@ export const TermsOfServiceScreen: React.FC = () => {
         return (
           <Text
             style={styles.link}
+            selectable={true}
             onPress={() => handleSectionPress(sectionId)}
           >
             {linkText || href}
@@ -158,9 +160,18 @@ export const TermsOfServiceScreen: React.FC = () => {
       
       // mailto リンク
       if (href.startsWith('mailto:')) {
+        const email = href.replace('mailto:', '');
         return (
-          <Text style={styles.link}>
-            {linkText || href.replace('mailto:', '')}
+          <Text
+            style={styles.link}
+            selectable={true}
+            onPress={() => {
+              Linking.openURL(href).catch(err =>
+                console.error('[TermsOfServiceScreen] Failed to open mailto:', err)
+              );
+            }}
+          >
+            {linkText || email}
           </Text>
         );
       }
@@ -168,7 +179,15 @@ export const TermsOfServiceScreen: React.FC = () => {
       // 外部リンク（https://）
       if (href.startsWith('http://') || href.startsWith('https://')) {
         return (
-          <Text style={styles.link}>
+          <Text
+            style={styles.link}
+            selectable={true}
+            onPress={() => {
+              Linking.openURL(href).catch(err =>
+                console.error('[TermsOfServiceScreen] Failed to open URL:', err)
+              );
+            }}
+          >
             {linkText || href}
           </Text>
         );
@@ -179,6 +198,7 @@ export const TermsOfServiceScreen: React.FC = () => {
         return (
           <Text
             style={styles.link}
+            selectable={true}
             onPress={handleScrollToTop}
           >
             {linkText || 'トップへ戻る'}
@@ -189,7 +209,101 @@ export const TermsOfServiceScreen: React.FC = () => {
       // デフォルト処理
       return <TDefaultRenderer {...props} />;
     },
-  }), [styles.link, handleSectionPress, handleScrollToTop]);
+    // テーブルのカスタムレンダラー（flexboxレイアウト）
+    table: ({ TDefaultRenderer, ...props }: any) => {
+      return (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: colors.border.default,
+            borderRadius: getBorderRadius(8, width),
+            marginBottom: getSpacing(16, width),
+            overflow: 'hidden',
+          }}
+        >
+          <TDefaultRenderer {...props} />
+        </View>
+      );
+    },
+    tr: ({ TDefaultRenderer, ...props }: any) => {
+      return (
+        <View
+          style={{
+            flexDirection: 'row',
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border.default,
+          }}
+        >
+          <TDefaultRenderer {...props} />
+        </View>
+      );
+    },
+    th: ({ TDefaultRenderer, ...props }: any) => {
+      const { tnode } = props;
+      const getTextContent = (node: any): string => {
+        if (!node) return '';
+        if (node.data) return node.data;
+        if (node.children && node.children.length > 0) {
+          return node.children.map((child: any) => getTextContent(child)).join('');
+        }
+        return '';
+      };
+      const text = getTextContent(tnode);
+      
+      return (
+        <View
+          style={{
+            flex: 1,
+            padding: getSpacing(12, width),
+            backgroundColor: colors.card,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: getFontSize(14, width, themeType),
+              fontWeight: '600',
+              color: colors.text.primary,
+            }}
+            selectable={true}
+          >
+            {text}
+          </Text>
+        </View>
+      );
+    },
+    td: ({ TDefaultRenderer, ...props }: any) => {
+      const { tnode } = props;
+      const getTextContent = (node: any): string => {
+        if (!node) return '';
+        if (node.data) return node.data;
+        if (node.children && node.children.length > 0) {
+          return node.children.map((child: any) => getTextContent(child)).join('');
+        }
+        return '';
+      };
+      const text = getTextContent(tnode);
+      
+      return (
+        <View
+          style={{
+            flex: 1,
+            padding: getSpacing(12, width),
+            backgroundColor: colors.card,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: getFontSize(14, width, themeType),
+              color: colors.text.primary,
+            }}
+            selectable={true}
+          >
+            {text}
+          </Text>
+        </View>
+      );
+    },
+  }), [styles.link, handleSectionPress, handleScrollToTop, colors, width, themeType]);
 
   /**
    * HTML用のタグスタイル
