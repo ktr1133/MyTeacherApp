@@ -54,7 +54,7 @@ it('説明文を含めてタスクを作成できる', function () {
     $data = [
         'title' => 'テストタスク2',
         'description' => 'これはテスト説明です',
-        'span' => 2,
+        'span' => 3, // config/const.phpの定義に従い3（中期）を指定
     ];
 
     // Act

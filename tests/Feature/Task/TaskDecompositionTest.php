@@ -103,7 +103,7 @@ describe('ProposeTaskAction - タスク提案生成', function () {
 
         $response = $this->actingAs($user)->postJson(route('tasks.propose'), [
             'title' => '詳細なテストタスク',
-            'span' => 2,
+            'span' => 3, // config/const.phpの定義に従い3（中期）を指定
             'due_date' => '2025-12-31',
             'context' => '追加のコンテキスト情報',
             'is_refinement' => false,
