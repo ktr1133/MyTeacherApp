@@ -77,9 +77,8 @@ class GetLegalDocumentApiAction
             $html = preg_replace('/<h1[^>]*>.*?<\/h1>/is', '', $html);
             $html = preg_replace('/<p[^>]*>最終更新日:.*?<\/p>/is', '', $html);
             
-            // overflow-x-auto divを削除（モバイルでは横スクロールをScrollViewで実装）
-            $html = preg_replace('/<div[^>]*class="[^"]*overflow-x-auto[^"]*"[^>]*>/is', '', $html);
-            $html = str_replace('</div>', '', $html);  // 対応する閉じタグも削除
+            // overflow-x-auto divとその閉じタグをペアで削除（中身のtableは残す）
+            $html = preg_replace('/<div\s+class="overflow-x-auto">\s*(<table[^>]*>.*?<\/table>)\s*<\/div>/is', '$1', $html);
             
             // 不要な空白を削除
             $html = trim($html);
