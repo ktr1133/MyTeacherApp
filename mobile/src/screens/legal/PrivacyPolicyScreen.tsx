@@ -222,15 +222,6 @@ export const PrivacyPolicyScreen: React.FC = () => {
     },
     // テーブルのカスタムレンダラー（横スクロール対応）
     table: ({ tnode }: any) => {
-      // デバッグ: テーブルノードの構造を出力
-      console.log('[PrivacyPolicyScreen] Table renderer called');
-      console.log('[PrivacyPolicyScreen] tnode.name:', tnode.name);
-      console.log('[PrivacyPolicyScreen] tnode.type:', tnode.type);
-      console.log('[PrivacyPolicyScreen] tnode.children count:', tnode.children?.length);
-      if (tnode.children && tnode.children.length > 0) {
-        console.log('[PrivacyPolicyScreen] First child:', JSON.stringify(tnode.children[0], null, 2).substring(0, 200));
-      }
-      
       // テーブル配下のすべてのtr要素を抽出
       const rows: any[] = [];
       
@@ -245,12 +236,6 @@ export const PrivacyPolicyScreen: React.FC = () => {
       };
       
       extractRows(tnode);
-      
-      // デバッグ: テーブル情報をログ出力
-      console.log('[PrivacyPolicyScreen] Table renderer called, rows found:', rows.length);
-      if (rows.length === 0) {
-        console.warn('[PrivacyPolicyScreen] No rows found in table', tnode);
-      }
       
       // テキスト抽出ヘルパー
       const getTextContent = (node: any): string => {
@@ -435,9 +420,6 @@ export const PrivacyPolicyScreen: React.FC = () => {
       borderWidth: 1,
       borderColor: colors.border.default,
       marginBottom: getSpacing(16, width),
-    },
-    section: {
-      marginBottom: getSpacing(24, width),
     },
     // テーブル関連のスタイル
     table: {

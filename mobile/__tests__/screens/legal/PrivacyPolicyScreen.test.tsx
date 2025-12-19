@@ -14,19 +14,42 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
-jest.mock('react-native-webview', () => {
+jest.mock('react-native-render-html', () => {
   const React = require('react');
-  const { View } = require('react-native');
+  const { View, Text } = require('react-native');
   return {
-    WebView: (props: any) => {
-      // モック: onLoadEndをレンダリング時に即座に呼び出す
-      if (props.onLoadEnd) {
-        setTimeout(() => props.onLoadEnd(), 0);
-      }
-      return <View testID="webview-mock" />;
+    __esModule: true,
+    default: (props: any) => {
+      return (
+        <View testID="render-html-mock">
+          <Text testID="html-content">{props.source?.html || ''}</Text>
+        </View>
+      );
+    },
+    HTMLElementModel: {
+      fromCustomModel: jest.fn(),
+    },
+    HTMLContentModel: {
+      block: 'block',
     },
   };
 });
+
+jest.mock('../../../src/services/legal.service', () => ({
+  __esModule: true,
+  default: {
+    getPrivacyPolicy: jest.fn().mockResolvedValue({
+      type: 'privacy-policy',
+      html: '<h1>プライバシーポリシー</h1><p>テスト内容</p>',
+      version: '1.0.0',
+    }),
+    getTermsOfService: jest.fn().mockResolvedValue({
+      type: 'terms-of-service',
+      html: '<h1>利用規約</h1><p>テスト内容</p>',
+      version: '1.0.0',
+    }),
+  },
+}));
 
 jest.mock('../../../src/hooks/useThemedColors', () => ({
   useThemedColors: () => ({
@@ -65,6 +88,7 @@ jest.mock('../../../src/utils/responsive', () => ({
   }),
   getSpacing: (base: number) => base,
   getBorderRadius: (base: number) => base,
+  getFontSize: (base: number) => base,
 }));
 
 describe('PrivacyPolicyScreen', () => {
@@ -94,12 +118,25 @@ describe('PrivacyPolicyScreen', () => {
     expect(getByText('プライバシーについて')).toBeTruthy();
   });
 
-  test('WebViewが正しいURLを読み込む', () => {
+  test('WebViewが正しいURLを読み込む', async () => {
     const { getByTestId } = render(<PrivacyPolicyScreen />);
 
-    // WebViewモックの存在を確認
-    const webview = getByTestId('webview-mock');
-    expect(webview).toBeTruthy();
+    // RenderHtmlコンポーネントの存在を確認
+    await waitFor(() => {
+      const renderHtml = getByTestId('render-html-mock');
+      expect(renderHtml).toBeTruthy();
+    });
+  });
+
+  test('HTMLコンテンツが取得されて表示される', async () => {
+    const { getByTestId } = render(<PrivacyPolicyScreen />);
+
+    // APIからHTMLが取得されるまで待機
+    await waitFor(() => {
+      const htmlContent = getByTestId('html-content');
+      expect(htmlContent.props.children).toContain('プライバシーポリシー');
+      expect(htmlContent.props.children).toContain('テスト内容');
+    });
   });
 
   // 以下のテストは実装にtestIDがないため、実機テストで確認すること
