@@ -54,7 +54,7 @@ export const PrivacyPolicyScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [htmlContent, setHtmlContent] = useState('');
-  const [sectionOffsets] = useState<{ [key: string]: number }>({});
+  const sectionRefs = useRef<{ [key: string]: number }>({});
 
   /**
    * プライバシーポリシーを取得
@@ -118,10 +118,20 @@ export const PrivacyPolicyScreen: React.FC = () => {
    * セクションスクロールハンドラー
    */
   const handleSectionPress = (sectionId: string) => {
-    const offset = sectionOffsets[sectionId];
+    const offset = sectionRefs.current[sectionId];
     if (offset !== undefined) {
       scrollViewRef.current?.scrollTo({ y: offset - 100, animated: true });
+    } else {
+      console.warn('[PrivacyPolicyScreen] Section not found:', sectionId);
     }
+  };
+
+  /**
+   * セクション位置を記録
+   */
+  const handleSectionLayout = (sectionId: string, event: any) => {
+    const { y } = event.nativeEvent.layout;
+    sectionRefs.current[sectionId] = y;
   };
 
   /**
@@ -209,101 +219,120 @@ export const PrivacyPolicyScreen: React.FC = () => {
       // デフォルト処理
       return <TDefaultRenderer {...props} />;
     },
-    // テーブルのカスタムレンダラー（flexboxレイアウト）
-    table: ({ TDefaultRenderer, ...props }: any) => {
+    // テーブルのカスタムレンダラー（横スクロール対応）
+    table: ({ tnode }: any) => {
+      // テーブル配下のすべてのtr要素を抽出
+      const rows: any[] = [];
+      
+      const extractRows = (node: any) => {
+        if (!node) return;
+        if (node.type === 'tag' && node.name === 'tr') {
+          rows.push(node);
+        }
+        if (node.children) {
+          node.children.forEach((child: any) => extractRows(child));
+        }
+      };
+      
+      extractRows(tnode);
+      
+      // テキスト抽出ヘルパー
+      const getTextContent = (node: any): string => {
+        if (!node) return '';
+        if (node.data) return node.data;
+        if (node.children && node.children.length > 0) {
+          return node.children.map((child: any) => getTextContent(child)).join('');
+        }
+        return '';
+      };
+      
       return (
-        <View
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={true}
           style={{
-            borderWidth: 1,
-            borderColor: colors.border.default,
-            borderRadius: getBorderRadius(8, width),
             marginBottom: getSpacing(16, width),
-            overflow: 'hidden',
           }}
         >
-          <TDefaultRenderer {...props} />
-        </View>
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: colors.border.default,
+              borderRadius: getBorderRadius(8, width),
+              overflow: 'hidden',
+              minWidth: width - getSpacing(32, width),
+            }}
+          >
+            {rows.map((row, rowIndex) => {
+              // 行内のth/td要素を抽出
+              const cells = row.children?.filter(
+                (child: any) => child.type === 'tag' && (child.name === 'th' || child.name === 'td')
+              ) || [];
+              
+              const isHeader = cells.some((cell: any) => cell.name === 'th');
+              
+              return (
+                <View
+                  key={`row-${rowIndex}`}
+                  style={{
+                    flexDirection: 'row',
+                    borderBottomWidth: rowIndex < rows.length - 1 ? 1 : 0,
+                    borderBottomColor: colors.border.default,
+                  }}
+                >
+                  {cells.map((cell: any, cellIndex: number) => {
+                    const text = getTextContent(cell);
+                    const minCellWidth = 120; // 最小セル幅
+                    
+                    return (
+                      <View
+                        key={`cell-${rowIndex}-${cellIndex}`}
+                        style={{
+                          minWidth: minCellWidth,
+                          flex: 1,
+                          padding: getSpacing(12, width),
+                          backgroundColor: colors.card,
+                          borderRightWidth: cellIndex < cells.length - 1 ? 1 : 0,
+                          borderRightColor: colors.border.default,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: getFontSize(14, width, themeType),
+                            fontWeight: isHeader ? '600' : '400',
+                            color: colors.text.primary,
+                          }}
+                          selectable={true}
+                        >
+                          {text}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              );
+            })}
+          </View>
+        </ScrollView>
       );
     },
-    tr: ({ TDefaultRenderer, ...props }: any) => {
-      return (
-        <View
-          style={{
-            flexDirection: 'row',
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border.default,
-          }}
-        >
-          <TDefaultRenderer {...props} />
-        </View>
-      );
-    },
-    th: ({ TDefaultRenderer, ...props }: any) => {
-      const { tnode } = props;
-      const getTextContent = (node: any): string => {
-        if (!node) return '';
-        if (node.data) return node.data;
-        if (node.children && node.children.length > 0) {
-          return node.children.map((child: any) => getTextContent(child)).join('');
-        }
-        return '';
-      };
-      const text = getTextContent(tnode);
+    // セクションレンダラー（位置記録）
+    section: ({ TDefaultRenderer, tnode, ...props }: any) => {
+      const sectionId = tnode.attributes?.id;
       
       return (
         <View
-          style={{
-            flex: 1,
-            padding: getSpacing(12, width),
-            backgroundColor: colors.card,
+          onLayout={(event) => {
+            if (sectionId) {
+              handleSectionLayout(sectionId, event);
+            }
           }}
         >
-          <Text
-            style={{
-              fontSize: getFontSize(14, width, themeType),
-              fontWeight: '600',
-              color: colors.text.primary,
-            }}
-            selectable={true}
-          >
-            {text}
-          </Text>
+          <TDefaultRenderer tnode={tnode} {...props} />
         </View>
       );
     },
-    td: ({ TDefaultRenderer, ...props }: any) => {
-      const { tnode } = props;
-      const getTextContent = (node: any): string => {
-        if (!node) return '';
-        if (node.data) return node.data;
-        if (node.children && node.children.length > 0) {
-          return node.children.map((child: any) => getTextContent(child)).join('');
-        }
-        return '';
-      };
-      const text = getTextContent(tnode);
-      
-      return (
-        <View
-          style={{
-            flex: 1,
-            padding: getSpacing(12, width),
-            backgroundColor: colors.card,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: getFontSize(14, width, themeType),
-              color: colors.text.primary,
-            }}
-            selectable={true}
-          >
-            {text}
-          </Text>
-        </View>
-      );
-    },
-  }), [styles.link, handleSectionPress, handleScrollToTop, colors, width, themeType]);
+  }), [styles.link, handleSectionPress, handleScrollToTop, colors, width, themeType, handleSectionLayout]);
 
   /**
    * HTML用のタグスタイル
@@ -329,6 +358,9 @@ export const PrivacyPolicyScreen: React.FC = () => {
       paddingBottom: getSpacing(8, width),
       borderBottomWidth: 2,
       borderBottomColor: accent.primary,
+    },
+    section: {
+      marginBottom: getSpacing(24, width),
     },
     h3: {
       fontSize: getFontSize(18, width, themeType),
