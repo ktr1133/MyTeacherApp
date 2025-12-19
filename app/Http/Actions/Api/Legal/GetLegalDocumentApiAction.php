@@ -73,6 +73,10 @@ class GetLegalDocumentApiAction
                 $html = $matches[1];
             }
             
+            // ページタイトル（h1）と最終更新日を削除（ヘッダーに表示済み）
+            $html = preg_replace('/<h1[^>]*>.*?<\/h1>/is', '', $html);
+            $html = preg_replace('/<p[^>]*>最終更新日:.*?<\/p>/is', '', $html);
+            
             // 不要な空白を削除
             $html = trim($html);
 

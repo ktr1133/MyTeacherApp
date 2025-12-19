@@ -126,9 +126,22 @@ export const TermsOfServiceScreen: React.FC = () => {
   /**
    * HTML用のタグ描画カスタマイズ
    */
-  const renderers = {
-    a: ({ tnode, onLinkPress }: any) => {
-      const href = tnode.attributes.href || '';
+  const renderers = useMemo(() => ({
+    a: ({ TDefaultRenderer, ...props }: any) => {
+      const { tnode } = props;
+      const href = tnode.attributes?.href || '';
+      
+      // テキストコンテンツを取得（子ノードから）
+      const getTextContent = (node: any): string => {
+        if (!node) return '';
+        if (node.data) return node.data;
+        if (node.children && node.children.length > 0) {
+          return node.children.map((child: any) => getTextContent(child)).join('');
+        }
+        return '';
+      };
+      
+      const linkText = getTextContent(tnode);
       
       // 内部アンカーリンク（#intro等）
       if (href.startsWith('#')) {
@@ -138,31 +151,45 @@ export const TermsOfServiceScreen: React.FC = () => {
             style={styles.link}
             onPress={() => handleSectionPress(sectionId)}
           >
-            {tnode.children[0]?.data || ''}
+            {linkText || href}
+          </Text>
+        );
+      }
+      
+      // mailto リンク
+      if (href.startsWith('mailto:')) {
+        return (
+          <Text style={styles.link}>
+            {linkText || href.replace('mailto:', '')}
+          </Text>
+        );
+      }
+      
+      // 外部リンク（https://）
+      if (href.startsWith('http://') || href.startsWith('https://')) {
+        return (
+          <Text style={styles.link}>
+            {linkText || href}
           </Text>
         );
       }
       
       // トップへ戻るリンク
-      if (href === '/' || href.includes('トップへ戻る')) {
+      if (href === '/' || linkText.includes('トップへ戻る')) {
         return (
           <Text
             style={styles.link}
             onPress={handleScrollToTop}
           >
-            {tnode.children[0]?.data || 'トップへ戻る'}
+            {linkText || 'トップへ戻る'}
           </Text>
         );
       }
       
-      // 外部リンク（デフォルト処理）
-      return (
-        <Text style={styles.link} onPress={onLinkPress}>
-          {tnode.children[0]?.data || ''}
-        </Text>
-      );
+      // デフォルト処理
+      return <TDefaultRenderer {...props} />;
     },
-  };
+  }), [styles.link, handleSectionPress, handleScrollToTop]);
 
   /**
    * HTML用のタグスタイル
@@ -195,6 +222,13 @@ export const TermsOfServiceScreen: React.FC = () => {
       color: colors.text.primary,
       marginTop: getSpacing(16, width),
       marginBottom: getSpacing(8, width),
+    },
+    h4: {
+      fontSize: getFontSize(16, width, themeType),
+      fontWeight: '600' as const,
+      color: colors.text.primary,
+      marginTop: getSpacing(12, width),
+      marginBottom: getSpacing(6, width),
     },
     p: {
       color: colors.text.primary,
@@ -231,6 +265,43 @@ export const TermsOfServiceScreen: React.FC = () => {
     },
     section: {
       marginBottom: getSpacing(24, width),
+    },
+    // テーブル関連のスタイル
+    table: {
+      width: '100%',
+      borderWidth: 1,
+      borderColor: colors.border.default,
+      borderRadius: getBorderRadius(8, width),
+      marginBottom: getSpacing(16, width),
+      backgroundColor: colors.card,
+    },
+    thead: {
+      backgroundColor: colors.card,
+    },
+    tbody: {
+      backgroundColor: colors.card,
+    },
+    tr: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border.default,
+    },
+    th: {
+      padding: getSpacing(12, width),
+      textAlign: 'left' as const,
+      fontSize: getFontSize(14, width, themeType),
+      fontWeight: '600' as const,
+      color: colors.text.primary,
+      backgroundColor: colors.card,
+    },
+    td: {
+      padding: getSpacing(12, width),
+      fontSize: getFontSize(14, width, themeType),
+      color: colors.text.primary,
+      verticalAlign: 'top' as const,
+    },
+    // div要素
+    div: {
+      marginBottom: getSpacing(8, width),
     },
   }), [colors, accent, width, themeType]);
 
