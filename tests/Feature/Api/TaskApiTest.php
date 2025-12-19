@@ -71,7 +71,7 @@ class TaskApiTest extends TestCase
         $taskData = [
             'title' => 'API テストタスク',
             'description' => 'これはAPIテストです',
-            'span' => 'medium',
+            'span' => 3, // config/const.phpの定義に従い3（中期）を指定
             'due_date' => now()->addDays(7)->format('Y-m-d'),
             'priority' => 1,
             'reward' => 100,
