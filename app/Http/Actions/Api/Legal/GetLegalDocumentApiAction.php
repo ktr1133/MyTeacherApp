@@ -52,11 +52,19 @@ class GetLegalDocumentApiAction
             // HTMLをレンダリング
             $html = view($viewName)->render();
             
+            // style/scriptタグとその内容を削除
+            $html = preg_replace('/<style[^>]*>.*?<\/style>/is', '', $html);
+            $html = preg_replace('/<script[^>]*>.*?<\/script>/is', '', $html);
+            
             // HTMLタグを除去してプレーンテキストに変換
             $content = strip_tags($html);
             
-            // 連続する空白・改行を整理
-            $content = preg_replace('/\s+/u', ' ', $content);
+            // 連続する空白を1つのスペースに（改行は保持）
+            $content = preg_replace('/[^\S\r\n]+/u', ' ', $content);
+            
+            // 3つ以上の連続改行を2つに
+            $content = preg_replace('/\n{3,}/u', "\n\n", $content);
+            
             $content = trim($content);
 
             $configKey = str_replace('-', '_', $type);

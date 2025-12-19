@@ -78,10 +78,10 @@ export const PrivacyPolicyScreen: React.FC = () => {
   }, [themeType]);
 
   /**
-   * 戻るボタンハンドラー
+   * 戻るボタンハンドラー - 設定画面に戻る
    */
   const handleGoBack = () => {
-    navigation.goBack();
+    navigation.navigate('Settings' as never);
   };
 
   /**
@@ -102,7 +102,7 @@ export const PrivacyPolicyScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <StatusBar
         barStyle={themeType === 'child' ? 'light-content' : colors.background === '#000000' ? 'light-content' : 'dark-content'}
         backgroundColor={colors.background}
@@ -173,7 +173,7 @@ const createStyles = (
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingTop: Platform.OS === 'ios' ? getSpacing(16, width) + 20 : getSpacing(12, width),
+      paddingTop: Platform.OS === 'ios' ? 50 : getSpacing(12, width),
       paddingBottom: getSpacing(12, width),
       paddingHorizontal: getSpacing(16, width),
       backgroundColor: colors.card,
