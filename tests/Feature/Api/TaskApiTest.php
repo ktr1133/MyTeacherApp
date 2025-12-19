@@ -71,7 +71,7 @@ class TaskApiTest extends TestCase
         $taskData = [
             'title' => 'API テストタスク',
             'description' => 'これはAPIテストです',
-            'span' => 2,
+            'span' => 'medium',
             'due_date' => now()->addDays(7)->format('Y-m-d'),
             'priority' => 1,
             'reward' => 100,
