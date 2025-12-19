@@ -26,7 +26,7 @@ class LegalApiTest extends TestCase
                 'success',
                 'data' => [
                     'type',
-                    'content',
+                    'html',
                     'version',
                 ],
             ])
@@ -36,13 +36,13 @@ class LegalApiTest extends TestCase
 
         $data = $response->json('data');
         $this->assertEquals('privacy-policy', $data['type']);
-        $this->assertNotEmpty($data['content']);
-        $this->assertStringContainsString('プライバシーポリシー', $data['content']);
-        $this->assertStringContainsString('個人情報', $data['content']);
+        $this->assertNotEmpty($data['html']);
+        $this->assertStringContainsString('プライバシーポリシー', $data['html']);
+        $this->assertStringContainsString('個人情報', $data['html']);
         
-        // HTMLタグが除去されていることを確認
-        $this->assertStringNotContainsString('<div', $data['content']);
-        $this->assertStringNotContainsString('<p>', $data['content']);
+        // HTML形式で返されることを確認
+        $this->assertStringContainsString('<', $data['html']);
+        $this->assertStringContainsString('>', $data['html']);
     }
 
     /**
@@ -57,7 +57,7 @@ class LegalApiTest extends TestCase
                 'success',
                 'data' => [
                     'type',
-                    'content',
+                    'html',
                     'version',
                 ],
             ])
@@ -67,13 +67,13 @@ class LegalApiTest extends TestCase
 
         $data = $response->json('data');
         $this->assertEquals('terms-of-service', $data['type']);
-        $this->assertNotEmpty($data['content']);
-        $this->assertStringContainsString('利用規約', $data['content']);
-        $this->assertStringContainsString('サービス', $data['content']);
+        $this->assertNotEmpty($data['html']);
+        $this->assertStringContainsString('利用規約', $data['html']);
+        $this->assertStringContainsString('サービス', $data['html']);
         
-        // HTMLタグが除去されていることを確認
-        $this->assertStringNotContainsString('<div', $data['content']);
-        $this->assertStringNotContainsString('<p>', $data['content']);
+        // HTML形式で返されることを確認
+        $this->assertStringContainsString('<', $data['html']);
+        $this->assertStringContainsString('>', $data['html']);
     }
 
     /**
@@ -97,8 +97,8 @@ class LegalApiTest extends TestCase
         $privacyResponse = $this->getJson('/api/legal/privacy-policy');
         $termsResponse = $this->getJson('/api/legal/terms-of-service');
 
-        $privacyContent = $privacyResponse->json('data.content');
-        $termsContent = $termsResponse->json('data.content');
+        $privacyContent = $privacyResponse->json('data.html');
+        $termsContent = $termsResponse->json('data.html');
 
         $this->assertGreaterThan(1000, strlen($privacyContent), 'プライバシーポリシーの内容が短すぎます');
         $this->assertGreaterThan(1000, strlen($termsContent), '利用規約の内容が短すぎます');
