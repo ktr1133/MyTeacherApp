@@ -53,7 +53,7 @@ export const TermsOfServiceScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [htmlContent, setHtmlContent] = useState('');
-  const [sectionOffsets, setSectionOffsets] = useState<{ [key: string]: number }>({});
+  const [sectionOffsets] = useState<{ [key: string]: number }>({});
 
   /**
    * 利用規約を取得
@@ -309,7 +309,7 @@ export const TermsOfServiceScreen: React.FC = () => {
  */
 const createStyles = (
   width: number,
-  themeType: 'adult' | 'child',
+  _themeType: 'adult' | 'child',
   colors: ReturnType<typeof useThemedColors>['colors'],
   accent: ReturnType<typeof useThemedColors>['accent']
 ) => {

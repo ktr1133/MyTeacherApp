@@ -53,7 +53,7 @@ export const PrivacyPolicyScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [htmlContent, setHtmlContent] = useState('');
-  const [sectionOffsets, setSectionOffsets] = useState<{ [key: string]: number }>({});
+  const [sectionOffsets] = useState<{ [key: string]: number }>({});
 
   /**
    * プライバシーポリシーを取得
@@ -309,7 +309,7 @@ export const PrivacyPolicyScreen: React.FC = () => {
  */
 const createStyles = (
   width: number,
-  themeType: 'adult' | 'child',
+  _themeType: 'adult' | 'child',
   colors: ReturnType<typeof useThemedColors>['colors'],
   accent: ReturnType<typeof useThemedColors>['accent']
 ) => {
@@ -424,39 +424,6 @@ const createStyles = (
       color: colors.text.primary,
       marginTop: getSpacing(12, width),
       marginBottom: getSpacing(8, width),
-    },
-    errorMessage: {
-      fontSize: 16,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      lineHeight: 24,
-      marginBottom: getSpacing(24, width),
-    },
-    retryButton: {
-      backgroundColor: accent.primary,
-      paddingVertical: getSpacing(12, width),
-      paddingHorizontal: getSpacing(24, width),
-      borderRadius: getBorderRadius(8, width),
-      ...Platform.select({
-        ios: {
-          shadowColor: accent.primary,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 4,
-        },
-      }),
-    },
-    retryButtonText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: '#FFFFFF',
-    },
-  });
-};
-
     },
     errorMessage: {
       fontSize: 16,
