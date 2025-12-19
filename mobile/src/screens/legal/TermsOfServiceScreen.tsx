@@ -528,6 +528,7 @@ export const TermsOfServiceScreen: React.FC = () => {
             source={{ html: htmlContent }}
             tagsStyles={tagsStyles}
             renderers={renderers}
+            ignoredDomTags={[]}  // テーブルタグを無視しない
             enableExperimentalMarginCollapsing={true}
           />
           
