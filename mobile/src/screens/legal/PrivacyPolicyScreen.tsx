@@ -222,6 +222,9 @@ export const PrivacyPolicyScreen: React.FC = () => {
     },
     // テーブルのカスタムレンダラー（横スクロール対応）
     table: ({ tnode }: any) => {
+      console.log('✅ Table renderer called!');
+      console.log('tnode:', JSON.stringify(tnode, null, 2).substring(0, 500));
+      
       // テーブル配下のすべてのtr要素を抽出
       const rows: any[] = [];
       

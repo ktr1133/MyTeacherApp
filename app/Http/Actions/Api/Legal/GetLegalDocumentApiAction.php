@@ -84,6 +84,11 @@ class GetLegalDocumentApiAction
             // デバッグ: テーブルタグが含まれているか確認
             \Log::info('[GetLegalDocumentApiAction] Table tags found: ' . substr_count($html, '<table'));
             
+            // デバッグ: 最初のテーブルの内容を確認
+            if (preg_match('/<table[^>]*>(.*?)<\/table>/is', $html, $matches)) {
+                \Log::info('[GetLegalDocumentApiAction] First table HTML: ' . substr($matches[0], 0, 500));
+            }
+            
             // 不要な空白を削除
             $html = trim($html);
 
