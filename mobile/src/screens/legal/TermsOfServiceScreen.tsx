@@ -265,7 +265,6 @@ export const TermsOfServiceScreen: React.FC = () => {
             <Text style={{ color: '#856404', fontSize: getFontSize(12, width, themeType), marginTop: getSpacing(8, width) }}>
               tnode.type: {tnode.type} / tagName: {tnode.tagName} / children: {tnode.children?.length || 0}
             </Text>
-            </Text>
           </View>
         );
       }
