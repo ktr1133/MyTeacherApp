@@ -24,7 +24,7 @@
  * ```
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -88,6 +88,19 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
   const [searching, setSearching] = useState(false);
   const [linking, setLinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // マウント状態管理とクリーンアップ
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      // アンマウント時にフラグをfalseに設定
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // マウント状態を追跡（アンマウント後の状態更新を防止）
+  const isMountedRef = useRef(true);
 
   // モーダルが開かれた時とユーザー情報更新時にメールアドレスを同期
   useEffect(() => {
@@ -188,12 +201,9 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
         }
         
         // Alert表示前にローディング状態を解除
-        setLinking(false);
-        
-        // 検索結果と選択状態をクリア（親メールアドレスは保持）
-        setChildren([]);
-        setSelectedChildren(new Set());
-        setError(null);
+        if (isMountedRef.current) {
+          setLinking(false);
+        }
         
         // Alertを表示し、OKボタン押下後にコールバック実行
         Alert.alert(
@@ -203,6 +213,13 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
             {
               text: 'OK',
               onPress: () => {
+                // マウント状態チェック後に状態クリア
+                if (isMountedRef.current) {
+                  setChildren([]);
+                  setSelectedChildren(new Set());
+                  setError(null);
+                }
+                
                 // onSuccessコールバックを実行（親側でモーダルクローズとデータ再取得を制御）
                 if (onSuccess) {
                   onSuccess();
@@ -213,7 +230,9 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
         );
       }
     } catch (err) {
-      setLinking(false);
+      if (isMountedRef.current) {
+        setLinking(false);
+      }
       const errorMessage = err instanceof Error ? err.message : '紐づけに失敗しました';
       Alert.alert(
         theme === 'child' ? 'エラー' : 'エラー',
