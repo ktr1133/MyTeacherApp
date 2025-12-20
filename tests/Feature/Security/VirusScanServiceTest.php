@@ -67,7 +67,8 @@ class VirusScanServiceTest extends TestCase
             // 検証
             $this->assertFalse($isClean, 'EICAR test file should be detected as infected');
             $this->assertEquals('infected', $result['status']);
-            $this->assertStringContainsString('Eicar', $result['details'] ?? '', '', true); // 大文字小文字を区別しない
+            // ClamAVのバージョンにより検出結果が異なる（"Eicar-Test-Signature", "Win.Test.EICAR_HDB-1" 等）
+            $this->assertMatchesRegularExpression('/EICAR|Eicar/i', $result['details'] ?? '');
         } finally {
             // クリーンアップ
             if (file_exists($testFilePath)) {
