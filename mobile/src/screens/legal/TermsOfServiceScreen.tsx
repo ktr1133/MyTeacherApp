@@ -242,6 +242,8 @@ export const TermsOfServiceScreen: React.FC = () => {
       
       extractRows(tnode);
       
+      console.log('Rows found:', rows.length);
+      
       // テキスト抽出ヘルパー
       const getTextContent = (node: any): string => {
         if (!node) return '';
@@ -254,10 +256,15 @@ export const TermsOfServiceScreen: React.FC = () => {
       
       // rowsが見つからない場合はフォールバック（テーブルを表示しない）
       if (rows.length === 0) {
+        console.warn('⚠️ No table rows found!');
         return (
-          <View style={{ marginBottom: getSpacing(16, width) }}>
-            <Text style={{ color: colors.text.secondary, fontSize: getFontSize(12, width, themeType) }}>
-              （テーブルデータなし）
+          <View style={{ marginBottom: getSpacing(16, width), padding: getSpacing(16, width), backgroundColor: '#FFF3CD', borderRadius: getBorderRadius(8, width) }}>
+            <Text style={{ color: '#856404', fontSize: getFontSize(14, width, themeType) }}>
+              ⚠️ テーブルが見つかりませんでした（デバッグモード）
+            </Text>
+            <Text style={{ color: '#856404', fontSize: getFontSize(12, width, themeType), marginTop: getSpacing(8, width) }}>
+              tnode.type: {tnode.type} / tagName: {tnode.tagName} / children: {tnode.children?.length || 0}
+            </Text>
             </Text>
           </View>
         );
