@@ -5,6 +5,7 @@
 | 日付 | 更新者 | 更新内容 |
 |------|--------|---------|
 | 2025-12-18 | GitHub Copilot | 初版作成: アカウント管理画面の機能要件定義、メールアドレス変更時の親子連動機能を含む包括的仕様 |
+| 2025-12-20 | GitHub Copilot | Section 13追加: 子アカウント一括紐づけ機能（Phase 6拡張）- サブスクリプション別メンバー数上限チェック、部分成功対応、Web/Mobile統合仕様 |
 
 ---
 
@@ -957,7 +958,262 @@ CREATE TABLE user_profile_logs (
 
 ---
 
-## 13. 変更履歴の記録方法
+## 13. 子アカウント一括紐づけ機能（Phase 6拡張）
+
+### 13.1 概要
+
+**Phase**: Phase 6拡張（2025-12-20実装完了）
+
+**背景**:
+親子紐づけ機能の簡略化により、従来のメール通知→同意プロセスを廃止し、**親が検索した子アカウントを即座にグループに紐づける**機能を実装しました。同時に、**サブスクリプションプラン別のメンバー数上限チェック**を追加し、ビジネスルールを厳密に適用します。
+
+**主要機能**:
+1. **未紐付け子アカウント検索**: 親のメールアドレス（`parent_email`）で未紐付けの子を検索
+2. **検索結果モーダル表示**: 子アカウント一覧を表示、各子に「×」ボタンで除外可能
+3. **一括紐づけ実行**: 選択した子アカウントを即座にグループに追加
+4. **メンバー数上限チェック**: サブスクリプションプラン別に上限を適用
+   - 無料プラン（`subscription_active=false`）: 最大6名、超過時はアップグレード案内
+   - Familyプラン（`subscription_plan='family'`）: 最大6名
+   - Enterpriseプラン（`subscription_plan='enterprise'`）: 最大20名
+5. **部分成功対応**: 一部の子のみ紐づけ成功時は206 Partial Contentを返却
+6. **全失敗対応**: 全員スキップ時は400 Bad Requestを返却
+
+### 13.2 データモデル
+
+#### 13.2.1 関連テーブル
+
+**users**テーブル:
+| カラム | 型 | 説明 |
+|--------|-----|------|
+| `group_id` | bigint | 所属グループID（紐づけ時に設定） |
+| `parent_user_id` | bigint | 親ユーザーID（紐づけ時に設定） |
+| `group_edit_flg` | boolean | グループ編集権限（紐づけ時はfalse） |
+| `parent_email` | varchar(255) | 保護者のメールアドレス（検索キー） |
+| `is_minor` | boolean | 未成年フラグ |
+
+**groups**テーブル:
+| カラム | 型 | 説明 |
+|--------|-----|------|
+| `subscription_active` | boolean | サブスクリプション有効フラグ |
+| `subscription_plan` | varchar(50) | プラン名（'family', 'enterprise', null） |
+| `max_members` | integer | メンバー数上限（6 or 20） |
+
+### 13.3 処理フロー（Web）
+
+**Action**: `LinkChildrenAction::__invoke()`
+
+```
+1. バリデーション実行（LinkChildrenRequest）
+   ├── child_user_ids: required, array, min:1
+   ├── child_user_ids.*: integer, exists:users,id
+   └── 認可チェック: 親ユーザーがgroup_idを持つこと
+
+2. グループのメンバー数上限を取得
+   ├── $group = $parentUser->group
+   ├── $maxMembers = $group->subscription_active ? $group->max_members : 6
+   └── $currentMemberCount = User::where('group_id', $parentUser->group_id)->count()
+
+3. トランザクション内で各子アカウントをループ処理
+   DB::transaction(function () {
+       foreach ($childUserIds as $childUserId) {
+           // 3-1. メンバー数上限チェック（各紐づけ前）
+           if ($currentMemberCount >= $maxMembers) {
+               $limitMessage = $group->subscription_active
+                   ? "グループメンバーの上限（{$maxMembers}名）に達しています。"
+                   : "グループメンバーの上限（{$maxMembers}名）に達しています。エンタープライズプランにアップグレードしてください。";
+               
+               $skippedChildren[] = ['username' => ..., 'reason' => $limitMessage];
+               continue; // スキップ
+           }
+
+           // 3-2. 子アカウント存在チェック
+           $childUser = User::find($childUserId);
+           if (!$childUser) {
+               $skippedChildren[] = ['username' => 'ID: ' . $childUserId, 'reason' => '子アカウントが見つかりませんでした。'];
+               continue;
+           }
+
+           // 3-3. 既にグループ所属チェック
+           if ($childUser->group_id !== null) {
+               $skippedChildren[] = ['username' => $childUser->username, 'reason' => '既に別のグループに所属しています。'];
+               continue;
+           }
+
+           // 3-4. 紐づけ実行
+           $childUser->update([
+               'group_id' => $parentUser->group_id,
+               'group_edit_flg' => false,
+               'parent_user_id' => $parentUser->id,
+           ]);
+
+           // 3-5. 成功カウント増加
+           $currentMemberCount++;
+           $linkedChildren[] = $childUser->username;
+
+           Log::info('Web: Child account linked', [
+               'parent_user_id' => $parentUser->id,
+               'child_user_id' => $childUser->id,
+               'group_id' => $parentUser->group_id,
+               'current_member_count' => $currentMemberCount,
+               'max_members' => $maxMembers,
+           ]);
+       }
+   });
+
+4. レスポンス判定
+   ├── 全て成功: 200 OK
+   ├── 一部成功・一部スキップ: 206 Partial Content
+   └── 全て失敗: 400 Bad Request
+
+5. AJAX/JSON応答の場合
+   return response()->json([
+       'success' => !empty($linkedChildren),
+       'message' => '...',
+       'data' => [
+           'linked_children' => [...],
+           'skipped_children' => [...],
+           'summary' => ['total_requested' => ..., 'linked' => ..., 'skipped' => ...]
+       ]
+   ], $statusCode);
+```
+
+### 13.4 処理フロー（Mobile API）
+
+**Action**: `LinkChildrenApiAction::__invoke()`
+
+**処理内容**: Web版と同一ロジック、レスポンス形式のみ異なる（`user_id`, `email`を含む）
+
+**レスポンス例**:
+```json
+{
+  "success": true,
+  "message": "2人を紐づけました。1人はスキップされました。",
+  "data": {
+    "linked_children": [
+      {"user_id": 10, "username": "child1", "name": "太郎", "email": "child1@example.com"}
+    ],
+    "skipped_children": [
+      {"user_id": 11, "username": "child2", "name": "花子", "reason": "グループメンバーの上限（6名）に達しています。"}
+    ],
+    "summary": {
+      "total_requested": 2,
+      "linked": 1,
+      "skipped": 1
+    }
+  }
+}
+```
+
+### 13.5 UI/UX仕様（Web）
+
+**ファイル**: `resources/views/profile/group/partials/search-unlinked-children.blade.php`
+
+**検索フォーム**:
+```blade
+<form id="search-children-form" method="POST" action="{{ route('profile.group.search-children') }}">
+    <input type="email" name="parent_email" value="{{ auth()->user()->email }}" required>
+    <button type="submit">検索</button>
+</form>
+```
+
+**検索結果モーダル**:
+```
+[モーダルヘッダー] 検索結果
+[子アカウントカード×N]
+  ├── アバター（username頭文字）
+  ├── 名前（name || username）
+  ├── @username
+  ├── email
+  ├── 13歳未満バッジ（is_minor=trueの場合）
+  └── [×]ボタン（除外用、クリックでカードを削除）
+[フッター]
+  ├── 「×」ボタンで対象から除外できます
+  └── [選択したN人を紐づける]ボタン（選択数を表示）
+```
+
+**JavaScript**: `resources/js/group-link-children.js`（新規作成）
+
+**主要機能**:
+1. 検索フォーム送信（AJAX）
+2. 検索結果モーダル表示
+3. 「×」ボタンで子アカウントを除外
+4. 選択数リアルタイム更新
+5. 一括紐づけフォーム送信（JSON形式）
+6. 結果表示（成功・スキップメッセージ）
+
+### 13.6 UI/UX仕様（Mobile）
+
+**ファイル**: `mobile/src/components/group/SearchChildrenModal.tsx`
+
+**変更内容**:
+- 従来: 各子アカウントに「送信」ボタン（個別送信）
+- 新仕様: 各子アカウントに「×」ボタン（除外用）+ モーダル下部に一括紐づけボタン
+
+**APIサービス**: `mobile/src/services/group.service.ts`
+
+```typescript
+export const linkChildren = async (childUserIds: number[]): Promise<{
+  success: boolean;
+  message: string;
+  data: {
+    linked_children: Array<{...}>;
+    skipped_children: Array<{...}>;
+    summary: {...};
+  };
+}> => {
+  const response = await api.post('/profile/group/link-children', {
+    child_user_ids: childUserIds,
+  });
+  return response.data;
+};
+```
+
+### 13.7 エラーハンドリング
+
+| エラー種別 | ステータスコード | メッセージ | 対処方法 |
+|-----------|----------------|-----------|---------|
+| バリデーションエラー | 400 | 「紐づけする子アカウントを選択してください。」 | 最低1人選択を促す |
+| 認可エラー | 403 | 「グループに所属していないため、子アカウントを紐づけできません。」 | グループ作成を案内 |
+| 全員スキップ | 400 | 「選択した子アカウント全員が既にグループに所属しているため、紐づけできませんでした。」 | スキップ理由を表示 |
+| 部分成功 | 206 | 「2人を紐づけました。1人はスキップされました。」 | 成功・スキップ詳細を表示 |
+| サーバーエラー | 500 | 「子アカウントの紐づけ中にエラーが発生しました。」 | エラーログを記録、管理者に通知 |
+
+### 13.8 テスト仕様
+
+**テストファイル**: `tests/Feature/Profile/Group/LinkChildrenMemberLimitTest.php`（新規作成）
+
+**テストケース**（全7ケース、29アサーション）:
+
+| # | テストケース | 想定シナリオ | 期待結果 |
+|---|-------------|-------------|---------|
+| 1 | 無料プラン: 6名超える紐づけスキップ | 5名+3名→6名 | 1成功, 2スキップ, 206 |
+| 2 | Familyプラン: 6名上限適用 | 6名+2名 | 全スキップ, 400 |
+| 3 | Enterpriseプラン: 20名上限適用 | 20名+2名 | 全スキップ, 400 |
+| 4 | Enterprise: 19名→1名のみ成功 | 19名+3名→20名 | 1成功, 2スキップ, 206 |
+| 5 | 無料: 上限ピッタリ（5+1=6） | 5名+1名→6名 | 1成功, 200 |
+| 6 | API無料プラン: 6名超えスキップ | 6名+2名 | 全スキップ, 400 |
+| 7 | API Enterprise: 部分成功 | 19名+3名→20名 | 1成功, 2スキップ, 206 |
+
+**テスト実行結果**:
+```
+PASS Tests\Feature\Profile\Group\LinkChildrenMemberLimitTest
+Tests: 7 passed (29 assertions)
+Duration: 8.58s
+```
+
+### 13.9 関連ドキュメント
+
+| ドキュメント | パス | 概要 |
+|------------|------|------|
+| **実装完了レポート** | `docs/reports/2025-12-20-subscription-member-limit-implementation-report.md` | 実装内容・テスト結果の詳細 |
+| **API仕様書** | `docs/api/openapi.yaml` | `/profile/group/link-children` APIドキュメント |
+| **テストコード** | `tests/Feature/Profile/Group/LinkChildrenMemberLimitTest.php` | 7テストケース |
+| **モバイル開発規約** | `docs/mobile/mobile-rules.md` | React Native規約 |
+| **レスポンシブデザイン** | `definitions/mobile/ResponsiveDesignGuideline.md` | ダークモード、ブレークポイント |
+
+---
+
+## 14. 変更履歴の記録方法
 
 **ルール**:
 1. 本ドキュメントを修正する際は、冒頭の「更新履歴」セクションに追記
@@ -973,19 +1229,33 @@ CREATE TABLE user_profile_logs (
 
 ---
 
-## 14. まとめ
+## 15. まとめ
 
-本要件定義書は、MyTeacher AIタスク管理プラットフォームにおける**アカウント管理画面**の全機能を包括的に定義しました。特に、**親ユーザーのメールアドレス変更時に子ユーザーのparent_emailを自動更新する連動処理**は、親子紐付け機能（Phase 5-1、5-2、5-2拡張）との整合性を保つ重要な仕様です。
+本要件定義書は、MyTeacher AIタスク管理プラットフォームにおける**アカウント管理画面**および**親子紐づけ機能**の全機能を包括的に定義しました。
+
+**主要機能**:
+1. **親ユーザーのメールアドレス変更時に子ユーザーのparent_emailを自動更新する連動処理**: 親子紐付け機能（Phase 5-1、5-2、5-2拡張）との整合性を保つ
+2. **子アカウント一括紐づけ機能（Phase 6拡張）**: サブスクリプションプラン別のメンバー数上限チェック、部分成功対応、Web/Mobile統合
 
 **実装のポイント**:
 - **Repository層の活用**: データアクセスロジックをインターフェース化し、テスタビリティを確保
 - **エラーハンドリング**: 親の更新成功を最優先し、子の更新失敗は影響させない
 - **パフォーマンス**: 一括更新クエリでN+1問題を回避
-- **テストカバレッジ**: Web・Mobile APIの両方で統合テストを実装（11テスト、全パス）
+- **テストカバレッジ**: 
+  - メールアドレス連動: Web・Mobile APIの両方で統合テストを実装（11テスト、全パス）
+  - 一括紐づけ: 7テストケース、29アサーション、100%成功
+
+**新機能（2025-12-20追加）**:
+- **サブスクリプション別上限チェック**: 無料6名、Family6名、Enterprise20名
+- **部分成功対応**: 一部の子のみ紐づけ成功時は206 Partial Content返却
+- **全失敗対応**: 全員スキップ時は400 Bad Request返却
+- **UI改善**: Web検索結果モーダル、Mobile「×」ボタン除外機能
+- **API統合**: Web/Mobile共通ロジック、JSON応答統一
 
 **今後の展開**:
 - メール認証機能の実装（email_verified_at の活用）
 - 親子メールアドレス同期の通知機能
 - プロフィール履歴管理（audit log）
+- プラン変更時のメンバー数調整フロー
 
 この要件定義書を基に、開発・テスト・運用が一貫した品質で実施されることを期待します。
