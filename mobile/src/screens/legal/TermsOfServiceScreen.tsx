@@ -270,6 +270,9 @@ export const TermsOfServiceScreen: React.FC = () => {
           style={{
             marginBottom: getSpacing(16, width),
           }}
+          contentContainerStyle={{
+            paddingHorizontal: getSpacing(16, width),
+          }}
         >
           <View
             style={{
@@ -277,7 +280,6 @@ export const TermsOfServiceScreen: React.FC = () => {
               borderColor: colors.border.default,
               borderRadius: getBorderRadius(8, width),
               overflow: 'hidden',
-              minWidth: width - getSpacing(32, width),
             }}
           >
             {rows.map((row, rowIndex) => {
@@ -305,14 +307,14 @@ export const TermsOfServiceScreen: React.FC = () => {
                 >
                   {cells.map((cell: any, cellIndex: number) => {
                     const text = getTextContent(cell);
-                    const minCellWidth = 120; // 最小セル幅
+                    // セルごとに適切な幅を設定
+                    const cellWidth = cellIndex === 0 ? 150 : cellIndex === 1 ? 100 : 200;
                     
                     return (
                       <View
                         key={`cell-${rowIndex}-${cellIndex}`}
                         style={{
-                          minWidth: minCellWidth,
-                          flex: 1,
+                          width: cellWidth,
                           padding: getSpacing(12, width),
                           backgroundColor: colors.card,
                           borderRightWidth: cellIndex < cells.length - 1 ? 1 : 0,
