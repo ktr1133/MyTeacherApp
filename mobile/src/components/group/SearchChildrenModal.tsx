@@ -187,6 +187,10 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
           });
         }
         
+        // Alert表示前にローディング状態を解除
+        setLinking(false);
+        
+        // Alertを表示し、OKボタン押下後にモーダルを閉じてからコールバック実行
         Alert.alert(
           theme === 'child' ? 'できたよ！' : '紐づけ完了',
           message,
@@ -194,24 +198,28 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
             {
               text: 'OK',
               onPress: () => {
-                // 成功コールバック実行（画面リロード）
-                if (onSuccess) {
-                  onSuccess();
-                }
+                // モーダルを閉じる（状態クリア含む）
+                handleClose();
+                
+                // モーダルが完全に閉じた後にコールバック実行（次のレンダリングサイクルで実行）
+                setTimeout(() => {
+                  if (onSuccess) {
+                    onSuccess();
+                  }
+                }, 100);
               },
             },
           ]
         );
       }
     } catch (err) {
+      setLinking(false);
       const errorMessage = err instanceof Error ? err.message : '紐づけに失敗しました';
       Alert.alert(
         theme === 'child' ? 'エラー' : 'エラー',
         errorMessage
       );
       console.error('[SearchChildrenModal] Link children error:', err);
-    } finally {
-      setLinking(false);
     }
   };
 

@@ -435,7 +435,7 @@ export const GroupManagementScreen: React.FC = () => {
         onClose={() => setShowSearchChildrenModal(false)}
         onSuccess={() => {
           setShowSearchChildrenModal(false);
-          loadGroupData();
+          fetchGroupInfo();
         }}
       />
 
