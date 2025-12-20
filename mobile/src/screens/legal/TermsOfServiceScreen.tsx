@@ -247,31 +247,34 @@ export const TermsOfServiceScreen: React.FC = () => {
       
       console.log('Rows found:', rows.length);
       
-      // テキスト抽出ヘルパー
-      const getTextContent = (node: any): string => {
-        if (!node) return '';
-        if (node.data) return node.data;
-        if (node.children && node.children.length > 0) {
-          return node.children.map((child: any) => getTextContent(child)).join('');
-        }
-        return '';
-      };
-      
-      // rowsが見つからない場合はフォールバック（テーブルを表示しない）
-      if (rows.length === 0) {
-        console.warn('⚠️ No table rows found!');
-        return (
-          <View style={{ marginBottom: getSpacing(16, width), padding: getSpacing(16, width), backgroundColor: '#FFF3CD', borderRadius: getBorderRadius(8, width) }}>
-            <Text style={{ color: '#856404', fontSize: getFontSize(14, width, themeType) }}>
-              ⚠️ テーブルが見つかりませんでした（デバッグモード）
+      // デバッグ: 常に表示して状況確認
+      return (
+        <View style={{ marginBottom: getSpacing(16, width), padding: getSpacing(16, width), backgroundColor: '#FFF3CD', borderRadius: getBorderRadius(8, width) }}>
+          <Text style={{ color: '#856404', fontSize: getFontSize(14, width, themeType) }}>
+            ⚠️ テーブルデバッグ情報
+          </Text>
+          <Text style={{ color: '#856404', fontSize: getFontSize(12, width, themeType), marginTop: getSpacing(8, width) }}>
+            tnode.type: {tnode.type}
+          </Text>
+          <Text style={{ color: '#856404', fontSize: getFontSize(12, width, themeType) }}>
+            tagName: {tnode.tagName}
+          </Text>
+          <Text style={{ color: '#856404', fontSize: getFontSize(12, width, themeType) }}>
+            children: {tnode.children?.length || 0}
+          </Text>
+          <Text style={{ color: '#856404', fontSize: getFontSize(12, width, themeType) }}>
+            rows.length: {rows.length}
+          </Text>
+          {tnode.children?.map((child: any, idx: number) => (
+            <Text key={idx} style={{ color: '#856404', fontSize: getFontSize(10, width, themeType) }}>
+              child[{idx}]: type={child.type}, tagName={child.tagName || child.name}, children={child.children?.length || 0}
             </Text>
-            <Text style={{ color: '#856404', fontSize: getFontSize(12, width, themeType), marginTop: getSpacing(8, width) }}>
-              tnode.type: {tnode.type} / tagName: {tnode.tagName} / children: {tnode.children?.length || 0}
-            </Text>
-          </View>
-        );
-      }
+          ))}
+        </View>
+      );
       
+      // 以下は一時的にコメントアウト
+      /*
       return (
         <ScrollView
           horizontal
@@ -341,6 +344,7 @@ export const TermsOfServiceScreen: React.FC = () => {
           </View>
         </ScrollView>
       );
+      */
     },
     // セクションレンダラー（位置記録）
     section: ({ TDefaultRenderer, tnode, ...props }: any) => {
