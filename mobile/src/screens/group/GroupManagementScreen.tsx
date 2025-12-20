@@ -434,8 +434,12 @@ export const GroupManagementScreen: React.FC = () => {
         visible={showSearchChildrenModal}
         onClose={() => setShowSearchChildrenModal(false)}
         onSuccess={() => {
+          // モーダルを閉じる
           setShowSearchChildrenModal(false);
-          fetchGroupInfo();
+          // 次のレンダリングサイクルでデータ再取得（モーダルアンマウント完了後）
+          setTimeout(() => {
+            fetchGroupInfo();
+          }, 150);
         }}
       />
 
