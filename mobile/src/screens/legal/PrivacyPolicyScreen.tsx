@@ -232,7 +232,10 @@ export const PrivacyPolicyScreen: React.FC = () => {
       
       const extractRows = (node: any, depth: number = 0) => {
         if (!node) return;
-        if (node.type === 'tag' && node.name === 'tr') {
+        // node.tagName または node.name が 'tr' の場合に行として扱う
+        // node.type は 'tag' または 'block' の可能性がある
+        const nodeName = node.tagName || node.name;
+        if (nodeName === 'tr') {
           rows.push(node);
         }
         if (node.children) {
