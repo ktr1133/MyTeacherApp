@@ -241,9 +241,12 @@ class TaskApprovalService implements TaskApprovalServiceInterface
 
         return DB::transaction(function () use ($task, $user) {
             // 申請したユーザの完了申請を記録
+            // 承認不要タスクは即座に承認済み扱いとする
             $task = $this->taskRepository->update($task, [
                 'is_completed' => true,
                 'completed_at' => now(),
+                'approved_at' => now(),  // 承認不要タスクも完了時にapproval_atを設定
+                'approved_by_user_id' => $user->id,  // 申請者自身が承認者扱い
             ]);
 
             // 同一グループタスクの他メンバー分を論理削除
