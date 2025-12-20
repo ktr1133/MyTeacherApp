@@ -263,6 +263,10 @@ export const TermsOfServiceScreen: React.FC = () => {
         return null;
       }
       
+      // 列幅の定義（全行で統一）
+      const columnWidths = [180, 140, 200]; // [データ種別, 保持期間, 削除方法]
+      const totalWidth = columnWidths.reduce((sum, w) => sum + w, 0);
+      
       return (
         <ScrollView
           horizontal
@@ -276,6 +280,7 @@ export const TermsOfServiceScreen: React.FC = () => {
         >
           <View
             style={{
+              width: totalWidth,
               borderWidth: 1,
               borderColor: colors.border.default,
               borderRadius: getBorderRadius(8, width),
@@ -307,8 +312,7 @@ export const TermsOfServiceScreen: React.FC = () => {
                 >
                   {cells.map((cell: any, cellIndex: number) => {
                     const text = getTextContent(cell);
-                    // セルごとに適切な幅を設定
-                    const cellWidth = cellIndex === 0 ? 150 : cellIndex === 1 ? 100 : 200;
+                    const cellWidth = columnWidths[cellIndex] || 150;
                     
                     return (
                       <View
