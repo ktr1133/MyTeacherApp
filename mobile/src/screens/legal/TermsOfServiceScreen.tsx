@@ -223,7 +223,9 @@ export const TermsOfServiceScreen: React.FC = () => {
     // テーブルのカスタムレンダラー（横スクロール対応）
     table: ({ tnode }: any) => {
       console.log('✅ Table renderer called!');
-      console.log('tnode:', JSON.stringify(tnode, null, 2).substring(0, 500));
+      console.log('tnode.type:', tnode.type);
+      console.log('tnode.tagName:', tnode.tagName);
+      console.log('tnode.children count:', tnode.children?.length);
       
       // テーブル配下のすべてのtr要素を抽出
       const rows: any[] = [];
