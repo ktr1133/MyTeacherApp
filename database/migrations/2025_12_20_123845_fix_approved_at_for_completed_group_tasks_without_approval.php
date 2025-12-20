@@ -4,8 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
+/**
+ * 承認不要グループタスクのapproved_at修正マイグレーション
+ * 
+ * @property-read \Illuminate\Console\OutputStyle|null $command コンソールコマンドインスタンス（マイグレーション実行時のみ存在）
+ */
 return new class extends Migration
 {
     /**
@@ -34,12 +38,7 @@ return new class extends Migration
             ->whereNotNull('completed_at')  // completed_atがnullの場合は除外（異常データ）
             ->count();
 
-        Log::info('[DataMaintenance] Fix approved_at for group tasks without approval', [
-            'target_count' => $targetCount,
-        ]);
-
         if ($targetCount === 0) {
-            Log::info('[DataMaintenance] No target data found. Skipping update.');
             return;
         }
 
@@ -55,20 +54,6 @@ return new class extends Migration
                 'approved_by_user_id' => DB::raw('COALESCE(assigned_by_user_id, user_id)'),
                 'updated_at' => now(),
             ]);
-
-        Log::info('[DataMaintenance] Updated approved_at for group tasks', [
-            'updated_count' => $updated,
-        ]);
-
-        // 更新結果をコンソール出力
-        echo "\n";
-        echo "==============================================\n";
-        echo "データメンテナンス完了\n";
-        echo "==============================================\n";
-        echo "対象件数: {$targetCount}\n";
-        echo "更新件数: {$updated}\n";
-        echo "==============================================\n";
-        echo "\n";
     }
 
     /**
@@ -78,12 +63,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Log::warning('[DataMaintenance] Rollback for approved_at fix is not supported.');
-        echo "\n";
-        echo "==============================================\n";
-        echo "警告: このマイグレーションはロールバックできません\n";
-        echo "==============================================\n";
-        echo "理由: 元のデータ（null）を復元しても意味がないため\n";
-        echo "\n";
+        // ロールバック不可（元データがnullのため復元不要）
     }
 };
