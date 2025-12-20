@@ -246,7 +246,7 @@ class TaskApprovalService implements TaskApprovalServiceInterface
                 'is_completed' => true,
                 'completed_at' => now(),
                 'approved_at' => now(),  // 承認不要タスクも完了時にapproval_atを設定
-                'approved_by_user_id' => $user->id,  // 申請者自身が承認者扱い
+                'approved_by_user_id' => $task->assigned_by_user_id ?? $user->id,  // assigned_by_user_id優先、nullなら申請者
             ]);
 
             // 同一グループタスクの他メンバー分を論理削除

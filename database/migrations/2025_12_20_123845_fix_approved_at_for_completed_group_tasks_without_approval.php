@@ -52,7 +52,7 @@ return new class extends Migration
             ->whereNotNull('completed_at')
             ->update([
                 'approved_at' => DB::raw('completed_at'),
-                'approved_by_user_id' => DB::raw('user_id'),
+                'approved_by_user_id' => DB::raw('COALESCE(assigned_by_user_id, user_id)'),
                 'updated_at' => now(),
             ]);
 

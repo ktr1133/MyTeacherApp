@@ -13,16 +13,19 @@ WHERE group_task_id IS NOT NULL
   AND completed_at IS NOT NULL;
 
 -- 対象データのサンプル（最大10件）
+-- approved_by_user_idにはCOALESCE(assigned_by_user_id, user_id)が設定されます
 SELECT 
     id,
     user_id,
+    assigned_by_user_id,
+    COALESCE(assigned_by_user_id, user_id) as will_be_approved_by,
     group_task_id,
     title,
     requires_approval,
     is_completed,
     completed_at,
     approved_at,
-    approved_by_user_id,
+    approved_by_user_id as current_approved_by,
     created_at
 FROM tasks
 WHERE group_task_id IS NOT NULL
