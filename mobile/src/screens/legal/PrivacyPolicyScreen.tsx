@@ -222,11 +222,6 @@ export const PrivacyPolicyScreen: React.FC = () => {
     },
     // テーブルのカスタムレンダラー（横スクロール対応）
     table: ({ tnode }: any) => {
-      console.log('✅ Table renderer called!');
-      console.log('tnode.type:', tnode.type);
-      console.log('tnode.tagName:', tnode.tagName);
-      console.log('tnode.children count:', tnode.children?.length);
-      
       // テーブル配下のすべてのtr要素を抽出
       const rows: any[] = [];
       
@@ -245,8 +240,6 @@ export const PrivacyPolicyScreen: React.FC = () => {
       
       extractRows(tnode);
       
-      console.log('Rows found:', rows.length);
-      
       // テキスト抽出ヘルパー
       const getTextContent = (node: any): string => {
         if (!node) return '';
@@ -259,7 +252,6 @@ export const PrivacyPolicyScreen: React.FC = () => {
       
       // rowsが見つからない場合はフォールバック
       if (rows.length === 0) {
-        console.warn('⚠️ No table rows found!');
         return null;
       }
       
