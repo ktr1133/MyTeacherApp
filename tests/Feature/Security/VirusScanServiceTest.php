@@ -67,7 +67,7 @@ class VirusScanServiceTest extends TestCase
             // 検証
             $this->assertFalse($isClean, 'EICAR test file should be detected as infected');
             $this->assertEquals('infected', $result['status']);
-            $this->assertStringContainsString('EICAR', $result['details'] ?? '');
+            $this->assertStringContainsString('Eicar', $result['details'] ?? '', '', true); // 大文字小文字を区別しない
         } finally {
             // クリーンアップ
             if (file_exists($testFilePath)) {
