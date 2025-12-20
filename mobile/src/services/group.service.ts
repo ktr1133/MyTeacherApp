@@ -117,3 +117,35 @@ export const sendLinkRequest = async (childUserId: number): Promise<{
   });
   return response.data;
 };
+
+/**
+ * 子アカウントを一括紐づけ（Phase 6 - 同意なし即座紐づけ）
+ */
+export const linkChildren = async (childUserIds: number[]): Promise<{
+  success: boolean;
+  message: string;
+  data: {
+    linked_children: Array<{
+      user_id: number;
+      username: string;
+      name: string | null;
+      email: string;
+    }>;
+    skipped_children: Array<{
+      user_id: number;
+      username?: string;
+      name?: string | null;
+      reason: string;
+    }>;
+    summary: {
+      total_requested: number;
+      linked: number;
+      skipped: number;
+    };
+  };
+}> => {
+  const response = await api.post('/profile/group/link-children', {
+    child_user_ids: childUserIds,
+  });
+  return response.data;
+};

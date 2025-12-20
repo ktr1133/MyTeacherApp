@@ -47,6 +47,7 @@ use App\Http\Actions\Api\Profile\DeleteDeviceByIdAction;
 use App\Http\Actions\Api\Profile\GetDevicesAction;
 use App\Http\Actions\Api\Profile\Group\SearchUnlinkedChildrenApiAction;
 use App\Http\Actions\Api\Profile\Group\SendChildLinkRequestApiAction;
+use App\Http\Actions\Api\Profile\Group\LinkChildrenApiAction;
 use App\Http\Actions\Api\Notification\ApproveParentLinkApiAction;
 use App\Http\Actions\Api\Notification\RejectParentLinkApiAction;
 use App\Http\Actions\Api\Tags\TagsListApiAction;
@@ -299,6 +300,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('group')->group(function () {
             Route::post('/search-children', SearchUnlinkedChildrenApiAction::class)->name('api.profile.group.search-children');
             Route::post('/send-link-request', SendChildLinkRequestApiAction::class)->name('api.profile.group.send-link-request');
+            Route::post('/link-children', LinkChildrenApiAction::class)->name('api.profile.group.link-children');
         });
     });
 

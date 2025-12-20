@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-CtG8SF55.css",
+    "file": "assets/app-DqvRaAMp.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -359,6 +359,12 @@
     "file": "assets/task-search-DMIlhMAa.js",
     "name": "task-search",
     "src": "resources/js/dashboard/task-search.js",
+    "isEntry": true
+  },
+  "resources/js/group-link-children.js": {
+    "file": "assets/group-link-children-Dk4gt3Qq.js",
+    "name": "group-link-children",
+    "src": "resources/js/group-link-children.js",
     "isEntry": true
   },
   "resources/js/group-tasks/edit.js": {

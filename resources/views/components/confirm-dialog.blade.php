@@ -67,6 +67,7 @@
     const dialog = document.getElementById('confirm-dialog');
     const overlay = document.getElementById('confirm-dialog-overlay');
     const card = document.getElementById('confirm-dialog-card');
+    const titleEl = document.getElementById('confirm-dialog-title');
     const messageEl = document.getElementById('confirm-dialog-message');
     const confirmBtn = document.getElementById('confirm-dialog-confirm-btn');
     const cancelBtn = document.getElementById('confirm-dialog-cancel-btn');
@@ -90,8 +91,59 @@
         currentOnConfirm = onConfirm;
         currentOnCancel = onCancel;
         
-        // メッセージ設定
+        // タイトルとメッセージ設定
+        if (titleEl) titleEl.textContent = '確認';
         messageEl.textContent = message;
+        
+        // 両方のボタンを表示
+        if (cancelBtn) cancelBtn.classList.remove('hidden');
+        if (confirmBtn) confirmBtn.textContent = '実行';
+        
+        // 表示アニメーション
+        dialog.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        
+        // フェードイン
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '0';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+            
+            requestAnimationFrame(() => {
+                overlay.style.transition = 'opacity 300ms';
+                card.style.transition = 'opacity 300ms, transform 300ms';
+                overlay.style.opacity = '1';
+                card.style.opacity = '1';
+                card.style.transform = 'scale(1)';
+            });
+        });
+        
+        // 確認ボタンにフォーカス
+        setTimeout(() => confirmBtn?.focus(), 100);
+    };
+    
+    /**
+     * アラートダイアログを表示（OKボタンのみ）
+     * @param {string} message - 表示メッセージ
+     * @param {Function} onClose - 閉じた時のコールバック（省略可）
+     */
+    window.showAlertDialog = function(message, onClose) {
+        if (!dialog || !messageEl) {
+            console.error('[ConfirmDialog] Dialog elements not found');
+            return;
+        }
+        
+        // コールバック保存
+        currentOnConfirm = onClose;
+        currentOnCancel = null;
+        
+        // タイトルとメッセージ設定
+        if (titleEl) titleEl.textContent = '通知';
+        messageEl.textContent = message;
+        
+        // キャンセルボタンを非表示、確認ボタンを「OK」に変更
+        if (cancelBtn) cancelBtn.classList.add('hidden');
+        if (confirmBtn) confirmBtn.textContent = 'OK';
         
         // 表示アニメーション
         dialog.classList.remove('hidden');

@@ -4,9 +4,12 @@
  * 機能:
  * - 親のメールアドレスで未紐付けの子アカウントを検索
  * - 検索結果一覧表示（FlatList）
- * - 各子アカウントに紐付けリクエスト送信
+ * - 各子アカウントに「×」ボタンで除外
+ * - 選択した子アカウントを一括紐づけ（同意なし）
  * - レスポンシブデザイン対応
  * - テーマ対応（adult/child）
+ * 
+ * Phase 6更新: 紐づけリクエスト送信 → 一括紐づけに変更
  * 
  * 使用例:
  * ```tsx
@@ -40,7 +43,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useThemedColors } from '../../hooks/useThemedColors';
 import { useResponsive, getFontSize, getSpacing, getBorderRadius } from '../../utils/responsive';
-import { searchUnlinkedChildren, sendLinkRequest } from '../../services/group.service';
+import { searchUnlinkedChildren, linkChildren } from '../../services/group.service';
 
 /**
  * 子アカウント情報型
@@ -81,8 +84,9 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
 
   const [parentEmail, setParentEmail] = useState(user?.email || '');
   const [children, setChildren] = useState<ChildAccount[]>([]);
+  const [selectedChildren, setSelectedChildren] = useState<Set<number>>(new Set());
   const [searching, setSearching] = useState(false);
-  const [sendingRequestFor, setSendingRequestFor] = useState<number | null>(null);
+  const [linking, setLinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // モーダルが開かれた時とユーザー情報更新時にメールアドレスを同期
@@ -117,6 +121,10 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
       if (response.success) {
         setChildren(response.data.children);
         
+        // 全ての子アカウントを初期選択状態にする
+        const allChildrenIds = new Set(response.data.children.map(child => child.id));
+        setSelectedChildren(allChildrenIds);
+        
         if (response.data.children.length === 0) {
           Alert.alert(
             theme === 'child' ? 'けっか' : '検索結果',
@@ -140,27 +148,53 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
   };
 
   /**
-   * 紐付けリクエスト送信
+   * 子アカウントを除外
    */
-  const handleSendRequest = async (childId: number, childName: string) => {
-    setSendingRequestFor(childId);
+  const handleRemoveChild = (childId: number) => {
+    setSelectedChildren(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(childId);
+      return newSet;
+    });
+  };
+
+  /**
+   * 選択した子アカウントを一括紐づけ
+   */
+  const handleLinkChildren = async () => {
+    if (selectedChildren.size === 0) {
+      Alert.alert(
+        theme === 'child' ? 'エラー' : 'エラー',
+        theme === 'child'
+          ? 'ひもづける こどもを えらんでね'
+          : '紐づけする子アカウントを選択してください'
+      );
+      return;
+    }
+
+    setLinking(true);
     try {
-      const response = await sendLinkRequest(childId);
+      const response = await linkChildren(Array.from(selectedChildren));
       
       if (response.success) {
+        let message = response.message;
+        
+        // スキップされたアカウントがある場合は詳細を表示
+        if (response.data.skipped_children.length > 0) {
+          message += '\n\n紐づけできなかったアカウント：\n';
+          response.data.skipped_children.forEach(skipped => {
+            message += `• ${skipped.username || 'ID: ' + skipped.user_id}: ${skipped.reason}\n`;
+          });
+        }
+        
         Alert.alert(
-          theme === 'child' ? 'そうしんしたよ！' : 'リクエスト送信完了',
-          theme === 'child'
-            ? `${childName}さんに リクエストを おくったよ！`
-            : `${childName}さんに紐付けリクエストを送信しました。`,
+          theme === 'child' ? 'できたよ！' : '紐づけ完了',
+          message,
           [
             {
               text: 'OK',
               onPress: () => {
-                // リストから削除（送信済み）
-                setChildren((prev) => prev.filter((child) => child.id !== childId));
-                
-                // 成功コールバック実行
+                // 成功コールバック実行（画面リロード）
                 if (onSuccess) {
                   onSuccess();
                 }
@@ -170,14 +204,14 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
         );
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '送信に失敗しました';
+      const errorMessage = err instanceof Error ? err.message : '紐づけに失敗しました';
       Alert.alert(
         theme === 'child' ? 'エラー' : 'エラー',
         errorMessage
       );
-      console.error('[SearchChildrenModal] Send request error:', err);
+      console.error('[SearchChildrenModal] Link children error:', err);
     } finally {
-      setSendingRequestFor(null);
+      setLinking(false);
     }
   };
 
@@ -185,8 +219,9 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
    * モーダルを閉じる
    */
   const handleClose = () => {
-    // 検索結果とエラーのみクリア（親メールアドレスは保持）
+    // 検索結果と選択状態をクリア（親メールアドレスは保持）
     setChildren([]);
+    setSelectedChildren(new Set());
     setError(null);
     onClose();
   };
@@ -195,11 +230,11 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
    * 子アカウントカードレンダー
    */
   const renderChildItem = ({ item }: { item: ChildAccount }) => {
-    const isSending = sendingRequestFor === item.id;
+    const isSelected = selectedChildren.has(item.id);
     const displayName = item.name || item.username;
 
     return (
-      <View style={[styles.childCard, { backgroundColor: colors.surface }]}>
+      <View style={[styles.childCard, { backgroundColor: colors.surface, opacity: isSelected ? 1 : 0.5 }]}>
         <View style={styles.childInfo}>
           <Text style={[styles.childName, { color: colors.text.primary, fontSize: getFontSize(16, width, theme) }]}>
             {displayName}
@@ -220,30 +255,27 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
         </View>
 
         <TouchableOpacity
-          onPress={() => handleSendRequest(item.id, displayName)}
-          disabled={isSending}
-          style={styles.sendButton}
+          onPress={() => handleRemoveChild(item.id)}
+          style={[
+            styles.removeButton,
+            { 
+              borderColor: isSelected ? (colors.status?.error || '#EF4444') : (colors.text.tertiary || '#9CA3AF'),
+              opacity: isSelected ? 1 : 0.5
+            }
+          ]}
         >
-          <LinearGradient
-            colors={accent.gradient as any}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.sendButtonGradient, { borderRadius: getBorderRadius(8, width) }]}
-          >
-            {isSending ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text style={[styles.sendButtonText, { fontSize: getFontSize(14, width, theme) }]}>
-                {theme === 'child' ? 'おくる' : '送信'}
-              </Text>
-            )}
-          </LinearGradient>
+          <Text style={[
+            styles.removeButtonText,
+            { color: isSelected ? (colors.status?.error || '#EF4444') : (colors.text.tertiary || '#9CA3AF') }
+          ]}>
+            ✕
+          </Text>
         </TouchableOpacity>
       </View>
     );
   };
 
-  const styles = createStyles(width, theme, colors, accent);
+  const styles = createStyles(width, theme, colors);
 
   return (
     <Modal
@@ -315,11 +347,18 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
           {/* 検索結果 */}
           {children.length > 0 && (
             <>
-              <Text style={styles.resultsHeader}>
-                {theme === 'child' 
-                  ? `${children.length}にんの こどもが みつかったよ！`
-                  : `検索結果: ${children.length}件`}
-              </Text>
+              <View style={styles.resultsHeaderContainer}>
+                <Text style={styles.resultsHeader}>
+                  {theme === 'child' 
+                    ? `${children.length}にんの こどもが みつかったよ！`
+                    : `検索結果: ${children.length}件`}
+                </Text>
+                <Text style={styles.resultsSubHeader}>
+                  {theme === 'child'
+                    ? '「×」で はずせるよ'
+                    : '「×」ボタンで除外できます'}
+                </Text>
+              </View>
 
               <FlatList
                 data={children}
@@ -328,6 +367,33 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
                 contentContainerStyle={styles.resultsList}
                 showsVerticalScrollIndicator={false}
               />
+
+              {/* 紐づけボタン */}
+              <TouchableOpacity
+                onPress={handleLinkChildren}
+                disabled={linking || selectedChildren.size === 0}
+                style={styles.linkButton}
+              >
+                <LinearGradient
+                  colors={accent.gradient as any}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[
+                    styles.linkButtonGradient,
+                    { opacity: selectedChildren.size === 0 ? 0.5 : 1 }
+                  ]}
+                >
+                  {linking ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={[styles.linkButtonText, { fontSize: getFontSize(16, width, theme) }]}>
+                      {theme === 'child'
+                        ? `${selectedChildren.size}にんを ひもづける`
+                        : `選択した${selectedChildren.size}人を紐づける`}
+                    </Text>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
             </>
           )}
 
@@ -353,8 +419,7 @@ export const SearchChildrenModal: React.FC<SearchChildrenModalProps> = ({
 const createStyles = (
   width: number,
   theme: 'adult' | 'child',
-  colors: any,
-  accent: { primary: string; gradient: string[] }
+  colors: any
 ) => StyleSheet.create({
   modalOverlay: {
     flex: 1,
@@ -431,14 +496,22 @@ const createStyles = (
     color: colors.status.error,
     textAlign: 'center',
   },
+  resultsHeaderContainer: {
+    marginBottom: getSpacing(12, width),
+  },
   resultsHeader: {
     fontSize: getFontSize(16, width, theme),
     fontWeight: '700',
     color: colors.text.primary,
-    marginBottom: getSpacing(12, width),
+    marginBottom: getSpacing(4, width),
+  },
+  resultsSubHeader: {
+    fontSize: getFontSize(12, width, theme),
+    color: colors.text.tertiary,
   },
   resultsList: {
     paddingBottom: getSpacing(16, width),
+    maxHeight: '50%',
   },
   childCard: {
     flexDirection: 'row',
@@ -470,17 +543,31 @@ const createStyles = (
   minorBadgeText: {
     fontWeight: '600',
   },
-  sendButton: {
+  removeButton: {
     marginLeft: getSpacing(12, width),
-  },
-  sendButtonGradient: {
-    paddingVertical: getSpacing(10, width),
-    paddingHorizontal: getSpacing(16, width),
+    width: 36,
+    height: 36,
+    borderRadius: getBorderRadius(8, width),
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
   },
-  sendButtonText: {
+  removeButtonText: {
+    fontSize: getFontSize(20, width, theme),
+    fontWeight: '700',
+  },
+  linkButton: {
+    marginTop: getSpacing(16, width),
+  },
+  linkButtonGradient: {
+    paddingVertical: getSpacing(14, width),
+    paddingHorizontal: getSpacing(24, width),
+    borderRadius: getBorderRadius(8, width),
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  linkButtonText: {
     color: '#FFFFFF',
     fontWeight: '700',
   },

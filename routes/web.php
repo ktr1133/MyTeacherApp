@@ -94,6 +94,7 @@ use App\Http\Actions\Profile\Group\TransferGroupMasterAction;
 use App\Http\Actions\Profile\Group\RemoveMemberAction;
 use App\Http\Actions\Profile\Group\SearchUnlinkedChildrenAction;
 use App\Http\Actions\Profile\Group\SendChildLinkRequestAction;
+use App\Http\Actions\Profile\Group\LinkChildrenAction;
 use App\Http\Actions\Reports\IndexPerformanceAction;
 use App\Http\Actions\Reports\ShowMonthlyReportAction;
 use App\Http\Actions\Reports\GenerateMemberSummaryAction;
@@ -333,6 +334,7 @@ Route::middleware(['auth'])->group(function () {
         // --- Phase 5-2拡張: 未紐付け子アカウント検索・紐付けリクエスト ---
         Route::post('/group/search-children', SearchUnlinkedChildrenAction::class)->name('profile.group.search-children');
         Route::post('/group/send-link-request', SendChildLinkRequestAction::class)->name('profile.group.send-link-request');
+        Route::post('/group/link-children', LinkChildrenAction::class)->name('profile.group.link-children');
     });
 
     // ========================================

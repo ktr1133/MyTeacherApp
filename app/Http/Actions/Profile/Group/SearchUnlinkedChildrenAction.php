@@ -6,6 +6,7 @@ use App\Http\Requests\Profile\Group\SearchUnlinkedChildrenRequest;
 use App\Responders\Profile\Group\GroupResponder;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -29,9 +30,9 @@ class SearchUnlinkedChildrenAction
      * 未紐付け子アカウント検索を実行
      * 
      * @param SearchUnlinkedChildrenRequest $request HTTPリクエスト
-     * @return RedirectResponse リダイレクトレスポンス
+     * @return RedirectResponse|JsonResponse リダイレクトレスポンスまたはJSONレスポンス
      */
-    public function __invoke(SearchUnlinkedChildrenRequest $request): RedirectResponse
+    public function __invoke(SearchUnlinkedChildrenRequest $request): RedirectResponse|JsonResponse
     {
         $parentUser = $request->user();
         $parentEmail = $request->input('parent_email');
@@ -51,7 +52,29 @@ class SearchUnlinkedChildrenAction
             'found_count' => $children->count(),
         ]);
 
-        // グループ管理画面にリダイレクト（検索結果を含む）
+        // AJAXリクエストの場合はJSONレスポンス
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $children->count() > 0 
+                    ? sprintf('%d人の子アカウントが見つかりました。', $children->count())
+                    : '該当する子アカウントが見つかりませんでした。',
+                'data' => [
+                    'children' => $children->map(function ($child) {
+                        return [
+                            'id' => $child->id,
+                            'username' => $child->username,
+                            'name' => $child->name,
+                            'email' => $child->email,
+                            'created_at' => $child->created_at->toIso8601String(),
+                            'is_minor' => $child->is_minor,
+                        ];
+                    })->values(),
+                ],
+            ]);
+        }
+
+        // 通常リクエストの場合はグループ管理画面にリダイレクト（検索結果を含む）
         return redirect()->route('group.edit')
             ->with('children', $children);
     }

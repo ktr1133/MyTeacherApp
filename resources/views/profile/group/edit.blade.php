@@ -5,6 +5,7 @@
     @endpush
     @push('scripts')
         @vite(['resources/js/profile/profile-validation.js'])
+        @vite(['resources/js/group-link-children.js'])
     @endpush
 
     {{-- アバターイベント監視用 --}}

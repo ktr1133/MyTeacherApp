@@ -5497,6 +5497,207 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /profile/group/link-children:
+    post:
+      summary: 子アカウント一括紐づけ（即座に紐づけ）
+      description: |
+        保護者が複数の子アカウントを即座に自分のグループに紐づけます。
+        
+        **処理内容**:
+        1. 各子アカウントについて、既にgroup_idを持つ場合はスキップ
+        2. グループのメンバー数上限チェック（無料/Family: 6名、Enterprise: 20名）
+        3. group_id = 保護者のgroup_id を設定
+        4. group_edit_flg = false を設定
+        5. parent_user_id = 保護者のIDを設定
+        
+        **注意事項**:
+        - 子の同意は不要（即座に紐づけ）
+        - 既に別のグループに所属している子はスキップされる
+        - グループメンバー上限に達している場合、追加の子はスキップされる
+        - 一部の子のみスキップされた場合は206 Partial Contentを返す
+        - 全ての子がスキップされた場合は400エラーを返す
+      tags: [Profile]
+      security:
+        - SanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [child_user_ids]
+              properties:
+                child_user_ids:
+                  type: array
+                  description: 紐づけする子アカウントIDの配列（最低1人以上）
+                  minItems: 1
+                  items:
+                    type: integer
+                  example: [789, 790, 791]
+      responses:
+        '200':
+          description: 全ての子アカウントの紐づけ成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "選択した子アカウント全員を紐づけました。"
+                  data:
+                    type: object
+                    properties:
+                      linked_children:
+                        type: array
+                        description: 紐づけに成功した子アカウント
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 789
+                            username:
+                              type: string
+                              example: "child_hanako"
+                            name:
+                              type: string
+                              nullable: true
+                              example: "花子"
+                            email:
+                              type: string
+                              example: "hanako@example.com"
+                      skipped_children:
+                        type: array
+                        description: スキップされた子アカウント（空配列）
+                        items:
+                          type: object
+                        example: []
+                      summary:
+                        type: object
+                        properties:
+                          total_requested:
+                            type: integer
+                            description: リクエストされた総数
+                            example: 3
+                          linked:
+                            type: integer
+                            description: 紐づけ成功数
+                            example: 3
+                          skipped:
+                            type: integer
+                            description: スキップされた数
+                            example: 0
+        '206':
+          description: 一部の子アカウントのみ紐づけ成功（部分成功）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "一部の子アカウントを紐づけました。既にグループに所属しているアカウントはスキップされました。"
+                  data:
+                    type: object
+                    properties:
+                      linked_children:
+                        type: array
+                        description: 紐づけに成功した子アカウント
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            username:
+                              type: string
+                            name:
+                              type: string
+                              nullable: true
+                            email:
+                              type: string
+                      skipped_children:
+                        type: array
+                        description: スキップされた子アカウント
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 790
+                            username:
+                              type: string
+                              example: "child_taro"
+                            name:
+                              type: string
+                              nullable: true
+                              example: "太郎"
+                            reason:
+                              type: string
+                              description: スキップされた理由
+                              enum:
+                                - "既にグループに所属しています"
+                                - "グループメンバーの上限（6名）に達しています。"
+                                - "グループメンバーの上限（6名）に達しています。エンタープライズプランにアップグレードしてください。"
+                                - "グループメンバーの上限（20名）に達しています。"
+                              example: "既にグループに所属しています"
+                      summary:
+                        type: object
+                        properties:
+                          total_requested:
+                            type: integer
+                            example: 3
+                          linked:
+                            type: integer
+                            example: 2
+                          skipped:
+                            type: integer
+                            example: 1
+        '400':
+          description: バリデーションエラーまたは全ての子アカウントがスキップされた
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "選択した子アカウント全員が既にグループに所属しているため、紐づけできませんでした。"
+                  errors:
+                    type: object
+                    properties:
+                      child_user_ids:
+                        type: array
+                        items:
+                          type: string
+                        example: ["少なくとも1人の子アカウントIDが必要です。"]
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: 保護者がグループに所属していない
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "グループに所属していないため、子アカウントを紐づけできません。"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /notifications/{id}/approve-parent-link:
     post:
       summary: 親子紐付け承認
