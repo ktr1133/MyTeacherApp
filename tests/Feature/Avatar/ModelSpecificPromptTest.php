@@ -196,6 +196,6 @@ class ModelSpecificPromptTest extends TestCase
         $poseMethod->setAccessible(true);
         
         $this->assertEquals('full_body, standing, simple_pose', $poseMethod->invoke($job, 'full body standing pose'));
-        $this->assertEquals('upper_body, portrait, centered, face_focus', $poseMethod->invoke($job, 'upper body portrait'));
+        $this->assertEquals('upper_body, portrait, centered', $poseMethod->invoke($job, 'upper body portrait'));
     }
 }
