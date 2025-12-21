@@ -254,10 +254,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // グローバルに公開（デバッグ用）
     window.dashboardScrollManager = scrollManager;
-
-    console.log('Dashboard infinite scroll initialized', {
-        hasMore: hasMore,
-        nextPage: nextPage,
-        perPage: perPage
-    });
 });

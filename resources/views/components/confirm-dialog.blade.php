@@ -218,8 +218,6 @@
             handleCancel();
         }
     });
-    
-    console.log('[ConfirmDialog] Initialized');
 })();
 </script>
 @endpush

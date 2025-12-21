@@ -47,14 +47,6 @@ class SidebarController {
             this.showGeneralMenu = true; // 一般ユーザーは強制表示
         }
         
-        console.log('[Sidebar] DOM elements found:', {
-            desktopSidebar: !!this.desktopSidebar,
-            mobileSidebar: !!this.mobileSidebar,
-            mobileOverlay: !!this.mobileOverlay,
-            isAdmin: this.isAdmin,
-            showGeneralMenu: this.showGeneralMenu,
-        });
-        
         // デスクトップサイドバーの初期状態を適用
         if (this.desktopSidebar) {
             this.applyDesktopState();
@@ -304,8 +296,6 @@ class SidebarController {
         
         // スクロールを無効化
         document.body.style.overflow = 'hidden';
-        
-        console.log('[Sidebar] Mobile sidebar opened');
     }
     
     /**
@@ -334,8 +324,6 @@ class SidebarController {
         
         // スクロールを有効化
         document.body.style.overflow = '';
-        
-        console.log('[Sidebar] Mobile sidebar closed');
     }
     
     /**
@@ -433,7 +421,6 @@ class SidebarController {
                     setTimeout(() => this.closeMobile(), 100);
                 });
             });
-            console.log(`[Sidebar] Mobile link listeners added: ${mobileLinks.length} links`);
         }
         
         // ハンバーガーメニューボタン（イベント委譲で処理）
@@ -442,7 +429,6 @@ class SidebarController {
             if (hamburgerBtn) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('[Sidebar] Hamburger button clicked');
                 this.openMobile();
             }
         });
@@ -456,8 +442,6 @@ class SidebarController {
                 this.openMobile();
             }
         }, { passive: false });
-        
-        console.log('[Sidebar] Event listeners setup completed');
     }
 }
 

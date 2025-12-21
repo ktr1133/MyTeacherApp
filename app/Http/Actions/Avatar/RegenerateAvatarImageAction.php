@@ -30,9 +30,9 @@ class RegenerateAvatarImageAction
         try {
             $this->teacherAvatarService->regenerateImages($avatar);
 
-            return $this->responder->redirectToEdit(
-                'アバター画像を再生成しています。1〜2分お待ちください。'
-            );
+            return redirect()
+                ->route('tasks.index')
+                ->with('success', 'アバター画像を再生成しています。1〜2分お待ちください。');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
         }

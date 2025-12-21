@@ -96,15 +96,6 @@ function createToastContainer() {
     // pointer-events: none は削除（コンテナ自体はクリック可能にする必要がある）
     
     document.body.appendChild(container);
-    
-    console.log('[Notification Polling] Toast container created');
-    console.log('[Notification Polling] Container position:', container.getBoundingClientRect());
-    console.log('[Notification Polling] Container styles:', {
-        position: container.style.position,
-        bottom: container.style.bottom,
-        right: container.style.right,
-        zIndex: container.style.zIndex,
-    });
 }
 
 /**

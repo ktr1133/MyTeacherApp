@@ -40,11 +40,6 @@ class DashboardHeaderController {
             }
         }
         
-        console.log('[Header] Initialized:', {
-            notificationBadge: !!this.notificationBadge,
-            initialNotificationCount: this.notificationCount,
-        });
-        
         // 初期状態を適用
         this.applyNotificationCount();
         
@@ -58,7 +53,6 @@ class DashboardHeaderController {
     setupEventListeners() {
         // 通知カウント更新イベント（notification-polling.jsから）
         window.addEventListener('notification-count-updated', (event) => {
-            console.log('[Header] Notification count updated:', event.detail);
             this.notificationCount = event.detail.count;
             this.applyNotificationCount();
         });
@@ -79,12 +73,9 @@ class DashboardHeaderController {
             // カウント表示（99+で切り捨て）
             const displayCount = this.notificationCount > 99 ? '99+' : this.notificationCount;
             this.notificationBadgeText.textContent = displayCount;
-            
-            console.log('[Header] Notification badge shown:', displayCount);
         } else {
             // カウントが0ならバッジを非表示
             this.notificationBadge.style.display = 'none';
-            console.log('[Header] Notification badge hidden');
         }
     }
 }

@@ -4,8 +4,6 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('[Avatar Edit] Initializing...');
-    
     // モバイルメニュートグルボタン
     const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     if (mobileMenuToggle) {
@@ -22,8 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // アバターフォームの初期化
     initAvatarForm();
-    
-    console.log('[Avatar Edit] Initialization complete');
 });
 
 /**
@@ -32,7 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function initExpressionSlider() {
     const sliderContainer = document.getElementById('expression-slider');
     if (!sliderContainer) {
-        console.log('[Expression Slider] Container not found, skipping initialization');
         return;
     }
     
@@ -51,8 +46,6 @@ function initExpressionSlider() {
         console.error('[Expression Slider] Failed to parse expressions data:', e);
         return;
     }
-    
-    console.log('[Expression Slider] Loaded expressions:', expressions.length, 'isChibi:', isChibi);
     
     const state = {
         currentIndex: 0,
@@ -129,8 +122,6 @@ function initExpressionSlider() {
             return;
         }
         
-        console.log('[Expression Slider] Rendering thumbnails for', expressions.length, 'expressions');
-        
         thumbnailList.innerHTML = '';
         
         expressions.forEach((expr, index) => {
@@ -167,14 +158,11 @@ function initExpressionSlider() {
             
             // クリックイベント
             button.addEventListener('click', () => {
-                console.log('[Expression Slider] Thumbnail clicked:', index, expr.label);
                 goToExpression(index);
             });
             
             thumbnailList.appendChild(button);
         });
-        
-        console.log('[Expression Slider] Thumbnails rendered:', thumbnailList.children.length);
     }
     
     /**
@@ -260,7 +248,6 @@ function initExpressionSlider() {
                 if (state.currentIndex > 0) {
                     state.currentIndex--;
                     updateView();
-                    console.log('[Expression Slider] PC click: previous', state.currentIndex);
                 }
             }
             // 右半分クリック → 次へ
@@ -268,7 +255,6 @@ function initExpressionSlider() {
                 if (state.currentIndex < expressions.length - 1) {
                     state.currentIndex++;
                     updateView();
-                    console.log('[Expression Slider] PC click: next', state.currentIndex);
                 }
             }
         });
@@ -280,8 +266,6 @@ function initExpressionSlider() {
     // 初期表示
     renderThumbnails(); // サムネイル生成
     updateView();
-    
-    console.log('[Expression Slider] Initialized successfully');
 }
 
 /**
@@ -290,7 +274,6 @@ function initExpressionSlider() {
 function initAvatarForm() {
     const form = document.getElementById('avatar-form');
     if (!form) {
-        console.log('[Avatar Form] Form not found, skipping initialization');
         return;
     }
     
@@ -310,6 +293,4 @@ function initAvatarForm() {
             submitButton.textContent = '更新中...';
         }
     });
-    
-    console.log('[Avatar Form] Initialized successfully');
 }
