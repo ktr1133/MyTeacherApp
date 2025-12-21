@@ -671,6 +671,7 @@ class GenerateAvatarImagesJob implements ShouldQueue
      * Booru-styleプロンプト生成（anything-v4.0, animagine-xl-3.1用）
      * 
      * Danbooruタグ形式で最適化されたプロンプトを生成
+     * NSFW誤検知回避: 1boy削除、成人要素の軽減、ちびキャラ強調
      */
     private function buildBasePromptBooruStyle(TeacherAvatar $avatar): string
     {
@@ -680,11 +681,6 @@ class GenerateAvatarImagesJob implements ShouldQueue
         
         // Booru-style外見マッピング（アンダースコア区切り）
         $appearanceMap = [
-            'sex' => [
-                'male' => '1boy',
-                'female' => '1girl',
-                'other' => '1other',
-            ],
             'hair_style' => [
                 'short' => 'short_hair',
                 'middle' => 'medium_hair',
@@ -705,62 +701,72 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 'purple' => 'purple_eyes',
             ],
             'clothing' => [
-                'suit' => 'business_suit',
-                'casual' => 'casual',
-                'kimono' => 'kimono',
-                'robe' => 'robe',
-                'dress' => 'dress',
+                'suit' => 'simple_outfit',      // business_suit → NSFW回避
+                'casual' => 'casual_clothes',
+                'kimono' => 'traditional_kimono',
+                'robe' => 'simple_robe',
+                'dress' => 'simple_dress',
             ],
             'accessory' => [
-                'glasses' => 'glasses',
-                'hat' => 'hat',
+                'glasses' => 'eyewear',         // glasses → より一般的な表現
+                'hat' => 'headwear',
                 'tie' => 'necktie',
                 '' => '',
             ],
             'body_type' => [
-                'average' => 'average_build',
-                'slim' => 'slim',
-                'sturdy' => 'muscular',
+                'average' => 'normal_build',    // average_build → normal_build
+                'slim' => 'slim_build',
+                'sturdy' => 'sturdy_build',     // muscular → NSFW回避
             ],
         ];
 
-        $tags = [
-            // 必須タグ（1人のみ）
-            $appearanceMap['sex'][$avatar->sex] ?? '1other',
-            'solo',
-            
-            // 髪型・色
-            $appearanceMap['hair_style'][$avatar->hair_style] ?? '',
-            $appearanceMap['hair_color'][$avatar->hair_color] ?? '',
-            
-            // 目の色
-            $appearanceMap['eye_color'][$avatar->eye_color] ?? '',
-            
-            // 服装
-            $appearanceMap['clothing'][$avatar->clothing] ?? '',
-            
-            // アクセサリー
-            $avatar->accessory ? ($appearanceMap['accessory'][$avatar->accessory] ?? '') : '',
-            
-            // 体型
-            $appearanceMap['body_type'][$avatar->body_type] ?? '',
-            
-            // スタイル
-            'anime',
-        ];
+        $tags = [];
+        
+        // ちびキャラの場合は最優先で明示（NSFW回避の最重要タグ）
+        if ($isChibi) {
+            $tags[] = 'solo';
+            $tags[] = 'chibi';
+            $tags[] = 'super_deformed';
+            $tags[] = 'cute_character';
+            $tags[] = 'anime_style';
+        } else {
+            // 通常キャラの場合
+            $tags[] = 'solo';
+            $tags[] = 'anime_style';
+        }
+        
+        // 髪型・色
+        if (!empty($avatar->hair_style)) {
+            $tags[] = $appearanceMap['hair_style'][$avatar->hair_style] ?? '';
+        }
+        if (!empty($avatar->hair_color)) {
+            $tags[] = $appearanceMap['hair_color'][$avatar->hair_color] ?? '';
+        }
+        
+        // 目の色
+        if (!empty($avatar->eye_color)) {
+            $tags[] = $appearanceMap['eye_color'][$avatar->eye_color] ?? '';
+        }
+        
+        // 服装（NSFW回避のため簡素化）
+        if (!empty($avatar->clothing)) {
+            $tags[] = $appearanceMap['clothing'][$avatar->clothing] ?? '';
+        }
+        
+        // アクセサリー
+        if (!empty($avatar->accessory)) {
+            $tags[] = $appearanceMap['accessory'][$avatar->accessory] ?? '';
+        }
+        
+        // 体型（ちびキャラの場合は省略）
+        if (!$isChibi && !empty($avatar->body_type)) {
+            $tags[] = $appearanceMap['body_type'][$avatar->body_type] ?? '';
+        }
         
         // 子ども向けテーマの場合の追加タグ
         if ($isChildTheme) {
-            $tags[] = 'bright_eyes';
-            $tags[] = 'cheerful';
-            $tags[] = 'friendly';
-        }
-        
-        // ちびキャラの場合
-        if ($isChibi) {
-            $tags[] = 'chibi';
-            $tags[] = 'super_deformed';
-            $tags[] = 'cute';
+            $tags[] = 'bright_expression';
+            $tags[] = 'friendly_look';
         }
 
         return implode(', ', array_filter($tags));
@@ -933,22 +939,45 @@ class GenerateAvatarImagesJob implements ShouldQueue
     }
 
     /**
-     * 表情をBooru-style形式に変換
+     * 表情プロンプトをBooru-style形式に変換
+     * 
+     * NSFW誤検知回避のため、Danbooru公式表現を使用
+     * 参考: animagine-xl-3.1公式ドキュメント
+     * 
+     * @param string $expressionPrompt 元の表情プロンプト
+     * @return string Booru-style変換後の表情タグ
      */
     private function convertExpressionToBooruStyle(string $expressionPrompt): string
     {
-        // 表情プロンプトからBooru-styleタグを抽出
+        // 表情マッピング（NSFW回避、Danbooru顔文字記法使用）
         $mapping = [
-            'neutral expression' => 'neutral_face',
-            'happy expression' => 'smile, happy',
-            'sad expression' => 'sad, melancholy',
-            'serious expression' => 'serious, stern',
-            'surprised expression' => 'surprised, open_mouth, wide_eyes',
-            'smile' => 'smile',
-            'joyful' => 'happy',
-            'melancholic' => 'sad',
-            'determined' => 'serious',
-            'shocked' => 'surprised',
+            // neutral: neutral_face → closed_mouth（NSFW回避）
+            'neutral expression' => 'closed_mouth, calm, gentle_look',
+            'neutral' => 'closed_mouth, calm, gentle_look',
+            'calm' => 'closed_mouth, calm, gentle_look',
+            
+            // happy: smile + Danbooruの顔文字記法
+            'happy expression' => 'smile, :d, happy, cheerful',
+            'happy' => 'smile, :d, happy',
+            'smile' => 'smile, :d, happy',
+            'joyful' => 'smile, :d, joyful',
+            'bright' => 'smile, :d, bright',
+            
+            // sad: Danbooruの顔文字記法 + downcast（tears削除でNSFW回避）
+            'sad expression' => 'sad, :(, downcast_eyes, melancholy',
+            'sad' => 'sad, :(, downcast_eyes, melancholy',
+            'melancholic' => 'sad, :(, downcast_eyes',
+            
+            // angry: serious + frown（violent表現を削除）
+            'serious expression' => 'serious, frown, stern_look, focused',
+            'serious' => 'serious, frown, stern_look, focused',
+            'stern' => 'serious, frown, stern_look',
+            'determined' => 'serious, focused',
+            
+            // surprised: 現状のまま（成功しているため変更なし）
+            'surprised expression' => 'surprised, o_o, open_mouth, wide_eyes, shocked',
+            'surprised' => 'surprised, o_o, open_mouth, wide_eyes',
+            'shocked' => 'surprised, o_o, open_mouth, wide_eyes',
         ];
         
         foreach ($mapping as $key => $tag) {
@@ -957,22 +986,29 @@ class GenerateAvatarImagesJob implements ShouldQueue
             }
         }
         
-        return 'neutral_face';
+        // デフォルト: closed_mouth（NSFW回避）
+        return 'closed_mouth, calm';
     }
 
     /**
-     * ポーズをBooru-style形式に変換
+     * ポーズプロンプトをBooru-style形式に変換
+     * 
+     * Danbooru公式タグを使用
+     * 
+     * @param string $poseDescription 元のポーズ説明
+     * @return string Booru-style変換後のポーズタグ
      */
     private function convertPoseToBooruStyle(string $poseDescription): string
     {
-        // ポーズ説明からBooru-styleタグを抽出
+        // ポーズマッピング（Booru-style、公式タグ準拠）
         $mapping = [
-            'full body standing' => 'full_body, standing',
-            'full body' => 'full_body',
-            'upper body portrait' => 'upper_body, portrait',
-            'upper body' => 'upper_body',
-            'portrait' => 'portrait',
-            'standing' => 'standing',
+            'full body standing' => 'full_body, standing, simple_pose',
+            'full body' => 'full_body, simple_pose',
+            'upper body portrait' => 'upper_body, portrait, centered',
+            'upper body' => 'upper_body, portrait',
+            'from shoulders up' => 'upper_body, from_shoulders_up, close-up',
+            'portrait' => 'portrait, face_focus, centered',
+            'standing' => 'standing, full_body',
             'sitting' => 'sitting',
         ];
         
@@ -982,7 +1018,8 @@ class GenerateAvatarImagesJob implements ShouldQueue
             }
         }
         
-        return 'standing';
+        // デフォルト: simple_pose
+        return 'simple_pose';
     }
 
     /**
