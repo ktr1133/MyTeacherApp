@@ -51,7 +51,7 @@
 
         <!-- メインビジュアル -->
         <div class="screenshot-wrapper max-w-4xl mx-auto mb-12">
-            <img src="https://placehold.co/1200x800/f3f4f6/59b9c6?text=AI%E3%82%BF%E3%82%B9%E3%82%AF%E5%88%86%E8%A7%A3%E3%83%95%E3%83%AD%E3%83%BC" 
+            <img src="{{ asset('images/portal/decomposition-by-ai.gif') }}" 
                  alt="AIタスク分解フロー" 
                  class="screenshot-img">
         </div>

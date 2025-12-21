@@ -67,7 +67,7 @@
 
         <!-- メインビジュアル -->
         <div class="screenshot-wrapper max-w-4xl mx-auto mb-12">
-            <img src="https://placehold.co/1200x800/f3f4f6/ec4899?text=%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97%E3%82%BF%E3%82%B9%E3%82%AF%E7%94%BB%E9%9D%A2" 
+            <img src="{{ asset('images/portal/create-quest.gif') }}" 
                  alt="グループタスク画面" 
                  class="screenshot-img">
         </div>

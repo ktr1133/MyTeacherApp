@@ -8,7 +8,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-DqvRaAMp.css",
+    "file": "assets/app-C8x_wP9X.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -245,7 +245,7 @@
     "isEntry": true
   },
   "resources/js/avatar/avatar-edit.js": {
-    "file": "assets/avatar-edit-C1RU46jo.js",
+    "file": "assets/avatar-edit-CpF7By8W.js",
     "name": "avatar-edit",
     "src": "resources/js/avatar/avatar-edit.js",
     "isEntry": true
@@ -269,13 +269,13 @@
     "isEntry": true
   },
   "resources/js/common/notification-polling.js": {
-    "file": "assets/notification-polling-CBj0By7H.js",
+    "file": "assets/notification-polling-DXNKKKmR.js",
     "name": "notification-polling",
     "src": "resources/js/common/notification-polling.js",
     "isEntry": true
   },
   "resources/js/common/sidebar.js": {
-    "file": "assets/sidebar-CAuNUcPp.js",
+    "file": "assets/sidebar-B3hUOZj7.js",
     "name": "sidebar",
     "src": "resources/js/common/sidebar.js",
     "isEntry": true
@@ -317,13 +317,13 @@
     "isEntry": true
   },
   "resources/js/dashboard/header.js": {
-    "file": "assets/header-D0dE86pD.js",
+    "file": "assets/header-B_HQwSY0.js",
     "name": "header",
     "src": "resources/js/dashboard/header.js",
     "isEntry": true
   },
   "resources/js/dashboard/infinite-scroll-init.js": {
-    "file": "assets/infinite-scroll-init-Cm22MRqP.js",
+    "file": "assets/infinite-scroll-init-CxksdEcl.js",
     "name": "infinite-scroll-init",
     "src": "resources/js/dashboard/infinite-scroll-init.js",
     "isEntry": true,

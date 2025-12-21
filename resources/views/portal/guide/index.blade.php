@@ -98,12 +98,12 @@
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">グループタスク</h3>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">クエスト</h3>
                         <p class="text-gray-600 dark:text-gray-400 mb-3">
-                            複数のユーザーに同時にタスクを割り当てる機能
+                            複数のユーザーに同時にクエストを割り当てる機能
                         </p>
                         <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                            <li>• グループタスクの作成</li>
+                            <li>• クエストの作成</li>
                             <li>• メンバーの選択</li>
                             <li>• 承認フロー</li>
                             <li>• 進捗の確認</li>
@@ -144,7 +144,7 @@
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">教師アバター</h3>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">アバター</h3>
                         <p class="text-gray-600 dark:text-gray-400 mb-3">
                             Stable Diffusionで生成されるAI教師キャラクター
                         </p>
@@ -174,8 +174,8 @@
                         <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                             <li>• トークンとは</li>
                             <li>• トークンの購入方法</li>
+                            <li>• アバター生成・月次レポート・タスク分解</li>
                             <li>• 消費履歴の確認</li>
-                            <li>• 月次無料枠について</li>
                         </ul>
                     </div>
                 </div>
@@ -190,15 +190,15 @@
                         </svg>
                     </div>
                     <div class="flex-1">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">自動スケジュール</h3>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">クエスト自動作成</h3>
                         <p class="text-gray-600 dark:text-gray-400 mb-3">
-                            定期タスクを自動生成して習慣化をサポート
+                            定期的なタスクを自動生成して習慣化をサポート
                         </p>
                         <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                             <li>• スケジュールの設定</li>
                             <li>• 繰り返しパターン</li>
                             <li>• 祝日対応機能</li>
-                            <li>• ランダム割当設定</li>
+                            <li>• 担当者設定</li>
                         </ul>
                     </div>
                 </div>

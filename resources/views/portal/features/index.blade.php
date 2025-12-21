@@ -119,7 +119,7 @@
 </section>
 
 <!-- Before/After解決ストーリー -->
-<section class="portal-section" id="solution">
+{{-- <section class="portal-section" id="solution">
     <div class="portal-container">
         <h2 class="portal-section-title text-center gradient-text">
             田中家の変化
@@ -184,7 +184,7 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">ママの声</p>
         </div>
     </div>
-</section>
+</section> --}}
 
 <!-- 機能紹介（感情的ベネフィット重視） -->
 <section class="portal-section bg-white/50 dark:bg-gray-800/30" id="features">
@@ -216,7 +216,7 @@
                     </div>
                     <div class="order-1 lg:order-2">
                         <div class="screenshot-wrapper">
-                            <img src="https://placehold.co/800x600/f3f4f6/59b9c6?text=AI%E3%82%BF%E3%82%B9%E3%82%AF%E5%88%86%E8%A7%A3%E7%94%BB%E9%9D%A2" 
+                            <img src="{{ asset('images/portal/decomposition-by-ai.gif') }}" 
                                  alt="AIタスク分解画面" 
                                  class="screenshot-img">
                         </div>
@@ -229,7 +229,7 @@
                 <div class="grid lg:grid-cols-2 gap-8 items-center">
                     <div class="order-1">
                         <div class="screenshot-wrapper">
-                            <img src="https://placehold.co/800x600/f3f4f6/8b5cf6?text=%E3%82%A2%E3%83%90%E3%82%BF%E3%83%BC%E5%BF%9C%E6%8F%B4%E7%94%BB%E9%9D%A2" 
+                            <img src="{{ asset('images/portal/avatar-cheer.gif') }}" 
                                  alt="アバター応援画面" 
                                  class="screenshot-img">
                         </div>
@@ -263,7 +263,7 @@
                                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3z"/>
                             </svg>
                         </div>
-                        <h3 class="feature-title">グループタスク</h3>
+                        <h3 class="feature-title">グループタスク(クエスト)</h3>
                         <p class="text-2xl sm:text-3xl font-bold gradient-text-warm mb-4">
                             兄弟姉妹で<br>楽しく競争
                         </p>
@@ -276,7 +276,7 @@
                     </div>
                     <div class="order-1 lg:order-2">
                         <div class="screenshot-wrapper">
-                            <img src="https://placehold.co/800x600/f3f4f6/ec4899?text=%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97%E3%82%BF%E3%82%B9%E3%82%AF%E7%94%BB%E9%9D%A2" 
+                            <img src="{{ asset('images/portal/quest-complete.gif') }}" 
                                  alt="グループタスク画面" 
                                  class="screenshot-img">
                         </div>

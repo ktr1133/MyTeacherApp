@@ -275,16 +275,9 @@
                                 <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-gray-900 dark:bg-gray-800 rounded-b-3xl"></div>
                                 <!-- スクリーン -->
                                 <div class="bg-white dark:bg-gray-700 rounded-[2.5rem] overflow-hidden aspect-[9/19.5]">
-                                    <div class="h-full flex items-center justify-center bg-gradient-to-br from-[#59B9C6]/10 to-purple-500/10">
-                                        <div class="text-center p-6">
-                                            <svg class="w-20 h-20 mx-auto text-[#59B9C6] mb-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
-                                            </svg>
-                                            <p class="text-sm text-gray-600 dark:text-gray-300 font-medium">
-                                                スクリーンショット<br>準備中
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <img src="{{ asset('images/mobile/avatar_sample.PNG') }}" 
+                                         alt="モバイルアプリスクリーンショット" 
+                                         class="w-full h-full object-cover">
                                 </div>
                             </div>
                             <!-- 浮遊装飾 -->

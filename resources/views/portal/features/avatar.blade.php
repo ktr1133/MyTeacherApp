@@ -51,7 +51,7 @@
 
         <!-- メインビジュアル -->
         <div class="screenshot-wrapper max-w-4xl mx-auto mb-12">
-            <img src="https://placehold.co/1200x800/f3f4f6/8b5cf6?text=%E3%82%A2%E3%83%90%E3%82%BF%E3%83%BC%E5%BF%9C%E6%8F%B4%E7%94%BB%E9%9D%A2" 
+            <img src="{{ asset('images/portal/avatar-sample.gif') }}" 
                  alt="アバター応援画面" 
                  class="screenshot-img">
         </div>
