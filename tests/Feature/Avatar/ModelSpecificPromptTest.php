@@ -79,13 +79,15 @@ class ModelSpecificPromptTest extends TestCase
         $prompt = $method->invoke($job, $avatar);
         
         // Booru-style特有のタグが含まれているか確認
-        $this->assertStringContainsString('1girl', $prompt);
+        // NSFW回避のため1girlタグは削除済み
         $this->assertStringContainsString('solo', $prompt);
         $this->assertStringContainsString('long_hair', $prompt);
         $this->assertStringContainsString('black_hair', $prompt);
         $this->assertStringContainsString('brown_eyes', $prompt);
-        $this->assertStringContainsString('business_suit', $prompt);
-        $this->assertStringContainsString('glasses', $prompt);
+        // NSFW回避のためbusiness_suit→simple_outfitに変更
+        $this->assertStringContainsString('simple_outfit', $prompt);
+        // NSFW回避のためglasses→eyewearに変更
+        $this->assertStringContainsString('eyewear', $prompt);
         $this->assertStringContainsString('anime', $prompt);
         
         // 自然言語形式（スペース区切り）は含まれていない
@@ -165,9 +167,9 @@ class ModelSpecificPromptTest extends TestCase
         $this->assertStringContainsString('super_deformed', $prompt);
         $this->assertStringContainsString('cute', $prompt);
         
-        // 子どもテーマ専用タグも含まれる
-        $this->assertStringContainsString('bright_eyes', $prompt);
-        $this->assertStringContainsString('cheerful', $prompt);
+        // 子どもテーマ専用タグも含まれる（NSFW回避のため調整済み）
+        $this->assertStringContainsString('bright_expression', $prompt);
+        $this->assertStringContainsString('friendly_look', $prompt);
     }
 
     /**
@@ -181,19 +183,19 @@ class ModelSpecificPromptTest extends TestCase
         $job = new GenerateAvatarImagesJob($avatar->id);
         $reflection = new \ReflectionClass($job);
         
-        // 表情変換テスト
+        // 表情変換テスト（Danbooru顔文字とNSFW回避タグ追加済み）
         $expressionMethod = $reflection->getMethod('convertExpressionToBooruStyle');
         $expressionMethod->setAccessible(true);
         
-        $this->assertEquals('smile, happy', $expressionMethod->invoke($job, 'happy expression'));
-        $this->assertEquals('sad, melancholy', $expressionMethod->invoke($job, 'sad expression'));
-        $this->assertEquals('surprised, open_mouth, wide_eyes', $expressionMethod->invoke($job, 'surprised expression'));
+        $this->assertEquals('smile, :d, happy, cheerful', $expressionMethod->invoke($job, 'happy expression'));
+        $this->assertEquals('sad, :(, downcast_eyes, melancholy', $expressionMethod->invoke($job, 'sad expression'));
+        $this->assertEquals('surprised, o_o, open_mouth, wide_eyes, shocked', $expressionMethod->invoke($job, 'surprised expression'));
         
-        // ポーズ変換テスト
+        // ポーズ変換テスト（simple_pose追加済み）
         $poseMethod = $reflection->getMethod('convertPoseToBooruStyle');
         $poseMethod->setAccessible(true);
         
-        $this->assertEquals('full_body, standing', $poseMethod->invoke($job, 'full body standing pose'));
-        $this->assertEquals('upper_body, portrait', $poseMethod->invoke($job, 'upper body portrait'));
+        $this->assertEquals('full_body, standing, simple_pose', $poseMethod->invoke($job, 'full body standing pose'));
+        $this->assertEquals('upper_body, portrait, centered, face_focus', $poseMethod->invoke($job, 'upper body portrait'));
     }
 }
