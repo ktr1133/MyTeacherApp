@@ -187,11 +187,12 @@ class GenerateAvatarImagesJob implements ShouldQueue
                 foreach ($expressions as $expressionType) {
                     $expressionPrompt = self::EXPRESSION_PROMPTS[$expressionType] ?? '';
                     
-                    $fullPrompt = $this->buildFullPrompt($basePrompt, $poseDescription, $expressionPrompt);
+                    $fullPrompt = $this->buildFullPrompt($basePrompt, $poseDescription, $expressionPrompt, $avatar);
                     
                     Log::info('[GenerateAvatarImages] Generating image', [
                         'pose_type' => $poseType,
                         'expression_type' => $expressionType,
+                        'model' => $avatar->draw_model_version ?? 'default',
                         'prompt_preview' => substr($fullPrompt, 0, 200) . '...',
                     ]);
                     
@@ -248,6 +249,16 @@ class GenerateAvatarImagesJob implements ShouldQueue
                     $uploadUrl = $avatar->is_transparent && isset($transparentData['url'])
                         ? $transparentData['url']
                         : $generatedData['url'];
+
+                    // 画像品質チェック（ダウンロード前）
+                    if (!$this->validateImageQuality($uploadUrl, $poseType, $expressionType)) {
+                        Log::warning('[GenerateAvatarImages] Image quality validation failed', [
+                            'pose_type' => $poseType,
+                            'expression_type' => $expressionType,
+                            'url' => $uploadUrl,
+                        ]);
+                        // 品質チェック失敗時もアップロードは継続（警告のみ）
+                    }
 
                     // S3にアップロード
                     $s3Path = $this->uploadToS3(
@@ -634,9 +645,133 @@ class GenerateAvatarImagesJob implements ShouldQueue
     }
 
     /**
-     * ベースプロンプト生成
+     * ベースプロンプト生成（モデル別に振り分け）
      */
     private function buildBasePrompt(TeacherAvatar $avatar): string
+    {
+        $model = $avatar->draw_model_version ?? 'anything-v4.0';
+        
+        // モデル判定: Booru-style vs 自然言語
+        if ($this->isBooruStyleModel($model)) {
+            return $this->buildBasePromptBooruStyle($avatar);
+        } else {
+            return $this->buildBasePromptNaturalLanguage($avatar);
+        }
+    }
+
+    /**
+     * モデルがBooru-style形式を推奨するかチェック
+     */
+    private function isBooruStyleModel(string $model): bool
+    {
+        return in_array($model, ['anything-v4.0', 'animagine-xl-3.1'], true);
+    }
+
+    /**
+     * Booru-styleプロンプト生成（anything-v4.0, animagine-xl-3.1用）
+     * 
+     * Danbooruタグ形式で最適化されたプロンプトを生成
+     */
+    private function buildBasePromptBooruStyle(TeacherAvatar $avatar): string
+    {
+        // テーマ判定
+        $isChildTheme = $avatar->user->theme === 'child';
+        $isChibi = $avatar->is_chibi ?? false;
+        
+        // Booru-style外見マッピング（アンダースコア区切り）
+        $appearanceMap = [
+            'sex' => [
+                'male' => '1boy',
+                'female' => '1girl',
+                'other' => '1other',
+            ],
+            'hair_style' => [
+                'short' => 'short_hair',
+                'middle' => 'medium_hair',
+                'long' => 'long_hair',
+            ],
+            'hair_color' => [
+                'black' => 'black_hair',
+                'brown' => 'brown_hair',
+                'blonde' => 'blonde_hair',
+                'silver' => 'silver_hair',
+                'red' => 'red_hair',
+            ],
+            'eye_color' => [
+                'brown' => 'brown_eyes',
+                'blue' => 'blue_eyes',
+                'green' => 'green_eyes',
+                'gray' => 'gray_eyes',
+                'purple' => 'purple_eyes',
+            ],
+            'clothing' => [
+                'suit' => 'business_suit',
+                'casual' => 'casual',
+                'kimono' => 'kimono',
+                'robe' => 'robe',
+                'dress' => 'dress',
+            ],
+            'accessory' => [
+                'glasses' => 'glasses',
+                'hat' => 'hat',
+                'tie' => 'necktie',
+                '' => '',
+            ],
+            'body_type' => [
+                'average' => 'average_build',
+                'slim' => 'slim',
+                'sturdy' => 'muscular',
+            ],
+        ];
+
+        $tags = [
+            // 必須タグ（1人のみ）
+            $appearanceMap['sex'][$avatar->sex] ?? '1other',
+            'solo',
+            
+            // 髪型・色
+            $appearanceMap['hair_style'][$avatar->hair_style] ?? '',
+            $appearanceMap['hair_color'][$avatar->hair_color] ?? '',
+            
+            // 目の色
+            $appearanceMap['eye_color'][$avatar->eye_color] ?? '',
+            
+            // 服装
+            $appearanceMap['clothing'][$avatar->clothing] ?? '',
+            
+            // アクセサリー
+            $avatar->accessory ? ($appearanceMap['accessory'][$avatar->accessory] ?? '') : '',
+            
+            // 体型
+            $appearanceMap['body_type'][$avatar->body_type] ?? '',
+            
+            // スタイル
+            'anime',
+        ];
+        
+        // 子ども向けテーマの場合の追加タグ
+        if ($isChildTheme) {
+            $tags[] = 'bright_eyes';
+            $tags[] = 'cheerful';
+            $tags[] = 'friendly';
+        }
+        
+        // ちびキャラの場合
+        if ($isChibi) {
+            $tags[] = 'chibi';
+            $tags[] = 'super_deformed';
+            $tags[] = 'cute';
+        }
+
+        return implode(', ', array_filter($tags));
+    }
+
+    /**
+     * 自然言語プロンプト生成（stable-diffusion-3.5-medium用）
+     * 
+     * 長文の自然言語記述で詳細に指定
+     */
+    private function buildBasePromptNaturalLanguage(TeacherAvatar $avatar): string
     {
         // テーマ判定（adult = teacher / child = supporter）
         $isChildTheme = $avatar->user->theme === 'child';
@@ -719,9 +854,52 @@ class GenerateAvatarImagesJob implements ShouldQueue
     }
 
     /**
-     * フルプロンプト生成（ベース + ポーズ + 表情 + 品質タグ）
+     * フルプロンプト生成（モデル別に振り分け）
      */
-    private function buildFullPrompt(string $basePrompt, string $poseDescription, string $expressionPrompt): string
+    private function buildFullPrompt(string $basePrompt, string $poseDescription, string $expressionPrompt, TeacherAvatar $avatar): string
+    {
+        $model = $avatar->draw_model_version ?? 'anything-v4.0';
+        
+        if ($this->isBooruStyleModel($model)) {
+            return $this->buildFullPromptBooruStyle($basePrompt, $poseDescription, $expressionPrompt);
+        } else {
+            return $this->buildFullPromptNaturalLanguage($basePrompt, $poseDescription, $expressionPrompt);
+        }
+    }
+
+    /**
+     * Booru-styleフルプロンプト生成
+     */
+    private function buildFullPromptBooruStyle(string $basePrompt, string $poseDescription, string $expressionPrompt): string
+    {
+        // Booru-style: タグ形式で簡潔に
+        return implode(', ', array_filter([
+            // 1. ベースキャラクター（既にsoloを含む）
+            $basePrompt,
+            
+            // 2. 表情（Booru-style形式に変換）
+            $this->convertExpressionToBooruStyle($expressionPrompt),
+            
+            // 3. ポーズ（Booru-style形式に変換）
+            $this->convertPoseToBooruStyle($poseDescription),
+            
+            // 4. 品質タグ（Booru-style）
+            'masterpiece',
+            'best_quality',
+            'high_quality',
+            'detailed_face',
+            'clear_features',
+            
+            // 5. 背景
+            'white_background',
+            'simple_background',
+        ]));
+    }
+
+    /**
+     * 自然言語フルプロンプト生成
+     */
+    private function buildFullPromptNaturalLanguage(string $basePrompt, string $poseDescription, string $expressionPrompt): string
     {
         return implode(', ', array_filter([
             // 1. 表情（最優先）
@@ -752,6 +930,166 @@ class GenerateAvatarImagesJob implements ShouldQueue
             'simple background',
             'studio lighting',
         ]));
+    }
+
+    /**
+     * 表情をBooru-style形式に変換
+     */
+    private function convertExpressionToBooruStyle(string $expressionPrompt): string
+    {
+        // 表情プロンプトからBooru-styleタグを抽出
+        $mapping = [
+            'neutral expression' => 'neutral_face',
+            'happy expression' => 'smile, happy',
+            'sad expression' => 'sad, melancholy',
+            'serious expression' => 'serious, stern',
+            'surprised expression' => 'surprised, open_mouth, wide_eyes',
+            'smile' => 'smile',
+            'joyful' => 'happy',
+            'melancholic' => 'sad',
+            'determined' => 'serious',
+            'shocked' => 'surprised',
+        ];
+        
+        foreach ($mapping as $key => $tag) {
+            if (stripos($expressionPrompt, $key) !== false) {
+                return $tag;
+            }
+        }
+        
+        return 'neutral_face';
+    }
+
+    /**
+     * ポーズをBooru-style形式に変換
+     */
+    private function convertPoseToBooruStyle(string $poseDescription): string
+    {
+        // ポーズ説明からBooru-styleタグを抽出
+        $mapping = [
+            'full body standing' => 'full_body, standing',
+            'full body' => 'full_body',
+            'upper body portrait' => 'upper_body, portrait',
+            'upper body' => 'upper_body',
+            'portrait' => 'portrait',
+            'standing' => 'standing',
+            'sitting' => 'sitting',
+        ];
+        
+        foreach ($mapping as $key => $tag) {
+            if (stripos($poseDescription, $key) !== false) {
+                return $tag;
+            }
+        }
+        
+        return 'standing';
+    }
+
+    /**
+     * 画像品質を検証
+     * 
+     * 基本的な品質チェック（サイズ、フォーマット、内容）を実行
+     * 
+     * @param string $imageUrl 画像URL
+     * @param string $poseType ポーズタイプ
+     * @param string $expressionType 表情タイプ
+     * @return bool 品質チェック合格ならtrue
+     */
+    private function validateImageQuality(string $imageUrl, string $poseType, string $expressionType): bool
+    {
+        try {
+            $response = Http::timeout(30)->get($imageUrl);
+
+            if (!$response->successful()) {
+                Log::error('[ImageQualityCheck] Failed to download image', [
+                    'url' => $imageUrl,
+                    'status' => $response->status(),
+                ]);
+                return false;
+            }
+
+            $imageContent = $response->body();
+            $fileSize = strlen($imageContent);
+
+            // 1. ファイルサイズチェック（極端に小さい画像はエラー画像の可能性）
+            $minFileSize = 10 * 1024; // 10KB
+            $maxFileSize = 10 * 1024 * 1024; // 10MB
+            
+            if ($fileSize < $minFileSize) {
+                Log::warning('[ImageQualityCheck] Image file too small', [
+                    'url' => $imageUrl,
+                    'file_size' => $fileSize,
+                    'min_size' => $minFileSize,
+                ]);
+                return false;
+            }
+
+            if ($fileSize > $maxFileSize) {
+                Log::warning('[ImageQualityCheck] Image file too large', [
+                    'url' => $imageUrl,
+                    'file_size' => $fileSize,
+                    'max_size' => $maxFileSize,
+                ]);
+                return false;
+            }
+
+            // 2. 画像フォーマット検証（PNG/JPEG/WEBP）
+            $imageInfo = @getimagesizefromstring($imageContent);
+            
+            if ($imageInfo === false) {
+                Log::error('[ImageQualityCheck] Invalid image format', [
+                    'url' => $imageUrl,
+                ]);
+                return false;
+            }
+
+            [$width, $height, $type] = $imageInfo;
+
+            // 3. 画像サイズチェック（最低解像度）
+            $minWidth = 256;
+            $minHeight = 256;
+            
+            if ($width < $minWidth || $height < $minHeight) {
+                Log::warning('[ImageQualityCheck] Image resolution too low', [
+                    'url' => $imageUrl,
+                    'width' => $width,
+                    'height' => $height,
+                    'min_width' => $minWidth,
+                    'min_height' => $minHeight,
+                ]);
+                return false;
+            }
+
+            // 4. 画像タイプチェック
+            $allowedTypes = [IMAGETYPE_PNG, IMAGETYPE_JPEG, IMAGETYPE_WEBP];
+            
+            if (!in_array($type, $allowedTypes)) {
+                Log::warning('[ImageQualityCheck] Unsupported image type', [
+                    'url' => $imageUrl,
+                    'type' => $type,
+                    'allowed_types' => $allowedTypes,
+                ]);
+                return false;
+            }
+
+            Log::info('[ImageQualityCheck] Image validation passed', [
+                'pose_type' => $poseType,
+                'expression_type' => $expressionType,
+                'width' => $width,
+                'height' => $height,
+                'file_size' => $fileSize,
+                'type' => image_type_to_mime_type($type),
+            ]);
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error('[ImageQualityCheck] Validation error', [
+                'url' => $imageUrl,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
     }
 
     /**
