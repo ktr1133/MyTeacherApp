@@ -5,16 +5,19 @@
  */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Alert } from 'react-native';
 import ScheduledTaskListScreen from '../ScheduledTaskListScreen';
 import { useScheduledTasks } from '../../../hooks/useScheduledTasks';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
+import { AuthProvider } from '../../../contexts/AuthContext';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
+
+// ナビゲーションスタック作成
+const Stack = createNativeStackNavigator();
 
 // モック
 jest.mock('../../../hooks/useScheduledTasks');
-jest.mock('../../../contexts/ThemeContext');
 jest.mock('../../../hooks/useThemedColors', () => ({
   useThemedColors: jest.fn(() => ({
     colors: {
@@ -114,9 +117,19 @@ describe('ScheduledTaskListScreen', () => {
   const mockResumeScheduledTask = jest.fn();
   const mockClearError = jest.fn();
 
+  const mockThemeContext = {
+    theme: 'adult' as const,
+    setTheme: jest.fn(),
+    isLoading: false,
+    refreshTheme: jest.fn(),
+  };
+
+  // ThemeContextをモック
+  jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
+
   beforeEach(() => {
     jest.clearAllMocks();
-    (useTheme as jest.Mock).mockReturnValue({ theme: 'parent' });
+    jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
     (useScheduledTasks as jest.Mock).mockReturnValue({
       scheduledTasks: [],
       isLoading: false,
@@ -131,13 +144,17 @@ describe('ScheduledTaskListScreen', () => {
 
   const renderScreen = () => {
     return render(
-      <ThemeProvider>
-        <ColorSchemeProvider>
-          <NavigationContainer>
-            <ScheduledTaskListScreen />
-          </NavigationContainer>
-        </ColorSchemeProvider>
-      </ThemeProvider>
+      <ColorSchemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <NavigationContainer>
+              <Stack.Navigator>
+                <Stack.Screen name="ScheduledTaskList" component={ScheduledTaskListScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ThemeProvider>
+        </AuthProvider>
+      </ColorSchemeProvider>
     );
   };
 
@@ -308,7 +325,10 @@ describe('ScheduledTaskListScreen', () => {
    * Test 8: 子供テーマでの表示
    */
   it('子供テーマで適切な文言を表示する', () => {
-    (useTheme as jest.Mock).mockReturnValue({ theme: 'child' });
+    jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue({
+      ...mockThemeContext,
+      theme: 'child',
+    });
     (useScheduledTasks as jest.Mock).mockReturnValue({
       scheduledTasks: mockScheduledTasks,
       isLoading: false,

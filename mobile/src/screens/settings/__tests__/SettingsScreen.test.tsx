@@ -3,15 +3,20 @@
  */
 
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Alert } from 'react-native';
 import SettingsScreen from '../SettingsScreen';
 import { useProfile } from '../../../hooks/useProfile';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { AuthProvider } from '../../../contexts/AuthContext';
+import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
+
+// ナビゲーションスタック作成
+const Stack = createNativeStackNavigator();
 
 // モック
 jest.mock('../../../hooks/useProfile');
-jest.mock('../../../contexts/ThemeContext');
 jest.mock('../../../services/user.service');
 jest.mock('../../../hooks/useThemedColors', () => ({
   useThemedColors: jest.fn(() => ({
@@ -43,7 +48,6 @@ jest.mock('../../../hooks/useThemedColors', () => ({
 }));
 
 const mockUseProfile = useProfile as jest.MockedFunction<typeof useProfile>;
-const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
 
 // Alert.alertのモック
 jest.spyOn(Alert, 'alert');
@@ -70,18 +74,29 @@ describe('SettingsScreen', () => {
     refreshTheme: jest.fn(),
   };
 
+  // ThemeContextをモック
+  jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
+
   const renderScreen = (component: React.ReactElement) => {
     return render(
       <ColorSchemeProvider>
-        {component}
+        <AuthProvider>
+          <ThemeProvider>
+            <NavigationContainer>
+              <Stack.Navigator>
+                <Stack.Screen name="Settings" component={() => component} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ThemeProvider>
+        </AuthProvider>
       </ColorSchemeProvider>
     );
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
     mockUseProfile.mockReturnValue(mockProfileHook);
-    mockUseTheme.mockReturnValue(mockThemeContext);
 
     // タイムゾーン設定のモック
     mockProfileHook.getTimezoneSettings.mockResolvedValue({
@@ -106,7 +121,7 @@ describe('SettingsScreen', () => {
   });
 
   it('child themeで適切なラベルを表示する', async () => {
-    mockUseTheme.mockReturnValue({
+    jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue({
       ...mockThemeContext,
       theme: 'child',
     });
