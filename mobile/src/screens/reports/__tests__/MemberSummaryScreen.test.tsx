@@ -128,7 +128,8 @@ describe('MemberSummaryScreen', () => {
       await waitFor(() => {
         expect(mockDownloadMemberSummaryPdf).toHaveBeenCalledWith(
           123,
-          '2025-12'
+          '2025-12',
+          expect.any(String)
         );
       });
       

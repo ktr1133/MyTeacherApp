@@ -49,17 +49,25 @@ jest.mock('../../../src/hooks/useThemedColors', () => ({
   })),
 }));
 
-// useNavigationモック
+// ナビゲーションモック
+const mockNavigate = jest.fn();
+const mockGoBack = jest.fn();
+
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
-    navigate: jest.fn(),
-    goBack: jest.fn(),
+    navigate: mockNavigate,
+    goBack: mockGoBack,
   }),
   useRoute: () => ({
     params: {},
   }),
 }));
+
+const mockNavigation = {
+  navigate: mockNavigate,
+  goBack: mockGoBack,
+};
 
 describe('MonthlyReportScreen', () => {
   const mockUseMonthlyReport = useMonthlyReport as jest.MockedFunction<typeof useMonthlyReport>;
@@ -310,7 +318,7 @@ describe('MonthlyReportScreen', () => {
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith(
           'AI生成サマリー',
-          expect.stringContaining('テストユーザー1さんの月次サマリー'),
+          expect.stringContaining('テストユーザー1の月次サマリー'),
           expect.any(Array)
         );
       });
