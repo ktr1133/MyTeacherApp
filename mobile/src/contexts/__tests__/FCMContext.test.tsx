@@ -34,6 +34,7 @@ describe('FCMContext', () => {
 
     // デフォルトモック設定
     (useFCM as jest.Mock).mockReturnValue(mockFCMState);
+    (fcmService.registerToken as jest.Mock).mockResolvedValue(undefined);
     (fcmService.unregisterToken as jest.Mock).mockResolvedValue(undefined);
   });
 
@@ -139,15 +140,15 @@ describe('FCMContext', () => {
         rerender({ isAuth: true });
       });
 
-      // ログ出力確認（トークン登録はuseFCMが実行）
+      // ログ出力確認（トークン登録実行）
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith(
-          '[FCMContext] User logged in, FCM registration handled by useFCM'
+          '[FCMContext] User logged in, registering FCM token to backend...'
         );
       });
 
-      // unregisterToken()は呼び出されないこと
-      expect(fcmService.unregisterToken).not.toHaveBeenCalled();
+      // registerToken()が呼び出されたこと
+      expect(fcmService.registerToken).toHaveBeenCalledTimes(1);
 
       consoleSpy.mockRestore();
     });

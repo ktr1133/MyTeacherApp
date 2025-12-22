@@ -37,8 +37,9 @@ describe('useFCM Hook', () => {
      * テストケース1: Initializes FCM on mount
      * 
      * **検証項目**:
-     * - マウント時にregisterToken()が呼び出されること
+     * - マウント時にrequestPermission()とgetFcmToken()が呼び出されること
      * - isInitializingがfalseになること
+     * - トークンが取得されること（バックエンド登録はFCMContextが実行）
      */
     it('should initialize FCM token registration on mount', async () => {
       const { result } = renderHook(() => useFCM());
@@ -52,8 +53,9 @@ describe('useFCM Hook', () => {
         expect(result.current.isInitializing).toBe(false);
       });
 
-      // registerToken()呼び出し確認
-      expect(fcmService.registerToken).toHaveBeenCalledTimes(1);
+      // requestPermission()とgetFcmToken()呼び出し確認（バックエンド登録はしない）
+      expect(fcmService.requestPermission).toHaveBeenCalledTimes(1);
+      expect(fcmService.getFcmToken).toHaveBeenCalledTimes(1);
     });
 
     /**
@@ -85,7 +87,7 @@ describe('useFCM Hook', () => {
      * 
      * **検証項目**:
      * - requestPermission()成功時、hasPermissionがtrueになること
-     * - トークン登録が実行されること
+     * - トークン取得が実行されること（バックエンド登録はFCMContextが実行）
      */
     it('should set hasPermission to true when permission is granted', async () => {
       (fcmService.requestPermission as jest.Mock).mockResolvedValue(true);
@@ -97,8 +99,8 @@ describe('useFCM Hook', () => {
         expect(result.current.hasPermission).toBe(true);
       });
 
-      // トークン登録確認
-      expect(fcmService.registerToken).toHaveBeenCalledTimes(1);
+      // トークン取得確認（バックエンド登録はしない）
+      expect(fcmService.getFcmToken).toHaveBeenCalledTimes(1);
       expect(result.current.error).toBeNull();
     });
 
@@ -107,14 +109,11 @@ describe('useFCM Hook', () => {
      * 
      * **検証項目**:
      * - requestPermission()失敗時、hasPermissionがfalseになること
-     * - トークン登録が実行されないこと
-     * - エラーステートが設定されること
+     * - トークン取得が実行されないこと（パーミッション拒否のため）
+     * - エラーステートは設定されない（警告ログのみ）
      */
     it('should handle permission denial gracefully', async () => {
       (fcmService.requestPermission as jest.Mock).mockResolvedValue(false);
-      (fcmService.registerToken as jest.Mock).mockRejectedValue(
-        new Error('Permission denied')
-      );
 
       const { result } = renderHook(() => useFCM());
 
@@ -126,7 +125,12 @@ describe('useFCM Hook', () => {
       // パーミッション拒否状態確認
       expect(result.current.hasPermission).toBe(false);
       expect(result.current.token).toBeNull();
-      expect(result.current.error).toMatch(/Permission denied/i);
+      expect(result.current.error).toBeNull(); // エラーではなく警告ログのみ
+      
+      // requestPermission()呼び出し確認
+      expect(fcmService.requestPermission).toHaveBeenCalledTimes(1);
+      // getFcmToken()は呼ばれない（パーミッション拒否のため）
+      expect(fcmService.getFcmToken).not.toHaveBeenCalled();
     });
   });
 
@@ -136,7 +140,7 @@ describe('useFCM Hook', () => {
      * 
      * **検証項目**:
      * - onTokenRefresh()リスナーが登録されること
-     * - 新しいトークンを受信した際、registerToken()が呼び出されること
+     * - 新しいトークンを受信した際、ローカルストレージに保存されること（バックエンド登録はFCMContextが実行）
      */
     it('should listen for token refresh events and re-register', async () => {
       const newToken = 'refreshed-fcm-token-xyz789';
@@ -166,10 +170,13 @@ describe('useFCM Hook', () => {
         }
       });
 
-      // 新しいトークンで再登録されることを確認
+      // 新しいトークンがローカルストレージに保存されることを確認（getFcmToken呼び出し）
       await waitFor(() => {
-        expect(fcmService.registerToken).toHaveBeenCalledTimes(2); // 初回 + リフレッシュ
+        expect(fcmService.getFcmToken).toHaveBeenCalledTimes(2); // 初回 + リフレッシュ
       });
+      
+      // tokenステートが更新されることを確認
+      expect(result.current.token).toBe(newToken);
     });
 
     /**
@@ -197,27 +204,27 @@ describe('useFCM Hook', () => {
 
   describe('エラーハンドリング', () => {
     /**
-     * テストケース7: Handles registration errors
+     * テストケース7: Handles FCM initialization errors
      * 
      * **検証項目**:
-     * - registerToken()失敗時、errorステートに設定されること
+     * - getFcmToken()失敗時、errorステートに設定されること
      * - hasPermissionがfalseになること
      */
     it('should set error state when registration fails', async () => {
-      const errorMessage = 'FCM registration failed: Network error';
-      (fcmService.registerToken as jest.Mock).mockRejectedValue(new Error(errorMessage));
+      const errorMessage = 'FCM token retrieval failed: Network error';
+      (fcmService.getFcmToken as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
       const { result } = renderHook(() => useFCM());
 
       // エラー設定完了を待機
       await waitFor(() => {
-        expect(result.current.error).toBe(errorMessage);
+        expect(result.current.error).toBeTruthy();
       });
-
-      // エラー状態確認
-      expect(result.current.isInitializing).toBe(false);
+      
+      // エラーステート確認
       expect(result.current.hasPermission).toBe(false);
       expect(result.current.token).toBeNull();
+      expect(result.current.isInitializing).toBe(false);
     });
 
     /**
@@ -228,7 +235,7 @@ describe('useFCM Hook', () => {
      * - tokenがnullのままであること
      */
     it('should handle getFcmToken errors gracefully', async () => {
-      (fcmService.registerToken as jest.Mock).mockResolvedValue(true);
+      (fcmService.requestPermission as jest.Mock).mockResolvedValue(true);
       (fcmService.getFcmToken as jest.Mock).mockRejectedValue(
         new Error('Token retrieval failed')
       );

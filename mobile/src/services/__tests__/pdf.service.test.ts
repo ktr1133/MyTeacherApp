@@ -31,8 +31,8 @@ jest.mock('expo-file-system/legacy', () => ({
     cache: { uri: 'file:///cache/' },
   },
   File: jest.fn().mockImplementation(() => mockFile),
-  getInfoAsync: mockGetInfoAsync,
-  deleteAsync: mockDeleteAsync,
+  getInfoAsync: (...args: any[]) => mockGetInfoAsync(...args),
+  deleteAsync: (...args: any[]) => mockDeleteAsync(...args),
 }));
 
 describe('pdf.service', () => {
