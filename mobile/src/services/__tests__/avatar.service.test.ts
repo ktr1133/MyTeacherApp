@@ -231,7 +231,7 @@ describe('avatarService', () => {
 
       const result = await avatarService.createAvatar(requestData);
 
-      expect(api.post).toHaveBeenCalledWith('/avatar', requestData);
+      expect(api.post).toHaveBeenCalledWith('/avatar', requestData, { timeout: 30000 });
       expect(result.generation_status).toBe('pending');
     });
   });
@@ -314,7 +314,7 @@ describe('avatarService', () => {
 
       const result = await avatarService.regenerateImages();
 
-      expect(api.post).toHaveBeenCalledWith('/avatar/regenerate');
+      expect(api.post).toHaveBeenCalledWith('/avatar/regenerate', {}, { timeout: 30000 });
       expect(result.generation_status).toBe('pending');
     });
   });

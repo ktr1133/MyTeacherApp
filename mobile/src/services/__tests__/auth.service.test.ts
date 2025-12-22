@@ -115,7 +115,11 @@ describe('authService', () => {
       expect(mockedApi.post).toHaveBeenCalledWith('/auth/register', {
         email: 'new@example.com',
         password: 'password123',
-        name: 'New User',
+        password_confirmation: 'password123',
+        username: 'new',
+        timezone: 'Asia/Tokyo',
+        terms_consent: '0',
+        privacy_policy_consent: '0',
       });
       expect(mockedStorage.setItem).toHaveBeenCalledWith('jwt_token', 'new-user-token-456');
       expect(result).toEqual(mockResponse.data);

@@ -200,8 +200,7 @@ describe('ProfileService', () => {
       const mockData = {
         timezone: 'Asia/Tokyo',
         timezones: [
-          { value: 'Asia/Tokyo', label: '東京' },
-          { value: 'America/New_York', label: 'ニューヨーク' },
+          { value: 'Asia/Tokyo', label: '東京 (UTC+9)' },
         ],
       };
       const mockResponse = {
