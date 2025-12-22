@@ -3,7 +3,7 @@
  * 
  * グループ管理画面のUIとナビゲーションをテスト
  */
-import { render, screen, fireEvent } from '@testing-library/react-native';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import GroupManagementScreen from '../GroupManagementScreen';
@@ -13,6 +13,9 @@ import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../contexts/AuthContext';
 
 const Stack = createNativeStackNavigator();
+
+// GroupService全体をモック
+jest.mock('../../../services/group.service');
 
 // モック
 jest.mock('../../../contexts/AuthContext');
@@ -63,6 +66,31 @@ describe('GroupManagementScreen', () => {
     },
   };
 
+  const mockGroupData = {
+    data: {
+      group: {
+        id: 1,
+        name: 'テストグループ',
+        master_user_id: 1,
+        created_at: '2025-01-01T00:00:00Z',
+        updated_at: '2025-01-01T00:00:00Z',
+      },
+      members: [
+        {
+          id: 1,
+          username: 'testuser',
+          group_edit_flg: true,
+          theme: 'adult',
+        },
+      ],
+      task_usage: {
+        total_tasks: 10,
+        completed_tasks: 5,
+        pending_tasks: 5,
+      },
+    },
+  };
+
   const mockThemeContext = {
     theme: 'adult' as const,
     setTheme: jest.fn(),
@@ -74,6 +102,10 @@ describe('GroupManagementScreen', () => {
     jest.clearAllMocks();
     jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
     (useAuth as jest.Mock).mockReturnValue({ user: mockUser });
+    
+    // GroupServiceのモック設定
+    const GroupService = require('../../../services/group.service');
+    GroupService.getGroupInfo = jest.fn().mockResolvedValue(mockGroupData);
   });
 
   const renderScreen = () => {
@@ -95,10 +127,13 @@ describe('GroupManagementScreen', () => {
   /**
    * Test 1: 初期表示
    */
-  it('初期状態でグループ情報が表示される', () => {
+  it('初期状態でグループ情報が表示される', async () => {
     renderScreen();
 
-    expect(screen.getByText('グループ管理')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('グループ管理')).toBeTruthy();
+    });
+    
     expect(screen.getByText('グループ情報')).toBeTruthy();
     expect(screen.getByText('テストグループ')).toBeTruthy();
     expect(screen.getByText('グループマスター')).toBeTruthy();
@@ -107,10 +142,13 @@ describe('GroupManagementScreen', () => {
   /**
    * Test 2: 管理メニュー表示
    */
-  it('管理メニューが表示される', () => {
+  it('管理メニューが表示される', async () => {
     renderScreen();
 
-    expect(screen.getByText('管理メニュー')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('管理メニュー')).toBeTruthy();
+    });
+    
     expect(screen.getByText('タスクスケジュール管理')).toBeTruthy();
     expect(screen.getByText('定期的に実行するタスクを設定')).toBeTruthy();
   });
@@ -118,10 +156,13 @@ describe('GroupManagementScreen', () => {
   /**
    * Test 3: グループマスター権限の表示
    */
-  it('グループマスター権限で全メニューが表示される', () => {
+  it('グループマスター権限で全メニューが表示される', async () => {
     renderScreen();
 
-    expect(screen.getByText('タスクスケジュール管理')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('タスクスケジュール管理')).toBeTruthy();
+    });
+    
     expect(screen.getByText('メンバー管理')).toBeTruthy();
     expect(screen.getByText('グループ設定')).toBeTruthy();
   });
@@ -129,14 +170,17 @@ describe('GroupManagementScreen', () => {
   /**
    * Test 4: メンバー権限の表示
    */
-  it('メンバー権限でスケジュール管理のみ表示される', () => {
+  it('メンバー権限でスケジュール管理のみ表示される', async () => {
     (useAuth as jest.Mock).mockReturnValue({
       user: { ...mockUser, group_edit_flg: false },
     });
 
     renderScreen();
 
-    expect(screen.getByText('タスクスケジュール管理')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('タスクスケジュール管理')).toBeTruthy();
+    });
+    
     expect(screen.queryByText('メンバー管理')).toBeNull();
     expect(screen.queryByText('グループ設定')).toBeNull();
   });
@@ -144,12 +188,16 @@ describe('GroupManagementScreen', () => {
   /**
    * Test 5: 子供テーマ表示
    */
-  it('子供テーマで適切な文言を表示する', () => {
-    (useTheme as jest.Mock).mockReturnValue({ theme: 'child' });
+  it('子供テーマで適切な文言を表示する', async () => {
+    const mockChildTheme = { theme: 'child', setTheme: jest.fn(), isLoading: false, refreshTheme: jest.fn() };
+    jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockChildTheme);
 
     renderScreen();
 
-    expect(screen.getByText('グループかんり')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('グループかんり')).toBeTruthy();
+    });
+    
     expect(screen.getByText('グループじょうほう')).toBeTruthy();
     expect(screen.getByText('タスクスケジュールかんり')).toBeTruthy();
   });
@@ -157,13 +205,17 @@ describe('GroupManagementScreen', () => {
   /**
    * Test 6: タスクスケジュール管理ボタン
    */
-  it('タスクスケジュール管理ボタンをタップできる', () => {
+  it('タスクスケジュール管理ボタンをタップできる', async () => {
     const mockNavigate = jest.fn();
     jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
       navigate: mockNavigate,
     });
 
     renderScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('タスクスケジュール管理')).toBeTruthy();
+    });
 
     const scheduleButton = screen.getByText('タスクスケジュール管理');
     fireEvent.press(scheduleButton.parent!);
@@ -174,18 +226,24 @@ describe('GroupManagementScreen', () => {
   /**
    * Test 7: 準備中バッジ表示
    */
-  it('未実装機能に準備中バッジが表示される', () => {
+  it('未実装機能に準備中バッジが表示される', async () => {
     renderScreen();
 
-    const comingSoonBadges = screen.getAllByText('準備中');
-    expect(comingSoonBadges.length).toBeGreaterThanOrEqual(2); // メンバー管理とグループ設定
+    await waitFor(() => {
+      const comingSoonBadges = screen.getAllByText('準備中');
+      expect(comingSoonBadges.length).toBeGreaterThanOrEqual(2); // メンバー管理とグループ設定
+    });
   });
 
   /**
    * Test 8: 説明セクション表示
    */
-  it('グループ管理の説明が表示される', () => {
+  it('グループ管理の説明が表示される', async () => {
     renderScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('グループ管理について')).toBeTruthy();
+    });
 
     expect(screen.getByText('グループ管理について')).toBeTruthy();
     expect(
@@ -198,24 +256,26 @@ describe('GroupManagementScreen', () => {
   /**
    * Test 9: メンバー向け説明表示
    */
-  it('メンバー権限で適切な説明が表示される', () => {
+  it('メンバー権限で適切な説明が表示される', async () => {
     (useAuth as jest.Mock).mockReturnValue({
       user: { ...mockUser, group_edit_flg: false },
     });
 
     renderScreen();
 
-    expect(
-      screen.getByText(
-        '現在はメンバー権限のため、タスクスケジュールの閲覧のみ可能です。'
-      )
-    ).toBeTruthy();
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          '現在はメンバー権限のため、タスクスケジュールの閲覧のみ可能です。'
+        )
+      ).toBeTruthy();
+    });
   });
 
   /**
    * Test 10: グループIDなしの場合
    */
-  it('グループIDがない場合にボタンが無効化される', () => {
+  it('グループIDがない場合にボタンが無効化される', async () => {
     (useAuth as jest.Mock).mockReturnValue({
       user: { ...mockUser, group_id: null },
     });
@@ -226,6 +286,10 @@ describe('GroupManagementScreen', () => {
     });
 
     renderScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('タスクスケジュール管理')).toBeTruthy();
+    });
 
     const scheduleButton = screen.getByText('タスクスケジュール管理');
     fireEvent.press(scheduleButton.parent!);
