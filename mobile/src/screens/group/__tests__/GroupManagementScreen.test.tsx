@@ -13,6 +13,34 @@ import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 // モック
 jest.mock('../../../contexts/ThemeContext');
 jest.mock('../../../contexts/AuthContext');
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: {
+        primary: '#111827',
+        secondary: '#6B7280',
+        tertiary: '#9CA3AF',
+        disabled: '#D1D5DB',
+      },
+      card: '#FFFFFF',
+      border: {
+        default: '#E5E7EB',
+        light: 'rgba(229, 231, 235, 0.5)',
+      },
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+    },
+    accent: {
+      primary: '#007AFF',
+      gradient: ['#007AFF', '#5856D6'],
+    },
+  })),
+}));
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
