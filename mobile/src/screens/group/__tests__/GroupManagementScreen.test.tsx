@@ -40,9 +40,11 @@ describe('GroupManagementScreen', () => {
 
   const renderScreen = () => {
     return render(
-      <NavigationContainer>
-        <GroupManagementScreen />
-      </NavigationContainer>
+      <ColorSchemeProvider>
+        <NavigationContainer>
+          <GroupManagementScreen />
+        </NavigationContainer>
+      </ColorSchemeProvider>
     );
   };
 

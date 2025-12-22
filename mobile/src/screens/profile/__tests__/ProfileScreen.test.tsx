@@ -58,7 +58,11 @@ describe('ProfileScreen', () => {
   });
 
   it('プロフィール情報を表示する', async () => {
-    const { getByText, getByDisplayValue } = render(<ProfileScreen />);
+    const { getByText, getByDisplayValue } = render(
+      <ColorSchemeProvider>
+        <ProfileScreen />
+      </ColorSchemeProvider>
+    );
 
     await waitFor(() => {
       expect(getByText('プロフィール')).toBeTruthy();
@@ -71,7 +75,11 @@ describe('ProfileScreen', () => {
   it('child themeで適切なラベルを表示する', async () => {
     mockUseTheme.mockReturnValue({ theme: 'child', isLoading: false, refreshTheme: jest.fn(), setTheme: jest.fn() });
 
-    const { getByText } = render(<ProfileScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <ProfileScreen />
+      </ColorSchemeProvider>
+    );
 
     await waitFor(() => {
       expect(getByText('じぶんのじょうほう')).toBeTruthy();
@@ -79,7 +87,11 @@ describe('ProfileScreen', () => {
   });
 
   it('編集ボタンをクリックすると編集モードになる', async () => {
-    const { getByText } = render(<ProfileScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <ProfileScreen />
+      </ColorSchemeProvider>
+    );
 
     const editButton = getByText('編集');
     fireEvent.press(editButton);
@@ -96,7 +108,11 @@ describe('ProfileScreen', () => {
       name: 'Updated User',
     });
 
-    const { getByText, getByDisplayValue } = render(<ProfileScreen />);
+    const { getByText, getByDisplayValue } = render(
+      <ColorSchemeProvider>
+        <ProfileScreen />
+      </ColorSchemeProvider>
+    );
 
     // 編集モードに入る
     fireEvent.press(getByText('編集'));
@@ -128,7 +144,11 @@ describe('ProfileScreen', () => {
   });
 
   it('必須フィールドが空の場合にエラーを表示する', async () => {
-    const { getByText, getByDisplayValue } = render(<ProfileScreen />);
+    const { getByText, getByDisplayValue } = render(
+      <ColorSchemeProvider>
+        <ProfileScreen />
+      </ColorSchemeProvider>
+    );
 
     // 編集モードに入る
     fireEvent.press(getByText('編集'));
@@ -152,7 +172,11 @@ describe('ProfileScreen', () => {
   });
 
   it('キャンセルボタンで編集を取り消せる', async () => {
-    const { getByText, getByDisplayValue } = render(<ProfileScreen />);
+    const { getByText, getByDisplayValue } = render(
+      <ColorSchemeProvider>
+        <ProfileScreen />
+      </ColorSchemeProvider>
+    );
 
     // 編集モードに入る
     fireEvent.press(getByText('編集'));
@@ -172,7 +196,11 @@ describe('ProfileScreen', () => {
   });
 
   it('アカウント削除確認ダイアログを表示する', async () => {
-    const { getByText } = render(<ProfileScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <ProfileScreen />
+      </ColorSchemeProvider>
+    );
 
     // 削除ボタンをクリック
     fireEvent.press(getByText('アカウントを削除'));
@@ -193,7 +221,11 @@ describe('ProfileScreen', () => {
       isLoading: true,
     });
 
-    const { getByText } = render(<ProfileScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <ProfileScreen />
+      </ColorSchemeProvider>
+    );
 
     expect(getByText('読み込み中...')).toBeTruthy();
   });
@@ -204,7 +236,11 @@ describe('ProfileScreen', () => {
       error: 'プロフィールの取得に失敗しました',
     });
 
-    const { getByText } = render(<ProfileScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <ProfileScreen />
+      </ColorSchemeProvider>
+    );
 
     await waitFor(() => {
       expect(getByText('プロフィールの取得に失敗しました')).toBeTruthy();
