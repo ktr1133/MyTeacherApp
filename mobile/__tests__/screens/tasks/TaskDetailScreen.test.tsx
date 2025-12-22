@@ -7,6 +7,7 @@ import { Alert } from 'react-native';
 import TaskDetailScreen from '../../../src/screens/tasks/TaskDetailScreen';
 import { AuthProvider } from '../../../src/contexts/AuthContext';
 import { ThemeProvider } from '../../../src/contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as useTasks from '../../../src/hooks/useTasks';
@@ -25,15 +26,17 @@ const Stack = createNativeStackNavigator();
  */
 const renderWithProviders = (component: React.ReactElement, theme: 'adult' | 'child' = 'adult') => {
   return render(
-    <AuthProvider>
-      <ThemeProvider>
-        <NavigationContainer>
-          <Stack.Navigator>
-            <Stack.Screen name="TaskDetail" component={() => component} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </ThemeProvider>
-    </AuthProvider>
+    <ColorSchemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <NavigationContainer>
+            <Stack.Navigator>
+              <Stack.Screen name="TaskDetail" component={() => component} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </ThemeProvider>
+      </AuthProvider>
+    </ColorSchemeProvider>
   );
 };
 

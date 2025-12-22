@@ -7,11 +7,31 @@ import { Alert } from 'react-native';
 import SettingsScreen from '../SettingsScreen';
 import { useProfile } from '../../../hooks/useProfile';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../hooks/useProfile');
 jest.mock('../../../contexts/ThemeContext');
 jest.mock('../../../services/user.service');
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+      notification: '#FF0000',
+      primary: '#007AFF',
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+      warning: '#FF9500',
+      error: '#FF3B30',
+    },
+  })),
+}));
 
 const mockUseProfile = useProfile as jest.MockedFunction<typeof useProfile>;
 const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
@@ -41,6 +61,14 @@ describe('SettingsScreen', () => {
     refreshTheme: jest.fn(),
   };
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseProfile.mockReturnValue(mockProfileHook);
@@ -57,7 +85,7 @@ describe('SettingsScreen', () => {
   });
 
   it('設定画面を表示する', async () => {
-    const { getByText } = render(<SettingsScreen />);
+    const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(getByText('設定')).toBeTruthy();
@@ -74,7 +102,7 @@ describe('SettingsScreen', () => {
       theme: 'child',
     });
 
-    const { getByText } = render(<SettingsScreen />);
+    const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(getByText('せってい')).toBeTruthy();
@@ -88,7 +116,7 @@ describe('SettingsScreen', () => {
       theme: 'child',
     });
 
-    const { getByText } = render(<SettingsScreen />);
+    const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(getByText('おとなモード')).toBeTruthy();
@@ -105,7 +133,7 @@ describe('SettingsScreen', () => {
   });
 
   it('テーマを子供モードに切り替えできる', async () => {
-    const { getByText } = render(<SettingsScreen />);
+    const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(getByText('子供モード')).toBeTruthy();
@@ -122,7 +150,7 @@ describe('SettingsScreen', () => {
   });
 
   it('タイムゾーン設定を読み込む', async () => {
-    render(<SettingsScreen />);
+    renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(mockProfileHook.getTimezoneSettings).toHaveBeenCalled();
@@ -134,7 +162,7 @@ describe('SettingsScreen', () => {
       timezone: 'America/New_York',
     });
 
-    render(<SettingsScreen />);
+    renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(mockProfileHook.getTimezoneSettings).toHaveBeenCalled();
@@ -145,7 +173,7 @@ describe('SettingsScreen', () => {
   });
 
   it('通知設定を切り替えできる', async () => {
-    const { getByText } = render(<SettingsScreen />);
+    const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(getByText('プッシュ通知')).toBeTruthy();
@@ -156,7 +184,7 @@ describe('SettingsScreen', () => {
   });
 
   it('プライバシーポリシーリンクをクリックできる', async () => {
-    const { getByText } = render(<SettingsScreen />);
+    const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(getByText('プライバシーポリシー')).toBeTruthy();
@@ -170,7 +198,7 @@ describe('SettingsScreen', () => {
   });
 
   it('利用規約リンクをクリックできる', async () => {
-    const { getByText } = render(<SettingsScreen />);
+    const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(getByText('利用規約')).toBeTruthy();
@@ -184,7 +212,7 @@ describe('SettingsScreen', () => {
   });
 
   it('バージョン情報を表示する', async () => {
-    const { getByText } = render(<SettingsScreen />);
+    const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(getByText('1.0.0')).toBeTruthy();
@@ -197,7 +225,7 @@ describe('SettingsScreen', () => {
       error: 'タイムゾーンの取得に失敗しました',
     });
 
-    const { getByText } = render(<SettingsScreen />);
+    const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
       expect(getByText('タイムゾーンの取得に失敗しました')).toBeTruthy();
@@ -205,7 +233,7 @@ describe('SettingsScreen', () => {
   });
 
   it('タイムゾーン読み込み中にローディングを表示する', async () => {
-    render(<SettingsScreen />);
+    renderScreen(<SettingsScreen />);
 
     // ActivityIndicator が表示されることを確認（詳細な検証は省略）
     await waitFor(() => {
