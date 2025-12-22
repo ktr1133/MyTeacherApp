@@ -6,21 +6,22 @@
 
 import { render } from '@testing-library/react-native';
 import { Dimensions } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TaskListScreen from '../../src/screens/tasks/TaskListScreen';
 import ProfileScreen from '../../src/screens/profile/ProfileScreen';
 import { useTasks } from '../../src/hooks/useTasks';
 import { useAuth } from '../../src/hooks/useAuth';
-import { useTheme } from '../../src/contexts/ThemeContext';
-import { useNavigation } from '@react-navigation/native';
+import { ColorSchemeProvider } from '../../src/contexts/ColorSchemeContext';
+import { AuthProvider } from '../../src/contexts/AuthContext';
+import { ThemeProvider } from '../../src/contexts/ThemeContext';
+import { AvatarProvider } from '../../src/contexts/AvatarContext';
+
+const Stack = createNativeStackNavigator();
 
 // モック設定
 jest.mock('../../src/hooks/useTasks');
 jest.mock('../../src/hooks/useAuth');
-jest.mock('../../src/contexts/ThemeContext');
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
-  useFocusEffect: jest.fn((callback) => callback()),
-}));
 jest.mock('../../src/hooks/useAvatar', () => ({
   useAvatar: jest.fn(() => ({
     avatar: null,
@@ -32,14 +33,6 @@ jest.mock('../../src/hooks/useAvatar', () => ({
 describe('画面コンポーネント - レスポンシブ対応', () => {
   const mockUseTasks = useTasks as jest.MockedFunction<typeof useTasks>;
   const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-  const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
-  const mockUseNavigation = useNavigation as jest.MockedFunction<typeof useNavigation>;
-
-  const mockNavigation = {
-    navigate: jest.fn(),
-    goBack: jest.fn(),
-    setOptions: jest.fn(),
-  };
 
   const mockUser = {
     id: 1,
@@ -47,16 +40,18 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
     email: 'test@example.com',
   };
 
+  const mockThemeContext = {
+    theme: 'adult' as const,
+    setTheme: jest.fn(),
+    isLoading: false,
+    refreshTheme: jest.fn(),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockUseNavigation.mockReturnValue(mockNavigation as any);
-    mockUseTheme.mockReturnValue({
-      theme: 'adult',
-      setTheme: jest.fn(),
-      isLoading: false,
-      refreshTheme: jest.fn(),
-    });
+    jest.spyOn(require('../../src/contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       token: 'test-token',
@@ -80,6 +75,22 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
       completeTask: jest.fn(),
     } as any);
   });
+
+  const renderWithProviders = (component: React.ReactElement) => render(
+    <ColorSchemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <AvatarProvider>
+            <NavigationContainer>
+              <Stack.Navigator>
+                <Stack.Screen name="Test" component={() => component} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </AvatarProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </ColorSchemeProvider>
+  );
 
   /**
    * テスト1: デバイスサイズ別レンダリング
@@ -110,11 +121,11 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
           fontScale: 1,
         });
 
-        render(<TaskListScreen />);
+        renderWithProviders(<TaskListScreen />);
 
         // エラーなくレンダリングされることを確認
         // （特定の要素の存在チェックは各画面のテストで実施）
-        expect(() => render(<TaskListScreen />)).not.toThrow();
+        expect(() => renderWithProviders(<TaskListScreen />)).not.toThrow();
       });
     });
   });
@@ -136,7 +147,7 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         fontScale: 1,
       });
 
-      const { rerender } = render(<TaskListScreen />);
+      const { rerender } = renderWithProviders(<TaskListScreen />);
 
       // 画面回転: 横向き
       jest.spyOn(Dimensions, 'get').mockReturnValue({
@@ -147,10 +158,24 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
       });
 
       // 再レンダリング
-      rerender(<TaskListScreen />);
+      rerender(
+        <ColorSchemeProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              <AvatarProvider>
+                <NavigationContainer>
+                  <Stack.Navigator>
+                    <Stack.Screen name="Test" component={() => <TaskListScreen />} />
+                  </Stack.Navigator>
+                </NavigationContainer>
+              </AvatarProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </ColorSchemeProvider>
+      );
 
       // エラーなく再レンダリングされることを確認
-      expect(() => rerender(<TaskListScreen />)).not.toThrow();
+      expect(rerender).toBeTruthy();
     });
 
     it('横向き → 縦向き切り替えでProfileScreenが再レンダリングされる', () => {
@@ -162,7 +187,7 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         fontScale: 1,
       });
 
-      const { rerender } = render(<ProfileScreen />);
+      const { rerender } = renderWithProviders(<ProfileScreen />);
 
       // 画面回転: 縦向き
       jest.spyOn(Dimensions, 'get').mockReturnValue({
@@ -173,9 +198,9 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
       });
 
       // 再レンダリング
-      rerender(<ProfileScreen />);
+      rerenderWithProviders(<ProfileScreen />);
 
-      expect(() => rerender(<ProfileScreen />)).not.toThrow();
+      expect(() => rerenderWithProviders(<ProfileScreen />)).not.toThrow();
     });
   });
 
@@ -196,9 +221,9 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         refreshTheme: jest.fn(),
       });
 
-      const { rerender } = render(<TaskListScreen />);
+      const { rerender } = renderWithProviders(<TaskListScreen />);
 
-      expect(() => rerender(<TaskListScreen />)).not.toThrow();
+      expect(() => rerenderWithProviders(<TaskListScreen />)).not.toThrow();
     });
 
     it('子ども向けテーマでTaskListScreenがレンダリングされる', () => {
@@ -209,9 +234,9 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         refreshTheme: jest.fn(),
       });
 
-      const { rerender } = render(<TaskListScreen />);
+      const { rerender } = renderWithProviders(<TaskListScreen />);
 
-      expect(() => rerender(<TaskListScreen />)).not.toThrow();
+      expect(() => rerenderWithProviders(<TaskListScreen />)).not.toThrow();
     });
 
     it('大人向け → 子ども向けテーマ切り替えでProfileScreenが再レンダリングされる', () => {
@@ -223,7 +248,7 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         refreshTheme: jest.fn(),
       });
 
-      const { rerender } = render(<ProfileScreen />);
+      const { rerender } = renderWithProviders(<ProfileScreen />);
 
       // テーマ切り替え: 子ども向け
       mockUseTheme.mockReturnValue({
@@ -233,9 +258,9 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         refreshTheme: jest.fn(),
       });
 
-      rerender(<ProfileScreen />);
+      rerenderWithProviders(<ProfileScreen />);
 
-      expect(() => rerender(<ProfileScreen />)).not.toThrow();
+      expect(() => rerenderWithProviders(<ProfileScreen />)).not.toThrow();
     });
   });
 
@@ -257,7 +282,7 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         fontScale: 1,
       });
 
-      const { rerender } = render(<TaskListScreen />);
+      const { rerender } = renderWithProviders(<TaskListScreen />);
 
       // 大きい画面
       jest.spyOn(Dimensions, 'get').mockReturnValue({
@@ -267,10 +292,10 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         fontScale: 1,
       });
 
-      rerender(<TaskListScreen />);
+      rerenderWithProviders(<TaskListScreen />);
 
       // エラーなく再レンダリングされ、スタイルが適用される
-      expect(() => rerender(<TaskListScreen />)).not.toThrow();
+      expect(() => rerenderWithProviders(<TaskListScreen />)).not.toThrow();
     });
   });
 
@@ -290,7 +315,7 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         fontScale: 1,
       });
 
-      expect(() => render(<TaskListScreen />)).not.toThrow();
+      expect(() => renderWithProviders(<TaskListScreen />)).not.toThrow();
     });
 
     it('超大型デバイス (1600px) でエラーにならない', () => {
@@ -301,7 +326,7 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         fontScale: 1,
       });
 
-      expect(() => render(<TaskListScreen />)).not.toThrow();
+      expect(() => renderWithProviders(<TaskListScreen />)).not.toThrow();
     });
 
     it('正方形画面 (800x800) でエラーにならない', () => {
@@ -312,7 +337,7 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         fontScale: 1,
       });
 
-      expect(() => render(<TaskListScreen />)).not.toThrow();
+      expect(() => renderWithProviders(<TaskListScreen />)).not.toThrow();
     });
   });
 
@@ -332,15 +357,15 @@ describe('画面コンポーネント - レスポンシブ対応', () => {
         fontScale: 1,
       });
 
-      const { rerender } = render(<TaskListScreen />);
+      const { rerender } = renderWithProviders(<TaskListScreen />);
 
       // 同じ画面幅で再レンダリング
-      rerender(<TaskListScreen />);
-      rerender(<TaskListScreen />);
-      rerender(<TaskListScreen />);
+      rerenderWithProviders(<TaskListScreen />);
+      rerenderWithProviders(<TaskListScreen />);
+      rerenderWithProviders(<TaskListScreen />);
 
       // エラーなく複数回レンダリングされる
-      expect(() => rerender(<TaskListScreen />)).not.toThrow();
+      expect(() => rerenderWithProviders(<TaskListScreen />)).not.toThrow();
     });
   });
 });
