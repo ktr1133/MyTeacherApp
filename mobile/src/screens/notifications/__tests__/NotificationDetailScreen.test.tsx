@@ -8,19 +8,37 @@
 import { render, waitFor } from '@testing-library/react-native';
 import NotificationDetailScreen from '../NotificationDetailScreen';
 import { notificationService } from '../../../services/notification.service';
-import { useAuth } from '../../../contexts/AuthContext';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { useRoute } from '@react-navigation/native';
 import { Notification } from '../../../types/notification.types';
+import { AuthProvider } from '../../../contexts/AuthContext';
+import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+// ナビゲーションスタック作成
+const Stack = createNativeStackNavigator();
+
+/**
+ * テスト用コンポーネントをプロバイダーでラップ
+ */
+const renderWithProviders = (component: React.ReactElement) => {
+  return render(
+    <ColorSchemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <NavigationContainer>
+            <Stack.Navigator>
+              <Stack.Screen name="NotificationDetail" component={() => component} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </ThemeProvider>
+      </AuthProvider>
+    </ColorSchemeProvider>
+  );
+};
 
 // モック
 jest.mock('../../../services/notification.service');
-jest.mock('../../../contexts/AuthContext');
-jest.mock('../../../contexts/ThemeContext');
-jest.mock('../../../contexts/ColorSchemeContext', () => ({
-  useColorScheme: () => ({ colorScheme: 'light', setColorScheme: jest.fn() }),
-}));
 jest.mock('../../../hooks/useThemedColors', () => ({
   useThemedColors: () => ({
     colors: {
@@ -57,15 +75,16 @@ jest.mock('../../../utils/responsive', () => ({
   getBorderRadius: (size: number) => size,
   getShadow: () => ({}),
 }));
+
+// useRoute モック
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
-  useRoute: jest.fn(),
+  useRoute: () => ({
+    params: { notificationId: 1 },
+  }),
 }));
 
 const mockNotificationService = notificationService as jest.Mocked<typeof notificationService>;
-const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
-const mockUseRoute = useRoute as jest.MockedFunction<typeof useRoute>;
 
 describe('NotificationDetailScreen', () => {
   // モック通知データ
@@ -106,13 +125,14 @@ describe('NotificationDetailScreen', () => {
     refreshTheme: jest.fn(),
   };
 
+  // AuthContextとThemeContextをプロバイダーでモック
+  jest.spyOn(require('../../../contexts/AuthContext'), 'useAuth').mockReturnValue(mockAuthContext);
+  jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseAuth.mockReturnValue(mockAuthContext);
-    mockUseTheme.mockReturnValue(mockThemeContext);
-    mockUseRoute.mockReturnValue({
-      params: { notificationId: 1 },
-    } as any);
+    jest.spyOn(require('../../../contexts/AuthContext'), 'useAuth').mockReturnValue(mockAuthContext);
+    jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
 
     // デフォルトのAPIレスポンス
     mockNotificationService.getNotificationDetail.mockResolvedValue({
@@ -126,11 +146,7 @@ describe('NotificationDetailScreen', () => {
   });
 
   it('通知詳細情報が正しく表示される', async () => {
-    const { getByText } = render(
-      <ColorSchemeProvider>
-        <NotificationDetailScreen />
-      </ColorSchemeProvider>
-    );
+    const { getByText } = renderWithProviders(<NotificationDetailScreen />);
 
     await waitFor(() => {
       expect(getByText('タスクが作成されました')).toBeTruthy();
@@ -140,11 +156,7 @@ describe('NotificationDetailScreen', () => {
   });
 
   it('画面表示時に未読通知を自動的に既読化する', async () => {
-    render(
-      <ColorSchemeProvider>
-        <NotificationDetailScreen />
-      </ColorSchemeProvider>
-    );
+    renderWithProviders(<NotificationDetailScreen />);
 
     await waitFor(() => {
       expect(mockNotificationService.getNotificationDetail).toHaveBeenCalledWith(1);
@@ -164,11 +176,7 @@ describe('NotificationDetailScreen', () => {
       data: { notification: readNotification },
     });
 
-    const { getByText } = render(
-      <ColorSchemeProvider>
-        <NotificationDetailScreen />
-      </ColorSchemeProvider>
-    );
+    const { getByText } = renderWithProviders(<NotificationDetailScreen />);
 
     await waitFor(() => {
       expect(getByText('既読')).toBeTruthy();
@@ -190,11 +198,7 @@ describe('NotificationDetailScreen', () => {
       data: { notification: importantNotification },
     });
 
-    const { getByText } = render(
-      <ColorSchemeProvider>
-        <NotificationDetailScreen />
-      </ColorSchemeProvider>
-    );
+    const { getByText } = renderWithProviders(<NotificationDetailScreen />);
 
     await waitFor(() => {
       expect(getByText('重要')).toBeTruthy();
@@ -206,11 +210,7 @@ describe('NotificationDetailScreen', () => {
       new Error('通知が見つかりません')
     );
 
-    const { getByText } = render(
-      <ColorSchemeProvider>
-        <NotificationDetailScreen />
-      </ColorSchemeProvider>
-    );
+    const { getByText } = renderWithProviders(<NotificationDetailScreen />);
 
     await waitFor(() => {
       expect(getByText('通知が見つかりません')).toBeTruthy();
@@ -219,16 +219,12 @@ describe('NotificationDetailScreen', () => {
   });
 
   it('child themeで適切なラベルが表示される', async () => {
-    mockUseTheme.mockReturnValue({
+    jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue({
       ...mockThemeContext,
       theme: 'child',
     });
 
-    const { getByText } = render(
-      <ColorSchemeProvider>
-        <NotificationDetailScreen />
-      </ColorSchemeProvider>
-    );
+    const { getByText } = renderWithProviders(<NotificationDetailScreen />);
 
     await waitFor(() => {
       expect(getByText('ないよう')).toBeTruthy();
