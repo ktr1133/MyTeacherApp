@@ -5,14 +5,44 @@
 import { render, fireEvent } from '@testing-library/react-native';
 import RejectReasonModal from '../RejectReasonModal';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../contexts/ThemeContext');
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+    },
+  })),
+}));
 const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
 
 describe('RejectReasonModal', () => {
   const mockOnReject = jest.fn();
   const mockOnCancel = jest.fn();
+
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -26,7 +56,7 @@ describe('RejectReasonModal', () => {
 
   describe('表示・非表示', () => {
     it('visible=trueの時にモーダルが表示される', () => {
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -40,7 +70,7 @@ describe('RejectReasonModal', () => {
     });
 
     it('visible=falseの時にモーダルが非表示になる', () => {
-      const { queryByText } = render(
+      const { queryByText } = renderScreen(
         <RejectReasonModal
           visible={false}
           targetTitle="テストタスク"
@@ -56,7 +86,7 @@ describe('RejectReasonModal', () => {
 
   describe('表示内容', () => {
     it('対象のタイトルが正しく表示される', () => {
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="重要なタスク"
@@ -78,7 +108,7 @@ describe('RejectReasonModal', () => {
         setTheme: jest.fn(),
       });
 
-      const { getByText, getByPlaceholderText } = render(
+      const { getByText, getByPlaceholderText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -94,7 +124,7 @@ describe('RejectReasonModal', () => {
     });
 
     it('adult themeで適切なラベルを表示する', () => {
-      const { getByText, getByPlaceholderText } = render(
+      const { getByText, getByPlaceholderText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -112,7 +142,7 @@ describe('RejectReasonModal', () => {
 
   describe('テキスト入力', () => {
     it('理由を入力できる', () => {
-      const { getByPlaceholderText } = render(
+      const { getByPlaceholderText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -129,7 +159,7 @@ describe('RejectReasonModal', () => {
     });
 
     it('複数行のテキストを入力できる', () => {
-      const { getByPlaceholderText } = render(
+      const { getByPlaceholderText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -147,7 +177,7 @@ describe('RejectReasonModal', () => {
     });
 
     it('200文字まで入力できる', () => {
-      const { getByPlaceholderText } = render(
+      const { getByPlaceholderText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -167,7 +197,7 @@ describe('RejectReasonModal', () => {
 
   describe('ボタンアクション', () => {
     it('却下ボタンをタップしたら入力した理由とともにonRejectが呼ばれる', () => {
-      const { getByText, getByPlaceholderText } = render(
+      const { getByText, getByPlaceholderText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -188,7 +218,7 @@ describe('RejectReasonModal', () => {
     });
 
     it('理由を入力せずに却下ボタンをタップしたらundefinedでonRejectが呼ばれる', () => {
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -206,7 +236,7 @@ describe('RejectReasonModal', () => {
     });
 
     it('キャンセルボタンをタップしたらonCancelが呼ばれる', () => {
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -224,7 +254,7 @@ describe('RejectReasonModal', () => {
     });
 
     it('isSubmitting=trueの場合は却下ボタンが無効になる', () => {
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -242,7 +272,7 @@ describe('RejectReasonModal', () => {
     });
 
     it('isSubmitting=trueの場合はキャンセルボタンも無効になる', () => {
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -262,7 +292,7 @@ describe('RejectReasonModal', () => {
 
   describe('モーダルを閉じた時の動作', () => {
     it('キャンセル後に再度開いた時は入力がクリアされる', () => {
-      const { getByText, getByPlaceholderText, rerender } = render(
+      const { getByText, getByPlaceholderText, rerender } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -300,7 +330,7 @@ describe('RejectReasonModal', () => {
   describe('レスポンシブ対応', () => {
     it('タブレットサイズでも正しく表示される', () => {
       // Dimensionsのモックは省略（既存のレスポンシブロジックをテスト）
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="テストタスク"
@@ -318,7 +348,7 @@ describe('RejectReasonModal', () => {
     it('長いタイトルも正しく表示される', () => {
       const longTitle = 'これは非常に長いタスクのタイトルで、モーダル内で折り返されるはずです';
 
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle={longTitle}
@@ -334,7 +364,7 @@ describe('RejectReasonModal', () => {
 
   describe('複数の対象タイプ', () => {
     it('タスクの却下時に適切なメッセージを表示する', () => {
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="タスク名"
@@ -349,7 +379,7 @@ describe('RejectReasonModal', () => {
     });
 
     it('トークン購入申請の却下時に適切なメッセージを表示する', () => {
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <RejectReasonModal
           visible={true}
           targetTitle="10,000トークン"

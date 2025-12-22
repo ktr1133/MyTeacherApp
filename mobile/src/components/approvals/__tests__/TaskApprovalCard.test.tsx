@@ -6,9 +6,31 @@ import { render, fireEvent } from '@testing-library/react-native';
 import TaskApprovalCard from '../TaskApprovalCard';
 import { TaskApprovalItem } from '../../../types/approval.types';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../contexts/ThemeContext');
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+    },
+  })),
+}));
 const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
 
 describe('TaskApprovalCard', () => {
@@ -50,6 +72,14 @@ describe('TaskApprovalCard', () => {
   const mockOnApprove = jest.fn();
   const mockOnReject = jest.fn();
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseTheme.mockReturnValue({
@@ -62,7 +92,7 @@ describe('TaskApprovalCard', () => {
 
   describe('表示内容', () => {
     it('タスク情報が正しく表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -87,7 +117,7 @@ describe('TaskApprovalCard', () => {
         setTheme: jest.fn(),
       });
 
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -101,7 +131,7 @@ describe('TaskApprovalCard', () => {
     });
 
     it('期限が正しく表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -115,7 +145,7 @@ describe('TaskApprovalCard', () => {
     });
 
     it('依頼日時が正しく表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -129,7 +159,7 @@ describe('TaskApprovalCard', () => {
     });
 
     it('画像枚数が表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -148,7 +178,7 @@ describe('TaskApprovalCard', () => {
         images_count: 0,
       };
 
-      const { queryByText } = render(
+      const { queryByText } = renderScreen(
         <TaskApprovalCard
           item={noImageApproval}
           onApprove={mockOnApprove}
@@ -161,7 +191,7 @@ describe('TaskApprovalCard', () => {
     });
 
     it('説明文が正しく表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -179,7 +209,7 @@ describe('TaskApprovalCard', () => {
         description: null,
       };
 
-      const { queryByText } = render(
+      const { queryByText } = renderScreen(
         <TaskApprovalCard
           item={noDescApproval}
           onApprove={mockOnApprove}
@@ -195,7 +225,7 @@ describe('TaskApprovalCard', () => {
 
   describe('インタラクション', () => {
     it('カードをタップしたらonViewDetailが呼ばれる', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -211,7 +241,7 @@ describe('TaskApprovalCard', () => {
     });
 
     it('承認ボタンをタップしたらonApproveが呼ばれる', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -228,7 +258,7 @@ describe('TaskApprovalCard', () => {
     });
 
     it('却下ボタンをタップしたらonRejectが呼ばれる', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -245,7 +275,7 @@ describe('TaskApprovalCard', () => {
     });
 
     it('isProcessingがtrueの場合はボタンテキストが表示されない', () => {
-      const { queryAllByText } = render(
+      const { queryAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}
@@ -264,7 +294,7 @@ describe('TaskApprovalCard', () => {
   describe('レスポンシブ対応', () => {
     it('タブレットサイズでも正しく表示される', () => {
       // Dimensionsのモックは省略（既存のレスポンシブロジックをテスト）
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TaskApprovalCard
           item={mockTaskApproval}
           onApprove={mockOnApprove}

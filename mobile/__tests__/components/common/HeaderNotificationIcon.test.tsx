@@ -9,9 +9,26 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import HeaderNotificationIcon from '../../../src/components/common/HeaderNotificationIcon';
 import { useNotifications } from '../../../src/hooks/useNotifications';
 import { useNavigation } from '@react-navigation/native';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../src/hooks/useNotifications');
+jest.mock('../../../src/hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+      notification: '#FF0000',
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+    },
+  })),
+}));
 jest.mock('../../../src/utils/responsive', () => ({
   useResponsive: () => ({
     width: 375,
@@ -37,6 +54,14 @@ const mockUseNavigation = useNavigation as jest.MockedFunction<typeof useNavigat
 describe('HeaderNotificationIcon', () => {
   const mockNavigate = jest.fn();
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseNavigation.mockReturnValue({
@@ -57,7 +82,7 @@ describe('HeaderNotificationIcon', () => {
         clearError: jest.fn(),
       });
 
-      const { queryByTestId } = render(<HeaderNotificationIcon />);
+      const { queryByTestId } = renderScreen(<HeaderNotificationIcon />);
 
       expect(queryByTestId('notification-badge')).toBeNull();
     });
@@ -74,7 +99,7 @@ describe('HeaderNotificationIcon', () => {
         clearError: jest.fn(),
       });
 
-      const { getByTestId, getByText } = render(<HeaderNotificationIcon />);
+      const { getByTestId, getByText } = renderScreen(<HeaderNotificationIcon />);
 
       expect(getByTestId('notification-badge')).toBeTruthy();
       expect(getByText('1')).toBeTruthy();
@@ -92,7 +117,7 @@ describe('HeaderNotificationIcon', () => {
         clearError: jest.fn(),
       });
 
-      const { getByTestId, getByText } = render(<HeaderNotificationIcon />);
+      const { getByTestId, getByText } = renderScreen(<HeaderNotificationIcon />);
 
       expect(getByTestId('notification-badge')).toBeTruthy();
       expect(getByText('99')).toBeTruthy();
@@ -110,7 +135,7 @@ describe('HeaderNotificationIcon', () => {
         clearError: jest.fn(),
       });
 
-      const { getByTestId, getByText } = render(<HeaderNotificationIcon />);
+      const { getByTestId, getByText } = renderScreen(<HeaderNotificationIcon />);
 
       expect(getByTestId('notification-badge')).toBeTruthy();
       expect(getByText('99+')).toBeTruthy();
@@ -130,7 +155,7 @@ describe('HeaderNotificationIcon', () => {
         clearError: jest.fn(),
       });
 
-      const { getByTestId } = render(<HeaderNotificationIcon />);
+      const { getByTestId } = renderScreen(<HeaderNotificationIcon />);
 
       fireEvent.press(getByTestId('header-notification-icon'));
 
@@ -153,7 +178,7 @@ describe('HeaderNotificationIcon', () => {
         clearError: jest.fn(),
       });
 
-      const { getByLabelText } = render(<HeaderNotificationIcon />);
+      const { getByLabelText } = renderScreen(<HeaderNotificationIcon />);
 
       expect(getByLabelText('通知')).toBeTruthy();
     });
@@ -170,7 +195,7 @@ describe('HeaderNotificationIcon', () => {
         clearError: jest.fn(),
       });
 
-      const { getByA11yHint } = render(<HeaderNotificationIcon />);
+      const { getByA11yHint } = renderScreen(<HeaderNotificationIcon />);
 
       expect(getByA11yHint('未読通知7件')).toBeTruthy();
     });

@@ -12,11 +12,33 @@ import { usePerformance } from '../../../src/hooks/usePerformance';
 import { useTheme } from '../../../src/contexts/ThemeContext';
 import { useAvatarContext } from '../../../src/contexts/AvatarContext';
 import { useNavigation } from '@react-navigation/native';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
 // モック設定
 jest.mock('../../../src/hooks/usePerformance');
 jest.mock('../../../src/contexts/ThemeContext');
 jest.mock('../../../src/contexts/AvatarContext');
+jest.mock('../../../src/hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+    },
+  })),
+}));
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
@@ -70,6 +92,14 @@ describe('PerformanceScreen', () => {
 
   const mockDispatchAvatarEvent = jest.fn();
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(Alert, 'alert').mockImplementation(() => {});
@@ -106,7 +136,7 @@ describe('PerformanceScreen', () => {
 
   describe('レンダリング', () => {
     it('初期状態で正しく表示される', async () => {
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       await waitFor(() => {
         expect(getByText('実績')).toBeTruthy();
@@ -135,7 +165,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByTestId } = render(<PerformanceScreen />);
+      const { getByTestId } = renderScreen(<PerformanceScreen />);
 
       expect(getByTestId('loading-indicator')).toBeTruthy();
     });
@@ -157,7 +187,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       expect(getByText('データ取得エラー')).toBeTruthy();
     });
@@ -188,7 +218,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       await waitFor(() => {
         expect(getByText('報酬合計')).toBeTruthy();
@@ -216,7 +246,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       const weekButton = getByText('週間');
       fireEvent.press(weekButton);
@@ -242,7 +272,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       const monthButton = getByText('月間');
       fireEvent.press(monthButton);
@@ -283,7 +313,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       const monthButton = getByText('月間');
       fireEvent.press(monthButton);
@@ -312,7 +342,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       const normalButton = getByText('通常タスク');
       fireEvent.press(normalButton);
@@ -338,7 +368,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       const groupButton = getByText('グループタスク');
       fireEvent.press(groupButton);
@@ -376,7 +406,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByTestId } = render(<PerformanceScreen />);
+      const { getByTestId } = renderScreen(<PerformanceScreen />);
 
       const prevButton = getByTestId('navigate-prev-button');
       fireEvent.press(prevButton);
@@ -402,7 +432,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByTestId } = render(<PerformanceScreen />);
+      const { getByTestId } = renderScreen(<PerformanceScreen />);
 
       const prevButton = getByTestId('navigate-prev-button');
       
@@ -440,7 +470,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByTestId } = render(<PerformanceScreen />);
+      const { getByTestId } = renderScreen(<PerformanceScreen />);
 
       const nextButton = getByTestId('navigate-next-button');
       fireEvent.press(nextButton);
@@ -476,7 +506,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       const memberButton = getByText('グループ全体');
       fireEvent.press(memberButton);
@@ -520,7 +550,7 @@ describe('PerformanceScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       const memberButton = getByText('グループ全体');
       fireEvent.press(memberButton);
@@ -535,7 +565,7 @@ describe('PerformanceScreen', () => {
 
   describe('月次レポート遷移', () => {
     it('月次レポートボタンで画面遷移する', async () => {
-      const { getByText } = render(<PerformanceScreen />);
+      const { getByText } = renderScreen(<PerformanceScreen />);
 
       const reportButton = getByText('月次レポート');
       fireEvent.press(reportButton);
@@ -563,7 +593,7 @@ describe('PerformanceScreen', () => {
         refresh: mockRefresh,
       });
 
-      const { getByTestId } = render(<PerformanceScreen />);
+      const { getByTestId } = renderScreen(<PerformanceScreen />);
 
       const scrollView = getByTestId('performance-scroll-view');
       // ScrollViewにRefreshControlが設定されていることを確認

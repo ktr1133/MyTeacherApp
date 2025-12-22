@@ -5,6 +5,23 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { Image } from 'react-native';
 import AvatarWidget from '../AvatarWidget';
 import { AvatarDisplayData } from '../../../types/avatar.types';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
+
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+    },
+  })),
+}));
 
 describe('AvatarWidget', () => {
   const mockData: AvatarDisplayData = {
@@ -17,6 +34,14 @@ describe('AvatarWidget', () => {
 
   const mockOnClose = jest.fn();
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -24,7 +49,7 @@ describe('AvatarWidget', () => {
   describe('表示・非表示', () => {
     it('visible=trueの時にモーダルが表示される', () => {
       // Act
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={mockData} onClose={mockOnClose} />
       );
 
@@ -34,7 +59,7 @@ describe('AvatarWidget', () => {
 
     it('visible=falseの時にモーダルが非表示になる', () => {
       // Act
-      const { queryByText } = render(
+      const { queryByText } = renderScreen(
         <AvatarWidget visible={false} data={mockData} onClose={mockOnClose} />
       );
 
@@ -44,7 +69,7 @@ describe('AvatarWidget', () => {
 
     it('data=nullの時は何も表示しない', () => {
       // Act
-      const { queryByTestId } = render(
+      const { queryByTestId } = renderScreen(
         <AvatarWidget visible={true} data={null} onClose={mockOnClose} />
       );
 
@@ -62,7 +87,7 @@ describe('AvatarWidget', () => {
       };
 
       // Act
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={customData} onClose={mockOnClose} />
       );
 
@@ -72,7 +97,7 @@ describe('AvatarWidget', () => {
 
     it('アバター画像が正しいURLで表示される', () => {
       // Act
-      const { UNSAFE_getByType } = render(
+      const { UNSAFE_getByType } = renderScreen(
         <AvatarWidget visible={true} data={mockData} onClose={mockOnClose} />
       );
 
@@ -85,7 +110,7 @@ describe('AvatarWidget', () => {
   describe('閉じるボタン', () => {
     it('閉じるボタンをクリックするとonCloseが呼ばれる', () => {
       // Arrange
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={mockData} onClose={mockOnClose} />
       );
 
@@ -101,7 +126,7 @@ describe('AvatarWidget', () => {
   describe('表示位置', () => {
     it('position=topの時に上部に表示される', () => {
       // Act
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={mockData} onClose={mockOnClose} position="top" />
       );
 
@@ -111,7 +136,7 @@ describe('AvatarWidget', () => {
 
     it('position=centerの時に中央に表示される', () => {
       // Act
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={mockData} onClose={mockOnClose} position="center" />
       );
 
@@ -121,7 +146,7 @@ describe('AvatarWidget', () => {
 
     it('position=bottomの時に下部に表示される', () => {
       // Act
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={mockData} onClose={mockOnClose} position="bottom" />
       );
 
@@ -133,7 +158,7 @@ describe('AvatarWidget', () => {
   describe('アニメーション', () => {
     it('enableAnimation=trueの時にアニメーションが有効', () => {
       // Act
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={mockData} onClose={mockOnClose} enableAnimation={true} />
       );
 
@@ -143,7 +168,7 @@ describe('AvatarWidget', () => {
 
     it('enableAnimation=falseの時にアニメーションが無効', () => {
       // Act
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={mockData} onClose={mockOnClose} enableAnimation={false} />
       );
 
@@ -162,7 +187,7 @@ describe('AvatarWidget', () => {
       };
 
       // Act
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={completedData} onClose={mockOnClose} />
       );
 
@@ -180,7 +205,7 @@ describe('AvatarWidget', () => {
       };
 
       // Act
-      const { getByText } = render(
+      const { getByText } = renderScreen(
         <AvatarWidget visible={true} data={loginData} onClose={mockOnClose} />
       );
 

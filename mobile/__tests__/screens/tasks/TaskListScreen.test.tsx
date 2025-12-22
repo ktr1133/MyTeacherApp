@@ -11,13 +11,35 @@ import { useTheme } from '../../../src/contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { useAvatar } from '../../../src/hooks/useAvatar';
 import { Task } from '../../../src/types/task.types';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
 // モック設定
 jest.mock('../../../src/hooks/useTasks');
 jest.mock('../../../src/contexts/ThemeContext');
+jest.mock('../../../src/hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+    },
+  })),
+}));
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
-  useFocusEffect: jest.fn((callback) => callback()),
+  useFocusEffect: jest.fn(),
 }));
 jest.mock('../../../src/hooks/useAvatar');
 jest.mock('../../../src/components/tasks/DeadlineBadge', () => ({
@@ -92,6 +114,14 @@ describe('TaskListScreen - バケット表示機能', () => {
     },
   ];
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -122,7 +152,7 @@ describe('TaskListScreen - バケット表示機能', () => {
    */
   describe('バケット表示', () => {
     it('タグ別にグループ化されたバケットが表示される', async () => {
-      const { getByText } = render(<TaskListScreen />);
+      const { getByText } = renderScreen(<TaskListScreen />);
 
       await waitFor(() => {
         expect(getByText('勉強')).toBeTruthy();
@@ -132,7 +162,7 @@ describe('TaskListScreen - バケット表示機能', () => {
     });
 
     it('バケットにタスク件数が表示される', async () => {
-      const { getByText, getAllByText } = render(<TaskListScreen />);
+      const { getByText, getAllByText } = renderScreen(<TaskListScreen />);
 
       await waitFor(() => {
         // 勉強: 2件
@@ -145,7 +175,7 @@ describe('TaskListScreen - バケット表示機能', () => {
     });
 
     it('バケット内のタスクプレビューが表示される（最大3件）', async () => {
-      const { getByText } = render(<TaskListScreen />);
+      const { getByText } = renderScreen(<TaskListScreen />);
 
       await waitFor(() => {
         // 勉強バケット内のタスク
@@ -155,7 +185,7 @@ describe('TaskListScreen - バケット表示機能', () => {
     });
 
     it('バケットはタスク件数降順でソートされる', async () => {
-      const { getByText } = render(<TaskListScreen />);
+      const { getByText } = renderScreen(<TaskListScreen />);
 
       await waitFor(() => {
         // 3つのバケットが表示されることを確認
@@ -171,7 +201,7 @@ describe('TaskListScreen - バケット表示機能', () => {
    */
   describe('検索時の動的切り替え', () => {
     it('検索クエリ入力時、バケット表示からタスクカード表示に切り替わる', async () => {
-      const { getByPlaceholderText, getByText, queryByText } = render(<TaskListScreen />);
+      const { getByPlaceholderText, getByText, queryByText } = renderScreen(<TaskListScreen />);
 
       // 初期状態: バケット表示（件数バッジが表示される）
       await waitFor(() => {
@@ -192,7 +222,7 @@ describe('TaskListScreen - バケット表示機能', () => {
     });
 
     it('検索クエリクリア時、タスクカード表示からバケット表示に復帰する', async () => {
-      const { getByPlaceholderText, getByText } = render(<TaskListScreen />);
+      const { getByPlaceholderText, getByText } = renderScreen(<TaskListScreen />);
 
       // 検索クエリ入力
       const searchInput = getByPlaceholderText('検索（タイトル・説明）');
@@ -218,7 +248,7 @@ describe('TaskListScreen - バケット表示機能', () => {
    */
   describe('画面遷移', () => {
     it('バケットタップ時、TagTasksScreenに遷移する', async () => {
-      const { getByText } = render(<TaskListScreen />);
+      const { getByText } = renderScreen(<TaskListScreen />);
 
       await waitFor(() => {
         expect(getByText('勉強')).toBeTruthy();
@@ -235,7 +265,7 @@ describe('TaskListScreen - バケット表示機能', () => {
     });
 
     it('未分類バケットタップ時、tagId=0でTagTasksScreenに遷移する', async () => {
-      const { getByText } = render(<TaskListScreen />);
+      const { getByText } = renderScreen(<TaskListScreen />);
 
       await waitFor(() => {
         expect(getByText('未分類')).toBeTruthy();
@@ -267,7 +297,7 @@ describe('TaskListScreen - バケット表示機能', () => {
         refreshTasks: jest.fn(),
       });
 
-      const { getByText } = render(<TaskListScreen />);
+      const { getByText } = renderScreen(<TaskListScreen />);
 
       await waitFor(() => {
         expect(getByText('タスクがありません')).toBeTruthy();
@@ -290,7 +320,7 @@ describe('TaskListScreen - バケット表示機能', () => {
         refreshTasks: jest.fn(),
       });
 
-      const { getByText, queryByText } = render(<TaskListScreen />);
+      const { getByText, queryByText } = renderScreen(<TaskListScreen />);
 
       await waitFor(() => {
         expect(getByText('勉強')).toBeTruthy();
