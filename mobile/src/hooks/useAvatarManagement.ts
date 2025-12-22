@@ -37,6 +37,12 @@ export const useAvatarManagement = () => {
     try {
       const data = await avatarService.getAvatar();
       
+      // dataがnullの場合（アバター未作成）
+      if (!data) {
+        setAvatar(null);
+        return null;
+      }
+      
       // localhost URLをngrok URLに置換（モバイルからはlocalhostにアクセス不可）
       if (data.images && data.images.length > 0) {
         data.images = data.images.map(image => {
