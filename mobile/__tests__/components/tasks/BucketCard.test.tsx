@@ -16,24 +16,45 @@ import BucketCard from '../../../src/components/tasks/BucketCard';
 import { Task } from '../../../src/types/task.types';
 import { ThemeProvider } from '../../../src/contexts/ThemeContext';
 import { AuthProvider } from '../../../src/contexts/AuthContext';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
 // モックデータ
 const mockTasks: Task[] = [
   {
     id: 1,
     title: 'タスク1',
+    description: null,
+    span: 1,
+    due_date: null,
     is_completed: false,
+    completed_at: null,
+    reward: 100,
+    requires_approval: false,
+    requires_image: false,
+    is_group_task: false,
+    group_task_id: null,
+    assigned_by_user_id: null,
     priority: 3,
-    user_id: 1,
+    tags: [],
     created_at: '2025-12-10T00:00:00Z',
     updated_at: '2025-12-10T00:00:00Z',
   },
   {
     id: 2,
     title: 'タスク2',
+    description: null,
+    span: 1,
+    due_date: null,
     is_completed: false,
+    completed_at: null,
+    reward: 100,
+    requires_approval: false,
+    requires_image: false,
+    is_group_task: false,
+    group_task_id: null,
+    assigned_by_user_id: null,
     priority: 2,
-    user_id: 1,
+    tags: [],
     created_at: '2025-12-10T00:00:00Z',
     updated_at: '2025-12-10T00:00:00Z',
   },
@@ -44,11 +65,13 @@ const mockTasks: Task[] = [
  */
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
-    <AuthProvider>
-      <ThemeProvider>
-        {component}
-      </ThemeProvider>
-    </AuthProvider>
+    <ColorSchemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          {component}
+        </ThemeProvider>
+      </AuthProvider>
+    </ColorSchemeProvider>
   );
 };
 
@@ -93,9 +116,19 @@ describe('BucketCard', () => {
     const manyTasks: Task[] = Array.from({ length: 10 }, (_, i) => ({
       id: i + 1,
       title: `タスク${i + 1}`,
+      description: null,
+      span: 1 as const,
+      due_date: null,
       is_completed: false,
-      priority: 3,
-      user_id: 1,
+      completed_at: null,
+      reward: 100,
+      requires_approval: false,
+      requires_image: false,
+      is_group_task: false,
+      group_task_id: null,
+      assigned_by_user_id: null,
+      priority: 3 as const,
+      tags: [],
       created_at: '2025-12-10T00:00:00Z',
       updated_at: '2025-12-10T00:00:00Z',
     }));
@@ -178,9 +211,19 @@ describe('BucketCard', () => {
     const longTask: Task = {
       id: 1,
       title: 'これは非常に長いタスクタイトルでカード内では切り詰められるべきです。さらに長い文章を追加します。',
+      description: null,
+      span: 1,
+      due_date: null,
       is_completed: false,
+      completed_at: null,
+      reward: 100,
+      requires_approval: false,
+      requires_image: false,
+      is_group_task: false,
+      group_task_id: null,
+      assigned_by_user_id: null,
       priority: 3,
-      user_id: 1,
+      tags: [],
       created_at: '2025-12-10T00:00:00Z',
       updated_at: '2025-12-10T00:00:00Z',
     };
