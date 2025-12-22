@@ -11,14 +11,30 @@ import { useTheme } from '../../../src/contexts/ThemeContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAvatar } from '../../../src/hooks/useAvatar';
 import { Task } from '../../../src/types/task.types';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
 // モック設定
 jest.mock('../../../src/hooks/useTasks');
 jest.mock('../../../src/contexts/ThemeContext');
+jest.mock('../../../src/hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+    },
+  })),
+}));
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
   useRoute: jest.fn(),
-  useFocusEffect: jest.fn((callback) => callback()),
+  useFocusEffect: jest.fn(),
 }));
 jest.mock('../../../src/hooks/useAvatar');
 jest.mock('../../../src/components/tasks/DeadlineBadge', () => ({
@@ -32,6 +48,14 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
   const mockUseNavigation = useNavigation as jest.MockedFunction<typeof useNavigation>;
   const mockUseRoute = useRoute as jest.MockedFunction<typeof useRoute>;
   const mockUseAvatar = useAvatar as jest.MockedFunction<typeof useAvatar>;
+
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
 
   const mockNavigation = {
     navigate: jest.fn(),
@@ -127,7 +151,7 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
         params: { tagId: 1, tagName: '勉強' },
       } as any);
 
-      const { getByText, queryByText } = render(<TagTasksScreen />);
+      const { getByText, queryByText } = renderScreen(<TagTasksScreen />);
 
       await waitFor(() => {
         expect(getByText('タスク1')).toBeTruthy();
@@ -142,7 +166,7 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
         params: { tagId: 0, tagName: '未分類' },
       } as any);
 
-      const { getByText, queryByText } = render(<TagTasksScreen />);
+      const { getByText, queryByText } = renderScreen(<TagTasksScreen />);
 
       await waitFor(() => {
         expect(getByText('タスク4')).toBeTruthy(); // 未分類タスク
@@ -157,7 +181,7 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
         params: { tagId: 1, tagName: '勉強' },
       } as any);
 
-      const { getAllByText, getByText } = render(<TagTasksScreen />);
+      const { getAllByText, getByText } = renderScreen(<TagTasksScreen />);
 
       await waitFor(() => {
         // タグ名（複数箇所に表示される）
@@ -180,7 +204,7 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
     });
 
     it('戻るボタンタップ時、前画面に戻る', async () => {
-      const { getByText } = render(<TagTasksScreen />);
+      const { getByText } = renderScreen(<TagTasksScreen />);
 
       await waitFor(() => {
         expect(getByText('←')).toBeTruthy();
@@ -194,7 +218,7 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
     });
 
     it('通常タスクタップ時、TaskEditScreenに遷移する', async () => {
-      const { getByText } = render(<TagTasksScreen />);
+      const { getByText } = renderScreen(<TagTasksScreen />);
 
       await waitFor(() => {
         expect(getByText('タスク1')).toBeTruthy();
@@ -237,7 +261,7 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
         refreshTasks: jest.fn(),
       });
 
-      const { getByText } = render(<TagTasksScreen />);
+      const { getByText } = renderScreen(<TagTasksScreen />);
 
       await waitFor(() => {
         expect(getByText('グループタスク')).toBeTruthy();
@@ -262,7 +286,7 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
         params: { tagId: 999, tagName: '存在しないタグ' },
       } as any);
 
-      const { getByText } = render(<TagTasksScreen />);
+      const { getByText } = renderScreen(<TagTasksScreen />);
 
       await waitFor(() => {
         expect(getByText('このタグのタスクがありません')).toBeTruthy();
@@ -279,7 +303,7 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
         setTheme: jest.fn(),
       });
 
-      const { getAllByText } = render(<TagTasksScreen />);
+      const { getAllByText } = renderScreen(<TagTasksScreen />);
 
       await waitFor(() => {
         // 子どもテーマの完了ボタン（複数ある）
@@ -309,7 +333,7 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
         refreshTasks: mockRefreshTasks,
       });
 
-      render(<TagTasksScreen />);
+      renderScreen(<TagTasksScreen />);
 
       // 初期読み込み完了待ち
       await waitFor(() => {

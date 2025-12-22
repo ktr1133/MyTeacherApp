@@ -10,16 +10,40 @@ import { Alert } from 'react-native';
 import MonthlyReportScreen from '../../../src/screens/reports/MonthlyReportScreen';
 import { useMonthlyReport } from '../../../src/hooks/usePerformance';
 import { useNavigation } from '@react-navigation/native';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
 // モック設定
 jest.mock('../../../src/hooks/usePerformance');
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
+jest.mock('../../../src/hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+    },
+  })),
+}));
 
 describe('MonthlyReportScreen', () => {
   const mockUseMonthlyReport = useMonthlyReport as jest.MockedFunction<typeof useMonthlyReport>;
   const mockUseNavigation = useNavigation as jest.MockedFunction<typeof useNavigation>;
+
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
 
   const mockNavigation = {
     navigate: jest.fn(),
@@ -92,7 +116,7 @@ describe('MonthlyReportScreen', () => {
 
   describe('レンダリング', () => {
     it('初期状態で正しく表示される', async () => {
-      const { getByText } = render(<MonthlyReportScreen />);
+      const { getByText } = renderScreen(<MonthlyReportScreen />);
 
       await waitFor(() => {
         expect(getByText('月次レポート')).toBeTruthy();
@@ -104,7 +128,7 @@ describe('MonthlyReportScreen', () => {
     });
 
     it('メンバー統計が表示される', async () => {
-      const { getByText } = render(<MonthlyReportScreen />);
+      const { getByText } = renderScreen(<MonthlyReportScreen />);
 
       await waitFor(() => {
         expect(getByText('テストユーザー1')).toBeTruthy();
@@ -113,7 +137,7 @@ describe('MonthlyReportScreen', () => {
     });
 
     it('タスク内訳が2行レイアウトで表示される', async () => {
-      const { getByText } = render(<MonthlyReportScreen />);
+      const { getByText } = renderScreen(<MonthlyReportScreen />);
 
       await waitFor(() => {
         // 1行目: 完了件数と報酬
@@ -127,7 +151,7 @@ describe('MonthlyReportScreen', () => {
     });
 
     it('メンバー統計でタスク種別内訳が表示される', async () => {
-      const { getAllByText } = render(<MonthlyReportScreen />);
+      const { getAllByText } = renderScreen(<MonthlyReportScreen />);
 
       await waitFor(() => {
         // テストユーザー1の内訳（絵文字付き）- 複数メンバーがいるため getAllByText を使用
@@ -151,7 +175,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<MonthlyReportScreen />);
+      const { getByText } = renderScreen(<MonthlyReportScreen />);
 
       expect(getByText('読み込み中...')).toBeTruthy();
     });
@@ -169,7 +193,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<MonthlyReportScreen />);
+      const { getByText } = renderScreen(<MonthlyReportScreen />);
 
       expect(getByText('レポート取得エラー')).toBeTruthy();
     });
@@ -193,7 +217,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<MonthlyReportScreen />);
+      const { getByText } = renderScreen(<MonthlyReportScreen />);
 
       expect(getByText('プレミアム機能')).toBeTruthy();
       expect(getByText(/過去のレポートを見るには/)).toBeTruthy();
@@ -216,7 +240,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByTestId } = render(<MonthlyReportScreen />);
+      const { getByTestId } = renderScreen(<MonthlyReportScreen />);
 
       const picker = getByTestId('month-picker');
       fireEvent(picker, 'valueChange', '2024-12');
@@ -225,7 +249,7 @@ describe('MonthlyReportScreen', () => {
     });
 
     it('利用可能な月がピッカーに設定されている', async () => {
-      const { getByTestId } = render(<MonthlyReportScreen />);
+      const { getByTestId } = renderScreen(<MonthlyReportScreen />);
 
       await waitFor(() => {
         const picker = getByTestId('month-picker');
@@ -238,7 +262,7 @@ describe('MonthlyReportScreen', () => {
 
   describe('AIサマリー生成', () => {
     it('サブスク加入時はサマリー生成確認が表示される', async () => {
-      const { getByTestId } = render(<MonthlyReportScreen />);
+      const { getByTestId } = renderScreen(<MonthlyReportScreen />);
 
       const summaryButton = getByTestId('ai-summary-button-1'); // テストユーザー1のボタン
       fireEvent.press(summaryButton);
@@ -270,7 +294,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByTestId } = render(<MonthlyReportScreen />);
+      const { getByTestId } = renderScreen(<MonthlyReportScreen />);
 
       const summaryButton = getByTestId('ai-summary-button-1');
       fireEvent.press(summaryButton);
@@ -312,7 +336,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByTestId } = render(<MonthlyReportScreen />);
+      const { getByTestId } = renderScreen(<MonthlyReportScreen />);
 
       const summaryButton = getByTestId('ai-summary-button-1');
       fireEvent.press(summaryButton);
@@ -353,7 +377,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByTestId } = render(<MonthlyReportScreen />);
+      const { getByTestId } = renderScreen(<MonthlyReportScreen />);
 
       const summaryButton = getByTestId('ai-summary-button-1');
       fireEvent.press(summaryButton);
@@ -400,7 +424,7 @@ describe('MonthlyReportScreen', () => {
         refresh: mockRefresh,
       });
 
-      const { getByTestId } = render(<MonthlyReportScreen />);
+      const { getByTestId } = renderScreen(<MonthlyReportScreen />);
 
       const scrollView = getByTestId('monthly-report-scroll-view');
       // ScrollViewにRefreshControlが設定されていることを確認
@@ -427,7 +451,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<MonthlyReportScreen />);
+      const { getByText } = renderScreen(<MonthlyReportScreen />);
 
       await waitFor(() => {
         expect(getByText('月次レポート')).toBeTruthy();
@@ -453,7 +477,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<MonthlyReportScreen />);
+      const { getByText } = renderScreen(<MonthlyReportScreen />);
 
       await waitFor(() => {
         expect(getByText('月次レポート')).toBeTruthy();
@@ -482,7 +506,7 @@ describe('MonthlyReportScreen', () => {
         refresh: jest.fn(),
       });
 
-      const { getByText } = render(<MonthlyReportScreen />);
+      const { getByText } = renderScreen(<MonthlyReportScreen />);
 
       await waitFor(() => {
         expect(getByText('月次レポート')).toBeTruthy();

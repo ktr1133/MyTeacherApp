@@ -8,6 +8,7 @@ import { render, waitFor, fireEvent } from '@testing-library/react-native';
 import { TermsOfServiceScreen } from '../../../src/screens/legal/TermsOfServiceScreen';
 import { useNavigation } from '@react-navigation/native';
 import { WEB_APP_URL } from '../../../src/utils/constants';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
 // モック設定
 jest.mock('@react-navigation/native', () => ({
@@ -65,6 +66,8 @@ jest.mock('../../../src/utils/responsive', () => ({
   }),
   getSpacing: (base: number) => base,
   getBorderRadius: (base: number) => base,
+  getFontSize: (base: number) => base,
+  getShadow: () => ({}),
 }));
 
 describe('TermsOfServiceScreen', () => {
@@ -74,13 +77,21 @@ describe('TermsOfServiceScreen', () => {
     setOptions: jest.fn(),
   };
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useNavigation as jest.Mock).mockReturnValue(mockNavigation);
   });
 
   test('画面が正しくレンダリングされる', () => {
-    const { getByText } = render(<TermsOfServiceScreen />);
+    const { getByText } = renderScreen(<TermsOfServiceScreen />);
 
     expect(getByText('利用規約')).toBeTruthy();
   });
@@ -89,13 +100,13 @@ describe('TermsOfServiceScreen', () => {
     const { useChildTheme } = require('../../../src/hooks/useChildTheme');
     useChildTheme.mockReturnValue(true);
 
-    const { getByText } = render(<TermsOfServiceScreen />);
+    const { getByText } = renderScreen(<TermsOfServiceScreen />);
 
     expect(getByText('おやくそく')).toBeTruthy();
   });
 
   test('WebViewが正しいURLを読み込む', () => {
-    const { getByTestId } = render(<TermsOfServiceScreen />);
+    const { getByTestId } = renderScreen(<TermsOfServiceScreen />);
 
     // WebViewモックの存在を確認
     const webview = getByTestId('webview-mock');
