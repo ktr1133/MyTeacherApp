@@ -5,13 +5,16 @@
  */
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import GroupManagementScreen from '../GroupManagementScreen';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { useAuth } from '../../../contexts/AuthContext';
 import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
+import { AuthProvider } from '../../../contexts/AuthContext';
+import { ThemeProvider } from '../../../contexts/ThemeContext';
+import { useAuth } from '../../../contexts/AuthContext';
+
+const Stack = createNativeStackNavigator();
 
 // モック
-jest.mock('../../../contexts/ThemeContext');
 jest.mock('../../../contexts/AuthContext');
 jest.mock('../../../hooks/useThemedColors', () => ({
   useThemedColors: jest.fn(() => ({
@@ -60,18 +63,31 @@ describe('GroupManagementScreen', () => {
     },
   };
 
+  const mockThemeContext = {
+    theme: 'adult' as const,
+    setTheme: jest.fn(),
+    isLoading: false,
+    refreshTheme: jest.fn(),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
-    (useTheme as jest.Mock).mockReturnValue({ theme: 'parent' });
+    jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
     (useAuth as jest.Mock).mockReturnValue({ user: mockUser });
   });
 
   const renderScreen = () => {
     return render(
       <ColorSchemeProvider>
-        <NavigationContainer>
-          <GroupManagementScreen />
-        </NavigationContainer>
+        <AuthProvider>
+          <ThemeProvider>
+            <NavigationContainer>
+              <Stack.Navigator>
+                <Stack.Screen name="GroupManagement" component={GroupManagementScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ThemeProvider>
+        </AuthProvider>
       </ColorSchemeProvider>
     );
   };
