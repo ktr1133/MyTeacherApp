@@ -12,6 +12,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useRoute } from '@react-navigation/native';
 import { Notification } from '../../../types/notification.types';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../services/notification.service');
@@ -125,7 +126,11 @@ describe('NotificationDetailScreen', () => {
   });
 
   it('通知詳細情報が正しく表示される', async () => {
-    const { getByText } = render(<NotificationDetailScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <NotificationDetailScreen />
+      </ColorSchemeProvider>
+    );
 
     await waitFor(() => {
       expect(getByText('タスクが作成されました')).toBeTruthy();
@@ -135,7 +140,11 @@ describe('NotificationDetailScreen', () => {
   });
 
   it('画面表示時に未読通知を自動的に既読化する', async () => {
-    render(<NotificationDetailScreen />);
+    render(
+      <ColorSchemeProvider>
+        <NotificationDetailScreen />
+      </ColorSchemeProvider>
+    );
 
     await waitFor(() => {
       expect(mockNotificationService.getNotificationDetail).toHaveBeenCalledWith(1);
@@ -156,7 +165,11 @@ describe('NotificationDetailScreen', () => {
       message: '通知詳細を取得しました',
     });
 
-    const { getByText } = render(<NotificationDetailScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <NotificationDetailScreen />
+      </ColorSchemeProvider>
+    );
 
     await waitFor(() => {
       expect(getByText('既読')).toBeTruthy();
@@ -178,7 +191,11 @@ describe('NotificationDetailScreen', () => {
       data: { notification: importantNotification },
     });
 
-    const { getByText } = render(<NotificationDetailScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <NotificationDetailScreen />
+      </ColorSchemeProvider>
+    );
 
     await waitFor(() => {
       expect(getByText('重要')).toBeTruthy();
@@ -190,7 +207,11 @@ describe('NotificationDetailScreen', () => {
       new Error('通知が見つかりません')
     );
 
-    const { getByText } = render(<NotificationDetailScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <NotificationDetailScreen />
+      </ColorSchemeProvider>
+    );
 
     await waitFor(() => {
       expect(getByText('通知が見つかりません')).toBeTruthy();
@@ -204,7 +225,11 @@ describe('NotificationDetailScreen', () => {
       theme: 'child',
     });
 
-    const { getByText } = render(<NotificationDetailScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <NotificationDetailScreen />
+      </ColorSchemeProvider>
+    );
 
     await waitFor(() => {
       expect(getByText('ないよう')).toBeTruthy();

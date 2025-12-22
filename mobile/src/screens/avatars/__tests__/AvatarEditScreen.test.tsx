@@ -18,13 +18,19 @@ import { useAvatarManagement } from '../../../hooks/useAvatarManagement';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Avatar } from '../../../types/avatar.types';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../hooks/useAvatarManagement');
 jest.mock('../../../contexts/ThemeContext');
 jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
+  ...jest.requireActual('@react-navigation/native'),
+  useNavigation: jest.fn(() => ({
+    navigate: jest.fn(),
+    goBack: jest.fn(),
+  })),
   useRoute: jest.fn(),
+  useFocusEffect: jest.fn(),
 }));
 
 describe('AvatarEditScreen', () => {
@@ -58,6 +64,7 @@ describe('AvatarEditScreen', () => {
   const mockUpdateAvatar = jest.fn();
   const mockClearError = jest.fn();
   const mockGoBack = jest.fn();
+  const mockNavigate = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -75,6 +82,7 @@ describe('AvatarEditScreen', () => {
 
     (useNavigation as jest.Mock).mockReturnValue({
       goBack: mockGoBack,
+      navigate: mockNavigate,
     });
 
     (useRoute as jest.Mock).mockReturnValue({
@@ -89,10 +97,14 @@ describe('AvatarEditScreen', () => {
   });
 
   it('フォームが正しくレンダリングされる', () => {
-    const { getByText } = render(<AvatarEditScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarEditScreen />
+      </ColorSchemeProvider>
+    );
 
-    // ヘッダー確認
-    expect(getByText('アバター編集')).toBeTruthy();
+    // セクションヘッダー確認
+    expect(getByText('外見の設定')).toBeTruthy();
     
     // ボタン確認
     expect(getByText('更新する')).toBeTruthy();
@@ -102,7 +114,11 @@ describe('AvatarEditScreen', () => {
   });
 
   it('初期値がroute paramsから正しく設定される', () => {
-    const { getByText } = render(<AvatarEditScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarEditScreen />
+      </ColorSchemeProvider>
+    );
 
     // 初期値が表示されていることを確認（絵文字を含む）
     expect(getByText(/女性/)).toBeTruthy();
@@ -115,7 +131,11 @@ describe('AvatarEditScreen', () => {
   it('更新ボタン押下で更新処理が実行される', async () => {
     mockUpdateAvatar.mockResolvedValue(mockAvatar);
 
-    const { getByText } = render(<AvatarEditScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarEditScreen />
+      </ColorSchemeProvider>
+    );
 
     const updateButton = getByText('更新する');
     fireEvent.press(updateButton);
@@ -133,7 +153,11 @@ describe('AvatarEditScreen', () => {
   it('更新成功後、管理画面に戻る', async () => {
     mockUpdateAvatar.mockResolvedValue(mockAvatar);
 
-    const { getByText } = render(<AvatarEditScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarEditScreen />
+      </ColorSchemeProvider>
+    );
 
     const updateButton = getByText('更新する');
     fireEvent.press(updateButton);
@@ -151,7 +175,11 @@ describe('AvatarEditScreen', () => {
   it('更新失敗時にエラーアラートが表示される', async () => {
     mockUpdateAvatar.mockRejectedValue(new Error('Update failed'));
 
-    const { getByText } = render(<AvatarEditScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarEditScreen />
+      </ColorSchemeProvider>
+    );
 
     const updateButton = getByText('更新する');
     fireEvent.press(updateButton);
@@ -172,7 +200,11 @@ describe('AvatarEditScreen', () => {
       clearError: mockClearError,
     });
 
-    const { queryByText, UNSAFE_queryAllByType } = render(<AvatarEditScreen />);
+    const { queryByText, UNSAFE_queryAllByType } = render(
+      <ColorSchemeProvider>
+        <AvatarEditScreen />
+      </ColorSchemeProvider>
+    );
 
     // ローディング中は「更新する」テキストがなく、ActivityIndicatorが表示される
     expect(queryByText('更新する')).toBeNull();
@@ -187,7 +219,11 @@ describe('AvatarEditScreen', () => {
       params: {},
     });
 
-    render(<AvatarEditScreen />);
+    render(
+      <ColorSchemeProvider>
+        <AvatarEditScreen />
+      </ColorSchemeProvider>
+    );
 
     expect(Alert.alert).toHaveBeenCalledWith(
       'エラー',
@@ -205,7 +241,11 @@ describe('AvatarEditScreen', () => {
       clearError: mockClearError,
     });
 
-    const { getByText } = render(<AvatarEditScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarEditScreen />
+      </ColorSchemeProvider>
+    );
 
     expect(getByText(errorMessage)).toBeTruthy();
   });

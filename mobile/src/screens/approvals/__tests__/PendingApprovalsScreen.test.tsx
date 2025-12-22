@@ -9,10 +9,30 @@ import PendingApprovalsScreen from '../PendingApprovalsScreen';
 import { usePendingApprovals } from '../../../hooks/usePendingApprovals';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { TaskApprovalItem, TokenApprovalItem } from '../../../types/approval.types';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../hooks/usePendingApprovals');
 jest.mock('../../../contexts/ThemeContext');
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+      notification: '#FF0000',
+      primary: '#007AFF',
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+      warning: '#FF9500',
+      error: '#FF3B30',
+    },
+  })),
+}));
 
 const mockUsePendingApprovals = usePendingApprovals as jest.MockedFunction<typeof usePendingApprovals>;
 const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
@@ -123,9 +143,11 @@ describe('PendingApprovalsScreen', () => {
 
   const renderWithNavigation = (component: React.ReactElement) => {
     return render(
-      <NavigationContainer>
-        {component}
-      </NavigationContainer>
+      <ColorSchemeProvider>
+        <NavigationContainer>
+          {component}
+        </NavigationContainer>
+      </ColorSchemeProvider>
     );
   };
 
