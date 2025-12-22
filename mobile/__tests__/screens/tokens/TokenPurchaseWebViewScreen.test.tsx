@@ -6,30 +6,46 @@
 
 import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TokenPackageListScreen from '../../../src/screens/tokens/TokenPurchaseWebViewScreen';
-import { useNavigation } from '@react-navigation/native';
-import { useTheme } from '../../../src/contexts/ThemeContext';
 import { useTokens } from '../../../src/hooks/useTokens';
 import { TokenPackage } from '../../../src/types/token.types';
+import { AuthProvider } from '../../../src/contexts/AuthContext';
+import { ThemeProvider } from '../../../src/contexts/ThemeContext';
 import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
-// モック設定
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
-  useFocusEffect: jest.fn(),
-}));
+// ナビゲーションスタック作成
+const Stack = createNativeStackNavigator();
 
-jest.mock('../../../src/contexts/ThemeContext');
+// モック設定
 jest.mock('../../../src/hooks/useTokens');
 jest.mock('../../../src/hooks/useThemedColors', () => ({
   useThemedColors: jest.fn(() => ({
     colors: {
       background: '#FFFFFF',
-      text: { primary: '#111827', secondary: '#6B7280' },
+      text: {
+        primary: '#111827',
+        secondary: '#6B7280',
+        tertiary: '#9CA3AF',
+        disabled: '#D1D5DB',
+      },
       card: '#FFFFFF',
-      border: { default: '#E5E7EB' },
+      border: {
+        default: '#E5E7EB',
+        light: 'rgba(229, 231, 235, 0.5)',
+      },
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
     },
-    accent: { primary: '#3B82F6', secondary: '#8B5CF6' },
+    accent: {
+      primary: '#007AFF',
+      gradient: ['#007AFF', '#5856D6'],
+    },
   })),
 }));
 
@@ -52,15 +68,30 @@ jest.mock('expo-linear-gradient', () => ({
   LinearGradient: 'LinearGradient',
 }));
 
-describe('TokenPackageListScreen (TokenPurchaseWebViewScreen)', () => {
-  const mockNavigation = {
+// useNavigationモック
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useNavigation: () => ({
     navigate: jest.fn(),
     goBack: jest.fn(),
     addListener: jest.fn((event, callback) => {
       if (event === 'focus') callback();
       return jest.fn();
     }),
+  }),
+  useFocusEffect: jest.fn(),
+}));
+
+describe('TokenPackageListScreen (TokenPurchaseWebViewScreen)', () => {
+  const mockThemeContext = {
+    theme: 'adult' as const,
+    setTheme: jest.fn(),
+    isLoading: false,
+    refreshTheme: jest.fn(),
   };
+
+  // ThemeContextをモック
+  jest.spyOn(require('../../../src/contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
 
   const mockPackages: TokenPackage[] = [
     {
@@ -104,15 +135,22 @@ describe('TokenPackageListScreen (TokenPurchaseWebViewScreen)', () => {
   const renderScreen = (component: React.ReactElement) => {
     return render(
       <ColorSchemeProvider>
-        {component}
+        <AuthProvider>
+          <ThemeProvider>
+            <NavigationContainer>
+              <Stack.Navigator>
+                <Stack.Screen name="TokenPackageList" component={() => component} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ThemeProvider>
+        </AuthProvider>
       </ColorSchemeProvider>
     );
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useNavigation as jest.Mock).mockReturnValue(mockNavigation);
-    (useTheme as jest.Mock).mockReturnValue({ theme: 'adult' });
+    jest.spyOn(require('../../../src/contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
     (useTokens as jest.Mock).mockReturnValue({
       packages: mockPackages,
       loadPackages: jest.fn(),
