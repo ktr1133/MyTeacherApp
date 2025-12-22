@@ -162,7 +162,6 @@ describe('NotificationDetailScreen', () => {
     mockNotificationService.getNotificationDetail.mockResolvedValue({
       success: true,
       data: { notification: readNotification },
-      message: '通知詳細を取得しました',
     });
 
     const { getByText } = render(
