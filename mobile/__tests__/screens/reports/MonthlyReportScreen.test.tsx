@@ -6,17 +6,20 @@
 
 import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Alert } from 'react-native';
 import MonthlyReportScreen from '../../../src/screens/reports/MonthlyReportScreen';
 import { useMonthlyReport } from '../../../src/hooks/usePerformance';
-import { useNavigation } from '@react-navigation/native';
+import { AuthProvider } from '../../../src/contexts/AuthContext';
+import { ThemeProvider } from '../../../src/contexts/ThemeContext';
 import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
+
+// ナビゲーションスタック作成
+const Stack = createNativeStackNavigator();
 
 // モック設定
 jest.mock('../../../src/hooks/usePerformance');
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
-}));
 jest.mock('../../../src/hooks/useThemedColors', () => ({
   useThemedColors: jest.fn(() => ({
     colors: {
@@ -46,21 +49,45 @@ jest.mock('../../../src/hooks/useThemedColors', () => ({
   })),
 }));
 
+// useNavigationモック
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useNavigation: () => ({
+    navigate: jest.fn(),
+    goBack: jest.fn(),
+  }),
+  useRoute: () => ({
+    params: {},
+  }),
+}));
+
 describe('MonthlyReportScreen', () => {
   const mockUseMonthlyReport = useMonthlyReport as jest.MockedFunction<typeof useMonthlyReport>;
-  const mockUseNavigation = useNavigation as jest.MockedFunction<typeof useNavigation>;
+
+  const mockThemeContext = {
+    theme: 'adult' as const,
+    setTheme: jest.fn(),
+    isLoading: false,
+    refreshTheme: jest.fn(),
+  };
+
+  // ThemeContextをモック
+  jest.spyOn(require('../../../src/contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
 
   const renderScreen = (component: React.ReactElement) => {
     return render(
       <ColorSchemeProvider>
-        {component}
+        <AuthProvider>
+          <ThemeProvider>
+            <NavigationContainer>
+              <Stack.Navigator>
+                <Stack.Screen name="MonthlyReport" component={() => component} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ThemeProvider>
+        </AuthProvider>
       </ColorSchemeProvider>
     );
-  };
-
-  const mockNavigation = {
-    navigate: jest.fn(),
-    goBack: jest.fn(),
   };
 
   const mockReport = {
@@ -111,9 +138,9 @@ describe('MonthlyReportScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(require('../../../src/contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
     jest.spyOn(Alert, 'alert').mockImplementation(() => {});
 
-    mockUseNavigation.mockReturnValue(mockNavigation as any);
     mockUseMonthlyReport.mockReturnValue({
       report: mockReport,
       isLoading: false,
