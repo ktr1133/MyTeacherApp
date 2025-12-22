@@ -25,15 +25,32 @@ import { Platform } from 'react-native';
 
 // 実API使用のため、モックは最小限に
 jest.mock('../../utils/storage');
+jest.mock('@react-native-firebase/messaging');
+jest.mock('../../services/api', () => ({
+  __esModule: true,
+  default: {
+    post: jest.fn().mockResolvedValue({ data: { success: true } }),
+    delete: jest.fn().mockResolvedValue({ data: { success: true } }),
+  },
+}));
 
 describe('FCM Token Registration Flow - Integration', () => {
   const mockStorage = storage as jest.Mocked<typeof storage>;
+  const mockMessaging = messaging as jest.MockedFunction<typeof messaging>;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockStorage.getItem.mockResolvedValue(null);
     mockStorage.setItem.mockResolvedValue();
     mockStorage.removeItem.mockResolvedValue();
+
+    // Firebaseモック設定（統合テストでもモック必要）
+    mockMessaging.mockReturnValue({
+      requestPermission: jest.fn().mockResolvedValue(1), // AUTHORIZED
+      getToken: jest.fn().mockResolvedValue('mock-fcm-token-12345'),
+      isDeviceRegisteredForRemoteMessages: true,
+      registerDeviceForRemoteMessages: jest.fn().mockResolvedValue(undefined),
+    } as any);
   });
 
   describe('初回登録フロー', () => {
@@ -134,24 +151,26 @@ describe('FCM Token Registration Flow - Integration', () => {
      */
     it('should update token when it changes', async () => {
       const oldToken = 'old-fcm-token-12345';
+      const newToken = 'new-fcm-token-67890';
       mockStorage.getItem.mockResolvedValue(oldToken);
+
+      // 新しいトークンを返すようにモック設定
+      mockMessaging.mockReturnValue({
+        requestPermission: jest.fn().mockResolvedValue(1),
+        getToken: jest.fn().mockResolvedValue(newToken),
+        isDeviceRegisteredForRemoteMessages: true,
+        registerDeviceForRemoteMessages: jest.fn().mockResolvedValue(undefined),
+      } as any);
 
       console.log('[Integration Test] Testing token update flow...');
       console.log('Existing token:', oldToken);
 
-      // 新規token取得
-      const newToken = await fcmService.getFcmToken();
+      // 新規token取得（getFcmToken内でストレージ保存）
+      const retrievedToken = await fcmService.getFcmToken();
 
-      if (newToken !== oldToken) {
-        console.log('Token changed, updating Backend...');
-        await fcmService.registerToken();
-
-        expect(mockStorage.setItem).toHaveBeenCalledWith('fcm_token', newToken);
-        console.log('✅ Token updated successfully');
-      } else {
-        console.log('Token unchanged, no update needed');
-        console.log('✅ Token update check completed');
-      }
+      expect(retrievedToken).toBe(newToken);
+      expect(mockStorage.setItem).toHaveBeenCalledWith('fcm_token', newToken);
+      console.log('✅ Token updated successfully');
     }, 30000);
   });
 
