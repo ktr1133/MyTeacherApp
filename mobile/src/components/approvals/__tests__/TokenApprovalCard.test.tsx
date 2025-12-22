@@ -6,9 +6,30 @@ import { render, fireEvent } from '@testing-library/react-native';
 import TokenApprovalCard from '../TokenApprovalCard';
 import { TokenApprovalItem } from '../../../types/approval.types';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../contexts/ThemeContext');
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: { primary: '#111827', secondary: '#6B7280', tertiary: '#9CA3AF' },
+      card: '#FFFFFF',
+      border: { default: '#E5E7EB', light: 'rgba(229, 231, 235, 0.5)' },
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+    },
+    accent: {
+      primary: '#007AFF',
+      gradient: ['#007AFF', '#5856D6'],
+    },
+  })),
+}));
 const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
 
 describe('TokenApprovalCard', () => {
@@ -32,6 +53,14 @@ describe('TokenApprovalCard', () => {
   const mockOnApprove = jest.fn();
   const mockOnReject = jest.fn();
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseTheme.mockReturnValue({
@@ -44,7 +73,7 @@ describe('TokenApprovalCard', () => {
 
   describe('表示内容', () => {
     it('トークン購入申請情報が正しく表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -69,7 +98,7 @@ describe('TokenApprovalCard', () => {
         setTheme: jest.fn(),
       });
 
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -82,7 +111,7 @@ describe('TokenApprovalCard', () => {
     });
 
     it('依頼日時が正しく表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -95,7 +124,7 @@ describe('TokenApprovalCard', () => {
     });
 
     it('トークン数が緑色で強調表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -109,7 +138,7 @@ describe('TokenApprovalCard', () => {
     });
 
     it('価格が赤色で強調表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -130,7 +159,7 @@ describe('TokenApprovalCard', () => {
         price: 10000,
       };
 
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={highValueApproval}
           onApprove={mockOnApprove}
@@ -147,7 +176,7 @@ describe('TokenApprovalCard', () => {
 
   describe('インタラクション', () => {
     it('承認ボタンをタップしたらonApproveが呼ばれる', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -162,7 +191,7 @@ describe('TokenApprovalCard', () => {
     });
 
     it('却下ボタンをタップしたらonRejectが呼ばれる', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -177,7 +206,7 @@ describe('TokenApprovalCard', () => {
     });
 
     it('isProcessingがtrueの場合はボタンテキストが表示されない', () => {
-      const { queryAllByText } = render(
+      const { queryAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -194,7 +223,7 @@ describe('TokenApprovalCard', () => {
 
   describe('数値フォーマット', () => {
     it('トークン数がカンマ区切りで表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -206,7 +235,7 @@ describe('TokenApprovalCard', () => {
     });
 
     it('価格がカンマ区切りで表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -226,7 +255,7 @@ describe('TokenApprovalCard', () => {
         price: 120,
       };
 
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={smallApproval}
           onApprove={mockOnApprove}
@@ -243,7 +272,7 @@ describe('TokenApprovalCard', () => {
 
   describe('バッジ表示', () => {
     it('「トークン」バッジが表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -258,7 +287,7 @@ describe('TokenApprovalCard', () => {
   describe('レスポンシブ対応', () => {
     it('タブレットサイズでも正しく表示される', () => {
       // Dimensionsのモックは省略（既存のレスポンシブロジックをテスト）
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -274,7 +303,7 @@ describe('TokenApprovalCard', () => {
 
   describe('依頼者表示', () => {
     it('依頼者名が正しく表示される', () => {
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={mockTokenApproval}
           onApprove={mockOnApprove}
@@ -293,7 +322,7 @@ describe('TokenApprovalCard', () => {
         requester_id: 999,
       };
 
-      const { getByText, getAllByText } = render(
+      const { getByText, getAllByText } = renderScreen(
         <TokenApprovalCard
           item={differentRequester}
           onApprove={mockOnApprove}

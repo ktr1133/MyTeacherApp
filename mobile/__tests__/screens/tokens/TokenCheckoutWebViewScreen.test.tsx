@@ -9,6 +9,7 @@ import { render, waitFor } from '@testing-library/react-native';
 import { TokenCheckoutWebViewScreen } from '../../../src/screens/tokens/TokenCheckoutWebViewScreen';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useThemedColors } from '../../../src/hooks/useThemedColors';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
 // モック設定
 jest.mock('@react-navigation/native', () => ({
@@ -16,7 +17,26 @@ jest.mock('@react-navigation/native', () => ({
   useRoute: jest.fn(),
 }));
 
-jest.mock('../../../src/hooks/useThemedColors');
+jest.mock('../../../src/hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: { primary: '#111827', secondary: '#6B7280', tertiary: '#9CA3AF' },
+      card: '#FFFFFF',
+      border: { default: '#E5E7EB', light: 'rgba(229, 231, 235, 0.5)' },
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+    },
+    accent: {
+      primary: '#007AFF',
+      gradient: ['#007AFF', '#5856D6'],
+    },
+  })),
+}));
 
 jest.mock('react-native-webview', () => ({
   WebView: 'WebView',
@@ -58,6 +78,14 @@ describe('TokenCheckoutWebViewScreen', () => {
     secondary: '#8B5CF6',
   };
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useNavigation as jest.Mock).mockReturnValue(mockNavigation);
@@ -70,7 +98,7 @@ describe('TokenCheckoutWebViewScreen', () => {
 
   describe('レンダリング', () => {
     it('WebViewが正しいURLでレンダリングされる', () => {
-      const { getByTestId } = render(<TokenCheckoutWebViewScreen />);
+      const { getByTestId } = renderScreen(<TokenCheckoutWebViewScreen />);
       
       // WebViewコンポーネントが存在することを確認
       // 注: react-native-webviewのモックではTestIDが取得できないため、
@@ -79,7 +107,7 @@ describe('TokenCheckoutWebViewScreen', () => {
     });
 
     it('ダークモード対応の背景色が適用される', () => {
-      const { UNSAFE_root } = render(<TokenCheckoutWebViewScreen />);
+      const { UNSAFE_root } = renderScreen(<TokenCheckoutWebViewScreen />);
       
       // SafeAreaViewに背景色が適用されていることを確認
       const safeAreaView = UNSAFE_root.findAllByType('SafeAreaView')[0];
@@ -111,7 +139,7 @@ describe('TokenCheckoutWebViewScreen', () => {
         accent: mockAccent,
       });
 
-      const { UNSAFE_root } = render(<TokenCheckoutWebViewScreen />);
+      const { UNSAFE_root } = renderScreen(<TokenCheckoutWebViewScreen />);
       
       const safeAreaView = UNSAFE_root.findAllByType('SafeAreaView')[0];
       expect(safeAreaView.props.style).toEqual(

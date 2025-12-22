@@ -9,6 +9,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import AvatarCreationBanner from '../../../src/components/common/AvatarCreationBanner';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../../src/contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
 
 // モック
 jest.mock('@react-navigation/native', () => ({
@@ -16,6 +17,26 @@ jest.mock('@react-navigation/native', () => ({
 }));
 jest.mock('../../../src/contexts/ThemeContext', () => ({
   useTheme: jest.fn(),
+}));
+jest.mock('../../../src/hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: { primary: '#111827', secondary: '#6B7280', tertiary: '#9CA3AF' },
+      card: '#FFFFFF',
+      border: { default: '#E5E7EB', light: 'rgba(229, 231, 235, 0.5)' },
+      status: {
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
+      },
+    },
+    accent: {
+      primary: '#007AFF',
+      gradient: ['#007AFF', '#5856D6'],
+    },
+  })),
 }));
 jest.mock('../../../src/utils/responsive', () => ({
   useResponsive: () => ({
@@ -36,6 +57,14 @@ const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
 describe('AvatarCreationBanner', () => {
   const mockNavigate = jest.fn();
 
+  const renderScreen = (component: React.ReactElement) => {
+    return render(
+      <ColorSchemeProvider>
+        {component}
+      </ColorSchemeProvider>
+    );
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseNavigation.mockReturnValue({
@@ -50,7 +79,7 @@ describe('AvatarCreationBanner', () => {
         setTheme: jest.fn(),
       });
 
-      const { getByText } = render(<AvatarCreationBanner />);
+      const { getByText } = renderScreen(<AvatarCreationBanner />);
 
       expect(getByText('あなただけのサポートアバターを作成しましょう！')).toBeTruthy();
       expect(getByText('タスク完了時に応援してくれるキャラクターを作成できます')).toBeTruthy();
@@ -62,7 +91,7 @@ describe('AvatarCreationBanner', () => {
         setTheme: jest.fn(),
       });
 
-      const { getByText } = render(<AvatarCreationBanner />);
+      const { getByText } = renderScreen(<AvatarCreationBanner />);
 
       expect(getByText('あなただけのサポートキャラをつくろう！')).toBeTruthy();
       expect(getByText('たのしくタスクをかんせいできるよ！')).toBeTruthy();
@@ -78,7 +107,7 @@ describe('AvatarCreationBanner', () => {
     });
 
     it('バナーをタップするとアバター作成画面に遷移する', async () => {
-      const { getByTestId } = render(<AvatarCreationBanner />);
+      const { getByTestId } = renderScreen(<AvatarCreationBanner />);
 
       fireEvent.press(getByTestId('avatar-creation-banner'));
 
@@ -89,7 +118,7 @@ describe('AvatarCreationBanner', () => {
 
     it('カスタムonPressが指定されている場合、それが実行される', async () => {
       const mockOnPress = jest.fn();
-      const { getByTestId } = render(<AvatarCreationBanner onPress={mockOnPress} />);
+      const { getByTestId } = renderScreen(<AvatarCreationBanner onPress={mockOnPress} />);
 
       fireEvent.press(getByTestId('avatar-creation-banner'));
 
@@ -109,13 +138,13 @@ describe('AvatarCreationBanner', () => {
     });
 
     it('適切なaccessibilityLabelが設定されている', () => {
-      const { getByLabelText } = render(<AvatarCreationBanner />);
+      const { getByLabelText } = renderScreen(<AvatarCreationBanner />);
 
       expect(getByLabelText('アバター作成バナー')).toBeTruthy();
     });
 
     it('適切なaccessibilityHintが設定されている', () => {
-      const { getByA11yHint } = render(<AvatarCreationBanner />);
+      const { getByA11yHint } = renderScreen(<AvatarCreationBanner />);
 
       expect(getByA11yHint('タップしてアバターを作成')).toBeTruthy();
     });
@@ -130,7 +159,7 @@ describe('AvatarCreationBanner', () => {
     });
 
     it('バナーが正しく描画される', () => {
-      const { getByTestId } = render(<AvatarCreationBanner />);
+      const { getByTestId } = renderScreen(<AvatarCreationBanner />);
 
       const banner = getByTestId('avatar-creation-banner');
       expect(banner).toBeTruthy();
