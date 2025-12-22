@@ -17,6 +17,8 @@ import DrawerContent from '../../../src/components/common/DrawerContent';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { tokenService } from '../../../src/services/token.service';
 import { useChildTheme } from '../../../src/hooks/useChildTheme';
+import { ColorSchemeProvider } from '../../../src/contexts/ColorSchemeContext';
+import { ThemeProvider } from '../../../src/contexts/ThemeContext';
 
 // モック
 jest.mock('../../../src/contexts/AuthContext');
@@ -72,7 +74,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
 
   describe('トークン残高の基本表示', () => {
     it('トークン残高（合計）を表示する', async () => {
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(screen.getByText('1,000,000')).toBeTruthy();
@@ -80,7 +88,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
     });
 
     it('無料残高と有料残高の内訳を表示する', async () => {
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(screen.getByText(/無料: 600,000 \/ 有料: 400,000/)).toBeTruthy();
@@ -89,7 +103,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
 
     it('大人テーマでは「トークン残高」と表示する', async () => {
       (useChildTheme as jest.Mock).mockReturnValue(false);
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(screen.getByText('トークン残高')).toBeTruthy();
@@ -98,7 +118,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
 
     it('子どもテーマでは「コイン残高」と表示する', async () => {
       (useChildTheme as jest.Mock).mockReturnValue(true);
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(screen.getByText('コイン残高')).toBeTruthy();
@@ -112,7 +138,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
       (tokenService.getBalance as jest.Mock).mockResolvedValue(lowBalance);
       (useChildTheme as jest.Mock).mockReturnValue(false);
 
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(screen.getByText('トークン購入')).toBeTruthy();
@@ -124,7 +156,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
       (tokenService.getBalance as jest.Mock).mockResolvedValue(lowBalance);
       (useChildTheme as jest.Mock).mockReturnValue(true);
 
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(screen.getByText('コイン購入')).toBeTruthy();
@@ -135,7 +173,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
       const highBalance = { balance: 500000, free_balance: 300000, paid_balance: 200000 };
       (tokenService.getBalance as jest.Mock).mockResolvedValue(highBalance);
 
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(screen.queryByText(/購入/)).toBeNull();
@@ -146,7 +190,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
       const lowBalance = { balance: 150000, free_balance: 150000, paid_balance: 0 };
       (tokenService.getBalance as jest.Mock).mockResolvedValue(lowBalance);
 
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         const purchaseButton = screen.getByText('トークン購入');
@@ -159,7 +209,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
 
   describe('トークン残高セクションの配置', () => {
     it('トークン残高セクションはドロワー下部に表示される', async () => {
-      const { getByText } = render(<DrawerContent {...mockDrawerProps} />);
+      const { getByText } = render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         const balanceSection = getByText('トークン残高').parent?.parent;
@@ -174,7 +230,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
       const lowBalance = { balance: 150000, free_balance: 150000, paid_balance: 0 };
       (tokenService.getBalance as jest.Mock).mockResolvedValue(lowBalance);
 
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         // トークンメニュー項目の存在を確認（メニューラベルとして）
@@ -201,7 +263,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
         logout: jest.fn(),
       });
 
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(screen.getByText('承認待ち')).toBeTruthy();
@@ -209,7 +277,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
     });
 
     it('一般ユーザーには承認待ちメニューを表示しない', async () => {
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(screen.queryByText('承認待ち')).toBeNull();
@@ -219,7 +293,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
 
   describe('API呼び出し', () => {
     it('コンポーネントマウント時にトークン残高を取得する', async () => {
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         expect(tokenService.getBalance).toHaveBeenCalledTimes(1);
@@ -231,7 +311,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
         new Error('Network error')
       );
 
-      const { getByText } = render(<DrawerContent {...mockDrawerProps} />);
+      const { getByText } = render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       // エラーでもコンポーネントはレンダリングされる
       await waitFor(() => {
@@ -248,7 +334,13 @@ describe('DrawerContent - Section 3.2: トークン残高表示', () => {
         logout: mockLogout,
       });
 
-      render(<DrawerContent {...mockDrawerProps} />);
+      render(
+        <ThemeProvider>
+          <ColorSchemeProvider>
+            <DrawerContent {...mockDrawerProps} />
+          </ColorSchemeProvider>
+        </ThemeProvider>
+      );
 
       await waitFor(() => {
         const logoutButton = screen.getByText('ログアウト');

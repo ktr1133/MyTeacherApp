@@ -9,10 +9,30 @@ import { Alert } from 'react-native';
 import ScheduledTaskEditScreen from '../ScheduledTaskEditScreen';
 import { useScheduledTasks } from '../../../hooks/useScheduledTasks';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../hooks/useScheduledTasks');
 jest.mock('../../../contexts/ThemeContext');
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F5F5F5',
+      border: '#E0E0E0',
+      notification: '#FF0000',
+      primary: '#007AFF',
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+      warning: '#FF9500',
+      error: '#FF3B30',
+    },
+  })),
+}));
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
@@ -22,6 +42,7 @@ jest.mock('@react-navigation/native', () => ({
   useRoute: () => ({
     params: { scheduledTaskId: 1, groupId: 1 },
   }),
+  useFocusEffect: jest.fn((callback) => callback()),
 }));
 
 // Alert.alertモック
@@ -70,9 +91,11 @@ describe('ScheduledTaskEditScreen', () => {
 
   const renderScreen = () => {
     return render(
-      <NavigationContainer>
-        <ScheduledTaskEditScreen />
-      </NavigationContainer>
+      <ColorSchemeProvider>
+        <NavigationContainer>
+          <ScheduledTaskEditScreen />
+        </NavigationContainer>
+      </ColorSchemeProvider>
     );
   };
 

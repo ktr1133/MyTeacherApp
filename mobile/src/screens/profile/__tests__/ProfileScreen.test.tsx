@@ -7,6 +7,7 @@ import { Alert } from 'react-native';
 import ProfileScreen from '../ProfileScreen';
 import { useProfile } from '../../../hooks/useProfile';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../hooks/useProfile');

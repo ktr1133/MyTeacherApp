@@ -18,6 +18,7 @@ import { AvatarCreateScreen } from '../AvatarCreateScreen';
 import { useAvatarManagement } from '../../../hooks/useAvatarManagement';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../hooks/useAvatarManagement');
@@ -58,7 +59,11 @@ describe('AvatarCreateScreen', () => {
   });
 
   it('フォームが正しくレンダリングされる', () => {
-    const { getByText } = render(<AvatarCreateScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarCreateScreen />
+      </ColorSchemeProvider>
+    );
 
     // ヘッダー確認
     expect(getByText('アバター作成')).toBeTruthy();
@@ -90,7 +95,11 @@ describe('AvatarCreateScreen', () => {
       theme: 'child',
     });
 
-    const { getByText } = render(<AvatarCreateScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarCreateScreen />
+      </ColorSchemeProvider>
+    );
 
     // child用テキスト確認
     expect(getByText('アバターをつくろう')).toBeTruthy();
@@ -99,7 +108,11 @@ describe('AvatarCreateScreen', () => {
   });
 
   it('作成ボタン押下で確認ダイアログが表示される', () => {
-    const { getByText } = render(<AvatarCreateScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarCreateScreen />
+      </ColorSchemeProvider>
+    );
 
     const createButton = getByText('アバターを作成する');
     fireEvent.press(createButton);
@@ -118,7 +131,11 @@ describe('AvatarCreateScreen', () => {
       generationStatus: 'pending',
     });
 
-    const { getByText } = render(<AvatarCreateScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarCreateScreen />
+      </ColorSchemeProvider>
+    );
 
     const createButton = getByText('アバターを作成する');
     fireEvent.press(createButton);
@@ -141,7 +158,11 @@ describe('AvatarCreateScreen', () => {
       clearError: mockClearError,
     });
 
-    const { queryByText, UNSAFE_queryAllByType } = render(<AvatarCreateScreen />);
+    const { queryByText, UNSAFE_queryAllByType } = render(
+      <ColorSchemeProvider>
+        <AvatarCreateScreen />
+      </ColorSchemeProvider>
+    );
 
     // ローディング中は「アバターを作成する」テキストがなく、ActivityIndicatorが表示される
     expect(queryByText('アバターを作成する')).toBeNull();
@@ -160,7 +181,11 @@ describe('AvatarCreateScreen', () => {
       clearError: mockClearError,
     });
 
-    const { getByText } = render(<AvatarCreateScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarCreateScreen />
+      </ColorSchemeProvider>
+    );
 
     expect(getByText(errorMessage)).toBeTruthy();
   });
@@ -168,7 +193,11 @@ describe('AvatarCreateScreen', () => {
   it('作成失敗時にエラーアラートが表示される', async () => {
     mockCreateAvatar.mockRejectedValue(new Error('Creation failed'));
 
-    const { getByText } = render(<AvatarCreateScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarCreateScreen />
+      </ColorSchemeProvider>
+    );
 
     const createButton = getByText('アバターを作成する');
     fireEvent.press(createButton);

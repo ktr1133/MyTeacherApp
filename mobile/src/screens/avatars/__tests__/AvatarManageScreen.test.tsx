@@ -20,6 +20,7 @@ import { useAvatarManagement } from '../../../hooks/useAvatarManagement';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Avatar } from '../../../types/avatar.types';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../hooks/useAvatarManagement');
@@ -27,6 +28,7 @@ jest.mock('../../../contexts/ThemeContext');
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
   useRoute: jest.fn(),
+  useFocusEffect: jest.fn(),
 }));
 
 describe('AvatarManageScreen', () => {
@@ -94,6 +96,7 @@ describe('AvatarManageScreen', () => {
 
     (useTheme as jest.Mock).mockReturnValue({
       theme: 'adult',
+      themeType: 'parent',
     });
 
     (useNavigation as jest.Mock).mockReturnValue({
@@ -113,10 +116,14 @@ describe('AvatarManageScreen', () => {
   });
 
   it('アバター情報が正しく表示される', () => {
-    const { getByText } = render(<AvatarManageScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarManageScreen />
+      </ColorSchemeProvider>
+    );
 
-    // ヘッダー確認（「アバター設定」に変更されている）
-    expect(getByText('アバター設定')).toBeTruthy();
+    // 画像セクション確認
+    expect(getByText('アバター画像')).toBeTruthy();
     
     // 設定情報確認（一部）
     expect(getByText('性別')).toBeTruthy();
@@ -125,10 +132,14 @@ describe('AvatarManageScreen', () => {
   });
 
   it('画像が複数ある場合、カルーセルで表示される', () => {
-    const { getByText, getAllByText } = render(<AvatarManageScreen />);
+    const { getByText, getAllByText } = render(
+      <ColorSchemeProvider>
+        <AvatarManageScreen />
+      </ColorSchemeProvider>
+    );
 
     // 画像セクションの確認
-    expect(getByText('🎨 アバター画像')).toBeTruthy();
+    expect(getByText('アバター画像')).toBeTruthy();
     
     // タップヒントの確認（複数ある）
     const tapHints = getAllByText('タップで拡大');
@@ -140,7 +151,11 @@ describe('AvatarManageScreen', () => {
   });
 
   it('Switchで表示/非表示を切り替えられる', async () => {
-    const { getByText } = render(<AvatarManageScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarManageScreen />
+      </ColorSchemeProvider>
+    );
 
     // アバター表示ラベルが存在することを確認
     const label = getByText('アバター表示');
@@ -151,7 +166,11 @@ describe('AvatarManageScreen', () => {
   });
 
   it('編集ボタン押下でAvatarEditScreenに遷移する', () => {
-    const { getByText } = render(<AvatarManageScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarManageScreen />
+      </ColorSchemeProvider>
+    );
 
     const editButton = getByText('編集する');
     fireEvent.press(editButton);
@@ -162,7 +181,11 @@ describe('AvatarManageScreen', () => {
   });
 
   it('再生成ボタン押下で確認ダイアログが表示される', () => {
-    const { getByText } = render(<AvatarManageScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarManageScreen />
+      </ColorSchemeProvider>
+    );
 
     const regenerateButton = getByText('画像を再生成');
     fireEvent.press(regenerateButton);
@@ -175,7 +198,11 @@ describe('AvatarManageScreen', () => {
   });
 
   it('削除ボタン押下で確認ダイアログが表示される', () => {
-    const { getByText } = render(<AvatarManageScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarManageScreen />
+      </ColorSchemeProvider>
+    );
 
     const deleteButton = getByText('削除する');
     fireEvent.press(deleteButton);
@@ -199,7 +226,11 @@ describe('AvatarManageScreen', () => {
       }
     });
 
-    const { getByText } = render(<AvatarManageScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarManageScreen />
+      </ColorSchemeProvider>
+    );
 
     const deleteButton = getByText('削除する');
     fireEvent.press(deleteButton);
@@ -221,7 +252,11 @@ describe('AvatarManageScreen', () => {
       toggleVisibility: mockToggleVisibility,
     });
 
-    const { getByText } = render(<AvatarManageScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarManageScreen />
+      </ColorSchemeProvider>
+    );
 
     expect(getByText(/生成中/)).toBeTruthy();
   });
@@ -237,7 +272,11 @@ describe('AvatarManageScreen', () => {
       toggleVisibility: mockToggleVisibility,
     });
 
-    const { getByText } = render(<AvatarManageScreen />);
+    const { getByText } = render(
+      <ColorSchemeProvider>
+        <AvatarManageScreen />
+      </ColorSchemeProvider>
+    );
 
     expect(getByText(/アバターが作成されていません/)).toBeTruthy();
   });

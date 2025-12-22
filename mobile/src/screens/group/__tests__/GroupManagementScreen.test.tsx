@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import GroupManagementScreen from '../GroupManagementScreen';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // モック
 jest.mock('../../../contexts/ThemeContext');

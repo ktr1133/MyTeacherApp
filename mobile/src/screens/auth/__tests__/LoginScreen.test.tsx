@@ -14,6 +14,7 @@ import LoginScreen from '../LoginScreen';
 import { AuthProvider } from '../../../contexts/AuthContext';
 import { AvatarProvider } from '../../../contexts/AvatarContext';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 import { authService } from '../../../services/auth.service';
 
 // モック設定
@@ -57,9 +58,11 @@ describe('LoginScreen', () => {
   const renderComponent = () => render(
     <AuthProvider>
       <ThemeProvider>
-        <AvatarProvider>
-          <LoginScreen navigation={mockNavigation} />
-        </AvatarProvider>
+        <ColorSchemeProvider>
+          <AvatarProvider>
+            <LoginScreen navigation={mockNavigation} />
+          </AvatarProvider>
+        </ColorSchemeProvider>
       </ThemeProvider>
     </AuthProvider>
   );
