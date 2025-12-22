@@ -33,21 +33,28 @@ jest.mock('../../../src/hooks/useThemedColors', () => ({
   useThemedColors: () => ({
     colors: {
       background: '#FFFFFF',
-      card: '#F9F9F9',
+      card: '#FFFFFF',
       text: {
-        primary: '#000000',
-        secondary: '#666666',
+        primary: '#111827',
+        secondary: '#6B7280',
+        tertiary: '#9CA3AF',
+        disabled: '#D1D5DB',
       },
       border: {
-        default: '#E0E0E0',
+        default: '#E5E7EB',
+        light: 'rgba(229, 231, 235, 0.5)',
       },
       status: {
-        error: '#FF0000',
-        success: '#00FF00',
-        warning: '#FFA500',
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
       },
     },
-    accent: '#59B9C6',
+    accent: {
+      primary: '#007AFF',
+      gradient: ['#007AFF', '#5856D6'],
+    },
   }),
 }));
 
