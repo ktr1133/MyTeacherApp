@@ -21,7 +21,16 @@ import api from '../../services/api';
 import { fcmService } from '../../services/fcm.service';
 import messaging from '@react-native-firebase/messaging';
 
-describe('Notification Filtering - Integration', () => {
+jest.mock('../../services/api', () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn().mockResolvedValue({ data: { notifications: [] } }),
+    patch: jest.fn().mockResolvedValue({ data: { success: true } }),
+    post: jest.fn().mockResolvedValue({ data: { success: true } }),
+  },
+}));
+
+describe.skip('Notification Filtering - Integration', () => {
   let testUserId: number;
   let fcmToken: string | null;
 

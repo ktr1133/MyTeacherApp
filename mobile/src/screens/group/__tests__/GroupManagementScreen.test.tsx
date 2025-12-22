@@ -3,6 +3,7 @@
  * 
  * グループ管理画面のUIとナビゲーションをテスト
  */
+import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -15,7 +16,38 @@ import { useAuth } from '../../../contexts/AuthContext';
 const Stack = createNativeStackNavigator();
 
 // GroupService全体をモック
-jest.mock('../../../services/group.service');
+jest.mock('../../../services/group.service', () => ({
+  getGroupInfo: jest.fn(async () => ({
+    data: {
+      group: {
+        id: 1,
+        name: 'テストグループ',
+        master_user_id: 1,
+        created_at: '2025-01-01T00:00:00Z',
+        updated_at: '2025-01-01T00:00:00Z',
+      },
+      members: [
+        {
+          id: 1,
+          username: 'testuser',
+          group_edit_flg: true,
+          theme: 'adult',
+        },
+      ],
+      task_usage: {
+        total_tasks: 10,
+        completed_tasks: 5,
+        pending_tasks: 5,
+      },
+    },
+  })),
+  updateGroup: jest.fn(),
+  addMember: jest.fn(),
+  removeMember: jest.fn(),
+  updatePermission: jest.fn(),
+  toggleTheme: jest.fn(),
+  transferMaster: jest.fn(),
+}));
 
 // モック
 jest.mock('../../../contexts/AuthContext');
@@ -47,12 +79,19 @@ jest.mock('../../../hooks/useThemedColors', () => ({
     },
   })),
 }));
-jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
-  useNavigation: () => ({
-    navigate: jest.fn(),
-  }),
-}));
+jest.mock('@react-navigation/native', () => {
+  const actualNav = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualNav,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+    }),
+    useFocusEffect: (callback: any) => {
+      // テスト環境では即座に実行
+      callback();
+    },
+  };
+});
 
 describe('GroupManagementScreen', () => {
   const mockUser = {
@@ -102,10 +141,6 @@ describe('GroupManagementScreen', () => {
     jest.clearAllMocks();
     jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
     (useAuth as jest.Mock).mockReturnValue({ user: mockUser });
-    
-    // GroupServiceのモック設定
-    const GroupService = require('../../../services/group.service');
-    GroupService.getGroupInfo = jest.fn().mockResolvedValue(mockGroupData);
   });
 
   const renderScreen = () => {
