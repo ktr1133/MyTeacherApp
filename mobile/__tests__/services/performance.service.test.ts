@@ -422,6 +422,7 @@ describe('performance.service', () => {
             user_id: 1,
             year_month: '2025-01',
             summary: {
+              user_name: 'テストユーザー',
               comment: 'テストコメント',
               task_classification: {
                 labels: ['家事', '勉強', '運動'],

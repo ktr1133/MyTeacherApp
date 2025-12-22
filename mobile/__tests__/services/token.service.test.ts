@@ -161,8 +161,10 @@ describe('token.service', () => {
         package_id: packageId,
       }).reply(200, {
         success: true,
-        session_id: 'cs_test_abc123',
-        session_url: mockSessionUrl,
+        data: {
+          session_id: 'cs_test_abc123',
+          session_url: mockSessionUrl,
+        },
       });
 
       const result = await tokenService.createCheckoutSession(packageId);
