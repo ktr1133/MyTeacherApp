@@ -76,6 +76,11 @@ class EloquentFaqRepository implements FaqRepositoryInterface
      */
     public function search(string $keyword, bool $publishedOnly = true): Collection
     {
+        // 空文字列の場合は空のコレクションを返す
+        if (empty(trim($keyword))) {
+            return new Collection();
+        }
+        
         $query = Faq::where(function ($q) use ($keyword) {
             $q->where('question', 'LIKE', "%{$keyword}%")
               ->orWhere('answer', 'LIKE', "%{$keyword}%");

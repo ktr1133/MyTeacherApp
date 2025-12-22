@@ -25,9 +25,10 @@ class ShowFaqAction
     {
         $category = $request->query('category');
         $appName = $request->query('app');
-        $keyword = $request->query('q');
+        $keyword = trim($request->query('keyword', ''));
         
-        if ($keyword) {
+        // キーワード検索（2文字以上の場合のみ）
+        if ($keyword && mb_strlen($keyword) >= 2) {
             $faqs = $this->faqService->search($keyword);
         } else {
             $faqs = $this->faqService->getAllPublished($category, $appName);

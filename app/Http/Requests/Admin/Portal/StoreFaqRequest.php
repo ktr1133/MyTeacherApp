@@ -33,7 +33,7 @@ final class StoreFaqRequest extends FormRequest
         
         return [
             'app_name' => ['required', 'string', 'max:20', 'in:' . $appNames],
-            'category' => ['required', 'string', 'max:50', 'in:' . $categories],
+            'category' => ['required', 'string', 'max:50'],
             'question' => ['required', 'string', 'max:255'],
             'answer' => ['required', 'string'],
             'display_order' => ['required', 'integer', 'min:0'],

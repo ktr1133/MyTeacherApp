@@ -10,11 +10,12 @@ class GroupResponder
     /**
      * 編集画面を表示
      */
-    public function viewEdit($group, $members): View
+    public function viewEdit($group, $members, bool $hasSubscription = false): View
     {
         return view('profile.group.edit', [
             'group' => $group,
             'groupMembers' => $members,
+            'hasSubscription' => $hasSubscription,
         ]);
     }
 

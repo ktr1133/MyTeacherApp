@@ -226,7 +226,7 @@
                         「グループタスク管理」から「スケジュール設定」を選択。タスク名、繰り返しパターン、祝日対応を設定します。
                     </p>
                     <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-                        <img src="https://placehold.co/800x400/e5e7eb/64748b?text=スケジュール設定画面（仮）" alt="スケジュール設定画面" class="rounded-lg w-full" loading="lazy">
+                        <img src="{{ asset('images/portal/auto-schedule.gif') }}" alt="スケジュール設定画面" class="rounded-lg w-full" loading="lazy">
                     </div>
                 </div>
             </div>

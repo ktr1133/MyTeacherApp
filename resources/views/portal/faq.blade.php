@@ -36,16 +36,13 @@
             <!-- Filters -->
             <div class="flex flex-wrap gap-3">
                 <!-- Category Filter -->
-                <select 
+                <input 
+                    type="text" 
                     name="category" 
+                    value="{{ request('category') }}"
+                    placeholder="カテゴリーで絞り込み..."
                     class="px-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#59B9C6] dark:focus:border-[#59B9C6] focus:ring-0 text-gray-900 dark:text-white transition"
-                    onchange="this.form.submit()"
-                >
-                    <option value="">すべてのカテゴリ</option>
-                    @foreach(config('const.faq_categories') as $key => $label)
-                        <option value="{{ $key }}" {{ request('category') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
+                />
 
                 <!-- App Filter -->
                 <select 
@@ -112,7 +109,7 @@
                             <!-- Meta Info -->
                             <div class="flex flex-wrap gap-2">
                                 <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 rounded">
-                                    {{ config('const.faq_categories')[$faq->category] ?? $faq->category }}
+                                    {{ $faq->category }}
                                 </span>
                                 <span class="px-2 py-1 bg-[#59B9C6]/10 text-xs font-medium text-[#59B9C6] rounded">
                                     {{ config('const.app_names')[$faq->app_name] ?? $faq->app_name }}
@@ -125,7 +122,7 @@
                     <div class="faq-answer hidden px-6 pb-6">
                         <div class="pl-12 bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
                             <div class="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
-                                {!! nl2br(e($faq->answer)) !!}
+                                {!! auto_link(nl2br(e($faq->answer))) !!}
                             </div>
                         </div>
                     </div>

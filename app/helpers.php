@@ -40,3 +40,22 @@ if (!function_exists('is_cognito_auth')) {
         return auth_provider() === 'cognito';
     }
 }
+
+if (!function_exists('auto_link')) {
+    /**
+     * テキスト内のURLを自動的にリンクに変換
+     * 
+     * @param string $text 変換対象のテキスト
+     * @return string リンク化されたテキスト
+     */
+    function auto_link(string $text): string
+    {
+        // URLのパターン（http, https対応）
+        $pattern = '/(https?:\/\/[^\s<>"]+)/i';
+        
+        // URLを<a>タグに置換（セキュリティ対策: target="_blank" rel="noopener noreferrer"）
+        $replacement = '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>';
+        
+        return preg_replace($pattern, $replacement, $text);
+    }
+}

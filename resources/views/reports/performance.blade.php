@@ -22,18 +22,7 @@
                 groupData: @json($groupData),
                 // サブスクリプション状態
                 hasSubscription: @json($hasSubscription)
-            };
-            
-            // 累積データの確認ログ（デバッグ用）
-            console.log('[Performance] Current data:', window.performanceData.currentData);
-            console.log('[Performance] Has subscription:', window.performanceData.hasSubscription);
-            
-            @if($tab === 'normal')
-                console.log('[Performance] Normal task cumulative:', window.performanceData.currentData.nCum);
-            @else
-                console.log('[Performance] Group task cumulative:', window.performanceData.currentData.gCum);
-                console.log('[Performance] Reward cumulative:', window.performanceData.currentData.gRewardCum);
-            @endif
+            };            
         </script>
     @endpush
 
