@@ -345,10 +345,11 @@ class TaskApiTest extends TestCase
 
         // Assert
         $response->assertStatus(200);
-        $this->assertDatabaseHas('tasks', [
-            'id' => $task->id,
-            'approved_at' => now()->format('Y-m-d H:i:s'),
-        ]);
+        
+        // データベースから実際の値を取得して確認（タイミング問題を回避）
+        $task->refresh();
+        expect($task->approved_at)->not->toBeNull();
+        expect($task->approved_at->diffInSeconds(now()))->toBeLessThan(2);
     }
 
     /**
