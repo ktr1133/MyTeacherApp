@@ -6,16 +6,21 @@
 
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TaskListScreen from '../../src/screens/tasks/TaskListScreen';
 import { useTasks } from '../../src/hooks/useTasks';
-import { useTheme } from '../../src/contexts/ThemeContext';
 import { AvatarProvider } from '../../src/contexts/AvatarContext';
-import { useNavigation } from '@react-navigation/native';
+import { AuthProvider } from '../../src/contexts/AuthContext';
+import { ThemeProvider } from '../../src/contexts/ThemeContext';
+import { ColorSchemeProvider } from '../../src/contexts/ColorSchemeContext';
+
+// ナビゲーションスタック作成
+const Stack = createNativeStackNavigator();
 
 jest.mock('../../src/hooks/useTasks');
-jest.mock('../../src/contexts/ThemeContext');
 jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
+  ...jest.requireActual('@react-navigation/native'),
   useFocusEffect: jest.fn((callback) => callback()),
 }));
 jest.mock('../../src/components/tasks/DeadlineBadge', () => ({
@@ -24,8 +29,6 @@ jest.mock('../../src/components/tasks/DeadlineBadge', () => ({
 }));
 
 const mockedUseTasks = useTasks as jest.MockedFunction<typeof useTasks>;
-const mockedUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
-const mockedUseNavigation = useNavigation as jest.MockedFunction<typeof useNavigation>;
 
 describe('TaskListScreen - 検索機能', () => {
   const mockFetchTasks = jest.fn();
@@ -35,18 +38,17 @@ describe('TaskListScreen - 検索機能', () => {
   const mockRefreshTasks = jest.fn();
   const mockNavigate = jest.fn();
 
+  const mockThemeContext = {
+    theme: 'adult' as const,
+    setTheme: jest.fn(),
+    isLoading: false,
+    refreshTheme: jest.fn(),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockedUseNavigation.mockReturnValue({
-      navigate: mockNavigate,
-      setOptions: jest.fn(), // setOptions\u3092\u30e2\u30c3\u30af\u8ffd\u52a0
-    } as any);
-
-    mockedUseTheme.mockReturnValue({
-      theme: 'adult',
-      toggleTheme: jest.fn(),
-    });
+    jest.spyOn(require('../../src/contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
 
     mockedUseTasks.mockReturnValue({
       tasks: [],
@@ -70,9 +72,19 @@ describe('TaskListScreen - 検索機能', () => {
 
   // テストヘルパー: AvatarProviderでラップしてレンダリング
   const renderWithProviders = () => render(
-    <AvatarProvider>
-      <TaskListScreen />
-    </AvatarProvider>
+    <ColorSchemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <AvatarProvider>
+            <NavigationContainer>
+              <Stack.Navigator>
+                <Stack.Screen name="TaskList" component={TaskListScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </AvatarProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </ColorSchemeProvider>
   );
 
   describe('検索バーUI', () => {
@@ -84,9 +96,9 @@ describe('TaskListScreen - 検索機能', () => {
     });
 
     it('childテーマの場合はプレースホルダーが変わる', () => {
-      mockedUseTheme.mockReturnValue({
+      jest.spyOn(require('../../src/contexts/ThemeContext'), 'useTheme').mockReturnValue({
+        ...mockThemeContext,
         theme: 'child',
-        toggleTheme: jest.fn(),
       });
 
       const { getByPlaceholderText } = renderWithProviders();
