@@ -71,6 +71,7 @@ describe('TokenHistoryScreen', () => {
     monthlyPurchaseAmount: 1000,
     monthlyPurchaseTokens: 500000,
     monthlyUsage: 250000,
+    transactions: undefined, // デフォルトではトランザクションなし
   };
 
   beforeEach(() => {
@@ -163,26 +164,77 @@ describe('TokenHistoryScreen', () => {
       expect(getByText('250,000')).toBeTruthy();
     });
 
-    it('使用率を計算して表示', () => {
-      const { getByText } = render(<TokenHistoryScreen />);
+    it('購入履歴を表示', () => {
+      // トランザクションデータを含むモックを設定
+      mockUseTokens.mockReturnValue(createMockUseTokensReturn({
+        historyStats: {
+          monthlyPurchaseAmount: 2000,
+          monthlyPurchaseTokens: 15000,
+          monthlyUsage: 3000,
+          transactions: {
+            data: [
+              {
+                id: 1,
+                type: 'purchase',
+                amount: 10000,
+                balance_after: 10000,
+                description: '購入: ¥1,000 (スタンダードプラン)',
+                created_at: '2025-01-15T14:23:00Z',
+              },
+              {
+                id: 2,
+                type: 'purchase',
+                amount: 5000,
+                balance_after: 15000,
+                description: '購入: ¥500 (ライトプラン)',
+                created_at: '2025-01-10T09:15:00Z',
+              },
+            ],
+            current_page: 1,
+            last_page: 1,
+            per_page: 50,
+            total: 2,
+          },
+        },
+      }));
+
+      const { getByText, getAllByText } = render(<TokenHistoryScreen />);
       
-      // 250000 / 500000 = 50%
-      expect(getByText('50%')).toBeTruthy();
+      // 購入履歴カードが表示される
+      expect(getByText('購入履歴')).toBeTruthy();
+      
+      // 各購入履歴のトークン数が表示される（複数あってもOK）
+      const tenThousand = getAllByText('10,000');
+      expect(tenThousand.length).toBeGreaterThan(0);
+      
+      const fiveThousand = getAllByText('5,000');
+      expect(fiveThousand.length).toBeGreaterThan(0);
+      
+      // 日時フォーマット確認（YYYY/MM/DD HH:mm形式）
+      expect(getByText(/2025\/01\/15/)).toBeTruthy();
+      expect(getByText(/2025\/01\/10/)).toBeTruthy();
     });
 
-    it('購入がない場合は使用率を表示しない', () => {
+    it('購入履歴がない場合は購入履歴カードを表示しない', () => {
       mockUseTokens.mockReturnValue(createMockUseTokensReturn({
         historyStats: {
           monthlyPurchaseAmount: 0,
           monthlyPurchaseTokens: 0,
-          monthlyUsage: 1000000,
+          monthlyUsage: 0,
+          transactions: {
+            data: [],
+            current_page: 1,
+            last_page: 1,
+            per_page: 50,
+            total: 0,
+          },
         },
       }));
       
       const { queryByText } = render(<TokenHistoryScreen />);
       
-      // 購入が0の場合は使用率カードが表示されない
-      expect(queryByText('使用率')).toBeNull();
+      // 購入履歴カードが表示されない
+      expect(queryByText('購入履歴')).toBeNull();
     });
   });
 
