@@ -139,10 +139,9 @@ describe('SettingsScreen', () => {
     const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
-      expect(getByText('設定')).toBeTruthy();
       expect(getByText('テーマ設定')).toBeTruthy();
       expect(getByText('タイムゾーン')).toBeTruthy();
-      expect(getByText('プッシュ通知')).toBeTruthy();
+      expect(getByText('通知設定')).toBeTruthy();
       expect(getByText('アプリ情報')).toBeTruthy();
     });
   });
@@ -156,8 +155,9 @@ describe('SettingsScreen', () => {
     const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
-      expect(getByText('せってい')).toBeTruthy();
       expect(getByText('がめんのモード')).toBeTruthy();
+      expect(getByText('じかんのせってい')).toBeTruthy();
+      expect(getByText('つうちのせってい')).toBeTruthy();
     });
   });
 
@@ -227,7 +227,7 @@ describe('SettingsScreen', () => {
     const { getByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
-      expect(getByText('プッシュ通知')).toBeTruthy();
+      expect(getByText('通知設定')).toBeTruthy();
     });
 
     // Switch を検索（accessibilityLabel は設定していないため、別の方法で検索）
@@ -244,21 +244,24 @@ describe('SettingsScreen', () => {
     fireEvent.press(getByText('プライバシーポリシー'));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('PrivacyPolicy');
     });
   });
 
   it('利用規約リンクをクリックできる', async () => {
-    const { getByText } = renderScreen(<SettingsScreen />);
+    const { getByText, queryByText } = renderScreen(<SettingsScreen />);
 
     await waitFor(() => {
-      expect(getByText('利用規約')).toBeTruthy();
+      // adultテーマでは「利用規約」
+      const linkText = queryByText('利用規約');
+      expect(linkText).toBeTruthy();
     });
 
-    fireEvent.press(getByText('利用規約'));
+    const linkElement = getByText('利用規約');
+    fireEvent.press(linkElement);
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('TermsOfService');
     });
   });
 
