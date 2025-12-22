@@ -140,7 +140,13 @@ export default function ScheduledTaskEditScreen() {
         setRequiresImage(task.requires_image);
         setRequiresApproval(task.requires_approval);
         setReward(task.reward.toString());
-        setSchedules(task.schedules);
+        // スケジュールデータのdates/daysを数値配列に変換（文字列の場合があるため）
+        const normalizedSchedules = task.schedules.map((schedule: Schedule) => ({
+          ...schedule,
+          dates: schedule.dates ? schedule.dates.map((d: any) => parseInt(String(d), 10)) : undefined,
+          days: schedule.days ? schedule.days.map((d: any) => parseInt(String(d), 10)) : undefined,
+        }));
+        setSchedules(normalizedSchedules);
         setDueDurationDays(task.due_duration_days ? task.due_duration_days.toString() : '');
         setDueDurationHours(task.due_duration_hours ? task.due_duration_hours.toString() : '');
         setStartDate(new Date(task.start_date));
@@ -469,26 +475,24 @@ export default function ScheduledTaskEditScreen() {
             <Text style={styles.monthDateLabel}>
               {theme === 'child' ? 'ひづけ:' : '日付:'}
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.monthDateScroll}>
-              <View style={styles.monthDateButtons}>
-                {MONTH_DATES.map((date) => {
-                  const isSelected = schedule.dates?.includes(date) || false;
-                  return (
-                    <TouchableOpacity
-                      key={date}
-                      style={[styles.monthDateButton, isSelected && styles.monthDateButtonSelected]}
-                      onPress={() => handleToggleMonthDate(index, date)}
+            <View style={styles.monthDateButtons}>
+              {MONTH_DATES.map((date) => {
+                const isSelected = schedule.dates?.includes(date) || false;
+                return (
+                  <TouchableOpacity
+                    key={date}
+                    style={[styles.monthDateButton, isSelected && styles.monthDateButtonSelected]}
+                    onPress={() => handleToggleMonthDate(index, date)}
+                  >
+                    <Text
+                      style={[styles.monthDateButtonText, isSelected && styles.monthDateButtonTextSelected]}
                     >
-                      <Text
-                        style={[styles.monthDateButtonText, isSelected && styles.monthDateButtonTextSelected]}
-                      >
-                        {date}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </ScrollView>
+                      {date}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
         )}
 
@@ -938,9 +942,6 @@ const createStyles = (width: number, theme: any, colors: any, accent: any) => St
     fontSize: getFontSize(14, width, theme),
     color: colors.text.primary,
     marginBottom: getSpacing(8, width),
-  },
-  monthDateScroll: {
-    maxHeight: getSpacing(120, width),
   },
   monthDateButtons: {
     flexDirection: 'row',
