@@ -65,6 +65,13 @@ export interface TokenHistoryStats {
   monthlyPurchaseAmount: number;
   monthlyPurchaseTokens: number;
   monthlyUsage: number;
+  transactions?: {
+    data: TokenTransaction[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
 }
 
 /**

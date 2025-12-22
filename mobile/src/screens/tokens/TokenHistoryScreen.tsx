@@ -70,6 +70,9 @@ const TokenHistoryScreen: React.FC = () => {
     noData: 'まだりれきがありません',
     back: 'もどる',
     error: 'エラー',
+    purchaseHistory: 'かったりれき',
+    noPurchases: 'まだかっていません',
+    date: 'ひづけ',
   } : {
     title: 'トークン履歴',
     loading: '読み込み中...',
@@ -81,6 +84,9 @@ const TokenHistoryScreen: React.FC = () => {
     noData: '履歴がありません',
     back: '戻る',
     error: 'エラー',
+    purchaseHistory: '購入履歴',
+    noPurchases: '購入履歴がありません',
+    date: '購入日時',
   };
 
   /**
@@ -95,6 +101,27 @@ const TokenHistoryScreen: React.FC = () => {
    */
   const formatTokens = (tokens: number): string => {
     return tokens.toLocaleString('ja-JP');
+  };
+
+  /**
+   * 日時をフォーマット
+   */
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${year}/${month}/${day} ${hours}:${minutes}`;
+  };
+
+  /**
+   * descriptionから価格情報を抽出
+   */
+  const extractPrice = (description: string): string | null => {
+    const match = description.match(/¥[\d,]+/);
+    return match ? match[0] : null;
   };
 
   /**
@@ -178,32 +205,42 @@ const TokenHistoryScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* 使用率バー（オプション） */}
-            {historyStats.monthlyPurchaseTokens > 0 && (
+            {/* 購入履歴 */}
+            {historyStats.transactions && historyStats.transactions.data.length > 0 && (
               <View style={styles.card}>
-                <Text style={styles.cardTitle}>
-                  {theme === 'child' ? 'つかったわりあい' : '使用率'}
-                </Text>
+                <Text style={styles.cardTitle}>{labels.purchaseHistory}</Text>
                 
-                <View style={styles.usageBarContainer}>
-                  <View
-                    style={[
-                      styles.usageBar,
-                      {
-                        width: `${Math.min(
-                          (historyStats.monthlyUsage / historyStats.monthlyPurchaseTokens) * 100,
-                          100
-                        )}%`,
-                      },
-                    ]}
-                  />
-                </View>
+                {historyStats.transactions.data
+                  .filter(tx => tx.type === 'purchase')
+                  .map((tx, index) => {
+                    const price = extractPrice(tx.description);
+                    return (
+                      <View key={tx.id} style={[styles.historyItem, index > 0 && styles.historyItemBorder]}>
+                        <View style={styles.historyHeader}>
+                          <Text style={styles.historyDate}>{formatDate(tx.created_at)}</Text>
+                        </View>
+                        <View style={styles.historyBody}>
+                          {price && (
+                            <View style={styles.historyRow}>
+                              <Text style={styles.historyLabel}>{labels.amount}:</Text>
+                              <Text style={styles.historyAmountValue}>{price}</Text>
+                            </View>
+                          )}
+                          <View style={styles.historyRow}>
+                            <Text style={styles.historyLabel}>{labels.tokens}:</Text>
+                            <Text style={styles.historyTokenValue}>
+                              {formatTokens(tx.amount)}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    );
+                  })
+                }
                 
-                <Text style={styles.usagePercentage}>
-                  {Math.round(
-                    (historyStats.monthlyUsage / historyStats.monthlyPurchaseTokens) * 100
-                  )}%
-                </Text>
+                {historyStats.transactions.data.filter(tx => tx.type === 'purchase').length === 0 && (
+                  <Text style={styles.noPurchasesText}>{labels.noPurchases}</Text>
+                )}
               </View>
             )}
           </>
@@ -313,22 +350,48 @@ const createStyles = (width: number, theme: 'adult' | 'child') => StyleSheet.cre
     fontWeight: '700',
     color: '#f59e0b',
   },
-  usageBarContainer: {
-    height: getSpacing(24, width),
-    backgroundColor: '#e5e7eb',
-    borderRadius: getBorderRadius(12, width),
-    overflow: 'hidden',
+  historyItem: {
+    paddingVertical: getSpacing(12, width),
+  },
+  historyItemBorder: {
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  historyHeader: {
     marginBottom: getSpacing(8, width),
   },
-  usageBar: {
-    height: '100%',
-    backgroundColor: '#3b82f6',
-  },
-  usagePercentage: {
-    fontSize: getFontSize(16, width, theme),
+  historyDate: {
+    fontSize: getFontSize(14, width, theme),
+    color: '#6b7280',
     fontWeight: '600',
-    color: '#1f2937',
+  },
+  historyBody: {
+    gap: getSpacing(4, width),
+  },
+  historyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  historyLabel: {
+    fontSize: getFontSize(14, width, theme),
+    color: '#6b7280',
+  },
+  historyAmountValue: {
+    fontSize: getFontSize(18, width, theme),
+    fontWeight: '700',
+    color: '#10b981',
+  },
+  historyTokenValue: {
+    fontSize: getFontSize(18, width, theme),
+    fontWeight: '700',
+    color: '#3b82f6',
+  },
+  noPurchasesText: {
+    fontSize: getFontSize(14, width, theme),
+    color: '#6b7280',
     textAlign: 'center',
+    paddingVertical: getSpacing(16, width),
   },
 });
 
