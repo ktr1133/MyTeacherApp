@@ -315,35 +315,88 @@
 
 /* 既存の機能用スタイル（後方互換性） */
 .weekday-checkbox {
-    @apply hidden;
+    @apply sr-only;
+}
+
+.weekday-label-container {
+    @apply inline-block cursor-pointer;
 }
 
 .weekday-label {
-    @apply w-10 h-10 flex items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 cursor-pointer transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300;
+    @apply w-10 h-10 flex items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300;
+    @apply select-none;
 }
 
 .weekday-checkbox:checked + .weekday-label {
     @apply bg-gradient-to-br from-purple-600 to-pink-600 border-purple-600 text-white shadow-md;
 }
 
-.weekday-label:hover {
+.weekday-label-container:hover .weekday-label {
     @apply border-purple-400 dark:border-purple-500 bg-purple-50 dark:bg-purple-900/20;
 }
 
+.weekday-checkbox:checked:hover + .weekday-label {
+    @apply bg-gradient-to-br from-purple-700 to-pink-700;
+}
+
 .date-checkbox {
-    @apply hidden;
+    @apply sr-only;
+}
+
+.date-label-container {
+    @apply inline-block cursor-pointer;
 }
 
 .date-label {
-    @apply w-10 h-10 flex items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 cursor-pointer transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300;
+    @apply w-10 h-10 flex items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300;
+    @apply select-none;
 }
 
 .date-checkbox:checked + .date-label {
     @apply bg-gradient-to-br from-blue-600 to-indigo-600 border-blue-600 text-white shadow-md;
 }
 
-.date-label:hover {
+.date-label-container:hover .date-label {
     @apply border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20;
+}
+
+.date-checkbox:checked:hover + .date-label {
+    @apply bg-gradient-to-br from-blue-700 to-indigo-700;
+}
+
+/* スケジュールタイプ選択（フォーム用） */
+.schedule-type-label {
+    @apply flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 cursor-pointer transition-all duration-200;
+    @apply hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20;
+}
+
+.schedule-type-radio {
+    @apply w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 shrink-0 mt-0.5;
+}
+
+.schedule-type-label:has(.schedule-type-radio:checked) {
+    @apply bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-purple-500 dark:border-purple-400;
+}
+
+/* スケジュール追加ボタン */
+.add-schedule-btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg;
+    @apply text-sm font-medium text-gray-700 dark:text-gray-300;
+    @apply bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600;
+    @apply hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20;
+    @apply transition-all duration-200;
+}
+
+/* タグチップ */
+.tag-chip {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold;
+    @apply bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40;
+    @apply text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-600;
+    @apply shadow-sm;
+}
+
+.tag-chip-remove {
+    @apply p-0.5 rounded hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors;
 }
 
 /* レスポンシブ調整 */

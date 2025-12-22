@@ -131,7 +131,7 @@
         </label>
 
         {{-- 担当者選択 --}}
-        <div data-assigned-user-container class="hidden">
+        <div data-assigned-user-container class="{{ old('auto_assign', false) ? 'hidden' : '' }}">
             <label for="assigned_user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 固定担当者
             </label>

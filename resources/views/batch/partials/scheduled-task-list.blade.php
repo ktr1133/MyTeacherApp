@@ -135,7 +135,7 @@
                                     </svg>
                                 </div>
                                 <span class="detail-label">担当</span>
-                                <span class="detail-value">{{ $task->assignedUser->name ?? '未設定' }}</span>
+                                <span class="detail-value">{{ $task->assignedUser->name ?? ($task->assignedUser->username ?? '未設定') }}</span>
                             </div>
                         @elseif ($task->auto_assign)
                             <div class="detail-item">

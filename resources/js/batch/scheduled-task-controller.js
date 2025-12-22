@@ -83,7 +83,12 @@ class ScheduledTaskFormController {
         // 自動割当チェックボックス
         const autoAssignCheckbox = document.querySelector('[data-auto-assign]');
         if (autoAssignCheckbox) {
-            autoAssignCheckbox.addEventListener('change', () => {
+            autoAssignCheckbox.addEventListener('change', (event) => {
+                // イベントターゲットが実際に自動割当チェックボックスの場合のみ処理
+                if (event.target !== autoAssignCheckbox) return;
+                
+                event.stopPropagation();
+                console.log('[Setup] Auto-assign checkbox changed, calling updateUI()');
                 this.autoAssign = autoAssignCheckbox.checked;
                 this.updateUI();
             });
@@ -114,6 +119,7 @@ class ScheduledTaskFormController {
      * 自動割当に応じた担当者選択表示、全スケジュールカードのレンダリング、タグチップ表示を更新
      */
     updateUI() {
+        console.log('[Scheduled Task Form] updateUI() called - Stack:', new Error().stack);
         // 自動割当の表示/非表示
         this.updateAutoAssignUI();
         
@@ -132,10 +138,21 @@ class ScheduledTaskFormController {
         const assignedUserContainer = document.querySelector('[data-assigned-user-container]');
         if (!assignedUserContainer) return;
         
+        const assignedUserSelect = assignedUserContainer.querySelector('select[name="assigned_user_id"]');
+        
         if (this.autoAssign) {
             assignedUserContainer.classList.add('hidden');
+            // 自動割当ON時は担当者フィールドをdisabledにして値を空にする
+            if (assignedUserSelect) {
+                assignedUserSelect.disabled = true;
+                assignedUserSelect.value = '';
+            }
         } else {
             assignedUserContainer.classList.remove('hidden');
+            // 自動割当OFF時は担当者フィールドを有効化
+            if (assignedUserSelect) {
+                assignedUserSelect.disabled = false;
+            }
         }
     }
     
@@ -144,6 +161,7 @@ class ScheduledTaskFormController {
      * 全スケジュールをDOMに描画し、各カードのタイプ変更、削除イベントを設定
      */
     renderSchedules() {
+        console.log('[Scheduled Task Form] renderSchedules() called');
         const container = document.querySelector('[data-schedules-container]');
         if (!container) return;
         
@@ -282,14 +300,16 @@ class ScheduledTaskFormController {
         
         const checkboxes = this.weekdays.map((day, dayIndex) => {
             const isChecked = days.includes(dayIndex);
+            const checkboxId = `schedule_${index}_day_${dayIndex}`;
             return `
-                <label>
+                <label for="${checkboxId}" class="weekday-label-container">
                     <input type="checkbox" 
+                           id="${checkboxId}"
                            class="weekday-checkbox"
                            name="schedules[${index}][days][]" 
                            value="${dayIndex}"
                            ${isChecked ? 'checked' : ''}>
-                    <div class="weekday-label">${day}</div>
+                    <span class="weekday-label">${day}</span>
                 </label>
             `;
         }).join('');
@@ -319,14 +339,16 @@ class ScheduledTaskFormController {
         
         const checkboxes = Array.from({length: 31}, (_, i) => i + 1).map(date => {
             const isChecked = dates.includes(date);
+            const checkboxId = `schedule_${index}_date_${date}`;
             return `
-                <label>
+                <label for="${checkboxId}" class="date-label-container">
                     <input type="checkbox" 
+                           id="${checkboxId}"
                            class="date-checkbox"
                            name="schedules[${index}][dates][]" 
                            value="${date}"
                            ${isChecked ? 'checked' : ''}>
-                    <div class="date-label">${date}</div>
+                    <span class="date-label">${date}</span>
                 </label>
             `;
         }).join('');
@@ -373,10 +395,24 @@ class ScheduledTaskFormController {
      * @param {number} index - インデックス
      */
     attachScheduleCardEvents(card, index) {
+        // 既にイベントリスナーが登録済みかチェック
+        if (card.dataset.eventsAttached === 'true') {
+            console.log(`[Schedule ${index}] Events already attached, skipping...`);
+            return;
+        }
+        
+        console.log(`[Schedule ${index}] Attaching events...`);
+        
         // タイプ変更
         const typeRadios = card.querySelectorAll(`[data-schedule-type="${index}"]`);
+        console.log(`[Schedule ${index}] Found ${typeRadios.length} type radios`);
+        
         typeRadios.forEach(radio => {
-            radio.addEventListener('change', () => {
+            radio.addEventListener('change', (event) => {
+                // イベントバブリング防止（親要素のイベントリスナーを発火させない）
+                event.stopPropagation();
+                
+                console.log(`[Schedule ${index}] Type changed to: ${radio.value}`);
                 this.schedules[index].type = radio.value;
                 this.updateScheduleTypeVisibility(card, index);
             });
@@ -387,6 +423,9 @@ class ScheduledTaskFormController {
         if (removeBtn) {
             removeBtn.addEventListener('click', () => this.removeSchedule(index));
         }
+        
+        // イベント登録完了フラグを設定
+        card.dataset.eventsAttached = 'true';
     }
     
     /**
@@ -397,25 +436,35 @@ class ScheduledTaskFormController {
      */
     updateScheduleTypeVisibility(card, index) {
         const schedule = this.schedules[index];
+        console.log(`[Schedule ${index}] Updating visibility for type: ${schedule.type}`);
         
         const weeklyContainer = card.querySelector(`[data-weekly-container="${index}"]`);
         const monthlyContainer = card.querySelector(`[data-monthly-container="${index}"]`);
         
+        console.log(`[Schedule ${index}] Weekly container found:`, !!weeklyContainer);
+        console.log(`[Schedule ${index}] Monthly container found:`, !!monthlyContainer);
+        
         if (weeklyContainer) {
             if (schedule.type === 'weekly') {
+                console.log(`[Schedule ${index}] Showing weekly options`);
                 weeklyContainer.classList.remove('hidden');
             } else {
+                console.log(`[Schedule ${index}] Hiding weekly options`);
                 weeklyContainer.classList.add('hidden');
             }
         }
         
         if (monthlyContainer) {
             if (schedule.type === 'monthly') {
+                console.log(`[Schedule ${index}] Showing monthly options`);
                 monthlyContainer.classList.remove('hidden');
             } else {
+                console.log(`[Schedule ${index}] Hiding monthly options`);
                 monthlyContainer.classList.add('hidden');
             }
         }
+        
+        // ⚠️ ここでrenderSchedules()やupdateUI()を呼ばない（不要な再レンダリング防止）
     }
     
     /**
@@ -423,6 +472,7 @@ class ScheduledTaskFormController {
      * デフォルト値（daily, 09:00）の新規スケジュールを追加し、UIを更新
      */
     addSchedule() {
+        console.log('[addSchedule] Adding new schedule, calling updateUI()');
         this.schedules.push({
             type: 'daily',
             time: '09:00',
@@ -439,6 +489,7 @@ class ScheduledTaskFormController {
      */
     removeSchedule(index) {
         if (this.schedules.length > 1) {
+            console.log(`[removeSchedule] Removing schedule ${index}, calling updateUI()`);
             this.schedules.splice(index, 1);
             this.updateUI();
         }
@@ -495,6 +546,7 @@ class ScheduledTaskFormController {
     addTag() {
         const tag = this.tagInput.trim();
         if (tag && !this.tags.includes(tag) && tag.length <= 50) {
+            console.log(`[addTag] Adding tag "${tag}", calling updateUI()`);
             this.tags.push(tag);
             this.tagInput = '';
             this.updateUI();
@@ -507,6 +559,7 @@ class ScheduledTaskFormController {
      * @param {number} index - 削除するタグのインデックス
      */
     removeTag(index) {
+        console.log(`[removeTag] Removing tag ${index}, calling updateUI()`);
         this.tags.splice(index, 1);
         this.updateUI();
     }

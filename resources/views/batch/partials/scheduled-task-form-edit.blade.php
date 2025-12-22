@@ -131,7 +131,7 @@
         </label>
 
         {{-- 担当者選択 --}}
-        <div data-assigned-user-container class="hidden">
+        <div data-assigned-user-container class="{{ old('auto_assign', $scheduledTask?->auto_assign ?? false) ? 'hidden' : '' }}">
             <label for="assigned_user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 固定担当者
             </label>
@@ -140,7 +140,7 @@
                     class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition">
                 <option value="">未設定（担当者なし）</option>
                 @foreach ($groupMembers as $member)
-                    <option value="{{ $member->id }}" {{ old('assigned_user_id') == $member->id ? 'selected' : '' }}>
+                    <option value="{{ $member->id }}" {{ old('assigned_user_id', $scheduledTask?->assigned_user_id) == $member->id ? 'selected' : '' }}>
                         {{ $member->username }}
                     </option>
                 @endforeach

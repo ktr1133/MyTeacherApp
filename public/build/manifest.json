@@ -48,7 +48,7 @@
     ]
   },
   "resources/css/batch.css": {
-    "file": "assets/batch-CoJGNlGr.css",
+    "file": "assets/batch-DbpVy5HQ.css",
     "src": "resources/css/batch.css",
     "isEntry": true,
     "names": [
@@ -263,7 +263,7 @@
     "isEntry": true
   },
   "resources/js/batch/scheduled-task-controller.js": {
-    "file": "assets/scheduled-task-controller-D3vECmx2.js",
+    "file": "assets/scheduled-task-controller-Bm6ogy5h.js",
     "name": "scheduled-task-controller",
     "src": "resources/js/batch/scheduled-task-controller.js",
     "isEntry": true
