@@ -8,6 +8,7 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import ProfileScreen from '../../profile/ProfileScreen';
 import GroupManagementScreen from '../GroupManagementScreen';
+import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useProfile } from '../../../hooks/useProfile';
@@ -16,6 +17,31 @@ import { useProfile } from '../../../hooks/useProfile';
 jest.mock('../../../contexts/ThemeContext');
 jest.mock('../../../contexts/AuthContext');
 jest.mock('../../../hooks/useProfile');
+jest.mock('../../../hooks/useThemedColors', () => ({
+  useThemedColors: jest.fn(() => ({
+    colors: {
+      primary: '#007AFF',
+      background: '#FFFFFF',
+      text: '#000000',
+      card: '#F8F8F8',
+      border: '#E5E5E5',
+      notification: '#FF3B30',
+      status: {
+        success: '#34C759',
+        warning: '#FF9500',
+        error: '#FF3B30',
+        info: '#007AFF',
+      },
+    },
+    accent: {
+      primary: '#007AFF',
+      secondary: '#5856D6',
+      success: '#34C759',
+      warning: '#FF9500',
+      error: '#FF3B30',
+    },
+  })),
+}));
 
 describe('Navigation Integration Tests', () => {
   const mockUser = {
@@ -60,9 +86,11 @@ describe('Navigation Integration Tests', () => {
     });
 
     render(
-      <NavigationContainer>
-        <ProfileScreen />
-      </NavigationContainer>
+      <ColorSchemeProvider>
+        <NavigationContainer>
+          <ProfileScreen />
+        </NavigationContainer>
+      </ColorSchemeProvider>
     );
 
     expect(screen.getByText('グループ管理')).toBeTruthy();
@@ -78,9 +106,11 @@ describe('Navigation Integration Tests', () => {
     });
 
     render(
-      <NavigationContainer>
-        <ProfileScreen />
-      </NavigationContainer>
+      <ColorSchemeProvider>
+        <NavigationContainer>
+          <ProfileScreen />
+        </NavigationContainer>
+      </ColorSchemeProvider>
     );
 
     const groupButton = screen.getByText('グループ管理');
@@ -99,9 +129,11 @@ describe('Navigation Integration Tests', () => {
     });
 
     render(
-      <NavigationContainer>
-        <GroupManagementScreen />
-      </NavigationContainer>
+      <ColorSchemeProvider>
+        <NavigationContainer>
+          <GroupManagementScreen />
+        </NavigationContainer>
+      </ColorSchemeProvider>
     );
 
     expect(screen.getByText('タスクスケジュール管理')).toBeTruthy();
@@ -117,9 +149,11 @@ describe('Navigation Integration Tests', () => {
     });
 
     render(
-      <NavigationContainer>
-        <GroupManagementScreen />
-      </NavigationContainer>
+      <ColorSchemeProvider>
+        <NavigationContainer>
+          <GroupManagementScreen />
+        </NavigationContainer>
+      </ColorSchemeProvider>
     );
 
     const scheduleButton = screen.getByText('タスクスケジュール管理');
@@ -139,9 +173,11 @@ describe('Navigation Integration Tests', () => {
 
     // Step 1: ProfileScreen → GroupManagement
     const { unmount } = render(
-      <NavigationContainer>
-        <ProfileScreen />
-      </NavigationContainer>
+      <ColorSchemeProvider>
+        <NavigationContainer>
+          <ProfileScreen />
+        </NavigationContainer>
+      </ColorSchemeProvider>
     );
 
     fireEvent.press(screen.getByText('グループ管理'));
@@ -152,9 +188,11 @@ describe('Navigation Integration Tests', () => {
     // Step 2: GroupManagement → ScheduledTaskList
     mockNavigate.mockClear();
     render(
-      <NavigationContainer>
-        <GroupManagementScreen />
-      </NavigationContainer>
+      <ColorSchemeProvider>
+        <NavigationContainer>
+          <GroupManagementScreen />
+        </NavigationContainer>
+      </ColorSchemeProvider>
     );
 
     const scheduleButton = screen.getByText('タスクスケジュール管理');
