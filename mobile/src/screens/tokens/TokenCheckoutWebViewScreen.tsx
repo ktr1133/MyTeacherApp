@@ -19,6 +19,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { API_CONFIG } from '../../utils/constants';
 import { useThemedColors } from '../../hooks/useThemedColors';
+import { useResponsive, getSpacing, getFontSize, getBorderRadius } from '../../utils/responsive';
 
 type RouteParams = {
   TokenCheckoutWebView: {
@@ -42,13 +43,13 @@ export const TokenCheckoutWebViewScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const route = useRoute<RouteProp<RouteParams, 'TokenCheckoutWebView'>>();
   const { url } = route.params;
+  const { width } = useResponsive();
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, colors), [width, colors]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const webViewRef = useRef<WebView>(null);
-  
-  const { colors, accent } = useThemedColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
 
   /**
    * URL変更時のハンドラー
@@ -335,7 +336,7 @@ export const TokenCheckoutWebViewScreen: React.FC = () => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (width: number, colors: any) => ({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -345,14 +346,18 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     backgroundColor: colors.background,
   },
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     backgroundColor: colors.background + 'E6', // 90% opacity
   },
 });

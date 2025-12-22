@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,9 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedColors } from '../../hooks/useThemedColors';
-import { getSpacing } from '../../utils/responsive';
+import { useResponsive, getSpacing, getFontSize, getBorderRadius } from '../../utils/responsive';
 import { getSelfConsentStatus, submitSelfConsent } from '../../services/legal.service';
 import type { SelfConsentStatusResponse, SelfConsentRequest } from '../../types/legal.types';
-
-const { width } = Dimensions.get('window');
 
 /**
  * 本人同意画面（13歳到達時）
@@ -26,7 +24,9 @@ const { width } = Dimensions.get('window');
  */
 const SelfConsentScreen: React.FC = () => {
   const navigation = useNavigation();
-  const colors = useThemedColors();
+  const { width } = useResponsive();
+  const { colors, accent } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, colors, accent.primary), [width, colors, accent.primary]);
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -318,7 +318,7 @@ const SelfConsentScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, colors: any, accent: string) => ({
   container: {
     flex: 1,
   },
@@ -328,105 +328,105 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   loadingText: {
     marginTop: getSpacing(2, width),
-    fontSize: 16,
+    fontSize: getFontSize(16, width),
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     padding: getSpacing(3, width),
   },
   infoText: {
-    fontSize: 18,
+    fontSize: getFontSize(18, width),
     marginTop: getSpacing(2, width),
     marginBottom: getSpacing(3, width),
   },
   button: {
     paddingVertical: getSpacing(1.5, width),
     paddingHorizontal: getSpacing(4, width),
-    borderRadius: getSpacing(1, width),
+    borderRadius: getBorderRadius(8, width),
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: getFontSize(16, width),
+    fontWeight: '600' as const,
   },
   noticeBox: {
     padding: getSpacing(2, width),
-    borderRadius: getSpacing(1, width),
+    borderRadius: getBorderRadius(8, width),
     borderLeftWidth: 4,
     marginBottom: getSpacing(2, width),
   },
   noticeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
     marginBottom: getSpacing(1, width),
   },
   noticeTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: getFontSize(16, width),
+    fontWeight: 'bold' as const,
     marginLeft: getSpacing(1, width),
   },
   noticeText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width),
     lineHeight: 20,
   },
   infoCard: {
     padding: getSpacing(2, width),
-    borderRadius: getSpacing(1, width),
+    borderRadius: getBorderRadius(8, width),
     marginBottom: getSpacing(2, width),
   },
   infoLabel: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width),
     marginBottom: getSpacing(0.5, width),
   },
   ageText: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: getFontSize(28, width),
+    fontWeight: 'bold' as const,
   },
   explanationBox: {
     padding: getSpacing(2, width),
-    borderRadius: getSpacing(1, width),
+    borderRadius: getBorderRadius(8, width),
     borderLeftWidth: 4,
     marginBottom: getSpacing(3, width),
   },
   explanationTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: getFontSize(16, width),
+    fontWeight: 'bold' as const,
     marginBottom: getSpacing(1.5, width),
   },
   explanationContent: {
     gap: getSpacing(1, width),
   },
   explanationText: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width),
     lineHeight: 20,
   },
   consentSection: {
     marginBottom: getSpacing(3, width),
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: getFontSize(16, width),
+    fontWeight: 'bold' as const,
     marginBottom: getSpacing(2, width),
   },
   checkboxRow: {
-    flexDirection: 'row',
+    flexDirection: 'row' as const,
     marginBottom: getSpacing(2.5, width),
-    alignItems: 'flex-start',
+    alignItems: 'flex-start' as const,
   },
   checkbox: {
     width: 24,
     height: 24,
-    borderRadius: 6,
+    borderRadius: getBorderRadius(6, width),
     borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     marginRight: getSpacing(1.5, width),
     marginTop: 2,
   },
@@ -434,61 +434,61 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   checkboxLabel: {
-    fontSize: 14,
+    fontSize: getFontSize(14, width),
     lineHeight: 20,
   },
   linkText: {
-    fontWeight: '600',
-    textDecorationLine: 'underline',
+    fontWeight: '600' as const,
+    textDecorationLine: 'underline' as const,
   },
   required: {
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
   },
   checkboxDescription: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width),
     marginTop: getSpacing(0.5, width),
     lineHeight: 16,
   },
   submitButton: {
     paddingVertical: getSpacing(2, width),
-    borderRadius: getSpacing(1, width),
-    alignItems: 'center',
+    borderRadius: getBorderRadius(8, width),
+    alignItems: 'center' as const,
     marginBottom: getSpacing(2, width),
   },
   submitButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: getFontSize(16, width),
+    fontWeight: '600' as const,
   },
   warningBox: {
     padding: getSpacing(2, width),
-    borderRadius: getSpacing(1, width),
+    borderRadius: getBorderRadius(8, width),
     marginBottom: getSpacing(2, width),
   },
   warningTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: getFontSize(14, width),
+    fontWeight: 'bold' as const,
     marginBottom: getSpacing(1, width),
   },
   warningList: {
     gap: getSpacing(0.5, width),
   },
   warningText: {
-    fontSize: 12,
+    fontSize: getFontSize(12, width),
     lineHeight: 18,
   },
   parentBox: {
     padding: getSpacing(2, width),
-    borderRadius: getSpacing(1, width),
+    borderRadius: getBorderRadius(8, width),
     borderLeftWidth: 4,
   },
   parentTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: getFontSize(14, width),
+    fontWeight: 'bold' as const,
     marginBottom: getSpacing(1, width),
   },
   parentText: {
-    fontSize: 13,
+    fontSize: getFontSize(13, width),
     lineHeight: 20,
   },
 });

@@ -26,7 +26,7 @@ import {
   Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useResponsive, getSpacing } from '../../utils/responsive';
+import { useResponsive, getSpacing, getFontSize, getBorderRadius } from '../../utils/responsive';
 import { useThemedColors } from '../../hooks/useThemedColors';
 import { useChildTheme } from '../../hooks/useChildTheme';
 import { Ionicons } from '@expo/vector-icons';
@@ -400,11 +400,11 @@ const createStyles = (width: number, colors: any, accent: string, themeType: 'ad
       gap: getSpacing(1, width),
     },
     versionCurrent: {
-      fontSize: 12,
+      fontSize: getFontSize(12, width),
       color: colors.text.secondary,
     },
     versionRequired: {
-      fontSize: 12,
+      fontSize: getFontSize(12, width),
       fontWeight: '600',
       color: accent,
     },
@@ -426,7 +426,7 @@ const createStyles = (width: number, colors: any, accent: string, themeType: 'ad
       height: 24,
       borderWidth: 2,
       borderColor: colors.border,
-      borderRadius: getSpacing(0.5, width),
+      borderRadius: getBorderRadius(4, width),
       backgroundColor: colors.background,
       justifyContent: 'center',
       alignItems: 'center',
@@ -441,7 +441,7 @@ const createStyles = (width: number, colors: any, accent: string, themeType: 'ad
       flex: 1,
     },
     checkboxText: {
-      fontSize: themeType === 'child' ? 15 : 14,
+      fontSize: getFontSize(themeType === 'child' ? 15 : 14, width),
       color: colors.text.primary,
       lineHeight: 20,
     },
@@ -462,13 +462,13 @@ const createStyles = (width: number, colors: any, accent: string, themeType: 'ad
       borderColor: colors.border,
     },
     warningTitle: {
-      fontSize: 14,
+      fontSize: getFontSize(14, width),
       fontWeight: '600',
       color: colors.text.primary,
       marginBottom: getSpacing(1, width),
     },
     warningText: {
-      fontSize: 12,
+      fontSize: getFontSize(12, width),
       color: colors.text.secondary,
       lineHeight: 18,
     },
@@ -498,7 +498,7 @@ const createStyles = (width: number, colors: any, accent: string, themeType: 'ad
       opacity: 0.5,
     },
     submitButtonText: {
-      fontSize: themeType === 'child' ? 18 : 16,
+      fontSize: getFontSize(themeType === 'child' ? 18 : 16, width),
       fontWeight: '700',
       color: '#FFFFFF',
     },

@@ -6,7 +6,7 @@
  * @module screens/subscriptions/SubscriptionWebViewScreen
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -18,6 +18,8 @@ import { WebView } from 'react-native-webview';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { API_CONFIG } from '../../utils/constants';
+import { useResponsive, getSpacing, getFontSize, getBorderRadius } from '../../utils/responsive';
+import { useThemedColors } from '../../hooks/useThemedColors';
 
 type RouteParams = {
   SubscriptionWebView: {
@@ -41,6 +43,9 @@ export const SubscriptionWebViewScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const route = useRoute<RouteProp<RouteParams, 'SubscriptionWebView'>>();
   const { url } = route.params;
+  const { width } = useResponsive();
+  const { colors } = useThemedColors();
+  const styles = useMemo(() => createStyles(width, colors), [width, colors]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -331,24 +336,28 @@ export const SubscriptionWebViewScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (width: number, colors: any) => ({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background || '#FFFFFF',
   },
   webView: {
     flex: 1,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    backgroundColor: colors.background || '#FFFFFF',
   },
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
 });
