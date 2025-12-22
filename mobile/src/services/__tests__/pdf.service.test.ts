@@ -7,7 +7,7 @@
  */
 
 import * as pdfService from '../pdf.service';
-import { Paths, File } from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import api from '../api';
 
@@ -15,7 +15,7 @@ import api from '../api';
 jest.mock('../api');
 jest.mock('expo-sharing');
 
-// expo-file-systemのモック
+// expo-file-system/legacyのモック
 const mockFile = {
   uri: 'file:///cache/member-summary-2025-12-123.pdf',
   write: jest.fn().mockResolvedValue(undefined),
@@ -23,11 +23,16 @@ const mockFile = {
   delete: jest.fn().mockResolvedValue(undefined),
 };
 
-jest.mock('expo-file-system', () => ({
+const mockGetInfoAsync = jest.fn();
+const mockDeleteAsync = jest.fn();
+
+jest.mock('expo-file-system/legacy', () => ({
   Paths: {
     cache: { uri: 'file:///cache/' },
   },
   File: jest.fn().mockImplementation(() => mockFile),
+  getInfoAsync: mockGetInfoAsync,
+  deleteAsync: mockDeleteAsync,
 }));
 
 describe('pdf.service', () => {
@@ -41,7 +46,11 @@ describe('pdf.service', () => {
   let mockFileReader: any;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    // モックの呼び出し履歴のみをクリア（実装は保持）
+    mockGetInfoAsync.mockClear();
+    mockDeleteAsync.mockClear();
+    (api.post as jest.Mock).mockClear();
+    (Sharing.shareAsync as jest.Mock).mockClear();
 
     // FileReaderのモック設定
     mockFileReader = {
@@ -230,41 +239,32 @@ describe('pdf.service', () => {
   describe('deletePdfFile', () => {
     it('存在するファイルを削除できる', async () => {
       // Mock: ファイルが存在し、削除成功
-      const existingFile = {
-        ...mockFile,
-        exists: true,
-        delete: jest.fn().mockResolvedValue(undefined),
-      };
-      (File as jest.MockedClass<typeof File>).mockImplementationOnce(() => existingFile as any);
+      mockGetInfoAsync.mockResolvedValue({ exists: true });
+      mockDeleteAsync.mockResolvedValue(undefined);
 
       // 実行
       await pdfService.deletePdfFile('file:///cache/test.pdf');
 
       // 検証
-      expect(File).toHaveBeenCalledWith('file:///cache/test.pdf');
-      expect(existingFile.delete).toHaveBeenCalled();
+      expect(mockGetInfoAsync).toHaveBeenCalledWith('file:///cache/test.pdf');
+      expect(mockDeleteAsync).toHaveBeenCalledWith('file:///cache/test.pdf');
     });
 
     it('存在しないファイルの削除をスキップする', async () => {
       // Mock: ファイルが存在しない
-      const nonExistentFile = { ...mockFile, exists: false };
-      (File as jest.MockedClass<typeof File>).mockImplementationOnce(() => nonExistentFile as any);
+      mockGetInfoAsync.mockResolvedValue({ exists: false });
 
       // 実行
       await pdfService.deletePdfFile('file:///cache/test.pdf');
 
       // 検証: deleteは呼ばれない
-      expect(nonExistentFile.delete).not.toHaveBeenCalled();
+      expect(mockGetInfoAsync).toHaveBeenCalledWith('file:///cache/test.pdf');
+      expect(mockDeleteAsync).not.toHaveBeenCalled();
     });
 
     it('削除エラー時も例外を投げない（クリーンアップ失敗は無視）', async () => {
-      // Mock: delete() がエラー
-      const errorFile = {
-        ...mockFile,
-        exists: true,
-        delete: jest.fn().mockRejectedValue(new Error('Delete error')),
-      };
-      (File as jest.MockedClass<typeof File>).mockImplementationOnce(() => errorFile as any);
+      // Mock: getInfoAsyncまたはdeleteAsyncがエラー
+      mockGetInfoAsync.mockRejectedValue(new Error('File access error'));
 
       // 実行・検証（例外が投げられないことを確認）
       await expect(

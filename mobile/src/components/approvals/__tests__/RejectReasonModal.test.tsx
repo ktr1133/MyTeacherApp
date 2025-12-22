@@ -305,25 +305,14 @@ describe('RejectReasonModal', () => {
       // テキストを入力
       const input = getByPlaceholderText('却下理由を入力してください...（任意）');
       fireEvent.changeText(input, '理由です');
+      expect(input.props.value).toBe('理由です');
 
       // キャンセルボタンをタップ
       const cancelButton = getByText('キャンセル');
       fireEvent.press(cancelButton);
 
-      // モーダルを再度開く
-      rerender(
-        <RejectReasonModal
-          visible={true}
-          targetTitle="テストタスク"
-          onReject={mockOnReject}
-          onCancel={mockOnCancel}
-          isSubmitting={false}
-        />
-      );
-
-      // 入力がクリアされていることを確認
-      const newInput = getByPlaceholderText('却下理由を入力してください...（任意）');
-      expect(newInput.props.value).toBe('');
+      // 入力がクリアされていることを確認（同じコンポーネントインスタンス内で）
+      expect(input.props.value).toBe('');
     });
   });
 

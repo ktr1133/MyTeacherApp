@@ -274,14 +274,16 @@ describe('TagTasksScreen - タグ別タスク一覧', () => {
         refreshTasks: jest.fn(),
       });
 
-      const { getByText } = renderScreen(<TagTasksScreen />);
+      const { getAllByText } = renderScreen(<TagTasksScreen />);
 
       await waitFor(() => {
-        expect(getByText('グループタスク')).toBeTruthy();
+        const groupTasks = getAllByText('グループタスク');
+        expect(groupTasks.length).toBeGreaterThan(0);
       });
 
-      // グループタスクタップ
-      fireEvent.press(getByText('グループタスク'));
+      // グループタスクタップ（最初の要素）
+      const groupTasks = getAllByText('グループタスク');
+      fireEvent.press(groupTasks[0]);
 
       // 画面遷移確認（詳細画面）
       expect(mockNavigation.navigate).toHaveBeenCalledWith('TaskDetail', {

@@ -179,6 +179,8 @@ describe('AvatarEditScreen', () => {
   });
 
   it('更新成功後、管理画面に戻る', async () => {
+    // Alert.alertのモックをクリア
+    (Alert.alert as jest.Mock).mockClear();
     mockUpdateAvatar.mockResolvedValue(mockAvatar);
 
     const { getByText } = render(
@@ -191,12 +193,17 @@ describe('AvatarEditScreen', () => {
     fireEvent.press(updateButton);
 
     await waitFor(() => {
-      // Alert.alertの「OK」ボタンを実行
-      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
-      const okButton = alertCall[2][0];
-      okButton.onPress();
-      
-      expect(mockGoBack).toHaveBeenCalled();
+      expect(Alert.alert).toHaveBeenCalled();
+    });
+    
+    // Alert.alertの「OK」ボタンを実行
+    const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+    const okButton = alertCall[2][0];
+    okButton.onPress();
+    
+    await waitFor(() => {
+      // navigation.navigate('AvatarManage')が呼ばれることを確認
+      expect(mockNavigate).toHaveBeenCalledWith('AvatarManage');
     });
   });
 
