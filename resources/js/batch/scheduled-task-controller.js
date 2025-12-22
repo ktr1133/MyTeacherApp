@@ -1,6 +1,7 @@
 /**
  * スケジュールタスクフォームコントローラー
  * Alpine.jsから移行: Vanilla JavaScript実装
+ * 曜日・日付選択: 5列グリッドレイアウト
  */
 class ScheduledTaskFormController {
     /**
@@ -296,7 +297,9 @@ class ScheduledTaskFormController {
      */
     renderWeeklyOptions(schedule, index) {
         const isVisible = schedule.type === 'weekly';
-        const days = schedule.days || [];
+        const days = (schedule.days || []).map(d => parseInt(d, 10));
+        
+        console.log('[renderWeeklyOptions] Rendering with 5 columns grid, days:', days);
         
         const checkboxes = this.weekdays.map((day, dayIndex) => {
             const isChecked = days.includes(dayIndex);
@@ -319,7 +322,7 @@ class ScheduledTaskFormController {
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     曜日選択 <span class="text-red-500">*</span>
                 </label>
-                <div class="flex flex-wrap gap-2">
+                <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem;">
                     ${checkboxes}
                 </div>
             </div>
@@ -329,13 +332,16 @@ class ScheduledTaskFormController {
     /**
      * 月次スケジュールオプションのHTML生成
      * 1〜31日のチェックボックスを生成、monthly選択時のみ表示
+     * レスポンシブ対応: モバイル4列、タブレット5列、デスクトップ7列
      * @param {Object} schedule - スケジュールデータ
      * @param {number} index - インデックス
      * @returns {string} HTML文字列
      */
     renderMonthlyOptions(schedule, index) {
         const isVisible = schedule.type === 'monthly';
-        const dates = schedule.dates || [];
+        const dates = (schedule.dates || []).map(d => parseInt(d, 10));
+        
+        console.log('[renderMonthlyOptions] Rendering with 5 columns grid, dates:', dates);
         
         const checkboxes = Array.from({length: 31}, (_, i) => i + 1).map(date => {
             const isChecked = dates.includes(date);
@@ -358,7 +364,7 @@ class ScheduledTaskFormController {
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     日付選択 <span class="text-red-500">*</span>
                 </label>
-                <div class="grid grid-cols-7 gap-2">
+                <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem;">
                     ${checkboxes}
                 </div>
             </div>

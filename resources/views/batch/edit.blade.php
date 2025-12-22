@@ -38,18 +38,21 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">スケジュール編集</h2>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">定期タスクの設定を変更</p>
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                                <span class="hidden sm:inline">スケジュール編集</span>
+                                <span class="sm:hidden">設定</span>
+                            </h2>
+                            <p class="hidden sm:block text-xs text-gray-500 dark:text-gray-400">定期タスクの設定を変更</p>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2">
                         <a href="{{ route('batch.scheduled-tasks.index', ['group_id' => $groupId]) }}" 
-                           class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 transition backdrop-blur-sm">
+                           class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 transition backdrop-blur-sm">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                             </svg>
-                            戻る
+                            <span class="hidden sm:inline">戻る</span>
                         </a>
                     </div>
                 </div>

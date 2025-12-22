@@ -319,24 +319,25 @@
 }
 
 .weekday-label-container {
-    @apply inline-block cursor-pointer;
+    @apply block cursor-pointer;
+    display: block !important; /* グリッドレイアウト強制 */
 }
 
 .weekday-label {
-    @apply w-10 h-10 flex items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300;
-    @apply select-none;
+    @apply w-full h-12 flex items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300;
+    @apply select-none bg-white dark:bg-gray-800;
 }
 
 .weekday-checkbox:checked + .weekday-label {
-    @apply bg-gradient-to-br from-purple-600 to-pink-600 border-purple-600 text-white shadow-md;
+    @apply bg-gradient-to-br from-purple-600 to-pink-600 border-purple-600 text-white shadow-lg font-bold scale-105;
 }
 
 .weekday-label-container:hover .weekday-label {
-    @apply border-purple-400 dark:border-purple-500 bg-purple-50 dark:bg-purple-900/20;
+    @apply border-purple-400 dark:border-purple-500 bg-purple-50 dark:bg-purple-900/20 scale-105;
 }
 
 .weekday-checkbox:checked:hover + .weekday-label {
-    @apply bg-gradient-to-br from-purple-700 to-pink-700;
+    @apply bg-gradient-to-br from-purple-700 to-pink-700 scale-105;
 }
 
 .date-checkbox {
@@ -344,24 +345,25 @@
 }
 
 .date-label-container {
-    @apply inline-block cursor-pointer;
+    @apply block cursor-pointer;
+    display: block !important; /* グリッドレイアウト強制 */
 }
 
 .date-label {
-    @apply w-10 h-10 flex items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300;
-    @apply select-none;
+    @apply w-full h-12 flex items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 transition-all duration-200 text-sm font-medium text-gray-700 dark:text-gray-300;
+    @apply select-none bg-white dark:bg-gray-800;
 }
 
 .date-checkbox:checked + .date-label {
-    @apply bg-gradient-to-br from-blue-600 to-indigo-600 border-blue-600 text-white shadow-md;
+    @apply bg-gradient-to-br from-blue-600 to-indigo-600 border-blue-600 text-white shadow-lg font-bold scale-105;
 }
 
 .date-label-container:hover .date-label {
-    @apply border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20;
+    @apply border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-105;
 }
 
 .date-checkbox:checked:hover + .date-label {
-    @apply bg-gradient-to-br from-blue-700 to-indigo-700;
+    @apply bg-gradient-to-br from-blue-700 to-indigo-700 scale-105;
 }
 
 /* スケジュールタイプ選択（フォーム用） */
