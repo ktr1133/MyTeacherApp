@@ -2,6 +2,7 @@
  * SettingsScreen テスト
  */
 
+import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -14,6 +15,24 @@ import { ColorSchemeProvider } from '../../../contexts/ColorSchemeContext';
 
 // ナビゲーションスタック作成
 const Stack = createNativeStackNavigator();
+
+// ナビゲーションモック
+const mockNavigate = jest.fn();
+const mockGoBack = jest.fn();
+const mockSetOptions = jest.fn();
+
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useNavigation: () => ({
+    navigate: mockNavigate,
+    goBack: mockGoBack,
+    setOptions: mockSetOptions,
+    addListener: jest.fn((event, callback) => {
+      if (event === 'focus') callback();
+      return jest.fn();
+    }),
+  }),
+}));
 
 // モック
 jest.mock('../../../hooks/useProfile');
@@ -53,6 +72,8 @@ const mockUseProfile = useProfile as jest.MockedFunction<typeof useProfile>;
 jest.spyOn(Alert, 'alert');
 
 describe('SettingsScreen', () => {
+  let mockUseTheme: jest.SpyInstance;
+  
   const mockProfileHook = {
     profile: null,
     isLoading: false,
@@ -74,17 +95,23 @@ describe('SettingsScreen', () => {
     refreshTheme: jest.fn(),
   };
 
-  // ThemeContextをモック
-  jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
-
   const renderScreen = (component: React.ReactElement) => {
+    // navigationオブジェクトをpropsとして渡す
+    const componentWithNav = React.cloneElement(component, {
+      navigation: {
+        navigate: mockNavigate,
+        goBack: mockGoBack,
+        setOptions: mockSetOptions,
+      },
+    });
+
     return render(
       <ColorSchemeProvider>
         <AuthProvider>
           <ThemeProvider>
             <NavigationContainer>
               <Stack.Navigator>
-                <Stack.Screen name="Settings" component={() => component} />
+                <Stack.Screen name="Settings" component={() => componentWithNav} />
               </Stack.Navigator>
             </NavigationContainer>
           </ThemeProvider>
@@ -95,7 +122,7 @@ describe('SettingsScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
+    mockUseTheme = jest.spyOn(require('../../../contexts/ThemeContext'), 'useTheme').mockReturnValue(mockThemeContext);
     mockUseProfile.mockReturnValue(mockProfileHook);
 
     // タイムゾーン設定のモック
