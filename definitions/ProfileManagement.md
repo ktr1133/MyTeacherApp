@@ -6,6 +6,7 @@
 |------|--------|---------|
 | 2025-12-18 | GitHub Copilot | 初版作成: アカウント管理画面の機能要件定義、メールアドレス変更時の親子連動機能を含む包括的仕様 |
 | 2025-12-20 | GitHub Copilot | Section 13追加: 子アカウント一括紐づけ機能（Phase 6拡張）- サブスクリプション別メンバー数上限チェック、部分成功対応、Web/Mobile統合仕様 |
+| 2025-12-23 | GitHub Copilot | パスワードバリデーション強化: より厳格な条件追加（英字・大文字小文字混在・数字・記号必須、漏洩パスワードチェック）、リアルタイムフィードバックUI実装、日本語バリデーションメッセージ対応 |
 
 ---
 
@@ -446,28 +447,83 @@ FOREIGN KEY (parent_user_id) REFERENCES users(id) ON DELETE SET NULL
 
 **アクセスルート**:
 ```
-PATCH /profile/password → UpdatePasswordAction
+PATCH /profile/password → UpdatePasswordAction (Web)
+PATCH /api/profile/password → UpdatePasswordApiAction (Mobile)
 ```
 
 **入力項目**:
 - `current_password` (required): 現在のパスワード
-- `password` (required, confirmed, min:8): 新しいパスワード
+- `password` (required, confirmed, 厳格なバリデーション): 新しいパスワード
 - `password_confirmation` (required): 新しいパスワード（確認用）
 
 **処理フロー**:
 ```
 1. 現在のパスワード検証（Hash::check）
-2. 新しいパスワードをハッシュ化
-3. ユーザーの password カラム更新
-4. セッション再生成（security対策）
-5. 成功メッセージと共にリダイレクト
+2. 新しいパスワードのバリデーション（厳格な条件チェック）
+3. 新しいパスワードをハッシュ化
+4. ユーザーの password カラム更新
+5. セッション再生成（security対策）
+6. 成功メッセージと共にリダイレクト（Web）またはJSON応答（Mobile）
 ```
 
-**バリデーションルール**:
+**バリデーションルール（強化版）**:
 ```php
 'current_password' => ['required', 'current_password'],
-'password' => ['required', Password::defaults(), 'confirmed'],
+'password' => [
+    'required',
+    'confirmed',
+    Password::min(8)
+        ->letters()      // 英字必須
+        ->mixedCase()    // 大文字小文字混在必須
+        ->numbers()      // 数字必須
+        ->symbols()      // 記号必須
+        ->uncompromised(), // 漏洩パスワードチェック（Have I Been Pwned API）
+],
 ```
+
+**パスワード強度要件**:
+- 最低8文字以上
+- 英字（a-z, A-Z）を1文字以上含む
+- 大文字と小文字を混在させる
+- 数字（0-9）を1文字以上含む
+- 記号（!@#$%^&*等）を1文字以上含む
+- データ漏洩で発見されたパスワードは使用不可
+
+**リアルタイムフィードバックUI**:
+- パスワード入力中に強度バーを表示（赤→黄→緑）
+- 強度判定:
+  - 0-20%: 脆弱（赤）
+  - 21-40%: やや弱い（オレンジ）
+  - 41-60%: 普通（黄）
+  - 61-80%: 強い（薄緑）
+  - 81-100%: 非常に強い（濃緑）
+- 各条件の充足状況をチェックマークで表示
+- JavaScript: `resources/js/components/password-strength.js`
+- CSS: `resources/css/app.css` (パスワード強度スタイル含む)
+
+**日本語バリデーションメッセージ**:
+```
+言語ファイル: lang/ja/validation.php
+
+- password.letters: パスワードには、少なくとも1つの文字を含める必要があります。
+- password.mixed: パスワードには、少なくとも1つの大文字と1つの小文字を含める必要があります。
+- password.numbers: パスワードには、少なくとも1つの数字を含める必要があります。
+- password.symbols: パスワードには、少なくとも1つの記号を含める必要があります。
+- password.uncompromised: 指定されたパスワードはデータ漏洩で発見されました。別のパスワードを選択してください。
+```
+
+**適用範囲**:
+- プロフィール画面でのパスワード変更
+- ユーザー登録時（RegisterRequest）
+- パスワードリセット時（NewPasswordController）
+- グループメンバー追加時（AddMemberRequest）
+- モバイルAPI（RegisterApiRequest, UpdatePasswordRequest）
+
+**セキュリティ考慮事項**:
+- k-anonymityモデル: パスワード本体はAPIに送信せず、ハッシュの一部のみで照合
+- セッション再生成: パスワード変更後は必ずセッションを再生成
+- レート制限: 連続試行攻撃を防ぐためのThrottle適用（推奨）
+
 
 ### 5.2 アカウント削除機能
 
