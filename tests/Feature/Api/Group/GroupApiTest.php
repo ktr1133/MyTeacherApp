@@ -114,7 +114,7 @@ describe('グループ管理API', function () {
                 ->postJson('/api/groups/members', [
                     'username' => 'newmember',
                     'email' => 'newmember@example.com',
-                    'password' => 'password123',
+                    'password' => 'SecureTest#9Xm2',
                     'name' => '新メンバー',
                     'group_edit_flg' => false,
                     'privacy_policy_consent' => true,
@@ -145,7 +145,7 @@ describe('グループ管理API', function () {
                 ->postJson('/api/groups/members', [
                     'username' => $this->user->username,
                     'email' => 'newmail@example.com',
-                    'password' => 'password123',
+                    'password' => 'SecureTest#9Xm2',
                 ]);
 
             $response->assertStatus(422)

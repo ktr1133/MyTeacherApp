@@ -25,7 +25,7 @@ class MobileAuthApiTest extends TestCase
         'username' => 'test_user',
         'email' => 'test@example.com',
         'name' => 'Test User',
-        'password' => 'password123',
+        'password' => 'Password123!',
         'auth_provider' => 'mobile',
         'timezone' => 'Asia/Tokyo',
     ];
