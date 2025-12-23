@@ -12,8 +12,8 @@ test('new users can register with consent', function () {
     $response = $this->post('/register', [
         'username' => 'testuser',
         'email' => 'test@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'RegTest#8Kp2',
+        'password_confirmation' => 'RegTest#8Kp2',
         'timezone' => 'Asia/Tokyo',
         'privacy_policy_consent' => '1',
         'terms_consent' => '1',
@@ -35,8 +35,8 @@ test('registration requires privacy policy consent', function () {
     $response = $this->post('/register', [
         'username' => 'testuser',
         'email' => 'test@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'RegTest#8Kp2',
+        'password_confirmation' => 'RegTest#8Kp2',
         'timezone' => 'Asia/Tokyo',
         // privacy_policy_consent なし
         'terms_consent' => '1',
@@ -50,8 +50,8 @@ test('registration requires terms consent', function () {
     $response = $this->post('/register', [
         'username' => 'testuser',
         'email' => 'test@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'RegTest#8Kp2',
+        'password_confirmation' => 'RegTest#8Kp2',
         'timezone' => 'Asia/Tokyo',
         'privacy_policy_consent' => '1',
         // terms_consent なし
@@ -65,8 +65,8 @@ test('registration requires both consents', function () {
     $response = $this->post('/register', [
         'username' => 'testuser',
         'email' => 'test@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'RegTest#8Kp2',
+        'password_confirmation' => 'RegTest#8Kp2',
         'timezone' => 'Asia/Tokyo',
         // 両方の同意なし
     ]);
@@ -86,8 +86,8 @@ test('registration records correct consent versions', function () {
     $this->post('/register', [
         'username' => 'testuser',
         'email' => 'test@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'RegTest#8Kp2',
+        'password_confirmation' => 'RegTest#8Kp2',
         'timezone' => 'Asia/Tokyo',
         'privacy_policy_consent' => '1',
         'terms_consent' => '1',
