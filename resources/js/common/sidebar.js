@@ -281,17 +281,19 @@ class SidebarController {
         this.mobileSidebar.classList.add('-translate-x-full');
         this.mobileSidebar.classList.remove('translate-x-0');
         
-        // 次フレームでアニメーション開始（ブラウザに初期状態を認識させる）
+        // 2段階のrequestAnimationFrameで確実に初期状態を適用してからアニメーション開始
         requestAnimationFrame(() => {
-            this.mobileOverlay.classList.remove('opacity-0');
-            this.mobileOverlay.classList.add('opacity-100');
-            
-            this.mobileSidebar.classList.remove('-translate-x-full');
-            this.mobileSidebar.classList.add('translate-x-0');
-            
-            // モバイルサイドバーが表示されたタイミングで状態を再適用
-            this.applyGeneralMenuState();
-            this.applyPortalState();
+            requestAnimationFrame(() => {
+                this.mobileOverlay.classList.remove('opacity-0');
+                this.mobileOverlay.classList.add('opacity-100');
+                
+                this.mobileSidebar.classList.remove('-translate-x-full');
+                this.mobileSidebar.classList.add('translate-x-0');
+                
+                // モバイルサイドバーが表示されたタイミングで状態を再適用
+                this.applyGeneralMenuState();
+                this.applyPortalState();
+            });
         });
         
         // スクロールを無効化
