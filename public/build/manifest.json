@@ -275,7 +275,7 @@
     "isEntry": true
   },
   "resources/js/common/sidebar.js": {
-    "file": "assets/sidebar-B3hUOZj7.js",
+    "file": "assets/sidebar-BWm_Z8GR.js",
     "name": "sidebar",
     "src": "resources/js/common/sidebar.js",
     "isEntry": true
@@ -417,6 +417,12 @@
     "imports": [
       "resources/js/common/validation-core.js"
     ]
+  },
+  "resources/js/profile/update-password.js": {
+    "file": "assets/update-password-Bhjs5gSG.js",
+    "name": "update-password",
+    "src": "resources/js/profile/update-password.js",
+    "isEntry": true
   },
   "resources/js/reports/monthly-report.js": {
     "file": "assets/monthly-report-BluejkBY.js",

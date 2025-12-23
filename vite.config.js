@@ -67,6 +67,7 @@ export default defineConfig({
                 'resources/js/reports/performance.js',
                 'resources/js/reports/monthly-report.js',
                 'resources/js/profile/profile-validation.js',
+                'resources/js/profile/update-password.js',
                 'resources/js/group-link-children.js',
                 // 'resources/js/sidebar/sidebar-store.js',
                 'resources/js/tags/tags.js',

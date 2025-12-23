@@ -2,6 +2,9 @@
     @push('styles')
         @vite(['resources/css/dashboard.css'])
     @endpush
+    @push('scripts')
+        @vite(['resources/js/profile/update-password.js'])
+    @endpush
 
     <div class="flex min-h-[100dvh] dashboard-gradient-bg relative overflow-hidden">
 
