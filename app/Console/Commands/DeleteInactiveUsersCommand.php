@@ -156,10 +156,13 @@ class DeleteInactiveUsersCommand extends Command
         // ユーザー通知削除
         UserNotification::where('user_id', $user->id)->forceDelete();
         
-        // トークン残高削除（存在する場合）
-        DB::table('token_balances')->where('user_id', $user->id)->delete();
+        // トークン残高削除（ポリモーフィックリレーション）
+        DB::table('token_balances')
+            ->where('tokenable_type', 'App\\Models\\User')
+            ->where('tokenable_id', $user->id)
+            ->delete();
         
-        // アバター削除
+        // アバター削除（外部キー制約でカスケード削除されるが明示的に削除）
         DB::table('teacher_avatars')->where('user_id', $user->id)->delete();
     }
     
