@@ -83,6 +83,7 @@ use App\Http\Actions\Notification\RejectParentLinkAction;
 use App\Http\Actions\Profile\EditProfileAction;
 use App\Http\Actions\Profile\UpdateProfileAction;
 use App\Http\Actions\Profile\DeleteProfileAction;
+use App\Http\Actions\Profile\UpdatePasswordWebAction;
 use App\Http\Actions\Profile\ShowTimezoneSettingAction;
 use App\Http\Actions\Profile\UpdateTimezoneAction;
 use App\Http\Actions\Profile\Group\EditGroupAction;
@@ -317,6 +318,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/edit', EditProfileAction::class)->name('profile.edit');
         Route::match(['patch', 'post'], '/update', UpdateProfileAction::class)->name('profile.update');
         Route::delete('/delete', DeleteProfileAction::class)->name('profile.destroy');
+        
+        // パスワード更新（Web版 - Ajax用）
+        Route::put('/password', UpdatePasswordWebAction::class)->name('profile.password.update');
         
         // タイムゾーン設定
         Route::get('/timezone', ShowTimezoneSettingAction::class)->name('profile.timezone');

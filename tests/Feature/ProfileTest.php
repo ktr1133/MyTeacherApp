@@ -58,7 +58,7 @@ test('user can delete their account', function () {
     $response = $this
         ->actingAs($user)
         ->delete('/profile/delete', [
-            'password' => 'password',
+            'password' => 'Password123!',
         ]);
 
     $response

@@ -29,7 +29,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'newmember',
             'email' => 'newmember@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'name' => 'New Member',
             'group_edit_flg' => false,
             'privacy_policy_consent' => true,
@@ -69,7 +69,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'newmember',
             'email' => 'newmember@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'privacy_policy_consent' => false, // 同意なし
             'terms_consent' => true,
         ]);
@@ -91,7 +91,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'newmember',
             'email' => 'newmember@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'privacy_policy_consent' => true,
             'terms_consent' => false, // 同意なし
         ]);
@@ -113,7 +113,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'newmember',
             'email' => 'newmember@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'privacy_policy_consent' => false,
             'terms_consent' => false,
         ]);
@@ -135,7 +135,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'childuser',
             'email' => 'child@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'name' => 'Child User',
             'privacy_policy_consent' => true,
             'terms_consent' => true,
@@ -173,7 +173,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'newuser',
             'email' => 'newuser@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'name' => '', // 空文字
             'group_edit_flg' => false,
             'privacy_policy_consent' => true,
@@ -200,7 +200,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'editor',
             'email' => 'editor@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'name' => 'Editor User',
             'group_edit_flg' => true, // 編集権限あり
             'privacy_policy_consent' => true,
@@ -230,7 +230,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'existing', // 重複
             'email' => 'new@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
         ]);
 
         $response->assertSessionHasErrors('username');
@@ -253,7 +253,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'newuser',
             'email' => 'existing@example.com', // 重複
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
         ]);
 
         $response->assertSessionHasErrors('email');
@@ -274,7 +274,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => '',
             'email' => 'test@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
         ]);
         $response->assertSessionHasErrors('username');
 
@@ -282,7 +282,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'testuser',
             'email' => '',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
         ]);
         $response->assertSessionHasErrors('email');
 
@@ -309,7 +309,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'testuser',
             'email' => 'invalid-email', // 無効な形式
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
         ]);
 
         $response->assertSessionHasErrors('email');
@@ -329,7 +329,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'test@user!', // 無効な文字（@, !）
             'email' => 'test@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
         ]);
 
         $response->assertSessionHasErrors('username');
@@ -349,7 +349,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($member)->post('/profile/group/member', [
             'username' => 'newuser',
             'email' => 'newuser@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'privacy_policy_consent' => true,
             'terms_consent' => true,
         ]);
@@ -382,7 +382,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'newuser',
             'email' => 'newuser@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'privacy_policy_consent' => true,
             'terms_consent' => true,
         ]);
@@ -421,7 +421,7 @@ class AddMemberTest extends TestCase
         $response = $this->actingAs($master)->post('/profile/group/member', [
             'username' => 'newuser',
             'email' => 'newuser@example.com',
-            'password' => 'password123',
+            'password' => 'SecureTest#9Xm2',
             'privacy_policy_consent' => true,
             'terms_consent' => true,
         ]);

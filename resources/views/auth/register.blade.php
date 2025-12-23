@@ -170,6 +170,24 @@
                             </div>
                         </div>
 
+                        {{-- パスワード強度メーター --}}
+                        <div id="password-strength-meter" class="mt-2">
+                            <div class="strength-bar-container h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div class="strength-bar h-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <div class="flex items-center justify-between mt-1">
+                                <div class="strength-text text-xs text-gray-500 dark:text-gray-400"></div>
+                                <div class="text-xs text-gray-400 dark:text-gray-500">
+                                    パスワード強度
+                                </div>
+                            </div>
+                            <div class="strength-errors mt-1 text-xs text-red-600 dark:text-red-400" style="display: none;"></div>
+                        </div>
+
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            ※ 8文字以上、英字（大文字・小文字）、数字、記号を含める必要があります
+                        </p>
+
                         <!-- サーバーサイドエラー -->
                         @error('password')
                             <div class="validation-message validation-error validation-error-slide-in">

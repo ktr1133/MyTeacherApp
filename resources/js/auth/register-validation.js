@@ -16,8 +16,13 @@ import {
     updateSubmitButtonState,
 } from '../common/validation-core.js';
 
+import { PasswordStrengthChecker } from '../components/password-strength.js';
+
 // バリデーション状態を初期化（タイムゾーンはデフォルト値があるため除外、同意チェックボックスは動的に検証）
 initValidationState(['username', 'email', 'password', 'password_confirmation']);
+
+// パスワード強度チェッカーをグローバルに保持
+let strengthChecker = null;
 
 /**
  * ユーザー名バリデーション
@@ -140,6 +145,18 @@ async function validatePassword() {
 
     showSpinner('password');
 
+    // クライアント側の厳格なバリデーション
+    if (strengthChecker) {
+        const validation = strengthChecker.getValidationResult();
+        
+        if (!validation.isValid) {
+            hideSpinner('password');
+            showError('password', '× ' + validation.errors.join(', '));
+            updateSubmitButtonState('register-button', ['username', 'password', 'password_confirmation']);
+            return;
+        }
+    }
+
     const result = await validateField('/validate/password', { password }, 'password');
 
     hideSpinner('password');
@@ -227,6 +244,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const privacyCheckbox = document.getElementById('privacy_policy_consent');
     const termsCheckbox = document.getElementById('terms_consent');
     const registerForm = document.getElementById('register-form');
+
+    // パスワード強度チェッカーを初期化
+    if (passwordInput) {
+        strengthChecker = new PasswordStrengthChecker('#password', '#password-strength-meter');
+    }
 
     if (usernameInput) {
         usernameInput.addEventListener('input', debouncedValidateUsername);

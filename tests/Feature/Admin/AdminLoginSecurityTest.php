@@ -12,13 +12,13 @@ describe('AdminLoginSecurity', function () {
     test('管理者ユーザーはログインできる', function () {
         $admin = User::factory()->create([
             'email' => 'admin@test.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password123!'),
             'is_admin' => true,
         ]);
 
         $response = $this->post('/admin/login', [
             'email' => 'admin@test.com',
-            'password' => 'password',
+            'password' => 'Password123!',
         ]);
 
         $response->assertRedirect('/admin/dashboard');
@@ -28,13 +28,13 @@ describe('AdminLoginSecurity', function () {
     test('一般ユーザーは管理者エリアにアクセスできない', function () {
         $user = User::factory()->create([
             'email' => 'user@test.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password123!'),
             'is_admin' => false,
         ]);
 
         $response = $this->post('/admin/login', [
             'email' => 'user@test.com',
-            'password' => 'password',
+            'password' => 'Password123!',
         ]);
 
         $response->assertSessionHasErrors(['email']);
@@ -44,7 +44,7 @@ describe('AdminLoginSecurity', function () {
     test('5回のログイン失敗でアカウントがロックされる', function () {
         $admin = User::factory()->create([
             'email' => 'admin@test.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password123!'),
             'is_admin' => true,
         ]);
 
@@ -52,7 +52,7 @@ describe('AdminLoginSecurity', function () {
         for ($i = 0; $i < 5; $i++) {
             $this->post('/admin/login', [
                 'email' => 'admin@test.com',
-                'password' => 'wrong-password',
+                'password' => 'WrongPassword999!',
             ]);
         }
 
@@ -65,7 +65,7 @@ describe('AdminLoginSecurity', function () {
     test('ロックされたアカウントはログインできない', function () {
         $admin = User::factory()->create([
             'email' => 'admin@test.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password123!'),
             'is_admin' => true,
             'is_locked' => true,
             'locked_at' => now(),
@@ -74,7 +74,7 @@ describe('AdminLoginSecurity', function () {
 
         $response = $this->post('/admin/login', [
             'email' => 'admin@test.com',
-            'password' => 'password',
+            'password' => 'Password123!',
         ]);
 
         $response->assertSessionHasErrors(['email']);
@@ -84,14 +84,14 @@ describe('AdminLoginSecurity', function () {
     test('ログイン成功で失敗カウントがリセットされる', function () {
         $admin = User::factory()->create([
             'email' => 'admin@test.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Password123!'),
             'is_admin' => true,
             'failed_login_attempts' => 3,
         ]);
 
         $response = $this->post('/admin/login', [
             'email' => 'admin@test.com',
-            'password' => 'password',
+            'password' => 'Password123!',
         ]);
 
         $response->assertRedirect('/admin/dashboard');

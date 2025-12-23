@@ -14,7 +14,7 @@ test('password can be confirmed', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/confirm-password', [
-        'password' => 'password',
+        'password' => 'Password123!',
     ]);
 
     $response->assertRedirect();
@@ -25,7 +25,7 @@ test('password is not confirmed with invalid password', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/confirm-password', [
-        'password' => 'wrong-password',
+        'password' => 'WrongPassword999!',
     ]);
 
     $response->assertSessionHasErrors();

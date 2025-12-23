@@ -15,7 +15,7 @@ use Laravel\Sanctum\Sanctum;
 test('パスワード更新が成功する', function () {
     // ユーザー作成
     $user = User::factory()->create([
-        'password' => Hash::make('oldpassword123'),
+        'password' => Hash::make('OldPassword123!'),
     ]);
 
     // Sanctum認証
@@ -23,9 +23,9 @@ test('パスワード更新が成功する', function () {
 
     // リクエスト
     $response = $this->putJson('/api/profile/password', [
-        'current_password' => 'oldpassword123',
-        'password' => 'newpassword456',
-        'password_confirmation' => 'newpassword456',
+        'current_password' => 'OldPassword123!',
+        'password' => 'NewPassword456!',
+        'password_confirmation' => 'NewPassword456!',
     ]);
 
     // アサーション
@@ -37,20 +37,20 @@ test('パスワード更新が成功する', function () {
 
     // DBのパスワードが更新されているか確認
     $user->refresh();
-    expect(Hash::check('newpassword456', $user->password))->toBeTrue();
+    expect(Hash::check('NewPassword456!', $user->password))->toBeTrue();
 });
 
 test('現在のパスワードが間違っている場合エラーを返す', function () {
     $user = User::factory()->create([
-        'password' => Hash::make('oldpassword123'),
+        'password' => Hash::make('OldPassword123!'),
     ]);
 
     Sanctum::actingAs($user);
 
     $response = $this->putJson('/api/profile/password', [
-        'current_password' => 'wrongpassword',
-        'password' => 'newpassword456',
-        'password_confirmation' => 'newpassword456',
+        'current_password' => 'WrongPassword999!',
+        'password' => 'NewPassword456!',
+        'password_confirmation' => 'NewPassword456!',
     ]);
 
     // 現在のパスワード不一致はバリデーションエラー
@@ -60,15 +60,15 @@ test('現在のパスワードが間違っている場合エラーを返す', fu
 
 test('新しいパスワードが8文字未満の場合エラーを返す', function () {
     $user = User::factory()->create([
-        'password' => Hash::make('oldpassword123'),
+        'password' => Hash::make('OldPassword123!'),
     ]);
 
     Sanctum::actingAs($user);
 
     $response = $this->putJson('/api/profile/password', [
-        'current_password' => 'oldpassword123',
-        'password' => 'short',
-        'password_confirmation' => 'short',
+        'current_password' => 'OldPassword123!',
+        'password' => 'Short1!',
+        'password_confirmation' => 'Short1!',
     ]);
 
     // バリデーションエラー
@@ -78,15 +78,15 @@ test('新しいパスワードが8文字未満の場合エラーを返す', func
 
 test('新しいパスワードと確認用が一致しない場合エラーを返す', function () {
     $user = User::factory()->create([
-        'password' => Hash::make('oldpassword123'),
+        'password' => Hash::make('OldPassword123!'),
     ]);
 
     Sanctum::actingAs($user);
 
     $response = $this->putJson('/api/profile/password', [
-        'current_password' => 'oldpassword123',
-        'password' => 'newpassword456',
-        'password_confirmation' => 'differentpassword',
+        'current_password' => 'OldPassword123!',
+        'password' => 'NewPassword456!',
+        'password_confirmation' => 'DifferentPass789!',
     ]);
 
     // バリデーションエラー
@@ -96,15 +96,15 @@ test('新しいパスワードと確認用が一致しない場合エラーを�
 
 test('現在のパスワードが未入力の場合エラーを返す', function () {
     $user = User::factory()->create([
-        'password' => Hash::make('oldpassword123'),
+        'password' => Hash::make('OldPassword123!'),
     ]);
 
     Sanctum::actingAs($user);
 
     $response = $this->putJson('/api/profile/password', [
         'current_password' => '',
-        'password' => 'newpassword456',
-        'password_confirmation' => 'newpassword456',
+        'password' => 'NewPassword456!',
+        'password_confirmation' => 'NewPassword456!',
     ]);
 
     // バリデーションエラー
@@ -114,13 +114,13 @@ test('現在のパスワードが未入力の場合エラーを返す', function
 
 test('新しいパスワードが未入力の場合エラーを返す', function () {
     $user = User::factory()->create([
-        'password' => Hash::make('oldpassword123'),
+        'password' => Hash::make('OldPassword123!'),
     ]);
 
     Sanctum::actingAs($user);
 
     $response = $this->putJson('/api/profile/password', [
-        'current_password' => 'oldpassword123',
+        'current_password' => 'OldPassword123!',
         'password' => '',
         'password_confirmation' => '',
     ]);
@@ -132,9 +132,9 @@ test('新しいパスワードが未入力の場合エラーを返す', function
 
 test('未認証ユーザーはアクセスできない', function () {
     $response = $this->putJson('/api/profile/password', [
-        'current_password' => 'oldpassword123',
-        'password' => 'newpassword456',
-        'password_confirmation' => 'newpassword456',
+        'current_password' => 'OldPassword123!',
+        'password' => 'NewPassword456!',
+        'password_confirmation' => 'NewPassword456!',
     ]);
 
     // 未認証エラー
@@ -143,7 +143,7 @@ test('未認証ユーザーはアクセスできない', function () {
 
 test('複雑なパスワードに変更できる', function () {
     $user = User::factory()->create([
-        'password' => Hash::make('oldpassword123'),
+        'password' => Hash::make('OldPassword123!'),
     ]);
 
     Sanctum::actingAs($user);
@@ -151,7 +151,7 @@ test('複雑なパスワードに変更できる', function () {
     $newPassword = 'NewP@ssw0rd!2024';
 
     $response = $this->putJson('/api/profile/password', [
-        'current_password' => 'oldpassword123',
+        'current_password' => 'OldPassword123!',
         'password' => $newPassword,
         'password_confirmation' => $newPassword,
     ]);
@@ -163,19 +163,143 @@ test('複雑なパスワードに変更できる', function () {
 
 test('パスワード確認フィールドが未入力の場合エラーを返す', function () {
     $user = User::factory()->create([
-        'password' => Hash::make('oldpassword123'),
+        'password' => Hash::make('OldPassword123!'),
     ]);
 
     Sanctum::actingAs($user);
 
     $response = $this->putJson('/api/profile/password', [
-        'current_password' => 'oldpassword123',
-        'password' => 'newpassword456',
+        'current_password' => 'OldPassword123!',
+        'password' => 'NewPassword456!',
         // password_confirmation省略
     ]);
 
     // バリデーションエラー
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['password']);
+});
+
+test('英字が含まれていない場合エラーを返す', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('OldPassword123!'),
+    ]);
+
+    Sanctum::actingAs($user);
+
+    $response = $this->putJson('/api/profile/password', [
+        'current_password' => 'OldPassword123!',
+        'password' => '12345678!@',
+        'password_confirmation' => '12345678!@',
+    ]);
+
+    // バリデーションエラー（英字が含まれていない）
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['password']);
+});
+
+test('大文字が含まれていない場合エラーを返す', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('OldPassword123!'),
+    ]);
+
+    Sanctum::actingAs($user);
+
+    $response = $this->putJson('/api/profile/password', [
+        'current_password' => 'OldPassword123!',
+        'password' => 'newpassword123!',
+        'password_confirmation' => 'newpassword123!',
+    ]);
+
+    // バリデーションエラー（大文字が含まれていない）
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['password']);
+});
+
+test('小文字が含まれていない場合エラーを返す', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('OldPassword123!'),
+    ]);
+
+    Sanctum::actingAs($user);
+
+    $response = $this->putJson('/api/profile/password', [
+        'current_password' => 'OldPassword123!',
+        'password' => 'NEWPASSWORD123!',
+        'password_confirmation' => 'NEWPASSWORD123!',
+    ]);
+
+    // バリデーションエラー（小文字が含まれていない）
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['password']);
+});
+
+test('数字が含まれていない場合エラーを返す', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('OldPassword123!'),
+    ]);
+
+    Sanctum::actingAs($user);
+
+    $response = $this->putJson('/api/profile/password', [
+        'current_password' => 'OldPassword123!',
+        'password' => 'NewPassword!',
+        'password_confirmation' => 'NewPassword!',
+    ]);
+
+    // バリデーションエラー（数字が含まれていない）
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['password']);
+});
+
+test('記号が含まれていない場合エラーを返す', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('OldPassword123!'),
+    ]);
+
+    Sanctum::actingAs($user);
+
+    $response = $this->putJson('/api/profile/password', [
+        'current_password' => 'OldPassword123!',
+        'password' => 'NewPassword123',
+        'password_confirmation' => 'NewPassword123',
+    ]);
+
+    // バリデーションエラー（記号が含まれていない）
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['password']);
+});
+
+test('全ての要件を満たすパスワードは受け入れられる', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('OldPassword123!'),
+    ]);
+
+    Sanctum::actingAs($user);
+
+    // 英字（大小）、数字、記号を含む8文字以上
+    // ランダムな文字列でデータ漏洩に含まれないパスワード
+    $validPasswords = [
+        'ValidPass1!Xz',
+        'Str0ng@Pa$$Qw',
+        'Secure#Pass9Km',
+        'Test#1234Aa!Zx',
+    ];
+
+    $currentPassword = 'OldPassword123!';
+
+    foreach ($validPasswords as $validPassword) {
+        $response = $this->putJson('/api/profile/password', [
+            'current_password' => $currentPassword,
+            'password' => $validPassword,
+            'password_confirmation' => $validPassword,
+        ]);
+
+        $response->assertStatus(200);
+        
+        // 次のテストのためにパスワードを更新
+        $user->update(['password' => Hash::make($validPassword)]);
+        $user->refresh();
+        $currentPassword = $validPassword; // 次のループの現在パスワードを更新
+    }
 });
 

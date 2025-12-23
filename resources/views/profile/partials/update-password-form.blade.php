@@ -9,14 +9,14 @@
         </p>
     </header>
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+    <form id="update-password-form" method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
         @csrf
         @method('put')
 
         <div>
             <x-input-label for="update_password_current_password" :value="__('現在のパスワード')" />
             <div class="relative">
-                <x-text-input id="update_password_current_password" name="current_password" type="password" class="mt-1 block w-full pr-12" autocomplete="current-password" />
+                <x-text-input id="update_password_current_password" name="current_password" type="password" class="mt-1 block w-full pr-12" autocomplete="off" value="" />
                 <button
                     type="button"
                     data-toggle-password="update_password_current_password"
@@ -31,7 +31,6 @@
                     </svg>
                 </button>
             </div>
-            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
         </div>
 
         <div>
@@ -52,7 +51,24 @@
                     </svg>
                 </button>
             </div>
-            <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
+            
+            {{-- パスワード強度メーター --}}
+            <div id="password-strength-meter" class="mt-2">
+                <div class="strength-bar-container h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div class="strength-bar h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div class="flex items-center justify-between mt-1">
+                    <div class="strength-text text-xs text-gray-500 dark:text-gray-400"></div>
+                    <div class="text-xs text-gray-400 dark:text-gray-500">
+                        パスワード強度
+                    </div>
+                </div>
+                <div class="strength-errors mt-1 text-xs text-red-600 dark:text-red-400" style="display: none;"></div>
+            </div>
+            
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                ※ 8文字以上、英字（大文字・小文字）、数字、記号を含める必要があります
+            </p>
         </div>
 
         <div>
@@ -73,7 +89,6 @@
                     </svg>
                 </button>
             </div>
-            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
         </div>
 
         <div class="flex items-center gap-4">
@@ -81,13 +96,26 @@
 
             @if (session('status') === 'password-updated')
                 <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600 dark:text-gray-400"
+                    id="password-updated-message"
+                    class="text-sm text-gray-600 dark:text-gray-400 transition-opacity duration-300"
+                    style="opacity: 1;"
                 >{{ __('保存') }}</p>
+                <script>
+                    // Vanilla JS: 2秒後にフェードアウト
+                    (function() {
+                        const message = document.getElementById('password-updated-message');
+                        if (message) {
+                            setTimeout(() => {
+                                message.style.opacity = '0';
+                                setTimeout(() => message.remove(), 300);
+                            }, 2000);
+                        }
+                    })();
+                </script>
             @endif
         </div>
     </form>
+    
+    {{-- バリデーションエラー用モーダル --}}
+    <x-alert-dialog />
 </section>

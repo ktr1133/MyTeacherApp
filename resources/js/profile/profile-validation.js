@@ -15,6 +15,11 @@ import {
     updateSubmitButtonState,
 } from '../common/validation-core.js';
 
+import { PasswordStrengthChecker } from '../components/password-strength.js';
+
+// パスワード強度チェッカーをグローバルに保持
+let memberPasswordChecker = null;
+
 /**
  * グループ名バリデーション
  */
@@ -150,6 +155,18 @@ async function validateMemberPassword() {
 
     showSpinner('password');
 
+    // クライアント側の厳格なバリデーション
+    if (memberPasswordChecker) {
+        const validation = memberPasswordChecker.getValidationResult();
+        
+        if (!validation.isValid) {
+            hideSpinner('password');
+            showError('password', '× ' + validation.errors.join(', '));
+            updateAddMemberButtonStateWithConsent();
+            return;
+        }
+    }
+
     const result = await validateField('/validate/member-password', { password }, 'password');
 
     hideSpinner('password');
@@ -275,6 +292,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (usernameInput && emailInput && passwordInput) {
         // バリデーション状態を初期化
         initValidationState(['username', 'email', 'password']);
+
+        // パスワード強度チェッカーを初期化
+        memberPasswordChecker = new PasswordStrengthChecker('#password', '#password-strength-meter');
 
         // 初期状態でボタンを非活性化
         if (addMemberButton) {

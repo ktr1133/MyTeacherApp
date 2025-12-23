@@ -157,6 +157,25 @@
                     <div class="validation-spinner"></div>
                 </div>
             </div>
+            
+            {{-- パスワード強度メーター --}}
+            <div id="password-strength-meter" class="mt-2">
+                <div class="strength-bar-container h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div class="strength-bar h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div class="flex items-center justify-between mt-1">
+                    <div class="strength-text text-xs text-gray-500 dark:text-gray-400"></div>
+                    <div class="text-xs text-gray-400 dark:text-gray-500">
+                        パスワード強度
+                    </div>
+                </div>
+                <div class="strength-errors mt-1 text-xs text-red-600 dark:text-red-400" style="display: none;"></div>
+            </div>
+            
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                ※ 8文字以上、英字（大文字・小文字）、数字、記号を含める必要があります
+            </p>
+            
             <div id="password-error" class="validation-message validation-error hidden mt-2">
                 <svg class="flex-shrink-0 inline w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>

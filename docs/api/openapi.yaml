@@ -2912,14 +2912,22 @@ paths:
 
   /profile/password:
     put:
-      summary: パスワード更新
+      summary: パスワード更新（モバイル・Web共通）
       description: |
         ユーザーのパスワードを更新します。
         現在のパスワードで認証後、新しいパスワードに変更します。
         
+        **エンドポイント**:
+        - モバイル: `PUT /api/v1/profile/password` (Sanctum認証)
+        - Web: `PUT /profile/password` (セッション認証)
+        
         **バリデーション**:
         - 現在のパスワード: 必須、正しいパスワード確認
         - 新しいパスワード: 8文字以上、確認フィールド一致
+        
+        **実装**:
+        - モバイル: `App\Http\Actions\Api\Profile\UpdatePasswordApiAction`
+        - Web: `App\Http\Actions\Profile\UpdatePasswordWebAction`
       tags: [Profile]
       requestBody:
         required: true

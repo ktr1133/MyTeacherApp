@@ -42,7 +42,12 @@ class AddMemberRequest extends FormRequest
             ],
             'password' => [
                 'required',
-                Rules\Password::defaults(),
+                Rules\Password::min(8)
+                    ->letters()      // 英字必須
+                    ->mixedCase()    // 大文字小文字必須
+                    ->numbers()      // 数字必須
+                    ->symbols()      // 記号必須
+                    ->uncompromised(), // 漏洩パスワードチェック
             ],
             'name' => [
                 'nullable',

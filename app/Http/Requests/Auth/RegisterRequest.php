@@ -25,7 +25,16 @@ class RegisterRequest extends FormRequest
         $rules = [
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)
+                    ->letters()      // 英字必須
+                    ->mixedCase()    // 大文字小文字必須
+                    ->numbers()      // 数字必須
+                    ->symbols()      // 記号必須
+                    ->uncompromised(), // 漏洩パスワードチェック
+            ],
             // タイムゾーンはデフォルト値があるため、バリデーション不要
             // 同意チェックボックス（法的要件）
             'privacy_policy_consent' => ['required', 'accepted'],

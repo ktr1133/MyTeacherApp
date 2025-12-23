@@ -150,7 +150,7 @@ describe('プロフィール管理API', function () {
         it('通常ユーザーのアカウントを削除できる', function () {
             $response = $this->actingAs($this->user)
                 ->deleteJson('/api/profile', [
-                    'password' => 'password', // Factory default
+                    'password' => 'Password123!', // Factory default
                 ]);
 
             $response->assertOk()

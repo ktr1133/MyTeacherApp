@@ -1,4 +1,8 @@
 {
+  "_password-strength-CxkR_fFP.js": {
+    "file": "assets/password-strength-CxkR_fFP.js",
+    "name": "password-strength"
+  },
   "resources/css/admin/common.css": {
     "file": "assets/common-57hbBrrB.css",
     "src": "resources/css/admin/common.css",
@@ -8,7 +12,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-BjFcD8VL.css",
+    "file": "assets/app-fRPLEUYG.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -230,12 +234,13 @@
     "isEntry": true
   },
   "resources/js/auth/register-validation.js": {
-    "file": "assets/register-validation-z4-4iJ6c.js",
+    "file": "assets/register-validation-BVmX5Hv4.js",
     "name": "register-validation",
     "src": "resources/js/auth/register-validation.js",
     "isEntry": true,
     "imports": [
-      "resources/js/common/validation-core.js"
+      "resources/js/common/validation-core.js",
+      "_password-strength-CxkR_fFP.js"
     ]
   },
   "resources/js/avatar/avatar-controller.js": {
@@ -410,19 +415,23 @@
     "isEntry": true
   },
   "resources/js/profile/profile-validation.js": {
-    "file": "assets/profile-validation-DpXCeLFA.js",
+    "file": "assets/profile-validation-TkwoODvk.js",
     "name": "profile-validation",
     "src": "resources/js/profile/profile-validation.js",
     "isEntry": true,
     "imports": [
-      "resources/js/common/validation-core.js"
+      "resources/js/common/validation-core.js",
+      "_password-strength-CxkR_fFP.js"
     ]
   },
   "resources/js/profile/update-password.js": {
-    "file": "assets/update-password-Bhjs5gSG.js",
+    "file": "assets/update-password-DiRO2e_p.js",
     "name": "update-password",
     "src": "resources/js/profile/update-password.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_password-strength-CxkR_fFP.js"
+    ]
   },
   "resources/js/reports/monthly-report.js": {
     "file": "assets/monthly-report-BluejkBY.js",
