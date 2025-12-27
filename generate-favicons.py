@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Famicoロゴから各サイズのfaviconを生成するスクリプト
+モバイルアプリのアイコンから各サイズのfaviconを生成するスクリプト
 """
 from PIL import Image
 import os
 
-# 入力画像
-source = "public/images/famico-logo-20251123041515.png"
+# 入力画像（モバイルアプリのアイコンを使用）
+source = "mobile/assets/icon.png"
 output_dir = "public"
 
 # 生成するサイズ

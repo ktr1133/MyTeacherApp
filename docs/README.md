@@ -383,3 +383,70 @@ CACHE_STORE=array DB_HOST=localhost DB_PORT=5432 php artisan test tests/Feature/
 - **ログファイル**: `storage/logs/subscription-cleanup.log`
 - **確認項目**: 処理件数、失敗件数、孤児データ件数
 - **アラート**: `onFailure()` でエラーログ記録
+
+---
+
+## 11. Faviconの生成・更新
+
+### 11-1. 概要
+
+Webアプリケーションのfaviconは、モバイルアプリのアイコン（`mobile/assets/icon.png`）と同じデザインを使用しています。
+
+### 11-2. 生成スクリプト
+
+```bash
+# Pillow（Python画像処理ライブラリ）のインストール（初回のみ）
+sudo apt-get install -y python3-pil
+
+# favicon生成
+cd /home/ktr/mtdev
+python3 generate-favicons.py
+```
+
+**生成されるファイル**:
+- `public/favicon-16x16.png` (16×16px)
+- `public/favicon-32x32.png` (32×32px)
+- `public/favicon.ico` (複数サイズを含むICO形式)
+- `public/apple-touch-icon.png` (180×180px、iOS用)
+- `public/android-chrome-192x192.png` (192×192px、Android用)
+- `public/android-chrome-512x512.png` (512×512px、Android用)
+- `public/favicon.svg` (SVGベクター形式、`mobile/assets/icon.svg`から自動コピー)
+
+### 11-3. HTMLでの参照
+
+生成されたfaviconは以下のレイアウトファイルで自動的に参照されます:
+
+- `resources/views/layouts/app.blade.php` (認証済みユーザー画面)
+- `resources/views/layouts/guest.blade.php` (ゲスト画面)
+- `resources/views/layouts/portal.blade.php` (ポータルサイト)
+
+**HTML例**:
+```html
+<!-- Favicons -->
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+<link rel="alternate icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+<link rel="alternate icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+<link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+```
+
+### 11-4. ブラウザキャッシュのクリア
+
+favicon変更後、ブラウザキャッシュをクリアします:
+
+```bash
+# Laravelキャッシュクリア
+php artisan view:clear
+php artisan cache:clear
+```
+
+**注意**: ブラウザ側のfaviconキャッシュは強力なため、ハードリフレッシュ（Ctrl+Shift+R / Cmd+Shift+R）が必要な場合があります。
+
+### 11-5. モバイルアイコン更新時の対応
+
+モバイルアプリのアイコン（`mobile/assets/icon.png`または`icon.svg`）を更新した場合:
+
+1. **Webアプリのfavicon再生成**: 上記11-2のスクリプトを再実行
+2. **キャッシュクリア**: 上記11-4を実行
+3. **デプロイ**: 本番環境に新しいfaviconをデプロイ
+
+---
