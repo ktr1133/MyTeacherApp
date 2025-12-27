@@ -153,7 +153,6 @@ PATCH /api/profile       → UpdateProfileApiAction（プロフィール更新�
 | `username` | string | ✓ | max:255, unique | - | ユーザー名（ログインID） |
 | `email` | string | ✓ | email, max:255, unique | - | メールアドレス |
 | `name` | string | - | max:255 | username | 表示名（空の場合はusernameを使用） |
-| `avatar` | file | - | image, max:5MB | null | プロフィール画像（public/avatars保存） |
 | `bio` | text | - | max:1000 | null | 自己紹介文（カラム存在時のみ） |
 
 **バリデーションルール**:
@@ -181,24 +180,18 @@ public function rules(): array
 1. バリデーション実行（UpdateProfileRequest）
    ├── username 重複チェック（自分以外）
    ├── email 重複チェック（自分以外）
-   └── avatar ファイル形式・サイズ検証
+   └── name 文字数制約（max:255）
 
-2. 画像アップロード処理（任意）
-   ├── 既存画像があれば削除（Storage::disk('public')->delete）
-   ├── 新画像を public/avatars に保存
-   └── $validated['avatar_path'] に格納
-
-3. メールアドレス変更検出
+2. メールアドレス変更検出
    ├── $emailChanged = ($user->email !== $validated['email'])
    └── true の場合、email_verified_at = null（カラム存在確認後）
 
-4. ユーザー情報更新
+3. ユーザー情報更新
    ├── username, email, name を代入
    ├── name が空の場合は username を使用
-   ├── avatar_path を更新（画像アップロード時）
    └── $user->save()
 
-5. 子ユーザーの parent_email 更新（メールアドレス変更時のみ）
+4. 子ユーザーの parent_email 更新（メールアドレス変更時のみ）
    ├── ProfileUserRepositoryInterface::getChildrenByParentUserId() 呼び出し
    ├── Collection が空でない場合
    │   ├── ProfileUserRepositoryInterface::updateChildrenParentEmail() 呼び出し
@@ -839,14 +832,6 @@ if ($emailChanged && Schema::hasColumn('users', 'email_verified_at')) {
 **保存処理**:
 ```php
 if ($request->hasFile('avatar')) {
-    if (!empty($user->avatar_path)) {
-        Storage::disk('public')->delete($user->avatar_path);
-    }
-    $path = $request->file('avatar')->store('avatars', 'public');
-    $validated['avatar_path'] = $path;
-}
-```
-
 ### 8.4 CSRF保護
 
 **Web**:
